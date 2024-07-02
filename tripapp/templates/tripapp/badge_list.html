@@ -1,0 +1,22 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+  <h1>All Badges</h1>
+    <div style="text-align:center;" class="badgecontainer">
+
+    {% for badge in badges %}
+        <h2>{{ badge.name }}</h2>
+        <img class="img" src="{{ badge.image.url }}" alt="{{ badge.name }}">
+        <p>Can be achieved by: 
+          {% if badge.achievement_method == 'admin_assigned' %}
+            Assignment by the TripAdmin
+          {% elif badge.achievement_method == 'question_correct' %}
+            Correct Answer to Question
+          {% elif badge.achievement_method == 'time_based' %}
+            Reaching the chosen datetime
+          {% endif %}
+        </p>
+    {% endfor %}
+   </div>
+{% endblock %}

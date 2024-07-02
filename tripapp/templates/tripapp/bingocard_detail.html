@@ -1,0 +1,13 @@
+<!-- templates/tripapp/bingocard_detail.html -->
+
+<h1>{{ bingocard.description }}</h1>
+{% for answer in bingocard.bingoanswer_set.all %}
+    <div>
+        <h2>{{ answer.tripper.name }}</h2>
+        <img src="{{ answer.answerimage.url }}" alt="Answer Image">
+    </div>
+{% empty %}
+    <p>No answers uploaded yet.</p>
+{% endfor %}
+
+<a href="{% url 'tripapp:upload_answerimage' bingocard.id %}">Upload Answer Image</a>

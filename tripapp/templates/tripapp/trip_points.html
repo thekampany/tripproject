@@ -1,0 +1,30 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>Points for Trip {{ trip.name }}</h1>
+    <a href="{% url 'tripapp:add_point' trip.id %}" class="btn btn-primary">Add Point</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+                <th>Day Programs</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for point in points %}
+                <tr>
+                    <td>{{ point.name }}</td>
+                    <td>{{ point.latitude }}</td>
+                    <td>{{ point.longitude }}</td>
+                    <td>
+                        {% for dayprogram in point.dayprograms.all %}
+                            {{ dayprogram.tripdate }}<br>
+                        {% endfor %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

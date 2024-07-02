@@ -1,0 +1,11 @@
+{% extends "base_generic.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <h1>{% if form.instance.id %}Edit Trip{% else %}Add Trip{% endif %}</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit">Save</button>
+    </form>
+    <a href="{% url 'tripapp:trip_list' %}">Back to Trip List</a>
+{% endblock %}

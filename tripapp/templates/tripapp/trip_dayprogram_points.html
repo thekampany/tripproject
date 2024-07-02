@@ -1,0 +1,58 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ trip.name }} Map</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
+
+    <style>
+        #map {
+            height: 600px;
+        }
+    </style>
+</head>
+<body>
+  {% if points %}
+    <h1>{{ trip.name }} Map</h1>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        var map = L.map('map');
+
+        // Set up the OSM layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+
+        // Add markers from Django context
+        var points = [
+            {% for point in points %}
+                { "name": "{{ point.name }}", "coords": [{{ point.latitude }}, {{ point.longitude }}] },
+            {% endfor %}
+        ];
+
+        // Create a feature group to store all the markers
+        var markers = L.featureGroup();
+
+        // Add markers to the feature group
+        points.forEach(function(point) {
+            var marker = L.marker(point.coords).bindPopup(point.name);
+            markers.addLayer(marker);
+        });
+
+        // Add the feature group to the map
+        markers.addTo(map);
+
+        // Set the view to fit all the markers
+        map.fitBounds(markers.getBounds());
+    </script>
+  {% else %}
+    <p>No points defined for this day</p>
+  {% endif %}
+</body>
+</html>

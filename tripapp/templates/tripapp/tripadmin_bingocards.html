@@ -1,0 +1,38 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>BingoCards for Trip {{ trip.name }}</h1>
+    {% if user_is_tripper %}
+    <a href="{% url 'tripapp:add_bingocard' trip.id %}" class="btn btn-primary">Add BingoCard</a>
+    {% endif %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Bingo Image</th>
+                <!--<th>Answer Image</th>-->
+            </tr>
+        </thead>
+        <tbody>
+            {% for bingocard in bingocards %}
+                <tr>
+                    <td>{{ bingocard.description }}</td>
+                    <td>
+                        {% if bingocard.bingoimage %}
+                            <img src="{{ bingocard.bingoimage.url }}" alt="Bingo Image" style="max-width: 200px;">
+                        {% else %}
+                            No image
+                        {% endif %}
+                    </td>
+                    <!--<td>
+                        {% if bingocard.answerimage %}
+                            <img src="{{ bingocard.answerimage.url }}" alt="Answer Image" style="max-width: 200px;">
+                        {% else %}
+                            No image
+                        {% endif %}
+                    </td>-->
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

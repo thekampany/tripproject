@@ -1,0 +1,5 @@
+<p>Hi,</p>
+<p>&nbsp;</p>
+<p>{{ user.username }} invites you to join the tribe {{ tribe_name }}.</p>
+<p>Please click the link below to register and join the tribe:</p>
+<p><a href="{{ protocol }}://{{ domain }}{% url 'tripapp:register_invite' uid=uid %}">Join Tribe</a></p>

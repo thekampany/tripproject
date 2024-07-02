@@ -1,0 +1,29 @@
+{% extends "base_generic.html" %}
+{% block content %}
+    <h1>Day Programs for {{ trip.name }}</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Day Nr</th>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dayprogram in dayprograms %}
+                <tr>
+                    <td>{{ dayprogram.dayprogramnumber }}</td>
+                    <td>{{ dayprogram.tripdate }}</td>
+                    <td>{{ dayprogram.description }}</td>
+                    <td>
+                        {% if user_is_tripper %}
+                        <a href="{% url 'tripapp:edit_dayprogram' dayprogram.id %}">Edit</a>&nbsp;
+                        <a href="{% url 'tripapp:dayprogram_questions' dayprogram.id %}">Questions</a>
+                        {% endif %}
+                     </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Badge Claimed{% endblock %}
+
+{% block content %}
+<h2>Congratulations!</h2>
+<p>You have claimed the badge: {{ badge.name }}</p>
+<img src="{{ badge.image.url }}" alt="{{ badge.name }}">
+{% endblock %}

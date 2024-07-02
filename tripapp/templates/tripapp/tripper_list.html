@@ -1,0 +1,15 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h1>Trippers for {{ trip.name }}</h1>
+  
+    {% for tripper in trippers %}
+     
+        <p>{{ tripper.name }}
+        &nbsp;<a href="{% url 'tripapp:edit_tripper' tripper.id %}">Edit</a></p>
+      
+    {% empty %}
+      No trippers available for this trip.
+    {% endfor %}
+  
+{% endblock %}

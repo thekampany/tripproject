@@ -1,0 +1,15 @@
+{% extends "base_generic.html" %}
+<!-- tripper_profile.html -->
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <h1>{{ tripper.name }}'s Profile</h1>
+  <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form|crispy }}
+      <button type="submit">Save changes</button>
+  </form>
+  {% if tripper.photo %}
+    <img src="{{ tripper.photo.url }}" alt="{{ tripper.name }}'s photo" height="100">
+  {% endif %}
+{% endblock %}

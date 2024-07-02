@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ tripper.name }}'s Badges</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
+</head>
+<body>
+<div class="card">
+
+    <h1>{{ tripper.name }}'s Badges</h1>
+    <ul>
+        {% for badge in badges %}
+                <div class="badgecontainer">
+                <p><img class="img" src="{{ badge.image.url }}" alt="{{ badge.name }}"></p>
+                {{ badge.name }}
+                </div>
+        {% endfor %}
+    </ul>
+</div>
+</body>
+</html>

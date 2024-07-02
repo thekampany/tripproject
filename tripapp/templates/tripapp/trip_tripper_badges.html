@@ -1,0 +1,27 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ tripper.name }}'s Badges</title>
+    <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
+</head>
+<body>
+<div class="card">
+ 
+    <h1>{{ tripper.name }}'s Badges</h1>
+    <div class="badgecontainer">
+        {% for badge in badges %}
+                <p><img class="img" src="{{ badge.image.url }}" alt="{{ badge.name }}"></p>
+                {{ badge.name }}
+        {% endfor %}
+
+    </div>
+</div>
+
+<div class="card">
+<div class="container">
+    <a href="{% url 'tripapp:trip_trippers' trip.id %}">Back to Trippers</a>
+</div>
+</div>
+</body>
+</html>

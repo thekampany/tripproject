@@ -1,0 +1,17 @@
+{% extends "base_generic.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<h1>Invite to Tribe</h1>
+<form method="post">
+    {% csrf_token %}
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required>
+    <label for="tribe">Tribe:</label>
+    <select id="tribe" name="tribe_id">
+        {% for tribe in tribes %}
+            <option value="{{ tribe.id }}">{{ tribe.name }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Invite</button>
+</form>
+{% endblock %}

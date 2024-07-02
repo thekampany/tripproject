@@ -1,0 +1,12 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>Tribe List</h1>
+    <ul>
+        {% for tribe in tribes %}
+            <li>{{ tribe.name }}</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'tripapp:create_tribe' %}">Create a New Tribe</a>
+{% endblock %}
+

@@ -1,0 +1,174 @@
+:root {
+  --color-text: #303030;
+  --color-background: white;
+
+  --card-background-color: rgba(255, 255,255 , 0.7);
+  --card-box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  --card-box-shadow-hover: 0 8px 16px 0 rgba(0,0,0,0.2);
+
+  --btn-background: #f88c34;
+
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Re-assign previous variables */
+  :root {
+    --color-text: white; /* black => white */
+    --color-background: black; /* white => black */
+
+    --card-background-color: rgba(0, 0, 0, 0.7);
+    --card-box-shadow: 0 4px 8px 0 rgba(255,255,255,0.2);
+    --card-box-shadow-hover: 0 8px 16px 0 rgba(255,255,255,0.2);
+    --btn-background: #34a0f8;
+  }
+}
+
+body {
+  color: var(--color-text);
+  background-color: var(--color-background);
+  font-family:sans-serif;
+  font-size:1em;
+}
+.card {
+  box-shadow: var(--card-box-shadow);
+  transition: 0.3s;
+  margin: 0 auto;
+  min-width: 320px;
+  max-width: 900px;
+  background-color: var(--card-background-color);
+}
+
+.card:hover {
+  box-shadow: var(--card-box-shadow-hover);
+}
+
+.container {
+  padding: 2px 16px;
+  text-align:left;
+}
+.badgecontainer {
+  padding: 2px 16px;
+  text-align:center;
+}
+.img {
+  max-width: 300px;
+}
+.smallgrey {
+  font-variant: small-caps;
+  color:silver;
+  font-size: 0.8em;
+}
+.tripcard {
+  background-color: rgba(211, 211, 211, 0.5); /* Lichtgrijze kleur met 50% transparantie */
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  transition: 0.3s;
+  margin: 0 auto;
+  min-width: 320px;
+  max-width: 900px;
+}
+a:link {
+  color: var(--color-text);
+}
+
+/* visited link */
+a:visited {
+  color: var(--color-text);
+}
+
+/* mouse over link */
+a:hover {
+  color: var(--color-text);
+}
+
+/* selected link */
+a:active {
+  color: var(--color-text);
+}
+a.btn {
+             border-radius: 2px;
+             background-color: var(--btn-background);
+             padding: 14px 28px;
+             font-size: 16px;
+             cursor: pointer;
+             display: inline-block;
+             text-decoration: none;
+        }
+a.btn:hover {background: var(--color-background);}
+
+a.btn-fixed-width {
+             border-radius: 2px;
+             background-color: var(--btn-background);
+             padding: 14px 28px;
+             font-size: 16px;
+             cursor: pointer;
+             display: inline-block;
+             text-decoration: none;
+             width: 250px;
+        }
+
+a.btn-fixed-width:hover {background: var(--color-background);}
+
+
+.bingocard-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.bingocard {
+    background-color: var(--color-background);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 300px;
+    margin: 20px;
+}
+
+.bingocard-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    color: #0056b3;
+}
+
+.bingo-image {
+    max-width: 40%;
+    height: auto;
+    margin-right: 20px;
+}
+
+.answers {
+    flex: 1;
+    text-align: left;
+    margin-right: 20px;
+}
+
+.answer {
+    margin-bottom: 15px;
+}
+
+.answer-image {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 10px 0;
+}
+
+.upload-section {
+    text-align: right;
+}
+
+.upload-link {
+    display: inline-block;
+    padding: 10px 15px;
+    color: var(--color-text);
+    background-color: var(--btn-background);
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.upload-link:hover {
+    background-color: var(--color-background);
+}

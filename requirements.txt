@@ -1,0 +1,12 @@
+Django>=3.2,<5.0
+psycopg2-binary
+dj-database-url
+django_extensions
+Pillow
+django_q
+requests
+python-dotenv
+django-crispy-forms
+django-bootstrap4
+crispy-bootstrap4
+

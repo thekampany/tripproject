@@ -1,0 +1,28 @@
+{% extends "base_generic.html" %}
+{% block content %}
+    <h1>Questions for Day Program on {{ dayprogram.tripdate }}</h1>
+    <a href="{% url 'tripapp:add_question' dayprogram.id %}" class="btn btn-primary">Add Question</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Question Text</th>
+                <th>{% if is_trip_admin %}Correct Answer{% endif %}</th>
+                <th>Badge</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for question in questions %}
+                <tr>
+                    <td>{{ question.question_text }}</td>
+                    <td>{% if is_trip_admin %}{{ question.correct_answer }}{% endif %}</td>
+                    <td>{{ question.badge.name }}</td>
+                    <td>{% if is_trip_admin %}
+                        <a href="{% url 'tripapp:edit_question' question.id %}" class="btn btn-primary">Edit</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

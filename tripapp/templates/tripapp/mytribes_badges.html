@@ -1,0 +1,42 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>Badges</h1>
+    <div style="text-align:center;" class="badgecontainer">
+
+
+    {% if tribal_badges %}<h2>Tribal Badges</h2>{% endif %}
+    <div class="badge-list">
+        {% for badge in tribal_badges %}
+            <div class="badge">
+                <img src="{{ badge.image.url }}" alt="{{ badge.name }}" style="max-width: 100px;">
+                <p>{{ badge.name }}</p>
+                <p>Can be achieved by:
+                {% if badge.achievement_method == 'admin_assigned' %}
+                    Assignment by the TripAdmin
+                {% elif badge.achievement_method == 'question_correct' %}
+                    Correct Answer to Question
+                {% elif badge.achievement_method == 'time_based' %}
+                    Reaching the chosen datetime
+                {% endif %}
+                </p>
+
+            </div>
+        {% endfor %}
+    </div>
+
+   <h2>Global Badges</h2>
+
+    <div class="badge-list">
+        {% for badge in global_badges %}
+            <div class="badge">
+                <img src="{{ badge.image.url }}" alt="{{ badge.name }}" style="max-width: 100px;">
+                <p>{{ badge.name }}</p>
+            </div>
+        {% endfor %}
+    </div>
+
+
+
+    </div>
+{% endblock %}

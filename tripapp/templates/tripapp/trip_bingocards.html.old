@@ -1,0 +1,44 @@
+<!-- trip_bingocards.html -->
+
+
+{% extends 'base_generic.html' %}
+
+{% block content %}
+  <h1>Bingocards for {{ trip.name }}</h1>
+    <table>
+    {% for card in bingocards %}
+        <tr>
+        <td style="text-align:center;vertical-align:top;padding:20px;">
+        <h3></h3>
+        {% if card.bingoimage %}
+          <img src="{{ card.bingoimage.url }}" height="100" alt="Bingo Image" />
+        {% else %}
+           <h3><i>{{ card.description }}</i></h3>
+        {% endif %}
+        </td>
+        <td style="text-align:center;vertical-align:top;padding:20px;">
+
+        {% for answer in bingo_answers %}
+            {% if answer.bingocard == card %}
+                  <p>Answer by {{ answer.tripper.name }}:<br />
+                  {% if answer.answerimage %}
+                        <img src="{{ answer.answerimage.url }}" height="100"  alt="Answer Image">
+                  {% else %}
+                        No answer image uploaded yet.
+                  {% endif %}</p>
+            {% endif %}
+        {% endfor %}
+
+        {% if user.is_authenticated %}
+            {% if card.id not in user_answered_cards_ids %}
+                <p><a href="{% url 'tripapp:upload_answerimage' card.id %}">Upload Answer Image</a></p>
+            {% endif %}
+        {% endif %}
+        </td>
+        </tr>
+
+    {% endfor %}
+    </table>
+    <br />
+    <p><a href="{% url 'tripapp:trip_detail' trip.slug %}">Back to Trip</a></p>
+{% endblock %}
