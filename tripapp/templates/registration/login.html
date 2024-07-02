@@ -7,5 +7,7 @@
     {{ form|crispy }}
     <button type="submit">Login</button>
   </form>
+    <br />
+    <a href="{% url 'tripapp:password_reset' %}">Forgot Password?</a>
 {% endblock %}
 
