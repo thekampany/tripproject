@@ -108,6 +108,18 @@ a.btn-fixed-width {
 
 a.btn-fixed-width:hover {background: var(--color-background);}
 
+a.btn-less-padding {
+             border-radius: 2px;
+             background-color: var(--btn-background);
+             padding: 4px 4px;
+             font-size: 16px;
+             cursor: pointer;
+             display: inline-block;
+             text-decoration: none;
+        }
+
+a.btn-less-padding:hover {background: var(--color-background);}
+
 
 .bingocard-container {
     display: flex;

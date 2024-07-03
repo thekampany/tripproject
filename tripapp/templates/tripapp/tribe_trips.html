@@ -36,16 +36,17 @@
     {% for tribe in tribes %}
     <h3>You are in Tribe: {{ tribe.name }}</h3>
        {% for trip in trips %}
-         <p>{{ trip.name }}&nbsp;
+         <p>{{ trip.name }}<br /><br />
            {% if trip in admin_trips %}
-           <a href="{% url 'tripapp:add_trippers' trip.id tribe.id %}">Add Trippers</a>
-           <a href="{% url 'tripapp:tripper_list' trip.id %}">Assign Badges</a>
+           <a href="{% url 'tripapp:add_trippers' trip.id tribe.id %}" class="btn-less-padding"><img src="{% static 'icons/iconedittripper.png'  %}" width="40" height="40"></a>
+           <a href="{% url 'tripapp:tripper_list' trip.id %}" class="btn-less-padding"><img src="{% static 'icons/iconeditbadge.png'  %}" width="40" height="40"></a>
 
            {% endif %}
-           <a href="{% url 'tripapp:trip_dayprograms' trip.id  %}">Edit Dayprograms</a>
-           <a href="{% url 'tripapp:trip_points' trip.id  %}">Map Points</a>
-           <a href="{% url 'tripapp:tripadmin_bingocards' trip.id  %}">Bingo</a>
+           <a href="{% url 'tripapp:trip_dayprograms' trip.id  %}" class="btn-less-padding"><img src="{% static 'icons/iconeditdayprogram.png'  %}" width="40" height="40"></a>
+           <a href="{% url 'tripapp:trip_points' trip.id  %}" class="btn-less-padding"><img src="{% static 'icons/iconeditmap.png'  %}" width="40" height="40"></a>
+           <a href="{% url 'tripapp:tripadmin_bingocards' trip.id  %}" class="btn-less-padding"><img src="{% static 'icons/iconeditbingo.png'  %}" width="40" height="40"></a>
           </p>
+          <br /><br />
        {% endfor %}
        <p><a href="{% url 'tripapp:create_trip' %}">Create a New Trip for the people in {{ tribe.name }}</a></p>
     {% endfor %}

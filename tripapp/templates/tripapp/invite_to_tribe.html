@@ -4,6 +4,7 @@
 <h1>Invite to Tribe</h1>
 <form method="post">
     {% csrf_token %}
+    {{ form|crispy }}
     <label for="email">Email:</label>
     <input type="email" id="email" name="email" required>
     <label for="tribe">Tribe:</label>
