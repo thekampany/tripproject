@@ -5,3 +5,16 @@ It is the app in which you answer questions like: what time do we have to be at 
 Not only can you tell the ones going with you on the trip to just look in the app, you can also get them to be involved in (road)tripbingo and let them win fancy badges. 
 
 The Trippers can invite their friends and family to the tribe. People in the tribe can see an overview of the trip and who is winning the badges.
+
+# Installation
+git clone https://github.com/thekampany/tripproject.git
+edit  docker-compose.yml for portnumbers and dbuser and password
+cp .env.sample .env
+edit .env for unsplash api key and for emailsettings
+
+docker compose build
+docker compose up -d
+In the container python manage.py migrate
+Go to your browser and start with register.
+ 
+
