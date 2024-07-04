@@ -24,7 +24,7 @@ class TripperForm(forms.ModelForm):
 class TripperAdminForm(forms.ModelForm):
     class Meta:
         model = Tripper
-        fields = ['name', 'photo','badges', 'trips', 'is_trip_admin']
+        fields = ['badges', 'is_trip_admin']
 
 
 class ImageForm(forms.ModelForm):
