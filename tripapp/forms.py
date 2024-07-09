@@ -54,6 +54,11 @@ class TripForm(forms.ModelForm):
     class Meta:
         model = Trip
         fields = ['tribe', 'name', 'description', 'date_from', 'date_to', 'image' ]
+        widgets = {
+            'date_from': forms.DateInput(attrs={'type': 'date'}),
+            'date_to': forms.DateInput(attrs={'type': 'date'}),
+        }
+
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)

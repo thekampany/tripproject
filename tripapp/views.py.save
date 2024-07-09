@@ -118,19 +118,20 @@ def create_trip(request):
             date_to = trip.date_to
             current_date = date_from
             daynumber =1
-
-            # Create DayProgram entries for each day in the trip
             while current_date <= date_to:
                 DayProgram.objects.create(trip=trip, tripdate=current_date, dayprogramnumber=daynumber)
                 current_date += timedelta(days=1)
-                daynumber += 1
+                daynumber =daynumber +1
 
             # Ensure the logged-in user is also a Tripper for this trip
-            user = request.user
-            tripper, created = Tripper.objects.get_or_create(name=user.username)
+            user_profile = request.user.userprofile
+            tripper, created = Tripper.objects.get_or_create(name=user_profile.name)
             tripper.trips.add(trip)
             tripper.is_trip_admin = True
             tripper.save()
+
+
+
 
             return redirect('tripapp:tribe_trips')
     else:
