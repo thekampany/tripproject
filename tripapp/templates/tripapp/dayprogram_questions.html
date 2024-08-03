@@ -2,6 +2,7 @@
 {% block content %}
     <h1>Questions for Day Program on {{ dayprogram.tripdate }}</h1>
     <a href="{% url 'tripapp:add_question' dayprogram.id %}" class="btn btn-primary">Add Question</a>
+    <a href="{% url 'tripapp:add_badge_and_question' dayprogram.id %}" class="btn btn-primary">Add Question and Badge in one Go</a>
     <table class="table">
         <thead>
             <tr>

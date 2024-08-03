@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planner Map</title>
+    <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
+     <style>
+        body {
+            {% if trip.image %}
+            background-image: url('{{ trip.image.url }}');
+            background-size: cover;
+            background-position: center center;
+            {% endif %}
+        }
+    </style>
+
+</head>
+<body>
+    <div class="card">
+    <div class="container">
+
+    <h1>{{ trip.name }} Map</h1>
+
+<iframe style="height: 700px; width: 100%; border: none;" src="https://facilmap.org/HT{{ tribe_name_no_spaces }}{{ trip_name_no_spaces }}ad#6/51.995/5.999/Lima" id="facilmap"></iframe>
+<script>
+	window.addEventListener("message", function(evt) {
+		if(evt.data && evt.data.type == "facilmap-hash" && location.hash != "#" + evt.data.hash)
+			location.replace("#" + evt.data.hash);
+	});
+
+	function handleHashChange() {
+		var iframe = document.getElementById("facilmap");
+		iframe.src = iframe.src.replace(/(#.*)?$/, "") + location.hash;
+	}
+
+	window.addEventListener("hashchange", handleHashChange);
+	if (location.hash)
+		handleHashChange();
+</script> 
+<p><a href="{% url 'tripapp:trip_detail' trip.slug %}">Back to Trip</a></p>
+
+</div>
+</div>
+</body>
+</html>
+ 

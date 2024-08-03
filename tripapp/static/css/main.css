@@ -78,11 +78,13 @@ a:visited {
 /* mouse over link */
 a:hover {
   color: var(--color-text);
+  text-decoration: none;
 }
 
 /* selected link */
 a:active {
   color: var(--color-text);
+  text-decoration: none;
 }
 a.btn {
              border-radius: 2px;
@@ -183,4 +185,30 @@ a.btn-less-padding:hover {background: var(--color-background);}
 
 .upload-link:hover {
     background-color: var(--color-background);
+}
+
+.polaroid {
+    width: 300px; /* Adjust as needed */
+    padding: 10px;
+    background: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 20px;
+    text-align: center;
+    transform: rotate(0deg);
+    transition: transform 0.2s;
+}
+
+.polaroid:hover {
+    transform: rotate(-5deg);
+}
+
+.polaroid img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+.caption {
+    margin: 20px;
+    padding: 20px 0;
+    color: #333;
 }

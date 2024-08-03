@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Trip, DayProgram, Tripper, Badge, Checklist, ChecklistItem, Image, Question, Point, BingoCard, BingoAnswer, BadgeAssignment
+from .models import Trip, DayProgram, Tripper, Badge, Checklist, ChecklistItem, Image, Question, Point, BingoCard, BingoAnswer, BadgeAssignment, LogEntry
 from django_q.tasks import async_task
 from .models import Tribe, UserProfile
 
@@ -16,6 +16,8 @@ run_assign_badges.short_description = 'Run assign_badges task'
 class BadgeAdmin(admin.ModelAdmin):
     actions = [run_assign_badges]
 
+
+
 admin.site.register(Trip)
 admin.site.register(DayProgram)
 admin.site.register(Tripper)
@@ -30,4 +32,5 @@ admin.site.register(BingoAnswer)
 admin.site.register(BadgeAssignment)
 admin.site.register(Tribe)
 admin.site.register(UserProfile)
+admin.site.register(LogEntry)
 

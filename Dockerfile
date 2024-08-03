@@ -16,5 +16,8 @@ COPY . .
 # Stel de environment variables in
 ENV PYTHONUNBUFFERED=1
 
+EXPOSE 8043
+
 # Voer de server uit
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8043"]
+#CMD ["python", "manage.py", "runserver", "0.0.0.0:8043"]
+CMD ["uvicorn", "tripproject.asgi:application", "--host", "0.0.0.0", "--port", "8043"]

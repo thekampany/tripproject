@@ -1,5 +1,6 @@
 from django import forms
 from .models import Badge
+from .models import BadgeAssignment
 from .models import Trip
 from .models import ChecklistItem
 from .models import Image
@@ -10,11 +11,14 @@ from .models import Tribe
 from .models import Question
 from .models import Point
 from .models import BingoCard
+from .models import LogEntry
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
+from django.forms import inlineformset_factory
+
 
 class TripperForm(forms.ModelForm):
     class Meta:
@@ -30,25 +34,42 @@ class TripperAdminForm(forms.ModelForm):
 class ImageForm(forms.ModelForm):
     class Meta:
         model = Image
-        fields = ['day_program', 'image', 'description']
+        fields = ['image', 'description']
 
     day_program = forms.ModelChoiceField(queryset=DayProgram.objects.all(), widget=forms.HiddenInput())
 
 
 class BadgeForm(forms.ModelForm):
+   ACHIEVEMENT_METHOD_CHOICES = [
+        ('time_based', 'Time Based'),
+        ('question_correct', 'Correct Answer to Question'),
+        ('admin_assigned', 'Admin Assigned')
+   ]
+
+   achievement_method = forms.ChoiceField(
+        choices=ACHIEVEMENT_METHOD_CHOICES,
+        required=True
+   )
+
    class Meta:
         model = Badge
-        fields = ['name', 'image', 'assignment_date', 'tribe' ]
-
+        fields = ['name', 'image', 'achievement_method','assignment_date', 'tribe' ]
+        widgets = {
+           'assignment_date': forms.DateInput(attrs={'type':'date'}),
+        }
    def clean(self):
         cleaned_data = super().clean()
         assignment_date = cleaned_data.get('assignment_date')
+        achievement_method = cleaned_data.get('achievement_method')
 
-        if assignment_date:
-            cleaned_data['achievement_method'] = 'time_based'
-        else:
-            cleaned_data['achievement_method'] = 'admin_assigned'
+        if achievement_method == 'time_based' and not assignment_date:
+            self.add_error('assignment_date', 'Assignment date is required for time-based achievements.')
+        if achievement_method == 'admin_assigned' and assignment_date:
+            self.add_error('assignment_date', 'Assignment date should not be set for admin-assigned achievements.')
+        if achievement_method == 'question_correct' and assignment_date:
+            self.add_error('assignment_date', 'Assignment date should not be set for question-correct achievements.')
         return cleaned_data
+
 
 class TripForm(forms.ModelForm):
     class Meta:
@@ -134,6 +155,7 @@ class TribeCreationForm(forms.ModelForm):
         model = Tribe
         fields = ['name']
 
+
 class DayProgramForm(forms.ModelForm):
     class Meta:
         model = DayProgram
@@ -141,6 +163,7 @@ class DayProgramForm(forms.ModelForm):
         widgets = {
             'tripdate': forms.DateInput(attrs={'type': 'date'}),
         }
+
 
 class QuestionForm(forms.ModelForm):
     class Meta:
@@ -160,3 +183,38 @@ class PointForm(forms.ModelForm):
         super(PointForm, self).__init__(*args, **kwargs)
         if trip:
             self.fields['dayprograms'].queryset = DayProgram.objects.filter(trip=trip)
+
+
+class BadgeAssignmentForm(forms.ModelForm):
+    class Meta:
+        model = BadgeAssignment
+        fields = [ 'badge']
+
+BadgeAssignmentFormSet = inlineformset_factory(
+    Tripper, BadgeAssignment, form=BadgeAssignmentForm, extra=1, can_delete=True
+)
+
+
+class LogEntryForm(forms.ModelForm):
+    class Meta:
+        model = LogEntry
+        fields = ['dayprogram', 'logentry_text']
+        widgets = {
+            'dayprogram': forms.HiddenInput()
+        }
+
+
+class BadgeplusQForm(forms.ModelForm):
+    class Meta:
+        model = Badge
+        fields = ['name', 'image']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['achievement_method'] = forms.CharField(widget=forms.HiddenInput(), initial='question_correct')
+        self.fields['level'] = forms.CharField(widget=forms.HiddenInput(), initial='tribal')
+
+class QuestionplusBForm(forms.ModelForm):
+    class Meta:
+        model = Question
+        fields = ['question_text', 'correct_answer']

@@ -16,11 +16,11 @@
     <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
     <style>
       body, html {
-      background: url('{{ background_image_url }}') no-repeat center center fixed;
-      -webkit-background-size: cover;
-      -moz-background-size: cover;
-      -o-background-size: cover;
-      background-size: cover;
+            {% if trip.image %}
+            background-image: url('{{ trip.image.url }}');
+            background-size: cover;
+            background-position: center center;
+            {% endif %}
       }
 
     </style>
@@ -29,14 +29,10 @@
 <body>
     <div class="card">
     <div class="container">
-    <h1>Organize</h1>
-    <a href="{% url 'tripapp:create_tribe' %}" class="btn-fixed-width">Create a New Tribe</a>&nbsp;
-    <a href="{% url 'tripapp:invite_to_tribe' %}" class="btn-fixed-width">Invite People to the Tribe</a>
-    <br /><br />
-    {% for tribe in tribes %}
-    <h3>You are in Tribe: {{ tribe.name }}</h3>
-       {% for trip in trips %}
-         <p><b>{{ trip.name }}</b><br /><br />
+    <h1>Organize {{ trip.name }}</h1>
+    <span style="color:gray;">Tribe: {{ tribe.name }}</span>
+          <p>&nbsp;</p>
+          <p>
            {% if trip in admin_trips %}
            <a href="{% url 'tripapp:add_trippers' trip.id tribe.id %}" class="btn-less-padding"><img src="{% static 'icons/iconedittripper.png'  %}" width="40" height="40"></a>
            <a href="{% url 'tripapp:tripper_list' trip.id %}" class="btn-less-padding"><img src="{% static 'icons/iconeditbadge.png'  %}" width="40" height="40"></a>
@@ -47,9 +43,6 @@
            <a href="{% url 'tripapp:tripadmin_bingocards' trip.id  %}" class="btn-less-padding"><img src="{% static 'icons/iconeditbingo.png'  %}" width="40" height="40"></a>
           </p>
           <br /><br />
-       {% endfor %}
-       <p><a href="{% url 'tripapp:create_trip' %}">Create a New Trip for the people in {{ tribe.name }}</a></p>
-    {% endfor %}
     <br />
     <h1>Badges</h1>
     <a href="{% url 'tripapp:mytribes_badges_view' %}" class="btn">View Badges</a>
@@ -65,7 +58,7 @@
     {% if user.is_staff %}
     <a href="{% url 'admin:index' %}">Admin</a>
     {% endif %}&nbsp;&nbsp;
-    {% if user.is_authenticated %}<a href="{% url 'tripapp:trip_list' %}" >Trip List</a>{% endif %}
+    {% if user.is_authenticated %}<a href="{% url 'tripapp:trip_detail' trip.slug %}" >Back to Trip</a>{% endif %}
  
     <br />
     </div>

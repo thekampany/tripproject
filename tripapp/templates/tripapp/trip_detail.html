@@ -35,7 +35,8 @@
     <div class="card">
     <div class="container">
     <h1>{{ trip.name }}</h1>
-    <a href="{% url 'tripapp:trip_map_view' trip.id %}" class="btn"><img src="{% static 'icons/maps-iconreverse.png'  %}" width="60" height="50"></a>
+    <!--<a href="{% url 'tripapp:trip_map_view' trip.id %}" class="btn"><img src="{% static 'icons/maps-iconreverse.png'  %}" width="60" height="50"></a>-->
+    <a href="{% url 'tripapp:planner_map' trip.id %}" class="btn"><img src="{% static 'icons/maps-iconreverse.png'  %}" width="60" height="50"></a>
     <a href="{% url 'tripapp:trip_bingocards' trip.id %}" class="btn"><img src="{% static 'icons/bingoicon-removebgreverse.png'  %}" width="60" height="50"></a>
     <a href="{% url 'tripapp:trip_trippers' trip.id %}" class="btn"><img src="{% static 'icons/tourist-guide-icon-removebgreverse.png'  %}" width="60" height="50"></a>
     <br /><br />
@@ -81,8 +82,10 @@
     <div class="card">
     <div class="container">
     <br />
-    <a href="{% url 'tripapp:trip_list'  %}">Home</a>&nbsp;|&nbsp;
     {% if user.is_authenticated %} {{ user.username }}{% else %}<a href="{% url 'tripapp:login' %}">Login</a>{% endif %}
+    &nbsp;&nbsp;<a href="{% url 'tripapp:trip_list'  %}">Home</a>
+    &nbsp;&nbsp;<a href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id  %}">Organize</a>
+
     <br />
     </div>
     </div>

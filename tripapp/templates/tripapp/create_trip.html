@@ -1,12 +1,53 @@
-{% extends "base_generic.html" %}
+{% load static %}
 {% load crispy_forms_tags %}
-{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Trip and FacilMap</title>
+    <script src="https://unpkg.com/socket.io-client/dist/socket.io.js"></script>
+    <script type="module" src="{% static 'js/createpad.js' %}"></script>
+</head>
+<body>
+
 
     <h1>Create a New Trip</h1>
-    <form method="post">
+    <form method="post" id="create-trip-form">
         {% csrf_token %}
         {{ form|crispy }}
         <button type="submit">Create Trip</button>
     </form>
-{% endblock %}
 
+    <button id="confirm-submit" style="display:none;">Confirm Submit</button>
+
+<script>
+document.getElementById('create-trip-form').addEventListener('submit', function(event) {
+    // Voorkom de standaard formulierindiening zodat we de JavaScript functie kunnen uitvoeren
+    event.preventDefault();
+
+    // Haal de waarde van het veld 'name' op
+    var nameValue = document.querySelector('input[name="name"]').value;
+    var tribeSelect = document.querySelector('select[name="tribe"]');
+    var tribeValue = tribeSelect.options[tribeSelect.selectedIndex].text;
+  
+    // Voer hier je JavaScript functie uit met de waarde van het 'name' veld
+    console.log('Waarde van naam:', nameValue); // Voorbeeld: log de waarde in de console
+
+    
+    // Je kunt hier ook andere acties ondernemen met de waarde
+    initializeMap(nameValue,tribeValue);
+
+    document.getElementById('confirm-submit').style.display = 'block';
+
+    // Na het uitvoeren van je JavaScript functie, kun je het formulier indien gewenst alsnog indienen
+    //event.target.submit();
+});
+
+document.getElementById('confirm-submit').addEventListener('click', function() {
+    // Dien het formulier alsnog in wanneer op de bevestigingsknop wordt geklikt
+    document.getElementById('create-trip-form').submit();
+});
+</script>
+
+
+</body>
+</html>

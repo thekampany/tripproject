@@ -26,4 +26,7 @@
             {% endfor %}
         </tbody>
     </table>
+    {% if trip in admin_trips %}
+    <a href="{% url 'tripapp:dayprogram_add' trip.id %}">Add a Day</a>&nbsp;
+    {% endif %}
 {% endblock %}

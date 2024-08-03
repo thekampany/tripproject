@@ -156,3 +156,12 @@ class BadgeAssignment(models.Model):
             return f'{self.badge.name} assigned to {self.tripper.name}'
 
 
+
+class LogEntry(models.Model):
+    dayprogram = models.ForeignKey(DayProgram, related_name='logentries', on_delete=models.CASCADE)
+    tripper = models.ForeignKey(Tripper, related_name='logentries', on_delete=models.CASCADE)
+    logentry_text = models.TextField()
+
+    def __str__(self):
+        return f"{self.tripper.name} - {self.logentry_text[:50]}"
+

@@ -1,0 +1,144 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ trip.name }} Map</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            {% if trip.image %}
+            background-image: url('{{ trip.image.url }}');
+            background-size: cover;
+            background-position: center center;
+            {% endif %}
+        }
+        #map {
+            height: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+    <div class="container">
+
+    <h1>{{ trip.name }} Map</h1>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        var map = L.map('map');
+
+        // Set up the OSM layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+
+        // Add markers from Django context
+        var points = [
+            {% for point in points %}
+                { "name": "{{ point.name }}", "coords": [{{ point.latitude }}, {{ point.longitude }}] },
+            {% endfor %}
+        ];
+
+        // Create a feature group to store all the markers
+        var markers = L.featureGroup();
+
+        // Add markers to the feature group
+        points.forEach(function(point) {
+            var marker = L.marker(point.coords).bindPopup(point.name);
+            markers.addLayer(marker);
+        });
+
+        // Add the feature group to the map
+        markers.addTo(map);
+
+        // Set the view to fit all the markers
+        map.fitBounds(markers.getBounds());
+
+
+// Update the marker creation to handle click events
+points.forEach(function(point) {
+    var marker = L.marker(point.coords).bindPopup(point.name);
+
+    // Add click event listener to save event to Django backend
+    marker.on('click', function(e) {
+        console.log('Marker clicked!');
+
+        var lat = e.latlng.lat;
+        var lng = e.latlng.lng;
+
+        // AJAX request to save the event
+        $.ajax({
+            url: '/save_event/',  // URL waar de view wordt gedefinieerd om het event op te slaan
+            method: 'POST',
+            data: {
+                'name': point.name,
+                'latitude': lat,
+                'longitude': lng,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                // Handle success if needed
+                console.log('Event saved successfully!');
+            },
+            error: function(xhr, status, error) {
+                // Handle error if needed
+                console.error('Error saving event:', error);
+            }
+        });
+    });
+
+    markers.addLayer(marker);
+});
+
+// Voeg een click event handler toe aan de kaart
+map.on('click', function(e) {
+    var lat = e.latlng.lat;
+    var lng = e.latlng.lng;
+
+    // Voeg een nieuwe marker toe aan de feature group
+    var newMarker = L.marker([lat, lng]).addTo(markers);
+
+    // Open een popup om de gebruiker een naam voor het event te laten invoeren
+    newMarker.bindPopup('<input type="text" id="event-name" placeholder="Event Name"><br><button id="save-event">Save</button>');
+
+    // Wanneer de gebruiker op de Save knop klikt, sla het event op
+    newMarker.on('popupopen', function() {
+        document.getElementById('save-event').addEventListener('click', function() {
+            var eventName = document.getElementById('event-name').value;
+
+            // AJAX request om het event op te slaan
+            $.ajax({
+                url: '/save_event/',
+                method: 'POST',
+                data: {
+                    'name': eventName,
+                    'latitude': lat,
+                    'longitude': lng,
+                    'trip': {{ trip.id }},
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    console.log('Event saved successfully!');
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error saving event:', error);
+                }
+            });
+
+            // Sluit de popup nadat het event is opgeslagen
+            map.closePopup();
+        });
+    });
+});
+
+    </script>
+    </div>
+    </div>
+</body>
+</html>

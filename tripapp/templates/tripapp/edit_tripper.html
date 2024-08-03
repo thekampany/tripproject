@@ -5,6 +5,15 @@
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form|crispy }}
+
+    <h2>Badge Assignments {{ trip.name }}</h2>
+    {{ formset.management_form }}
+    {% for form in formset %}
+        {{ form|crispy }}
+    {% endfor %}
+
+
+
     <button type="submit">Save changes</button>
   </form>
   <a href="{% url 'tripapp:tribe_trips' %}">Cancel</a>  

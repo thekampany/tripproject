@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap4',
     'bootstrap4',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -86,6 +87,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'tripproject.wsgi.application'
+ASGI_APPLICATION = 'tripproject.asgi.application'
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'

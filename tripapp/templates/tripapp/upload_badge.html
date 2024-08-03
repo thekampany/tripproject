@@ -16,6 +16,21 @@
         {% csrf_token %}
         {{ form|crispy }}
         <button type="submit">Upload</button>
+    {% if form.errors %}
+        <div class="errors">
+            <ul>
+                {% for field, errors in form.errors.items %}
+                    <li>{{ field }}:
+                        <ul>
+                            {% for error in errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
     </form>
     <i>If you enter an assignment date, then trippers get the badge at that date.</i>
     <i>If you do not enter a date, then an admin can assign the badge.</i>

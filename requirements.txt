@@ -9,4 +9,5 @@ python-dotenv
 django-crispy-forms
 django-bootstrap4
 crispy-bootstrap4
-
+channels
+uvicorn

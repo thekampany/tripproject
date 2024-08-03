@@ -1,5 +1,4 @@
-
-
+]
 # Create your views here.
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Trip, Tripper, Badge, DayProgram, Checklist, ChecklistItem, Image, Question, Point
@@ -11,7 +10,6 @@ from .forms import AnswerForm, AnswerImageForm, TripperForm, TripperAdminForm
 from .forms import TribeCreationForm, AddTrippersForm, DayProgramForm
 from .forms import QuestionForm, PointForm, BingoCardForm
 from .forms import BadgeAssignmentFormSet, LogEntryForm
-from .forms import BadgeplusQForm, QuestionplusBForm
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
@@ -211,45 +209,14 @@ def dayprogram_detail(request, id):
     trippers_names = [tripper.name for tripper in trippers_on_this_trip]
     log_entries = dayprogram.logentries.all()
 
-    previous_dayprogram = DayProgram.objects.filter(
-        trip=dayprogram.trip,
-        dayprogramnumber__lt=dayprogram.dayprogramnumber
-    ).order_by('-dayprogramnumber').first()
-
-    next_dayprogram = DayProgram.objects.filter(
-        trip=dayprogram.trip, 
-        dayprogramnumber__gt=dayprogram.dayprogramnumber
-    ).order_by('dayprogramnumber').first()
-
-    questions_with_badge_info = []
-    for question in questions:
-        question_info = {
-            'question': question,
-            'trippers_badge_info': []
-        }
-        for tripper in trippers_on_this_trip:
-            has_badge = BadgeAssignment.objects.filter(
-                tripper=tripper, 
-                badge=question.badge
-            ).exists()
-            question_info['trippers_badge_info'].append({
-                'tripper': tripper,
-                'has_badge': has_badge
-            })
-        questions_with_badge_info.append(question_info)
-
-
     return render(request, 'tripapp/dayprogram_detail.html', 
          {'dayprogram': dayprogram, 
           'images': images, 
           'questions': questions,
-          'questions_with_badge_info': questions_with_badge_info,
           'form': form,
           'today': timezone.now().date(),
           'trippers_names': trippers_names,
-          'log_entries': log_entries,
-          'previous_dayprogram' : previous_dayprogram,
-          'next_dayprogram' : next_dayprogram
+          'log_entries': log_entries
          })
 
 
@@ -585,13 +552,10 @@ def trip_dayprograms(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     dayprograms = trip.dayprograms.all().order_by('dayprogramnumber')
     user_is_tripper = Tripper.objects.filter(name=request.user, trips=trip).exists()
-    admin_trips = Trip.objects.filter(trippers__name=request.user, trippers__is_trip_admin=True)
-
     return render(request, 'tripapp/trip_dayprograms.html', {
         'trip': trip,
         'dayprograms': dayprograms,
         'user_is_tripper': user_is_tripper,
-        'admin_trips' : admin_trips
     })
 
 
@@ -735,20 +699,8 @@ def tripadmin_bingocards(request, trip_id):
 def permission_denied(request):
     return render(request, 'tripapp/permission_denied.html')
 
-#def facilmap(request):
-#    return render(request, 'tripapp/facilmap.html')
-
-def planner_map(request, trip_id):
-    trip = get_object_or_404(Trip, pk=trip_id)
-    trip_name_no_spaces = trip.name.replace(" ", "")
-    tribe_name_no_spaces = trip.tribe.name.replace(" ","")
-
-    context = {
-      'trip' : trip,
-      'trip_name_no_spaces' : trip_name_no_spaces,
-      'tribe_name_no_spaces' : tribe_name_no_spaces
-    }
-    return render(request, 'tripapp/planner_map.html', context )
+def facilmap(request):
+    return render(request, 'tripapp/facilmap.html')
 
 
 @csrf_exempt
@@ -799,78 +751,3 @@ def add_logentry(request, dayprogram_id):
         form = LogEntryForm(initial={'dayprogram': dayprogram})
 
     return render(request, 'tripapp/add_logentry.html', {'form': form, 'dayprogram': dayprogram})
-
-
-def dayprogram_add(request, trip_id):
-    trip = get_object_or_404(Trip, pk=trip_id)
-
-    last_dayprogram = trip.dayprograms.order_by('-dayprogramnumber').first()
-    if last_dayprogram:
-        next_dayprogramnumber = last_dayprogram.dayprogramnumber + 1
-        next_tripdate = last_dayprogram.tripdate + timedelta(days=1)
-    else:
-        next_dayprogramnumber = 1
-        next_tripdate = trip.date_from
-
-    if request.method == 'POST':
-        form = DayProgramForm(request.POST)
-        if form.is_valid():
-            dayprogram = form.save(commit=False)
-            dayprogram.trip = trip
-            dayprogram.save()
-
-            # Update Trip.date_to
-            if trip.date_to is None or dayprogram.tripdate > trip.date_to:
-                trip.date_to = dayprogram.tripdate
-                trip.save()
-
-            return redirect('tripapp:dayprogram_detail', pk=dayprogram.pk)
-    else:
-        form = DayProgramForm(initial={
-            'dayprogramnumber': next_dayprogramnumber,
-            'tripdate': next_tripdate
-        })
-
-    return render(request, 'tripapp/dayprogram_add.html', {
-        'form': form,
-        'trip': trip,
-    })
-
-@login_required
-def tribe_trip_organize(request,tribe_id,trip_id):
-    trip = get_object_or_404(Trip, pk=trip_id)
-    tribe = get_object_or_404(Tribe, pk=tribe_id)
-    admin_trips = Trip.objects.filter(trippers__name=request.user, trippers__is_trip_admin=True)
-
-    return render(request, 'tripapp/tribe_trip_organize.html', 
-        {'tribe': tribe,
-         'trip': trip,
-         'admin_trips' : admin_trips
-        })
-
-def add_badge_and_question(request, dayprogram_id):
-    dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
-    if request.method == 'POST':
-        badge_form = BadgeplusQForm(request.POST, request.FILES)
-        question_form = QuestionplusBForm(request.POST)
-        if badge_form.is_valid() and question_form.is_valid():
-            badge = badge_form.save(commit=False)
-            badge.achievement_method = 'question_correct'
-            badge.tribe = dayprogram.trip.tribe
-            badge.save()
-
-            question = question_form.save(commit=False)
-            question.dayprogram = dayprogram
-            question.badge = badge
-            question.save()
-
-            return redirect('tripapp:dayprogram_questions', dayprogram_id=dayprogram.pk)  
-    else:
-        badge_form = BadgeplusQForm()
-        question_form = QuestionplusBForm()
-
-    return render(request, 'tripapp/add_badge_and_question.html', {
-        'badge_form': badge_form,
-        'question_form': question_form,
-        'dayprogram': dayprogram
-    })

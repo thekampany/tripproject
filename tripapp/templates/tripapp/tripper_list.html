@@ -6,7 +6,7 @@
     {% for tripper in trippers %}
      
         <p>{{ tripper.name }}
-        &nbsp;<a href="{% url 'tripapp:edit_tripper' tripper.id %}">Edit</a></p>
+        &nbsp;<a href="{% url 'tripapp:edit_tripper' tripper.id trip.id %}">Edit</a></p>
       
     {% empty %}
       No trippers available for this trip.

@@ -22,31 +22,74 @@
 <div class="card">
 <div class="container">
     <h1>{{ dayprogram.trip.name }} - {{ dayprogram.tripdate|date:'l d M' }}</h1>
-    <p>{{ dayprogram.description }}</p>
-    <p>{{ dayprogram.necessary_info }}</p>
-    <p>{{ dayprogram.possible_activities }}</p>
+        <table width="100%">
+        <tr>
+        <td align="left">
+        {% if previous_dayprogram %}
+            <a href="{% url 'tripapp:dayprogram_detail' previous_dayprogram.id %}">&larr;</a>
+        {% endif %}
+        </td>
+        <td align="center">{{ dayprogram.description }}</>
+        <td align="right">
+        {% if next_dayprogram %}
+            <a href="{% url 'tripapp:dayprogram_detail' next_dayprogram.id %}">&rarr;</a>
+        {% endif %}
+        </td></tr></table>
+
+    <!--<p>{{ dayprogram.description }}</p>-->
+    {% if dayprogram.necessary_info %}
+       <p>
+       <span style="color:gray;">Information for Today</span><br />
+       {{ dayprogram.necessary_info }}
+       </p>
+    {% endif %}
+    {% if dayprogram.possible_activities %}
+       <p>
+       <span style="color:gray;">Ideas for Today</span><br />
+       {{ dayprogram.possible_activities }}
+       </p>
+    {% endif %}
+
+
     <br />
         {% for image in images %}
-                <img src="{{ image.image.url }}" alt="{{ image.description }}" style="height:100px;">
-                {{ image.description }}
+                <div class="polaroid"><img src="{{ image.image.url }}" alt="{{ image.description }}"></div>
+                <div class="caption">{{ image.description }}</div><br />
         {% endfor %}
     <p>
     {% if today >= dayprogram.tripdate %}
       {% if questions %}
         {% if user.is_authenticated %}
-          {% for question in questions %}
-            <h3>{{ question.question_text }}</h3>
-            <form method="post" action="{% url 'tripapp:check_answer' dayprogram.pk %}">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit">Check Answer</button>
-            </form>
+          {% for question_with_info in questions_with_badge_info %}
+
+          <h3>{{ question_with_info.question.question_text }}</h3>
+
+            {% for tripper_badge_info in question_with_info.trippers_badge_info %}
+             {% if tripper_badge_info.tripper.name == user.username %}
+
+              {% if tripper_badge_info.has_badge %}
+                <p>"{{ question_with_info.question.correct_answer }}" You have the badge for this question!</p>
+              {% else %}
+                <form method="post" action="{% url 'tripapp:check_answer' dayprogram.id question_with_info.question.id %}">
+                  {% csrf_token %}
+                  {{ form.as_p }}
+                  <button type="submit">Check Answer</button>
+                </form>
+              {% endif %}
+             {% endif %}
+            {% endfor %}
           {% endfor %}
         {% else %}
             <p>You need to <a href="{% url 'tripapp:login' %}">login</a> to see and answer the question(s).</p>
         {% endif %}
       {% endif %}
     {% endif %}
+    </p>
+    <p>
+    {% if log_entries %}<h3>Log</h3>{% endif %}
+        {% for log_entry in log_entries %}
+            <span style="color:gray;">{{ log_entry.tripper.name }}:</span><br /> {{ log_entry.logentry_text }}<br />
+        {% endfor %}
     </p>
 </div>
 </div>
@@ -55,6 +98,7 @@
     <a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}">Back to Trip Details</a>&nbsp;|&nbsp;
     {% if user.username in trippers_names %}
     <a href="{% url 'tripapp:add_image' dayprogram.id %}">Add Image</a>&nbsp;|&nbsp;
+    <a href="{% url 'tripapp:add_logentry' dayprogram.id %}">Add Log Entry</a>&nbsp;|&nbsp;
     {% endif %}
     <a href="{% url 'tripapp:trip_dayprogram_points' dayprogram.trip.id dayprogram.id %}">View on Map</a>
 </div>
