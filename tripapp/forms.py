@@ -12,6 +12,7 @@ from .models import Question
 from .models import Point
 from .models import BingoCard
 from .models import LogEntry
+from .models import Link
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
@@ -218,3 +219,8 @@ class QuestionplusBForm(forms.ModelForm):
     class Meta:
         model = Question
         fields = ['question_text', 'correct_answer']
+
+class LinkForm(forms.ModelForm):
+    class Meta:
+        model = Link
+        fields = ['url', 'document','description']

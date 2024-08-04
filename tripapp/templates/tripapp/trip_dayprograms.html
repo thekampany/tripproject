@@ -20,6 +20,7 @@
                         {% if user_is_tripper %}
                         <a href="{% url 'tripapp:edit_dayprogram' dayprogram.id %}">Edit</a>&nbsp;
                         <a href="{% url 'tripapp:dayprogram_questions' dayprogram.id %}">Questions</a>
+                        <a href="{% url 'tripapp:add_link' dayprogram.id %}">Add Link</a>
                         {% endif %}
                      </td>
                 </tr>

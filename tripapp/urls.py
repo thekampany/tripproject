@@ -42,6 +42,7 @@ urlpatterns = [
     path('dayprogram/<int:dayprogram_id>/questions/add/', views.add_question, name='add_question'),
     path('dayprogram/<int:dayprogram_id>/add_logentry/', views.add_logentry, name='add_logentry'),
     path('dayprogram/<int:dayprogram_id>/add-badge-and-question/', views.add_badge_and_question, name='add_badge_and_question'),
+    path('dayprogram/<int:dayprogram_id>/add-link/', views.add_link, name='add_link'),
     path('question/<int:question_id>/edit/', views.edit_question, name='edit_question'),
     path('badges/', views.badge_list, name='badge_list'),
     path('mytribesbadges/', views.mytribes_badges_view, name='mytribes_badges_view'),

@@ -165,3 +165,12 @@ class LogEntry(models.Model):
     def __str__(self):
         return f"{self.tripper.name} - {self.logentry_text[:50]}"
 
+
+class Link(models.Model):
+    dayprogram = models.ForeignKey(DayProgram, related_name='links', on_delete=models.CASCADE)
+    url = models.URLField(blank=True, null=True)
+    document = models.FileField(upload_to='documents/', blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    def __str__(self):
+        return self.url or self.document.url
+

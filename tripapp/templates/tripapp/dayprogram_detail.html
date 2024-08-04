@@ -50,6 +50,21 @@
        </p>
     {% endif %}
 
+    {% if dayprogram.links.all %}
+           <span style="color:gray;">Travel Documents</span><br />
+    {% endif %}
+    {% for link in dayprogram.links.all %}
+            <p>
+                {% if link.url %}
+                    <a href="{{ link.url }}" target="_blank">{% if link.description %}{{ link.description }}{% else %}Link to travel document{% endif %}</a>
+                {% endif %}
+                {% if link.document %}
+                    <a href="{{ link.document.url }}" target="_blank">Download document</a>
+                {% endif %}
+            </p>
+     {% endfor %}
+
+
 
     <br />
         {% for image in images %}
