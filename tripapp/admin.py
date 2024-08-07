@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Trip, DayProgram, Tripper, Badge, Checklist, ChecklistItem, Image, Question, Point, BingoCard, BingoAnswer, BadgeAssignment, LogEntry, Link
+from .models import Trip, DayProgram, Tripper, Badge, Checklist, ChecklistItem, Image, Question, Point, BingoCard, BingoAnswer, BadgeAssignment, LogEntry, Link, Route
 from django_q.tasks import async_task
 from .models import Tribe, UserProfile
 
@@ -34,3 +34,4 @@ admin.site.register(Tribe)
 admin.site.register(UserProfile)
 admin.site.register(LogEntry)
 admin.site.register(Link)
+admin.site.register(Route)

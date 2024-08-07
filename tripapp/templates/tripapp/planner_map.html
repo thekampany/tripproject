@@ -15,6 +15,7 @@
             {% endif %}
         }
     </style>
+    <script type="module" src="{% static 'js/findmarkers.js' %}"></script>
 
 </head>
 <body>
@@ -40,6 +41,48 @@
 		handleHashChange();
 </script> 
 <p><a href="{% url 'tripapp:trip_detail' trip.slug %}">Back to Trip</a></p>
+<!--<button id="myButton">Klik hier</button>-->
+<script type="module">
+    import Client from 'https://esm.sh/facilmap-client'
+    // Assume tribe_name_no_spaces and trip_name_no_spaces are defined and passed from the server-side template engine
+    const trip = "{{ trip_name_no_spaces }}";
+    const tribe = "{{ tribe_name_no_spaces }}";
+
+    document.getElementById('myButton').addEventListener('click', () => {
+        findmarkers(trip, tribe);
+    });
+
+    // Example function, ensure this is defined or imported correctly
+    async function findmarkers(tripname, tribe) {
+        const trip = tripname.replace(/ /g, "");
+        const formattedTribe = tribe.replace(/ /g, ""); // Avoid redeclaring 'tribe' variable
+        const client = new Client(`https://facilmap.org/`);
+        client.on("connect", () => {
+            console.log("connected");
+        });
+
+        client.on("disconnect", () => {
+            console.log("disconnected");
+        });
+
+        try {
+            await client.setPadId("HT${formattedTribe}${trip}ad");
+        } catch (error) {
+            console.error("error setpad");
+        }
+
+        try {
+            await client.findOnMap({
+                query: "",
+            });
+            console.log("we proberen het", client.padData, client.types, client.lines);
+        } catch (error) {
+            console.error("Error finding:", error);
+        }
+    }
+</script>
+
+</script>
 
 </div>
 </div>

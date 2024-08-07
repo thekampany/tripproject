@@ -17,6 +17,7 @@
 </head>
 <body>
   {% if points %}
+    {% if not trip.use_facilmap %}
     <h1>{{ trip.name }} Map</h1>
     <div id="map"></div>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
@@ -62,6 +63,27 @@
         // Set the view to fit all the markers
         map.fitBounds(markers.getBounds());
     </script>
+  {% else %}
+    <h1>{{ trip.name }} Map</h1>
+
+    <iframe style="height: 700px; width: 100%; border: none;" src="https://facilmap.org/HT{{ tribe_name_no_spaces }}{{ trip_name_no_spaces }}ad#16/{{first_point.latitude }}/{{ first_point.longitude }}/Lima" id="facilmap">
+    <script>
+        window.addEventListener("message", function(evt) {
+                if(evt.data && evt.data.type == "facilmap-hash" && location.hash != "#" + evt.data.hash)
+                        location.replace("#" + evt.data.hash);
+        });
+
+        function handleHashChange() {
+                var iframe = document.getElementById("facilmap");
+                iframe.src = iframe.src.replace(/(#.*)?$/, "") + location.hash;
+        }
+
+        window.addEventListener("hashchange", handleHashChange);
+        if (location.hash)
+                handleHashChange();
+    </script>
+
+  {% endif %}
   {% else %}
     <p>No points defined for this day</p>
   {% endif %}

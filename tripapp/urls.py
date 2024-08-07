@@ -43,6 +43,7 @@ urlpatterns = [
     path('dayprogram/<int:dayprogram_id>/add_logentry/', views.add_logentry, name='add_logentry'),
     path('dayprogram/<int:dayprogram_id>/add-badge-and-question/', views.add_badge_and_question, name='add_badge_and_question'),
     path('dayprogram/<int:dayprogram_id>/add-link/', views.add_link, name='add_link'),
+    path('dayprogram/<int:dayprogram_id>/add_suggestion/', views.add_suggestion, name='add_suggestion'),
     path('question/<int:question_id>/edit/', views.edit_question, name='edit_question'),
     path('badges/', views.badge_list, name='badge_list'),
     path('mytribesbadges/', views.mytribes_badges_view, name='mytribes_badges_view'),
@@ -68,8 +69,9 @@ urlpatterns = [
     path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
-    #path('facilmap', views.facilmap, name='facilmap'),
+    path('facilmap', views.facilmap, name='facilmap'),
     path('planner_map/<int:trip_id>/', views.planner_map, name='planner_map'),
     path('save_event/', views.save_event, name='save_event'),
+    path('upload_route/', views.upload_route, name='upload_route'),
 
  ]

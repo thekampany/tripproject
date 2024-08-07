@@ -28,25 +28,44 @@
         .completed {
             text-decoration: line-through;
         }
-
+        .today {
+        border: 2px solid #f88c34; 
+        padding: 5px;
+        }
+        .gray {
+        color: gray;
+        }
     </style>
 </head>
 <body>
     <div class="card">
     <div class="container">
     <h1>{{ trip.name }}</h1>
-    <!--<a href="{% url 'tripapp:trip_map_view' trip.id %}" class="btn"><img src="{% static 'icons/maps-iconreverse.png'  %}" width="60" height="50"></a>-->
+    {% if not trip.use_facilmap %}
+    <a href="{% url 'tripapp:trip_map_view' trip.id %}" class="btn"><img src="{% static 'icons/maps-iconreverse.png'  %}" width="60" height="50"></a>
+    {% else %}
     <a href="{% url 'tripapp:planner_map' trip.id %}" class="btn"><img src="{% static 'icons/maps-iconreverse.png'  %}" width="60" height="50"></a>
+    {% endif %}
     <a href="{% url 'tripapp:trip_bingocards' trip.id %}" class="btn"><img src="{% static 'icons/bingoicon-removebgreverse.png'  %}" width="60" height="50"></a>
     <a href="{% url 'tripapp:trip_trippers' trip.id %}" class="btn"><img src="{% static 'icons/tourist-guide-icon-removebgreverse.png'  %}" width="60" height="50"></a>
     <br /><br />
     <h2>Programme</h2>
         {% for day_program in dayprograms %}
-            <p>
+            <a href="{% url 'tripapp:dayprogram_detail' day_program.id %}">
+            {% if day_program.tripdate|date:"Y-m-d" == today|date:"Y-m-d" %}
+              <p class="today">
+            {% endif %}
+            {% if day_program.tripdate|date:"Y-m-d" < today|date:"Y-m-d" %}
+              <p class="gray">
+            {% endif %}
+            {% if day_program.tripdate|date:"Y-m-d" > today|date:"Y-m-d" %}
+              <p>
+            {% endif %}
                 {{ day_program.dayprogramnumber }}&nbsp;
                 ({{ day_program.tripdate|date:'d M' }})&nbsp;
-                <i><a href="{% url 'tripapp:dayprogram_detail' day_program.id %}">{{ day_program.description }}</a></i>
+                <i>{{ day_program.description }}</i>
             </p>
+            </a>
         {% endfor %}
     <br />
     </div>

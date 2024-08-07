@@ -50,6 +50,7 @@ class Trip(models.Model):
     date_from = models.DateField(blank=True, null=True)
     date_to = models.DateField(blank=True, null=True)
     country_codes = models.CharField(max_length=200, blank=True, null=True, help_text="Comma-separated list of country codes")
+    use_facilmap = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -174,3 +175,11 @@ class Link(models.Model):
     def __str__(self):
         return self.url or self.document.url
 
+
+class Route(models.Model):
+    dayprogram = models.ForeignKey(DayProgram, related_name='routes', on_delete=models.CASCADE)
+    description = models.TextField()
+    gpx_file = models.FileField(upload_to='gpx_files/')
+
+    def __str__(self):
+        return self.description

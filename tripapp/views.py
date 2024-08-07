@@ -12,7 +12,7 @@ from .forms import TribeCreationForm, AddTrippersForm, DayProgramForm
 from .forms import QuestionForm, PointForm, BingoCardForm
 from .forms import BadgeAssignmentFormSet, LogEntryForm
 from .forms import BadgeplusQForm, QuestionplusBForm
-from .forms import LinkForm
+from .forms import LinkForm, RouteForm, SuggestionForm
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
@@ -29,7 +29,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
-from datetime import timedelta
+from datetime import timedelta, date
 import uuid
 from .decorators import tripper_required
 from django.http import JsonResponse
@@ -107,11 +107,13 @@ def trip_detail(request, slug):
     checklist = Checklist.objects.get_or_create(trip=trip)[0]
     checklist_items = ChecklistItem.objects.filter(checklist=checklist).order_by('is_completed', 'id')  # Sorteer op is_completed en vervolgens op id
     items = checklist.items.all()
+    today = date.today()
     return render(request, 'tripapp/trip_detail.html', {
         'trip': trip,
         'dayprograms': dayprograms,
         'checklist': checklist,
-        'items': checklist_items
+        'items': checklist_items,
+        'today': today
     })
 
 @login_required
@@ -207,6 +209,7 @@ def dayprogram_detail(request, id):
     dayprogram = get_object_or_404(DayProgram, id=id)
     questions = Question.objects.filter(dayprogram=dayprogram).all()
     form = AnswerForm() if request.user.is_authenticated else None
+    suggestionform = SuggestionForm() if request.user.is_authenticated else None
     images = dayprogram.images.all()
     trippers_on_this_trip = dayprogram.trip.trippers.all()
     trippers_names = [tripper.name for tripper in trippers_on_this_trip]
@@ -246,6 +249,7 @@ def dayprogram_detail(request, id):
           'questions': questions,
           'questions_with_badge_info': questions_with_badge_info,
           'form': form,
+          'suggestionform':suggestionform,
           'today': timezone.now().date(),
           'trippers_names': trippers_names,
           'log_entries': log_entries,
@@ -397,10 +401,17 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
 
     points = trip_points.filter(dayprograms=dayprogram)
 
+    trip_name_no_spaces = trip.name.replace(" ", "")
+    tribe_name_no_spaces = trip.tribe.name.replace(" ","")
+    first_point = points.first() if points.exists() else None
+
     context = {
         'trip': trip,
         'dayprogram': dayprogram,
         'points': points,
+        'trip_name_no_spaces':trip_name_no_spaces,
+        'tribe_name_no_spaces' : tribe_name_no_spaces,
+        'first_point': first_point,
     }
 
     return render(request, 'tripapp/trip_dayprogram_points.html', context) 
@@ -736,8 +747,8 @@ def tripadmin_bingocards(request, trip_id):
 def permission_denied(request):
     return render(request, 'tripapp/permission_denied.html')
 
-#def facilmap(request):
-#    return render(request, 'tripapp/facilmap.html')
+def facilmap(request):
+    return render(request, 'tripapp/facilmap.html')
 
 def planner_map(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
@@ -893,3 +904,41 @@ def add_link(request, dayprogram_id):
         'form': form,
         'dayprogram': dayprogram
     })
+
+def upload_route(request):
+    if request.method == 'POST':
+        form = RouteForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            dayprogram = route.dayprogram
+            trip_id = dayprogram.trip.id
+
+            return redirect('tripapp:trip_points', trip_id=trip_id)
+    else:
+        form = RouteForm()
+    return render(request, 'tripapp/upload_route.html', {'form': form})
+
+@login_required
+def add_suggestion(request, dayprogram_id):
+    dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
+
+    if request.method == 'POST':
+        form = SuggestionForm(request.POST)
+        if form.is_valid():
+            suggestion = form.cleaned_data['suggestion']
+            user_suggestion = f"Suggestion by {request.user.username}: {suggestion}"
+            if dayprogram.possible_activities:
+                dayprogram.possible_activities += f"\n{user_suggestion}"
+            else:
+                dayprogram.possible_activities = user_suggestion
+            dayprogram.save()
+            return redirect('tripapp:dayprogram_detail',  id=dayprogram.id)
+    else:
+        form = SuggestionForm()
+
+    context = {
+        'form': form,
+        'dayprogram': dayprogram,
+    }
+    return render(request, 'tripapp/add_suggestion.html', context)
+

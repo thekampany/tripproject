@@ -40,4 +40,34 @@
             {% endfor %}
         </tbody>
     </table>
+    <a href="{% url 'tripapp:upload_route' %}" class="btn btn-warning">Upload a Route</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Route Description</th>
+                <th>Day Programs</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for route in routess %}
+                <tr>
+                    <td>{{ route.description }}</td>
+                    <td>
+                        {% for dayprogram in point.dayprograms.all %}
+                            {{ dayprogram.tripdate }}<br>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% if user.is_staff %}
+                        <form action="{% url 'tripapp:delete_route' trip.id route.id %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this route?');">Delete</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+ 
 {% endblock %}

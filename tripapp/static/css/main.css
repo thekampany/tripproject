@@ -78,14 +78,34 @@ a:visited {
 /* mouse over link */
 a:hover {
   color: var(--color-text);
+}
+
+/* selected link */
+a.:active {
+  color: var(--color-text);
+}
+
+a.nodec:link {
+  color: var(--color-text);
+}
+
+/* visited link */
+a.nodec:visited {
+  color: var(--color-text);
+}
+
+/* mouse over link */
+a.nodec:hover {
+  color: var(--color-text);
   text-decoration: none;
 }
 
 /* selected link */
-a:active {
+a.nodec:active {
   color: var(--color-text);
   text-decoration: none;
 }
+
 a.btn {
              border-radius: 2px;
              background-color: var(--btn-background);
@@ -211,4 +231,10 @@ a.btn-less-padding:hover {background: var(--color-background);}
     margin: 20px;
     padding: 20px 0;
     color: #333;
+}
+
+.today {
+    border-style: solid;
+    border-color: var(--btn-background); 
+    padding: 5px;
 }

@@ -1,10 +1,11 @@
 import Client from 'https://esm.sh/facilmap-client'
 
 
-window.findOnMap = async function(tripname,tribe) {
+//window.findmarkers = async function(tripname,tribe) {
+async function findmarkers(tripname,tribe) {
      var trip = tripname.replace(/ /g, "");
      var tribe = tribe.replace(/ /g, "");
-     const client = new Client("https://facilmap.org/HT"tribe+trip+"ad");
+     const client = new Client("https://facilmap.org/HT"+tribe+tripname+"ad");
 
      client.on("connect", () => {
                 console.log("connected");
@@ -16,8 +17,8 @@ window.findOnMap = async function(tripname,tribe) {
      });
 
      try {
-        await client.findOnPad({
-            query: "HT"+tribe+trip,
+        await client.findOnMap({
+            query: "04-08-2024",
         });
         console.log(client.padData, client.types, client.lines);
      } catch (error) {

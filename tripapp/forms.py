@@ -13,6 +13,7 @@ from .models import Point
 from .models import BingoCard
 from .models import LogEntry
 from .models import Link
+from .models import Route
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
@@ -75,7 +76,7 @@ class BadgeForm(forms.ModelForm):
 class TripForm(forms.ModelForm):
     class Meta:
         model = Trip
-        fields = ['tribe', 'name', 'description', 'date_from', 'date_to', 'image' ]
+        fields = ['tribe', 'name', 'description', 'date_from', 'date_to', 'image', 'use_facilmap' ]
         widgets = {
             'date_from': forms.DateInput(attrs={'type': 'date'}),
             'date_to': forms.DateInput(attrs={'type': 'date'}),
@@ -224,3 +225,12 @@ class LinkForm(forms.ModelForm):
     class Meta:
         model = Link
         fields = ['url', 'document','description']
+
+class RouteForm(forms.ModelForm):
+    class Meta:
+        model = Route
+        fields = ['dayprogram', 'description', 'gpx_file']
+
+class SuggestionForm(forms.Form):
+    suggestion = forms.CharField(widget=forms.Textarea, label='Type your suggestion for possible activities for today')
+

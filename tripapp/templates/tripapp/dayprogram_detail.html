@@ -4,6 +4,8 @@
 <head>
     <title>{{ dayprogram.trip.name }} - {{ dayprogram.date }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
     <style>
@@ -26,13 +28,13 @@
         <tr>
         <td align="left">
         {% if previous_dayprogram %}
-            <a href="{% url 'tripapp:dayprogram_detail' previous_dayprogram.id %}">&larr;</a>
+            <a href="{% url 'tripapp:dayprogram_detail' previous_dayprogram.id %}" class="nodec">&larr;</a>
         {% endif %}
         </td>
-        <td align="center">{{ dayprogram.description }}</>
+        <td align="center"><strong>{{ dayprogram.description }}</strong></>
         <td align="right">
         {% if next_dayprogram %}
-            <a href="{% url 'tripapp:dayprogram_detail' next_dayprogram.id %}">&rarr;</a>
+            <a href="{% url 'tripapp:dayprogram_detail' next_dayprogram.id %}" class="nodec">&rarr;</a>
         {% endif %}
         </td></tr></table>
 
@@ -56,10 +58,10 @@
     {% for link in dayprogram.links.all %}
             <p>
                 {% if link.url %}
-                    <a href="{{ link.url }}" target="_blank">{% if link.description %}{{ link.description }}{% else %}Link to travel document{% endif %}</a>
+                    <a href="{{ link.url }}" target="_blank"><img src="{% static 'icons/icon-url.png' %}" width="16" height="16">&nbsp;{% if link.description %}{{ link.description }}{% else %}Link to travel document{% endif %}</a>
                 {% endif %}
                 {% if link.document %}
-                    <a href="{{ link.document.url }}" target="_blank">Download document</a>
+                    <a href="{{ link.document.url }}" target="_blank"><img src="{% static 'icons/icon-doc.png' %}" width="16" height="16">&nbsp;Download document</a>
                 {% endif %}
             </p>
      {% endfor %}
@@ -85,7 +87,7 @@
               {% if tripper_badge_info.has_badge %}
                 <p>"{{ question_with_info.question.correct_answer }}" You have the badge for this question!</p>
               {% else %}
-                <form method="post" action="{% url 'tripapp:check_answer' dayprogram.id question_with_info.question.id %}">
+                <form id="questionForm" method="post" action="{% url 'tripapp:check_answer' dayprogram.id question_with_info.question.id %}">
                   {% csrf_token %}
                   {{ form.as_p }}
                   <button type="submit">Check Answer</button>
@@ -115,7 +117,30 @@
     <a href="{% url 'tripapp:add_image' dayprogram.id %}">Add Image</a>&nbsp;|&nbsp;
     <a href="{% url 'tripapp:add_logentry' dayprogram.id %}">Add Log Entry</a>&nbsp;|&nbsp;
     {% endif %}
-    <a href="{% url 'tripapp:trip_dayprogram_points' dayprogram.trip.id dayprogram.id %}">View on Map</a>
+    <a href="{% url 'tripapp:trip_dayprogram_points' dayprogram.trip.id dayprogram.id %}">View on Map</a>&nbsp;|&nbsp;
+    <a href="#" data-toggle="modal" data-target="#suggestionModal">Add Suggested Activity for today</a>
+
+    <!-- Suggestion Modal -->
+    <div class="modal fade" id="suggestionModal" tabindex="-1" role="dialog" aria-labelledby="suggestionModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="suggestionModalLabel">Your Suggestion for this Day:</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="suggestionForm" method="post" action="{% url 'tripapp:add_suggestion' dayprogram.id %}">
+                        {% csrf_token %}
+                        {{ suggestionform.as_p }}
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 </div>
 </body>

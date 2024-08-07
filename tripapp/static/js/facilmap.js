@@ -43,9 +43,10 @@ async function createPad() {
                 console.log("disconnected");
             });
 
-            //await client.setPadId("FZmSbpw9jBPIcIFf");
-            await client.createPad({id: "theKampanyFr", writeId: "theKampanyFrrw" ,adminId: "theKampanyFrad" , name : "test" ,searchEngines: false,description: "The description for search engines", clusterMarkers:false ,legend1:"Fr", legend2:"test2", createDefaultTypes:true})
+            await client.setPadId("FZmSbpw9jBPIcIFf");
+            //await client.createPad({id: "theKampanyFr", writeId: "theKampanyFrrw" ,adminId: "theKampanyFrad" , name : "test" ,searchEngines: false,description: "The description for search engines", clusterMarkers:false ,legend1:"Fr", legend2:"test2", createDefaultTypes:true})
             //createPad();
+            console.log("show me markers ", client.markers);            
             console.log(client.padData, client.types, client.lines);
 
 	    const layers = L.FacilMap.getLayers(map);
@@ -98,6 +99,15 @@ async function createPad() {
 		overpassLayer.setHighlightedElements(new Set());
 	    });
 
+            try {
+              await client.findOnMap({
+                query: "04-08-2024",
+              });
+              console.log("query:", client.lines,client.markers);
+            } catch (error) {
+              console.error("Error finding:", error);
+            }
+
 
 	    let overpassLoading = 0;
 	    const overpassStatus = document.getElementById("overpass-status");
@@ -140,6 +150,8 @@ async function createPad() {
             //await client.addMarker({id:123, name:"namepje", lat:"4.5", lon:"51.1" });
             //await client.find({query:"Leiden",loadUrls: false });
             //console.log(client)
+
+
         }
 
         function logClientMethods(obj) {
