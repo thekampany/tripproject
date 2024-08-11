@@ -57,7 +57,8 @@
                 {
                     "name": "{{ point.name }}",
                     "coords": [{{ point.latitude }}, {{ point.longitude }}],
-                    "days": "{% for dayprogram in point.dayprograms.all %}{{ dayprogram.tripdate|date:'j F' }}{% if not forloop.last %}, {% endif %}{% endfor %}".trim()
+                    "days": "{% for dayprogram in point.dayprograms.all %}{{ dayprogram.tripdate|date:'j F' }}{% if not forloop.last %}, {% endif %}{% endfor %}".trim(),
+                    "marker_type": "{{ point.marker_type }}"
                 },
   
             {% endfor %}
@@ -69,8 +70,13 @@
         // Add markers to the feature group
         points.forEach(function(point) {
             var popupContent = `<b>${point.name}</b><br>${point.days}`;
-            console.log('Popup Content:', popupContent); // Log the popup content
-            var marker = L.marker(point.coords,{icon: bedIcon}).bindPopup(popupContent);
+            console.log('Popup Content:', popupContent,'marker', point.marker_type); // Log the popup content
+            var marker;
+            if (point.marker_type === 'bed') {
+               marker = L.marker(point.coords, {icon: bedIcon}).bindPopup(popupContent);
+            } else {
+               marker = L.marker(point.coords).bindPopup(point.name);
+            }
             markers.addLayer(marker);
         });
 

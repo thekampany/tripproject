@@ -174,9 +174,18 @@ class QuestionForm(forms.ModelForm):
 
 
 class PointForm(forms.ModelForm):
+    MARKER_TYPE_CHOICES = [
+        ('default', 'Default'),
+        ('bed', 'Bed'),
+    ]
+
+    marker_type = forms.ChoiceField(
+        choices=MARKER_TYPE_CHOICES,
+        required=False
+    )
     class Meta:
         model = Point
-        fields = ['name', 'latitude', 'longitude', 'dayprograms']
+        fields = ['name', 'latitude', 'longitude', 'dayprograms','marker_type']
         widgets = {
             'dayprograms': forms.CheckboxSelectMultiple()
         }

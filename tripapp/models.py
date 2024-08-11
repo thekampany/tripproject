@@ -25,10 +25,16 @@ class Badge(models.Model):
         ('admin_assigned', 'Assigned by Admin'),
         ('question_correct', 'Correct Answer to Question'),
         ('time_based' , 'Assigned on a specific date'),
+        ('threshold' , 'Assigned when number of uploads has been reached'),
     ]
     LEVEL = [
         ('global', 'Global'),
         ('tribal', 'Tribal'),
+    ]
+    THRESHOLD_TYPES = [
+        ('bingo_answer_uploads', 'Bingo Answer Uploads'),
+        ('correct_answers', 'Correct Answers'),
+        ('image_uploads', 'Image Uploads'),
     ]
 
     name = models.CharField(max_length=100)
@@ -37,9 +43,12 @@ class Badge(models.Model):
     level = models.CharField(max_length=20,choices=LEVEL, default='tribal')
     assignment_date = models.DateField(null=True, blank=True)
     tribe = models.ForeignKey(Tribe, on_delete=models.CASCADE, null=True, blank=True, related_name='badges')
+    threshold_value = models.PositiveIntegerField(null=True, blank=True, help_text="The value that needs to be reached to earn this badge.")
+    threshold_type = models.CharField(max_length=20, choices=THRESHOLD_TYPES, null=True, blank=True, help_text="The type of threshold to achieve.")
 
     def __str__(self):
         return self.name
+
 
 class Trip(models.Model):
     tribe = models.ForeignKey(Tribe, on_delete=models.CASCADE)
@@ -122,6 +131,11 @@ class Point(models.Model):
     longitude = models.FloatField()
     trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name='points')
     dayprograms = models.ManyToManyField(DayProgram, blank=True, related_name='points')
+    MARKER_TYPE = [
+        ('default', 'Default'),
+        ('bed', 'Bed'),
+    ]
+    marker_type = models.CharField(max_length=20, choices=MARKER_TYPE, default='default')
 
     def __str__(self):
         return self.name
@@ -143,6 +157,12 @@ class BingoAnswer(models.Model):
     def __str__(self):
         return f"{self.tripper.name} - {self.bingocard.description}"
 
+    def count_trip_answers(self):
+        # Tel het aantal antwoorden voor dezelfde trip en dezelfde tripper
+        return BingoAnswer.objects.filter(
+            tripper=self.tripper,
+            bingocard__trip=self.bingocard.trip
+        ).count()
 
 class BadgeAssignment(models.Model):
     trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name='badge_assignments', null=True, blank=True)
@@ -183,3 +203,4 @@ class Route(models.Model):
 
     def __str__(self):
         return self.description
+

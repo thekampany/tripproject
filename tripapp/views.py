@@ -4,7 +4,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Trip, Tripper, Badge, DayProgram, Checklist, ChecklistItem, Image, Question, Point
 from .models import BingoCard, BingoAnswer, BadgeAssignment
-from .models import Tribe, UserProfile, LogEntry, Link
+from .models import Tribe, UserProfile, LogEntry, Link, Route
 from .forms import BadgeForm, TripForm, ChecklistItemForm, ImageForm, BingoAnswerForm
 from .forms import CustomUserCreationForm
 from .forms import AnswerForm, AnswerImageForm, TripperForm, TripperAdminForm
@@ -452,7 +452,23 @@ def upload_answerimage(request, bingocard_id):
             answer.tripper = tripper
             answer.bingocard = bingocard
             answer.save()
-            #return redirect('tripapp:bingocard_detail', pk=bingocard.id)
+            # Tel het aantal antwoorden voor dezelfde trip
+            trip_answer_count = answer.count_trip_answers()
+
+            badges = Badge.objects.filter(achievement_method='threshold', threshold_type=threshold_type)
+            for badge in badges:
+                if threshold_type == 'bingo_answer_uploads':
+                   trip_answer_count = BingoAnswer.objects.filter(
+                      tripper=tripper,
+                      bingocard__trip=trip
+                   ).count()
+
+                if trip_answer_count >= badge.threshold_value:
+                    if not BadgeAssignment.objects.filter(tripper=tripper, badge=badge, trip=bingocard.trip).exists():
+                        # Ken de badge toe
+                        BadgeAssignment.objects.create(tripper=tripper, badge=badge, trip=bingocard.trip)
+                        tripper.badges.add(badge)
+
             return redirect('tripapp:trip_bingocards',trip_id=bingocard.trip.id) 
     else:
         form = BingoAnswerForm()
@@ -710,9 +726,11 @@ def delete_point(request, trip_id, point_id):
 def trip_points(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     points = trip.points.all()
+    routes = Route.objects.filter(dayprogram__trip=trip)
     return render(request, 'tripapp/trip_points.html', {
         'trip': trip,
         'points': points,
+        'routes': routes,
     })
 
 @login_required
@@ -909,7 +927,7 @@ def upload_route(request):
     if request.method == 'POST':
         form = RouteForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            route = form.save()
             dayprogram = route.dayprogram
             trip_id = dayprogram.trip.id
 
