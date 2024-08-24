@@ -65,5 +65,9 @@
                 </tr>
             {% endfor %}
         </tbody>
+    </table>
+    <p>
+    <a href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id %}">Back to Organize Trip</a>
+    </p>
  
 {% endblock %}

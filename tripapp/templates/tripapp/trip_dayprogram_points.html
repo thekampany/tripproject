@@ -28,6 +28,7 @@
 
         // Set up the OSM layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 19,
         }).addTo(map);
         var bedIcon = L.icon({
@@ -54,6 +55,7 @@
 
         // Add markers to the feature group
         points.forEach(function(point) {
+            var popupContent = `<b>${point.name}</b>`;
             var marker;
             console.log(point.marker_type);
             if (point.marker_type === 'bed') {

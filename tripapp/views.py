@@ -702,12 +702,12 @@ def edit_point(request, trip_id, point_id):
     point = get_object_or_404(Point, id=point_id)
 
     if request.method == 'POST':
-        form = PointForm(request.POST, instance=point)
+        form = PointForm(request.POST, instance=point, trip=trip)
         if form.is_valid():
             form.save()
             return redirect('tripapp:trip_points', trip_id=trip.id)
     else:
-        form = PointForm(instance=point)
+        form = PointForm(instance=point, trip=trip)
 
     return render(request, 'tripapp/edit_point.html', {'form': form, 'trip': trip})
 
@@ -742,7 +742,7 @@ def add_bingocard(request, trip_id):
             bingocard = form.save(commit=False)
             bingocard.trip = trip
             bingocard.save()
-            return redirect('tripapp:trip_bingocards', trip_id=trip.id)
+            return redirect('tripapp:tripadmin_bingocards', trip_id=trip.id)
     else:
         form = BingoCardForm()
 
@@ -778,7 +778,11 @@ def planner_map(request, trip_id):
       'trip_name_no_spaces' : trip_name_no_spaces,
       'tribe_name_no_spaces' : tribe_name_no_spaces
     }
-    return render(request, 'tripapp/planner_map.html', context )
+    if trip.use_facilmap:
+       return render(request, 'tripapp/planner_map.html', context )
+    else:
+       points = trip.points.prefetch_related('dayprograms')
+       return render(request, 'tripapp/trip_map.html', {'trip': trip, 'points': points})
 
 
 @csrf_exempt

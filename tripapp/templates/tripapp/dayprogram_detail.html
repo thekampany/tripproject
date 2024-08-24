@@ -42,13 +42,13 @@
     {% if dayprogram.necessary_info %}
        <p>
        <span style="color:gray;">Information for Today</span><br />
-       {{ dayprogram.necessary_info }}
+       {{ dayprogram.necessary_info|linebreaks }}
        </p>
     {% endif %}
     {% if dayprogram.possible_activities %}
        <p>
        <span style="color:gray;">Ideas for Today</span><br />
-       {{ dayprogram.possible_activities }}
+       {{ dayprogram.possible_activities|linebreaks }}
        </p>
     {% endif %}
 
@@ -58,10 +58,12 @@
     {% for link in dayprogram.links.all %}
             <p>
                 {% if link.url %}
-                    <a href="{{ link.url }}" target="_blank"><img src="{% static 'icons/icon-url.png' %}" width="16" height="16">&nbsp;{% if link.description %}{{ link.description }}{% else %}Link to travel document{% endif %}</a>
+                    <a href="{{ link.url }}" target="_blank"><img src="{% static 'icons/icon-url.png' %}" width="16" height="16">&nbsp;
+                    {% if link.description %}{{ link.description }}{% else %}Link to travel document{% endif %}</a>
                 {% endif %}
                 {% if link.document %}
-                    <a href="{{ link.document.url }}" target="_blank"><img src="{% static 'icons/icon-doc.png' %}" width="16" height="16">&nbsp;Download document</a>
+                    <a href="{{ link.document.url }}" target="_blank"><img src="{% static 'icons/icon-doc.png' %}" width="16" height="16">&nbsp;
+                    {% if link.description %}{{ link.description }}{% else %}Download Document{% endif %}</a>
                 {% endif %}
             </p>
      {% endfor %}
