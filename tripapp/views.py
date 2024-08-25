@@ -454,13 +454,12 @@ def upload_answerimage(request, bingocard_id):
             answer.save()
             # Tel het aantal antwoorden voor dezelfde trip
             trip_answer_count = answer.count_trip_answers()
-
-            badges = Badge.objects.filter(achievement_method='threshold', threshold_type=threshold_type)
+            badges = Badge.objects.filter(achievement_method='threshold')
             for badge in badges:
-                if threshold_type == 'bingo_answer_uploads':
+                if badge.threshold_type == 'bingo_answer_uploads':
                    trip_answer_count = BingoAnswer.objects.filter(
                       tripper=tripper,
-                      bingocard__trip=trip
+                      bingocard__trip=bingocard.trip
                    ).count()
 
                 if trip_answer_count >= badge.threshold_value:
