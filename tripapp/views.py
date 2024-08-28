@@ -509,7 +509,13 @@ def register_invite(request, uid):
         if form.is_valid():
             user = form.save()
             user_profile, created = UserProfile.objects.get_or_create(user=user)
-            if created:
+            print("yoho")
+            if not UserProfile.objects.filter(user=user).exists():
+                user_profile, created = UserProfile.objects.get_or_create(user=user)
+                user_profile.tribes.add(tribe)
+                user_profile.save()
+            else:
+                user_profile = UserProfile.objects.get(user=user)
                 user_profile.tribes.add(tribe)
                 user_profile.save()
             return redirect('tripapp:login')

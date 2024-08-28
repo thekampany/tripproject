@@ -1,23 +1,34 @@
-# Gebruik een officiële Python runtime als parent image
-FROM python:3.9
+#FROM python:3.9
 
-# Stel de werkdirectory in
+#WORKDIR /usr/src/app
+
+#COPY requirements.txt ./
+
+#RUN pip install --no-cache-dir -r requirements.txt
+
+#COPY . .
+
+#ENV PYTHONUNBUFFERED=1
+
+#EXPOSE 8043
+
+#CMD ["python", "manage.py", "runserver", "0.0.0.0:8043"]
+#CMD ["uvicorn", "tripproject.asgi:application", "--host", "0.0.0.0", "--port", "8043"]
+
+
+FROM python:3.11-slim
+
 WORKDIR /usr/src/app
 
-# Kopieer de vereisten-bestand in de container
-COPY requirements.txt ./
-
-# Installeer de dependencies
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Kopieer de rest van de applicatie
 COPY . .
 
-# Stel de environment variables in
 ENV PYTHONUNBUFFERED=1
+
+RUN python manage.py collectstatic --noinput
 
 EXPOSE 8043
 
-# Voer de server uit
-#CMD ["python", "manage.py", "runserver", "0.0.0.0:8043"]
 CMD ["uvicorn", "tripproject.asgi:application", "--host", "0.0.0.0", "--port", "8043"]

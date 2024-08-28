@@ -1,6 +1,31 @@
-version: '3'
+
+version: '3.9'
 
 services:
+  web:
+    build: .
+    command: uvicorn tripproject.asgi:application --host 0.0.0.0 --port 8043
+    volumes:
+      - static_volume:/usr/src/app/staticfiles
+      - media_volume:/usr/src/app/media
+    expose:
+      - 8043
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8043:8043"
+    volumes:
+      - static_volume:/usr/src/app/staticfiles
+      - media_volume:/usr/src/app/media
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - web
+
   db:
     image: postgres:13
     volumes:
@@ -10,17 +35,8 @@ services:
       POSTGRES_USER: tripappuser
       POSTGRES_PASSWORD: tripapppassword
 
-  web:
-    build: .
-    command: python manage.py runserver 0.0.0.0:8043
-    volumes:
-      - .:/usr/src/app
-    ports:
-      - "8043:8043"
-    depends_on:
-      - db
-    environment:
-      DATABASE_URL: postgres://tripappuser:tripapppassword@db:5432/tripappdb
 
 volumes:
+  static_volume:
+  media_volume:
   tripapp_postgres_data:
