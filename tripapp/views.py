@@ -863,7 +863,7 @@ def dayprogram_add(request, trip_id):
                 trip.date_to = dayprogram.tripdate
                 trip.save()
 
-            return redirect('tripapp:dayprogram_detail', pk=dayprogram.pk)
+            return redirect('tripapp:dayprogram_detail', id=dayprogram.pk)
     else:
         form = DayProgramForm(initial={
             'dayprogramnumber': next_dayprogramnumber,
