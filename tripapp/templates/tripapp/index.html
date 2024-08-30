@@ -3,7 +3,7 @@
 <html>
 <head>
 
-    <title>HolidayTrips</title>
+    <title>{{ APP_NAME }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}">
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}">
@@ -30,7 +30,7 @@
 <body>
     <div class="card">
     <div class="container">
-    <span style="color:gray;font-style:italic;">HolidayTrips</span>
+    <span style="color:gray;font-style:italic;">{{ APP_NAME }}</span>
     <h1>Welcome!</h1>
 
     <span style="color:gray;font-style:italic;">
@@ -40,14 +40,14 @@
     </tr>
     <tr>
     <td><a href="{% url 'tripapp:register' %}" class="btn">Register</a></td>
-    <td><a href="{% url 'tripapp:trip_list' %}" class="btn">My HolidayTrips</a></td>
+    <td><a href="{% url 'tripapp:trip_list' %}" class="btn">My Trips</a></td>
     </tr>
     </table>
     <br />
     You and your friends go on a trip. Here you can share all the details of the trip with the people going on the trip (the Trippers)
     and you can share it with family and friends elsewhere (the Tribe).
     <br /><br />
-    Click Register to join and click My HolidayTrips to start a Tribe, invite people and lay out the trip for the trippers.
+    Click Register to join and click My Trips to start a Tribe, invite people and lay out the trip for the trippers.
     </span>
     </div>
     </div>

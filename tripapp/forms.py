@@ -76,7 +76,7 @@ class BadgeForm(forms.ModelForm):
 class TripForm(forms.ModelForm):
     class Meta:
         model = Trip
-        fields = ['tribe', 'name', 'description', 'date_from', 'date_to', 'image', 'use_facilmap' ]
+        fields = ['tribe', 'name', 'description', 'date_from', 'date_to', 'image', 'use_facilmap', 'country_codes' ]
         widgets = {
             'date_from': forms.DateInput(attrs={'type': 'date'}),
             'date_to': forms.DateInput(attrs={'type': 'date'}),
@@ -84,10 +84,13 @@ class TripForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
+        tribe = kwargs.pop('tribe', None)  
         super().__init__(*args, **kwargs)
         if user:
             self.fields['tribe'].queryset = user.userprofile.tribes.all()
-
+        if tribe:
+            self.initial['tribe'] = tribe
+   
 
 #User = get_user_model()
 

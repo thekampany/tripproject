@@ -48,7 +48,7 @@
           </p>
           <br /><br />
        {% endfor %}
-       <p><a href="{% url 'tripapp:create_trip' %}">Create a New Trip for the people in {{ tribe.name }}</a></p>
+       <p><a href="{% url 'tripapp:create_trip' tribe.id %}">Create a New Trip for the people in {{ tribe.name }}</a></p>
     {% endfor %}
     <br />
     <h1>Badges</h1>

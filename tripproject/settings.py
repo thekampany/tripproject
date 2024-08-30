@@ -18,6 +18,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+APP_NAME = os.getenv('APP_NAME')
+
 UNSPLASH_ACCESS_KEY = os.getenv('UNSPLASH_ACCESS_KEY')
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

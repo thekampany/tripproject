@@ -38,7 +38,7 @@ from django.views.decorators.csrf import csrf_exempt
 def index(request):
     category = "roadtrip"
     background_image_url = get_random_unsplash_image(category)
-    return render(request, 'tripapp/index.html', {'background_image_url': background_image_url})
+    return render(request, 'tripapp/index.html', {'background_image_url': background_image_url, 'APP_NAME': settings.APP_NAME})
 
 
 @login_required
@@ -117,7 +117,8 @@ def trip_detail(request, slug):
     })
 
 @login_required
-def create_trip(request):
+def create_trip(request, tribe_id):
+    tribe = get_object_or_404(Tribe, pk=str(tribe_id))
     if request.method == 'POST':
         form = TripForm(request.POST,user=request.user)
         if form.is_valid():
@@ -142,7 +143,7 @@ def create_trip(request):
 
             return redirect('tripapp:tribe_trips')
     else:
-        form = TripForm(user=request.user)
+        form = TripForm(user=request.user, tribe=tribe)
     return render(request, 'tripapp/create_trip.html', {'form': form})
 
 @login_required
