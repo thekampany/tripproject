@@ -1,4 +1,5 @@
-# Tripproject
+# Trippanion
+The Selfhosted Trip-Planning-Companion application.   
 You and your friends go on a trip. This app allows you to share all the details of the trip with the people going on the trip with you. Add links to (or upload) relevant travel documents. 
 It is the app in which you answer questions like: what time do we have to be at the airport, should I dress up for dinner or do we go to the beach and eat something there afterwards. 
 
@@ -15,10 +16,10 @@ edit .env for unsplash api key and for emailsettings
 `docker compose build`  
 `docker compose up -d`  
 
-Log in the web container to do some additional steps
+Log in the web container to do some additional steps:
 `python manage.py migrate`  
-`python manage.py createsuperuser` - in order to use the Django Admin 
-`python manage.py qcluster` - gives the functionality in the application to automatically assign badges on a certain date
+`python manage.py createsuperuser` - in order to use the Django Admin    
+`python manage.py qcluster` - gives the functionality in the application to automatically assign badges on a certain date   
 
 Go to your browser and start with register.  
 
