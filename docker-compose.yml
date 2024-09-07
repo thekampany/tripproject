@@ -4,7 +4,9 @@ version: '3.9'
 services:
   web:
     build: .
-    command: uvicorn tripproject.asgi:application --host 0.0.0.0 --port 8043
+    command: >
+      sh -c "python manage.py migrate && 
+             uvicorn tripproject.asgi:application --host 0.0.0.0 --port 8043"
     volumes:
       - static_volume:/usr/src/app/staticfiles
       - media_volume:/usr/src/app/media
@@ -14,9 +16,11 @@ services:
       - .env
     depends_on:
       - db
+    container_name: trippanion_web
 
   nginx:
     image: nginx:latest
+    container_name: trippanion_nginx
     ports:
       - "8043:8043"
     volumes:
@@ -28,6 +32,7 @@ services:
 
   db:
     image: postgres:13
+    container_name: trippanion_db
     volumes:
       - tripapp_postgres_data:/var/lib/postgresql/data
     environment:

@@ -67,14 +67,15 @@ def invite_to_tribe(request):
         email = request.POST['email']
         tribe_id = request.POST['tribe_id']
         tribe = get_object_or_404(Tribe, id=tribe_id)
-        current_site = get_current_site(request)
+        #current_site = get_current_site(request)
+        current_site = request.get_host()
         subject = 'Invitation to join a tribe'
 
         html_content = render_to_string('tripapp/invite_email.html', {
             'user': request.user,
             'tribe_id': tribe_id,
             'tribe_name': tribe.name,
-            'domain': current_site.domain,
+            'domain': current_site,
             'uid': urlsafe_base64_encode(force_bytes(tribe_id)),
             'protocol': 'https' if request.is_secure() else 'http'
         })

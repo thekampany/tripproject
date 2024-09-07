@@ -107,7 +107,7 @@ a.nodec:active {
 }
 
 a.btn {
-             border-radius: 2px;
+             border-radius: 6px;
              background-color: var(--btn-background);
              padding: 14px 28px;
              font-size: 16px;
@@ -118,7 +118,7 @@ a.btn {
 a.btn:hover {background: var(--color-background);}
 
 a.btn-fixed-width {
-             border-radius: 2px;
+             border-radius: 6px;
              background-color: var(--btn-background);
              padding: 14px 28px;
              font-size: 16px;
@@ -131,7 +131,7 @@ a.btn-fixed-width {
 a.btn-fixed-width:hover {background: var(--color-background);}
 
 a.btn-less-padding {
-             border-radius: 2px;
+             border-radius: 6px;
              background-color: var(--btn-background);
              padding: 4px 4px;
              font-size: 16px;

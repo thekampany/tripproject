@@ -16,7 +16,7 @@ edit .env for unsplash api key and for emailsettings
 `docker compose build`  
 `docker compose up -d`  
 
-Log in the web container to do some additional steps:
+Log in the web container to do some additional steps:  
 `python manage.py migrate`  
 `python manage.py createsuperuser` - in order to use the Django Admin    
 `python manage.py qcluster` - gives the functionality in the application to automatically assign badges on a certain date   
