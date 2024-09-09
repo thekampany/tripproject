@@ -4,9 +4,7 @@ version: '3.9'
 services:
   web:
     build: .
-    command: >
-      sh -c "python manage.py migrate && 
-             uvicorn tripproject.asgi:application --host 0.0.0.0 --port 8043"
+    command: "uvicorn tripproject.asgi:application --host 0.0.0.0 --port 8043"
     volumes:
       - static_volume:/usr/src/app/staticfiles
       - media_volume:/usr/src/app/media
