@@ -11,7 +11,7 @@ The Trippers can invite their friends and family to the tribe. People in the tri
 `git clone https://github.com/thekampany/tripproject.git`  
 Edit  docker-compose.yml for portnumbers and dbuser and password  
 `cp .env.sample .env`  
-Edit .env 
+Edit .env  
 Emailsettings in .env are needed for inviting others to the trip and resetting passwords.  
 Unsplash api key in .env is used for displaying roadtrip backgrounds on the welcome and organize page. Can be left blank. Unsplash images are not used on the pages for a specific trip, here you can upload your own background image.   
   

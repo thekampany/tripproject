@@ -7,7 +7,7 @@
   --card-box-shadow-hover: 0 8px 16px 0 rgba(0,0,0,0.2);
 
   --btn-background: #f88c34;
-
+  --dayprogram-background: rgba(255,255,255,0.8);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -20,6 +20,7 @@
     --card-box-shadow: 0 4px 8px 0 rgba(255,255,255,0.2);
     --card-box-shadow-hover: 0 8px 16px 0 rgba(255,255,255,0.2);
     --btn-background: #34a0f8;
+    --dayprogram-background: rgba(0,0,0,0.8);
   }
 }
 
@@ -237,4 +238,11 @@ a.btn-less-padding:hover {background: var(--color-background);}
     border-style: solid;
     border-color: var(--btn-background); 
     padding: 5px;
+}
+
+.dayprogram_description {
+  border-radius: 6px;
+  background-color: var(--dayprogram-background);
+  padding: 2px 12px;
+  text-align: center;
 }

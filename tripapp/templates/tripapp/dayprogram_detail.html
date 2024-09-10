@@ -23,15 +23,16 @@
 <body>
 <div class="card">
 <div class="container">
-    <h1>{{ dayprogram.trip.name }} - {{ dayprogram.tripdate|date:'l d M' }}</h1>
-        <table width="100%">
+    <!--<h1>{{ dayprogram.trip.name }} - {{ dayprogram.tripdate|date:'l d M' }}</h1>-->
+    <center><h1>{{ dayprogram.tripdate|date:'l d M' }}</h1></center>
+    <table width="100%">
         <tr>
         <td align="left">
         {% if previous_dayprogram %}
             <a href="{% url 'tripapp:dayprogram_detail' previous_dayprogram.id %}" class="nodec">&larr;</a>
         {% endif %}
         </td>
-        <td align="center"><strong>{{ dayprogram.description }}</strong></>
+        <td align="center"><h2><div class="dayprogram_description">{{ dayprogram.description }}</div></h2></td>
         <td align="right">
         {% if next_dayprogram %}
             <a href="{% url 'tripapp:dayprogram_detail' next_dayprogram.id %}" class="nodec">&rarr;</a>
