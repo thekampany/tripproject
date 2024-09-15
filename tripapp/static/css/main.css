@@ -82,7 +82,7 @@ a:hover {
 }
 
 /* selected link */
-a.:active {
+a:active {
   color: var(--color-text);
 }
 
@@ -105,6 +105,28 @@ a.nodec:hover {
 a.nodec:active {
   color: var(--color-text);
   text-decoration: none;
+}
+
+a.tripdetail {
+  color: var(--color-text);
+  text-decoration: none;
+  padding: 4px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+a.tripdetail:hover {
+  color: var(--color-text);
+  text-decoration: none;
+  padding: 4px;
+  border-radius: 4px;
+  background-color: var(--dayprogram-background);
+}
+a.tripdetail:active {
+  color: var(--color-text);
+  text-decoration: none;
+  padding: 4px;
+  border-radius: 4px;
+  background-color: var(--dayprogram-background);
 }
 
 a.btn {
@@ -236,6 +258,7 @@ a.btn-less-padding:hover {background: var(--color-background);}
 
 .today {
     border-style: solid;
+    border-radius: 6px;
     border-color: var(--btn-background); 
     padding: 5px;
 }

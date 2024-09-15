@@ -51,7 +51,6 @@
     <br /><br />
     <h2>Programme</h2>
         {% for day_program in dayprograms %}
-            <a href="{% url 'tripapp:dayprogram_detail' day_program.id %}">
             {% if day_program.tripdate|date:"Y-m-d" == today|date:"Y-m-d" %}
               <p class="today">
             {% endif %}
@@ -61,11 +60,12 @@
             {% if day_program.tripdate|date:"Y-m-d" > today|date:"Y-m-d" %}
               <p>
             {% endif %}
+                <a href="{% url 'tripapp:dayprogram_detail' day_program.id %}" class="tripdetail">
                 {{ day_program.dayprogramnumber }}&nbsp;
                 ({{ day_program.tripdate|date:'d M' }})&nbsp;
                 <i>{{ day_program.description }}</i>
+                </a>
             </p>
-            </a>
         {% endfor %}
     <br />
     </div>
