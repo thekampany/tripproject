@@ -30,6 +30,8 @@ urlpatterns = [
     path('trip/<int:trip_id>/point/<int:point_id>/edit/', views.edit_point, name='edit_point'),
     path('trip/<int:trip_id>/point/<int:point_id>/delete/', views.delete_point, name='delete_point'),
     path('trip/<int:trip_id>/dayprogram/add/', views.dayprogram_add, name='dayprogram_add'),
+    path('trip/<int:trip_id>/upload_route/', views.upload_route, name='upload_route'),
+    path('trip/<int:trip_id>/route/<int:route_id>/delete/', views.delete_route, name='delete_route'),
     path('tripper/<int:tripper_id>/profile/', views.tripper_profile, name='tripper_profile'),
     path('tripper/<int:tripper_id>/badges/', views.tripper_badges, name='tripper_badges'),
     path('tripper/<int:tripper_id>/trip/<int:trip_id>/edit/', views.edit_tripper, name='edit_tripper'),
@@ -71,6 +73,4 @@ urlpatterns = [
     path('facilmap', views.facilmap, name='facilmap'),
     path('planner_map/<int:trip_id>/', views.planner_map, name='planner_map'),
     path('save_event/', views.save_event, name='save_event'),
-    path('upload_route/', views.upload_route, name='upload_route'),
-    path('trip/<int:trip_id>/route/<int:route_id>/delete/', views.delete_route, name='delete_route'),
  ]

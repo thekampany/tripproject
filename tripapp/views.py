@@ -935,7 +935,8 @@ def add_link(request, dayprogram_id):
     })
 
 @login_required
-def upload_route(request):
+def upload_route(request,trip_id):
+    trip = get_object_or_404(Trip, pk=trip_id)
     if request.method == 'POST':
         form = RouteForm(request.POST, request.FILES)
         if form.is_valid():
@@ -945,7 +946,7 @@ def upload_route(request):
 
             return redirect('tripapp:trip_points', trip_id=trip_id)
     else:
-        form = RouteForm()
+        form = RouteForm(trip=trip)
     return render(request, 'tripapp/upload_route.html', {'form': form})
 
 @login_required

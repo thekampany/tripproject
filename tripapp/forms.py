@@ -242,6 +242,11 @@ class RouteForm(forms.ModelForm):
     class Meta:
         model = Route
         fields = ['dayprogram', 'description', 'gpx_file']
+    def __init__(self, *args, **kwargs):
+        trip = kwargs.pop('trip', None)
+        super(RouteForm, self).__init__(*args, **kwargs)
+        if trip:
+            self.fields['dayprogram'].queryset = DayProgram.objects.filter(trip=trip)
 
 class SuggestionForm(forms.Form):
     suggestion = forms.CharField(widget=forms.Textarea, label='Type your suggestion for possible activities for today')

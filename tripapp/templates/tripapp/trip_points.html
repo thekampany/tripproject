@@ -40,12 +40,12 @@
             {% endfor %}
         </tbody>
     </table>
-    <a href="{% url 'tripapp:upload_route' %}" class="btn btn-warning">Upload a Route</a>
+    <a href="{% url 'tripapp:upload_route' trip.id %}" class="btn btn-primary">Upload a Route</a>
     <table class="table">
         <thead>
             <tr>
                 <th>Route Description</th>
-                <th>Day Programs</th>
+                <th>Day Program</th>
                 <th>Delete</th>
             </tr>
         </thead>
