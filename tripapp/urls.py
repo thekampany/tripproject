@@ -72,5 +72,5 @@ urlpatterns = [
     path('planner_map/<int:trip_id>/', views.planner_map, name='planner_map'),
     path('save_event/', views.save_event, name='save_event'),
     path('upload_route/', views.upload_route, name='upload_route'),
-
+    path('trip/<int:trip_id>/route/<int:route_id>/delete/', views.delete_route, name='delete_route'),
  ]

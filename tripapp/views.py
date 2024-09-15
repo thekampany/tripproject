@@ -934,6 +934,7 @@ def add_link(request, dayprogram_id):
         'dayprogram': dayprogram
     })
 
+@login_required
 def upload_route(request):
     if request.method == 'POST':
         form = RouteForm(request.POST, request.FILES)
@@ -946,6 +947,17 @@ def upload_route(request):
     else:
         form = RouteForm()
     return render(request, 'tripapp/upload_route.html', {'form': form})
+
+@login_required
+def delete_route(request, trip_id, route_id):
+    if request.method == 'POST':
+       trip = get_object_or_404(Trip, id=trip_id)
+       route = get_object_or_404(Route, id=route_id)
+       route.delete()
+       return redirect('tripapp:trip_points', trip_id=trip.id)
+    else:
+       return redirect('tripapp:trip_points', trip_id=trip.id)
+
 
 @login_required
 def add_suggestion(request, dayprogram_id):
