@@ -150,11 +150,11 @@ def create_trip(request, tribe_id):
 @login_required
 def trip_trippers(request, id):
     trip = get_object_or_404(Trip, pk=id)
-    #trippers = trip.trippers.all()
-    #trippers = trip.trippers.annotate(badge_count=Count('badge_assignments')).order_by('-badge_count')
     trippers = trip.trippers.annotate(
-        badge_count=Count('badge_assignments', filter=Q(badge_assignments__trip=trip))
+        badge_count=Count('badge_assignments', filter=Q(badge_assignments__trip=trip)),
+        total_badge_count=Count('badge_assignments') 
     ).order_by('-badge_count')
+
     return render(request, 'tripapp/trip_trippers.html', {'trip': trip, 'trippers': trippers})
 
 @login_required
@@ -181,22 +181,26 @@ def upload_badge(request):
     return render(request, 'tripapp/upload_badge.html', {'form': form})
 
 
-
-
-
-
-@login_required
-def tripper_badges(request, tripper_id):
-    tripper = get_object_or_404(Tripper, id=tripper_id)
-    badges = tripper.badges.all()
-    return render(request, 'tripapp/tripper_badges.html', {'tripper': tripper, 'badges': badges})
+#@login_required
+#def tripper_badges(request, tripper_id):
+#    tripper = get_object_or_404(Tripper, id=tripper_id)
+#    badges = tripper.badges.all()
+#    return render(request, 'tripapp/tripper_badges.html', {'tripper': tripper, 'badges': badges})
 
 @login_required
-def trip_tripper_badges(request, trip_id, tripper_id):
-    trip = get_object_or_404(Trip, id=trip_id)
+def tripper_badgeassignments(request, tripper_id):
     tripper = get_object_or_404(Tripper, id=tripper_id)
-    badges = tripper.badges.all()
-    return render(request, 'tripapp/trip_tripper_badges.html', {'trip': trip, 'tripper': tripper, 'badges': badges})
+    badge_assignments = BadgeAssignment.objects.filter(tripper=tripper).select_related('badge')
+    badges = [assignment.badge for assignment in badge_assignments]
+    count_tripper_badges = BadgeAssignment.objects.filter(tripper=tripper).count()
+    return render(request, 'tripapp/tripper_badgeassignments.html', {'tripper': tripper, 'badges': badges, 'count_tripper_badges':count_tripper_badges})
+
+#@login_required
+#def trip_tripper_badges(request, trip_id, tripper_id):
+#    trip = get_object_or_404(Trip, id=trip_id)
+#    tripper = get_object_or_404(Tripper, id=tripper_id)
+#    badges = tripper.badges.all()
+#    return render(request, 'tripapp/trip_tripper_badges.html', {'trip': trip, 'tripper': tripper, 'badges': badges})
 
 @login_required
 def trip_tripper_badgeassignments(request, trip_id, tripper_id):
@@ -342,12 +346,9 @@ def check_answer(request, id, questionid):
         if form.is_valid():
             answer = form.cleaned_data['answer']
             if answer.lower() in question.correct_answer.lower():
-                # Badge toekennen
                 current_user = request.user
                 tripper = Tripper.objects.filter(name=current_user.username).first()
-                #tripper = get_object_or_404(Tripper, user=request.username)
                 tripper.badges.add(question.badge)
-
                 BadgeAssignment.objects.create(tripper=tripper, badge=question.badge, trip=dayprogram.trip)
 
                 return redirect('tripapp:badge_claimed', badge_id=question.badge.id)
@@ -390,7 +391,6 @@ def map_view(request):
 @login_required
 def trip_map_view(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
-    #points = trip.points.all()
     points = trip.points.prefetch_related('dayprograms')
 
     return render(request, 'tripapp/trip_map.html', {'trip': trip, 'points': points})
@@ -454,7 +454,6 @@ def upload_answerimage(request, bingocard_id):
             answer.tripper = tripper
             answer.bingocard = bingocard
             answer.save()
-            # Tel het aantal antwoorden voor dezelfde trip
             trip_answer_count = answer.count_trip_answers()
             badges = Badge.objects.filter(achievement_method='threshold')
             for badge in badges:
@@ -466,7 +465,6 @@ def upload_answerimage(request, bingocard_id):
 
                 if trip_answer_count >= badge.threshold_value:
                     if not BadgeAssignment.objects.filter(tripper=tripper, badge=badge, trip=bingocard.trip).exists():
-                        # Ken de badge toe
                         BadgeAssignment.objects.create(tripper=tripper, badge=badge, trip=bingocard.trip)
                         tripper.badges.add(badge)
 
@@ -685,7 +683,6 @@ def dayprogram_questions(request, dayprogram_id):
 @tripper_required
 def add_point(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
-    # Controleer of de huidige gebruiker een tripper is van de trip
     if not trip.trippers.filter(name=request.user).exists():
         return HttpResponseForbidden("You are not allowed to add points to this trip.")
     if request.method == 'POST':
@@ -947,7 +944,7 @@ def upload_route(request,trip_id):
             return redirect('tripapp:trip_points', trip_id=trip_id)
     else:
         form = RouteForm(trip=trip)
-    return render(request, 'tripapp/upload_route.html', {'form': form})
+    return render(request, 'tripapp/upload_route.html', {'form': form, 'trip':trip})
 
 @login_required
 def delete_route(request, trip_id, route_id):

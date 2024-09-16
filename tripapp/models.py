@@ -96,8 +96,8 @@ class Tripper(models.Model):
     photo = models.ImageField(upload_to='tripper_photos/', null=True, blank=True)
     is_trip_admin = models.BooleanField(default=False)
 
-    def count_badges(self):
-        return self.badges.count()
+    #def count_badges(self):
+    #    return self.badges.count()
 
     def __str__(self):
         return self.name

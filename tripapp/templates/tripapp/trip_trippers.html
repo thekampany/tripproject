@@ -55,8 +55,7 @@
                 </td>
                 <td style="vertical-align:middle"> 
                 <a href="{% url 'tripapp:trip_tripper_badgeassignments' trip.id tripper.id %}">Badges this trip: {{ tripper.badge_count }}</a>
-                <a href="{% url 'tripapp:trip_tripper_badges' trip.id tripper.id %}">(Total: {{ tripper.count_badges }})</a><br />
-                
+                <a href="{% url 'tripapp:tripper_badgeassignments' tripper.id %}">(Total: {{ tripper.total_badge_count }})</a><br />                
                 </td>
                 </tr>
         {% endfor %}

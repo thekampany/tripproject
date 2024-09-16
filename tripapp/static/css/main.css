@@ -88,23 +88,35 @@ a:active {
 
 a.nodec:link {
   color: var(--color-text);
+  border-radius: 6px;
+  background-color: var(--dayprogram-background);
+  padding: 2px 12px;
 }
 
 /* visited link */
 a.nodec:visited {
   color: var(--color-text);
+  border-radius: 6px;
+  background-color: var(--dayprogram-background);
+  padding: 2px 12px;
 }
 
 /* mouse over link */
 a.nodec:hover {
   color: var(--color-text);
   text-decoration: none;
+  border-radius: 6px;
+  background-color: var(--dayprogram-background);
+  padding: 2px 12px;
 }
 
 /* selected link */
 a.nodec:active {
   color: var(--color-text);
   text-decoration: none;
+  border-radius: 6px;
+  background-color: var(--dayprogram-background);
+  padding: 2px 12px;
 }
 
 a.tripdetail {

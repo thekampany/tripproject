@@ -30,7 +30,7 @@ class TripperForm(forms.ModelForm):
 class TripperAdminForm(forms.ModelForm):
     class Meta:
         model = Tripper
-        fields = ['badges', 'is_trip_admin']
+        fields = ['is_trip_admin']
 
 
 class ImageForm(forms.ModelForm):
@@ -92,14 +92,6 @@ class TripForm(forms.ModelForm):
             self.initial['tribe'] = tribe
    
 
-#User = get_user_model()
-
-#class AddTrippersForm(forms.Form):
-#    users = forms.ModelMultipleChoiceField(
-#        queryset=User.objects.none(),
-#        widget=forms.CheckboxSelectMultiple,
-#        required=True
-#    )
 class AddTrippersForm(forms.Form):
     users = forms.ModelMultipleChoiceField(
         queryset=User.objects.all(),
