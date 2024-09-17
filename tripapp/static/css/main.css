@@ -247,7 +247,7 @@ a.btn-less-padding:hover {background: var(--color-background);}
     padding: 10px;
     background: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin: 20px;
+    margin: 10px;
     text-align: center;
     transform: rotate(0deg);
     transition: transform 0.2s;
@@ -263,8 +263,8 @@ a.btn-less-padding:hover {background: var(--color-background);}
     display: block;
 }
 .caption {
-    margin: 20px;
-    padding: 20px 0;
+    margin: 10px;
+    padding: 0px 0;
     color: #333;
 }
 
@@ -280,4 +280,29 @@ a.btn-less-padding:hover {background: var(--color-background);}
   background-color: var(--dayprogram-background);
   padding: 2px 12px;
   text-align: center;
+}
+
+.daydetail-button-container {
+  display: flex;
+  gap: 5px; 
+}
+
+.daydetail-button {
+  border-radius: 6px;
+  background-color: var(--dayprogram-background);
+  padding: 10px 10px;
+  text-align: center;
+  white-space: nowrap;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 60px; /* Stel een vaste hoogte in voor de knoppen */
+  min-width: 70px; /* Minimale breedte van de knop */
+  cursor: pointer;
+}
+
+.daydetail-button:hover {
+  background-color: var(--color-background);
+  text-decoration: none;
 }
