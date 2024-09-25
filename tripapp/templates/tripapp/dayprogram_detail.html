@@ -32,7 +32,11 @@
             <a href="{% url 'tripapp:dayprogram_detail' previous_dayprogram.id %}" class="nodec">&larr;</a>
         {% endif %}</h2>
         </td>
-        <td align="center"><h2><div class="dayprogram_description">{{ dayprogram.description }}</div></h2></td>
+        <td align="center"><h2>
+        {% if dayprogram.description %}
+            <div class="dayprogram_description">{{ dayprogram.description }}</div>
+        {5 endif %}</h2>
+        </td>
         <td align="right"><h2>
         {% if next_dayprogram %}
             <a href="{% url 'tripapp:dayprogram_detail' next_dayprogram.id %}" class="nodec">&rarr;</a>
