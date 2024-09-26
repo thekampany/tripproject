@@ -17,9 +17,11 @@
     <style>
         body {
             {% if trip.image %}
-            background-image: url('{{ trip.image.url }}');
-            background-size: cover;
-            background-position: center center;
+             background: url('{{ trip.image.url }}') no-repeat center center fixed; 
+             -webkit-background-size: cover;
+             -moz-background-size: cover;
+             -o-background-size: cover;
+             background-size: cover;
             {% endif %}
         }
         ul.no-bullets {

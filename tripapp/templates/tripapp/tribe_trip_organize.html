@@ -16,10 +16,12 @@
     <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
     <style>
       body, html {
-            {% if trip.image %}
-            background-image: url('{{ trip.image.url }}');
-            background-size: cover;
-            background-position: center center;
+           {% if trip.image %}
+             background: url('{{ trip.image.url }}') no-repeat center center fixed; 
+             -webkit-background-size: cover;
+             -moz-background-size: cover;
+             -o-background-size: cover;
+             background-size: cover;
             {% endif %}
       }
 

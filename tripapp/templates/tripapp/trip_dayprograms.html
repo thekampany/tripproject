@@ -30,6 +30,7 @@
     {% if trip in admin_trips %}
     <a href="{% url 'tripapp:dayprogram_add' trip.id %}" class="btn btn-primary">Add a Day</a>&nbsp;
     {% endif %}
+    <p>&nbsp;</p>
     <p>
     <a href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id %}">Back to Organize Trip</a>
     </p>

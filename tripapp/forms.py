@@ -20,6 +20,7 @@ from django.contrib.auth import get_user_model
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django.forms import inlineformset_factory
+from django.core.validators import MaxLengthValidator
 
 
 class TripperForm(forms.ModelForm):
@@ -159,8 +160,11 @@ class DayProgramForm(forms.ModelForm):
         fields = ['description', 'tripdate', 'dayprogramnumber', 'possible_activities', 'necessary_info']
         widgets = {
             'tripdate': forms.DateInput(attrs={'type': 'date'}),
+            'description': forms.TextInput(attrs={'maxlength': 50}), 
         }
-
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['description'].validators.append(MaxLengthValidator(50))  
 
 class QuestionForm(forms.ModelForm):
     class Meta:
