@@ -30,6 +30,8 @@
         <td align="left"><h2>
         {% if previous_dayprogram %}
             <a href="{% url 'tripapp:dayprogram_detail' previous_dayprogram.id %}" class="nodec">&larr;</a>
+        {% else %}
+            <a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}" class="nodec">&#11025;</a>
         {% endif %}</h2>
         </td>
         <td align="center"><h2>
@@ -40,6 +42,8 @@
         <td align="right"><h2>
         {% if next_dayprogram %}
             <a href="{% url 'tripapp:dayprogram_detail' next_dayprogram.id %}" class="nodec">&rarr;</a>
+        {% else %}
+            <a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}" class="nodec">&#11023;</a>
         {% endif %}</h2>
         </td></tr></table>
 
@@ -119,13 +123,6 @@
 </div>
 <div class="card">
 <div class="container">
-    <!--<a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}">Back to Trip Details</a>&nbsp;|&nbsp;
-    {% if user.username in trippers_names %}
-    <a href="{% url 'tripapp:add_image' dayprogram.id %}">Add Image</a>&nbsp;|&nbsp;
-    <a href="{% url 'tripapp:add_logentry' dayprogram.id %}">Add Log Entry</a>&nbsp;|&nbsp;
-    {% endif %}
-    <a href="{% url 'tripapp:trip_dayprogram_points' dayprogram.trip.id dayprogram.id %}">View on Map</a>&nbsp;|&nbsp;
-    <a href="#" data-toggle="modal" data-target="#suggestionModal">Add Suggested Activity for today</a>-->
     <p>&nbsp;</p>
     <div class="daydetail-button-container">
     <a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}" class="daydetail-button">Trip<br /> Overview</a>
