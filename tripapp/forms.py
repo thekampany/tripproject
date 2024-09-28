@@ -106,6 +106,7 @@ class AddTrippersForm(forms.Form):
         super().__init__(*args, **kwargs)
         if tribe:
             self.fields['users'].queryset = User.objects.filter(userprofile__tribes=tribe).distinct()
+            self.fields['users'].label = f'Select Trippers (Tribe: {tribe.name})'
         if trip:
             initial_trippers = trip.trippers.values_list('name', flat=True)
             initial_users = User.objects.filter(username__in=initial_trippers)

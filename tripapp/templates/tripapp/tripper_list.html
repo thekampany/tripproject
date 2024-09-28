@@ -1,15 +1,14 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-  <h1>Trippers for {{ trip.name }}</h1>
-  
+  <h1>Trippers on {{ trip.name }}</h1>
+    Make a tripper admin and/or assign a badge to a tripper<br />
     {% for tripper in trippers %}
      
-        <p>{{ tripper.name }}
-        &nbsp;<a href="{% url 'tripapp:edit_tripper' tripper.id trip.id %}">Edit</a></p>
+        <p><a href="{% url 'tripapp:edit_tripper' tripper.id trip.id %}">{{ tripper.name }}</a></p>
       
     {% empty %}
-      No trippers available for this trip.
+      No trippers on this trip.
     {% endfor %}
   
 {% endblock %}
