@@ -41,11 +41,11 @@ Go to your browser and start with register.
 Users see the programme of the trip, see a map of the trip, read the information for a specific day, add suggestions for the day themselves, add photos and text of what they saw, as a reference for later. Trippers can also participate in the tripbingo and see how many badges they have in comparison to the others.
 For a tripadmin, the functions to organize the trip are brought together in one overview.
 
-![Screenshot](/screenshots/IMG_3501.PNG )
-![Screenshot](/screenshots/IMG_3502.PNG )
+![Screenshot](/screenshots/IMG_3622.PNG )
+![Screenshot](/screenshots/IMG_3625.PNG )
 ![Screenshot](/screenshots/IMG_3503.PNG )
-![Screenshot](/screenshots/IMG_3504.PNG )
 ![Screenshot](/screenshots/IMG_3505.PNG )
+![Screenshot](/screenshots/IMG_3504.PNG )
 ![Screenshot](/screenshots/IMG_3506.PNG )
 ![Screenshot](/screenshots/IMG_3507.PNG )
 ![Screenshot](/screenshots/IMG_3508.PNG )
