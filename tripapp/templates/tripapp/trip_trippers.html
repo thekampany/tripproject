@@ -26,38 +26,38 @@
     <h1>{{ trip.name }} Trippers</h1>
         <table>
         {% for tripper in trippers %}
-                <tr>
+            <tr>
                 <td style="vertical-align:middle">
                 {% if tripper.photo %}
                    {% if user.is_authenticated and user.username == tripper.name %}
                       <a href="{% url 'tripapp:tripper_profile' tripper.id %}">
-                      <img src="{{ tripper.photo.url }}" alt="Profile" height="60px" width="60px" style="vertical-align:middle" >
+                      <img src="{{ tripper.photo.url }}" alt="Profile" height="60px" width="60px">
                       </a>
                    {% else %}
-                      <img src="{{ tripper.photo.url }}" alt="Profile" height="60px" width="60px" style="vertical-align:middle" >
+                      <img src="{{ tripper.photo.url }}" alt="Profile" height="60px" width="60px">
                    {% endif %}
                 {% else %}
                    {% if user.is_authenticated and user.username == tripper.name %}
                       <a href="{% url 'tripapp:tripper_profile' tripper.id %}">
-                      <img src="{% static 'profile.png' %}" alt="Profile" height="60px" width="60px" style="vertical-align:middle" >
+                      <img src="{% static 'profile.png' %}" alt="Profile" height="60px" width="60px">
                       </a>
                    {% else %}
-                     <img src="{% static 'profile.png' %}" alt="Profile" height="60px" width="60px" style="vertical-align:middle" >
+                      <img src="{% static 'profile.png' %}" alt="Profile" height="60px" width="60px">
                    {% endif %}
                 {% endif %}
-                <span style+"">
+                </td>
+                <td style="vertical-align:middle">
                 {% if user.is_authenticated and user.username == tripper.name %} 
                    <a href="{% url 'tripapp:tripper_profile' tripper.id %}">{{ tripper.name }}</a>
                 {% else %}
                    {{ tripper.name }}
                 {% endif %}
-                </span>
                 </td>
                 <td style="vertical-align:middle"> 
                 <a href="{% url 'tripapp:trip_tripper_badgeassignments' trip.id tripper.id %}">Badges this trip: {{ tripper.badge_count }}</a>
-                <a href="{% url 'tripapp:tripper_badgeassignments' tripper.id %}">(Total: {{ tripper.total_badge_count }})</a><br />                
+                <a href="{% url 'tripapp:tripper_badgeassignments' tripper.id %}">(Total: {{ tripper.total_badge_count }})</a>               
                 </td>
-                </tr>
+            </tr>
         {% endfor %}
         </table>
 <br />

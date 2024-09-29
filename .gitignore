@@ -1,7 +1,6 @@
 .env
 media/
 tripapp/__pycache__/
-screenshots/
 .old
 
 
