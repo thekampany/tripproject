@@ -31,7 +31,7 @@
     <div class="container">
     <h1>Organize</h1>
     <a href="{% url 'tripapp:create_tribe' %}" class="btn-fixed-width">Create a New Tribe</a>&nbsp;
-    <a href="{% url 'tripapp:invite_to_tribe' %}" class="btn-fixed-width">Invite People to the Tribe</a>
+    {% if tribes %}<a href="{% url 'tripapp:invite_to_tribe' %}" class="btn-fixed-width">Invite People to the Tribe</a>{% endif %}
     <br /><br />
     {% for tribe in tribes %}
     <h3>You are in Tribe: {{ tribe.name }}</h3>

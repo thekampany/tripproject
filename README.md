@@ -45,8 +45,6 @@ For a tripadmin, the functions to organize the trip are brought together in one 
 ![Screenshot](/screenshots/IMG_3625.PNG )
 ![Screenshot](/screenshots/IMG_3503.PNG )
 ![Screenshot](/screenshots/IMG_3505.PNG )
-![Screenshot](/screenshots/IMG_3504.PNG )
-![Screenshot](/screenshots/IMG_3506.PNG )
 ![Screenshot](/screenshots/IMG_3507.PNG )
 ![Screenshot](/screenshots/IMG_3508.PNG )
 ![Screenshot](/screenshots/IMG_3509.PNG )
