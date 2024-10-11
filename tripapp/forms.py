@@ -14,6 +14,7 @@ from .models import BingoCard
 from .models import LogEntry
 from .models import Link
 from .models import Route
+from .models import TripExpense
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
@@ -21,7 +22,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django.forms import inlineformset_factory
 from django.core.validators import MaxLengthValidator
-
+from django.conf import settings
 
 class TripperForm(forms.ModelForm):
     class Meta:
@@ -248,3 +249,15 @@ class RouteForm(forms.ModelForm):
 class SuggestionForm(forms.Form):
     suggestion = forms.CharField(widget=forms.Textarea, label='Type your suggestion for possible activities for today')
 
+class TripExpenseForm(forms.ModelForm):
+    class Meta:
+        model = TripExpense
+        fields = ['amount', 'description', 'currency', 'date', 'receipt']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date'}),  
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(TripExpenseForm, self).__init__(*args, **kwargs)
+        self.fields['currency'].initial = settings.APP_CURRENCY  
+        #self.fields['currency'].widget.attrs['readonly'] = True  

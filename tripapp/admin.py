@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import Trip, DayProgram, Tripper, Badge, Checklist, ChecklistItem, Image, Question, Point, BingoCard, BingoAnswer, BadgeAssignment, LogEntry, Link, Route
 from django_q.tasks import async_task
-from .models import Tribe, UserProfile
+from .models import Tribe, UserProfile, TripExpense
 
 class PointAdmin(admin.ModelAdmin):
     list_display = ('name', 'trip')
@@ -35,3 +35,4 @@ admin.site.register(UserProfile)
 admin.site.register(LogEntry)
 admin.site.register(Link)
 admin.site.register(Route)
+admin.site.register(TripExpense)

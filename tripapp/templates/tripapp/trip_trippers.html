@@ -60,8 +60,11 @@
             </tr>
         {% endfor %}
         </table>
-<br />
+<p>&nbsp;</p>
 <!--<p><a href="{% url 'tripapp:upload_badge' %}" class="btn">Upload Badge for this Trip</a></p>-->
+{% if trip.has_expenses %}
+<p><a href="{% url 'tripapp:trip_balance' trip.id %}">Trippers owe Trippers?</a></p>
+{% endif %}
 
 </div>
 </div>

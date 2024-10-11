@@ -4,7 +4,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Trip, Tripper, Badge, DayProgram, Checklist, ChecklistItem, Image, Question, Point
 from .models import BingoCard, BingoAnswer, BadgeAssignment
-from .models import Tribe, UserProfile, LogEntry, Link, Route
+from .models import Tribe, UserProfile, LogEntry, Link, Route, TripExpense
 from .forms import BadgeForm, TripForm, ChecklistItemForm, ImageForm, BingoAnswerForm
 from .forms import CustomUserCreationForm
 from .forms import AnswerForm, AnswerImageForm, TripperForm, TripperAdminForm
@@ -12,7 +12,7 @@ from .forms import TribeCreationForm, AddTrippersForm, DayProgramForm
 from .forms import QuestionForm, PointForm, BingoCardForm
 from .forms import BadgeAssignmentFormSet, LogEntryForm
 from .forms import BadgeplusQForm, QuestionplusBForm
-from .forms import LinkForm, RouteForm, SuggestionForm
+from .forms import LinkForm, RouteForm, SuggestionForm, TripExpenseForm
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
@@ -984,3 +984,34 @@ def add_suggestion(request, dayprogram_id):
     }
     return render(request, 'tripapp/add_suggestion.html', context)
 
+@login_required
+def add_expense(request, trip_id, tripper_id):
+    trip = get_object_or_404(Trip, pk=trip_id)
+    tripper = get_object_or_404(Tripper, pk=tripper_id)
+    if request.method == 'POST':
+        form = TripExpenseForm(request.POST, request.FILES)
+        if form.is_valid():
+            expense = form.save(commit=False)
+            expense.trip = trip
+            expense.tripper = tripper
+            expense.save()
+            return redirect('tripapp:trip_balance', trip_id=trip.id)
+    else:
+        form = TripExpenseForm()
+    return render(request, 'tripapp/add_expense.html', {'form': form, 'trip': trip, 'tripper':tripper})
+
+@login_required
+def trip_balance(request, trip_id):
+    trip = get_object_or_404(Trip, pk=trip_id)
+    balance = trip.calculate_balance()
+    abs_balance = {tripper: {'balance': balance_value, 'abs_balance': abs(balance_value)} for tripper, balance_value in balance.items()}
+    app_currency = settings.APP_CURRENCY
+    return render(request, 'tripapp/trip_balance.html', {'trip': trip, 'balance': abs_balance, 'app_currency':app_currency})
+
+@login_required
+def trip_expenses_list(request, trip_id):
+    trip = get_object_or_404(Trip, pk=trip_id)
+    expenses = trip.expenses.all()  
+    tripper = Tripper.objects.filter(name=request.user.username).first()
+    app_currency = settings.APP_CURRENCY
+    return render(request, 'tripapp/trip_expenses_list.html', {'trip': trip, 'expenses': expenses, 'tripper':tripper, 'app_currency':app_currency})

@@ -2,7 +2,11 @@ from django.db import models
 from django.utils.text import slugify
 from django.contrib.auth.models import User 
 from django.conf import settings
+from django.utils import timezone
 import uuid
+import requests
+from decimal import Decimal
+from django.conf import settings 
 
 # Create your models here.
 
@@ -72,6 +76,22 @@ class Trip(models.Model):
     def get_country_codes(self):
         return self.country_codes.split(",") if self.country_codes else []
 
+    def calculate_balance(self):
+        trippers = self.trippers.all()
+        total_expenses = sum(expense.converted_amount for expense in self.expenses.all())
+        num_trippers = trippers.count()
+        equal_share = total_expenses / Decimal(num_trippers)
+
+        balance = {}
+        for tripper in trippers:
+            spent = sum(expense.converted_amount for expense in tripper.tripexpense_set.all())
+            balance[tripper.name] = spent - equal_share
+
+        return balance
+
+    def has_expenses(self):
+        return self.expenses.exists() 
+
 class DayProgram(models.Model):
     trip = models.ForeignKey(Trip, related_name='dayprograms', on_delete=models.CASCADE)
     description = models.TextField()
@@ -95,6 +115,7 @@ class Tripper(models.Model):
     badges = models.ManyToManyField(Badge, related_name='trippers', blank=True)
     photo = models.ImageField(upload_to='tripper_photos/', null=True, blank=True)
     is_trip_admin = models.BooleanField(default=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
 
     #def count_badges(self):
     #    return self.badges.count()
@@ -204,3 +225,38 @@ class Route(models.Model):
     def __str__(self):
         return self.description
 
+class TripExpense(models.Model):
+    trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name='expenses')
+    tripper = models.ForeignKey(Tripper, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    converted_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    currency = models.CharField(max_length=10)
+    date = models.DateField(default=timezone.now)
+    description = models.CharField(max_length=30, blank=True, null=True)
+    receipt = models.ImageField(upload_to='receipts/', blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.amount} {self.currency} on {self.trip.name} by {self.tripper.user.username}'
+
+    def save(self, *args, **kwargs):
+        default_currency = settings.APP_CURRENCY 
+
+        if self.currency != default_currency:
+            self.converted_amount = self.convert_to_default_currency()
+        else:
+            self.converted_amount = self.amount
+
+        super(TripExpense, self).save(*args, **kwargs)
+
+    def convert_to_default_currency(self):
+        api_url = "https://v6.exchangerate-api.com/v6/" + settings.EXCHANGERATE_API_KEY + "/latest/" + self.currency 
+        response = requests.get(api_url)
+
+        if response.status_code == 200:
+            data = response.json()
+            conversion_rate = data['conversion_rates'].get(settings.APP_CURRENCY)
+
+            if conversion_rate:
+                return Decimal(self.amount) * Decimal(conversion_rate)
+
+        return self.amount
