@@ -34,16 +34,17 @@
     <h1>Organize {{ trip.name }}</h1>
     <span style="color:gray;">Tribe: {{ tribe.name }}</span>
           <p>&nbsp;</p>
-          <p>
+          
            {% if trip in admin_trips %}
-           <a href="{% url 'tripapp:add_trippers' trip.id tribe.id %}" class="btn-less-padding"><img src="{% static 'icons/iconedittripper.png'  %}" width="40" height="40"></a>
-           <a href="{% url 'tripapp:tripper_list' trip.id %}" class="btn-less-padding"><img src="{% static 'icons/iconeditbadge.png'  %}" width="40" height="40"></a>
-           <a href="{% url 'tripapp:planner_map' trip.id %}" class="btn-less-padding"><img src="{% static 'icons/maps-iconreverse.png' %}" width="40" height="40"></a>
+           <p><a href="{% url 'tripapp:trip_update' trip.id %}" class="btn-less-padding"><img src="{% static 'icons/iconedittrip.png'  %}" width="40" height="40"></a> Edit Trip Settings</p>
+           <p><a href="{% url 'tripapp:add_trippers' trip.id tribe.id %}" class="btn-less-padding"><img src="{% static 'icons/iconedittripper.png'  %}" width="40" height="40"></a> Add or Remove Trippers</p>
+           <p><a href="{% url 'tripapp:tripper_list' trip.id %}" class="btn-less-padding"><img src="{% static 'icons/iconeditbadge.png'  %}" width="40" height="40"></a> Assign Badges</p>
+           <p><a href="{% url 'tripapp:planner_map' trip.id %}" class="btn-less-padding"><img src="{% static 'icons/maps-iconreverse.png' %}" width="40" height="40"></a> Tripmap </p>
            {% endif %}
-           <a href="{% url 'tripapp:trip_dayprograms' trip.id  %}" class="btn-less-padding"><img src="{% static 'icons/iconeditdayprogram.png'  %}" width="40" height="40"></a>
-           <a href="{% url 'tripapp:trip_points' trip.id  %}" class="btn-less-padding"><img src="{% static 'icons/iconeditmap.png'  %}" width="40" height="40"></a>
-           <a href="{% url 'tripapp:tripadmin_bingocards' trip.id  %}" class="btn-less-padding"><img src="{% static 'icons/iconeditbingo.png'  %}" width="40" height="40"></a>
-          </p>
+           <p><a href="{% url 'tripapp:trip_dayprograms' trip.id  %}" class="btn-less-padding"><img src="{% static 'icons/iconeditdayprogram.png'  %}" width="40" height="40"></a> Edit Dayprograms</p>
+           <p><a href="{% url 'tripapp:trip_points' trip.id  %}" class="btn-less-padding"><img src="{% static 'icons/iconeditmap.png'  %}" width="40" height="40"></a> Add Points and Routes</p>
+           <p><a href="{% url 'tripapp:tripadmin_bingocards' trip.id  %}" class="btn-less-padding"><img src="{% static 'icons/iconeditbingo.png'  %}" width="40" height="40"></a> Organize Tripbingo</p>
+          
           <br /><br />
     <br />
     <h1>Badges</h1>

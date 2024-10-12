@@ -64,6 +64,7 @@ class Trip(models.Model):
     date_to = models.DateField(blank=True, null=True)
     country_codes = models.CharField(max_length=200, blank=True, null=True, help_text="Comma-separated list of country codes")
     use_facilmap = models.BooleanField(default=False)
+    use_expenses = models.BooleanField(default=False, help_text="Off means that we choose not to look at who owes who how much")
 
     def save(self, *args, **kwargs):
         if not self.slug:

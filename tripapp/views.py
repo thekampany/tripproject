@@ -12,7 +12,7 @@ from .forms import TribeCreationForm, AddTrippersForm, DayProgramForm
 from .forms import QuestionForm, PointForm, BingoCardForm
 from .forms import BadgeAssignmentFormSet, LogEntryForm
 from .forms import BadgeplusQForm, QuestionplusBForm
-from .forms import LinkForm, RouteForm, SuggestionForm, TripExpenseForm
+from .forms import LinkForm, RouteForm, SuggestionForm, TripExpenseForm, TripUpdateForm
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
@@ -1018,3 +1018,17 @@ def trip_expenses_list(request, trip_id):
     tripper = Tripper.objects.filter(name=request.user.username).first()
     app_currency = settings.APP_CURRENCY
     return render(request, 'tripapp/trip_expenses_list.html', {'trip': trip, 'expenses': expenses, 'tripper':tripper, 'app_currency':app_currency})
+
+@login_required
+def trip_update(request, trip_id):
+    trip = get_object_or_404(Trip, id=trip_id)
+
+    if request.method == 'POST':
+        form = TripUpdateForm(request.POST, request.FILES, instance=trip)
+        if form.is_valid():
+            form.save()
+            return redirect('tripapp:tribe_trip_organize', tribe_id=trip.tribe.id, trip_id=trip.id)  
+    else:
+        form = TripUpdateForm(instance=trip)
+
+    return render(request, 'tripapp/trip_update.html', {'form': form, 'trip': trip})

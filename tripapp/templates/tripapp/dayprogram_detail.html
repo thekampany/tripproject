@@ -125,16 +125,23 @@
 <div class="container">
     <p>&nbsp;</p>
     <div class="daydetail-button-container">
+    {% if not dayprogram.trip.use_expenses %}
+       <a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}" class="daydetail-button">Trip<br /> Overview</a>
+    {% endif %}
     <a href="{% url 'tripapp:trip_dayprogram_points' dayprogram.trip.id dayprogram.id %}" class="daydetail-button">View<br /> on Map</a>
     {% if user.username in trippers_names %}
-    <a href="{% url 'tripapp:add_image' dayprogram.id %}" class="daydetail-button"> Add<br /> Image</a>
-    <a href="{% url 'tripapp:add_logentry' dayprogram.id %}" class="daydetail-button">Add <br />Log</a>
+       <a href="{% url 'tripapp:add_image' dayprogram.id %}" class="daydetail-button"> Add<br /> Image</a>
+       <a href="{% url 'tripapp:add_logentry' dayprogram.id %}" class="daydetail-button">Add <br />Log</a>
     {% endif %}
     <a href="#" data-toggle="modal" data-target="#suggestionModal" class="daydetail-button">Add<br />Suggestion</a>
-    <a href="{% url 'tripapp:add_expense' dayprogram.trip.id logged_on_tripper.id %}" class="daydetail-button">Add<br />Expense</a>
+    {% if dayprogram.trip.use_expenses %}
+       <a href="{% url 'tripapp:add_expense' dayprogram.trip.id logged_on_tripper.id %}" class="daydetail-button">Add<br />Expense</a>
+    {% endif %}
     </div>
     <p>&nbsp;</p>
-    <a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}" >Back to Trip Overview</a>
+    {% if dayprogram.trip.use_expenses %}   
+       <a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}" >Back to Trip Overview</a>
+    {% endif %}
     <!-- Suggestion Modal -->
     <div class="modal fade" id="suggestionModal" tabindex="-1" role="dialog" aria-labelledby="suggestionModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">

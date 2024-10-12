@@ -35,6 +35,7 @@ urlpatterns = [
     path('trip/<int:trip_id>/tripper/<int:tripper_id>/add_expense/', views.add_expense, name='add_expense'),
     path('trip/<int:trip_id>/balance/', views.trip_balance, name='trip_balance'),
     path('trip/<int:trip_id>/expenses/', views.trip_expenses_list, name='trip_expenses_list'),
+    path('trip/<int:trip_id>/update/', views.trip_update, name='trip_update'),
     path('tripper/<int:tripper_id>/profile/', views.tripper_profile, name='tripper_profile'),
     #path('tripper/<int:tripper_id>/badges/', views.tripper_badges, name='tripper_badges'),
     path('tripper/<int:tripper_id>/badgeassignments/', views.tripper_badgeassignments, name='tripper_badgeassignments'),

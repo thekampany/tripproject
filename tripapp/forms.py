@@ -261,3 +261,8 @@ class TripExpenseForm(forms.ModelForm):
         super(TripExpenseForm, self).__init__(*args, **kwargs)
         self.fields['currency'].initial = settings.APP_CURRENCY  
         #self.fields['currency'].widget.attrs['readonly'] = True  
+
+class TripUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Trip
+        fields = ['name', 'description', 'image', 'country_codes', 'use_expenses']
