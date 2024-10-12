@@ -19,6 +19,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 APP_NAME = os.getenv('APP_NAME')
+APP_URL = os.getenv('APP_URL')
 
 APP_CURRENCY = os.getenv('APP_CURRENCY')
 EXCHANGERATE_API_KEY = os.getenv('EXCHANGERATE_API_KEY')

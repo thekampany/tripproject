@@ -252,7 +252,7 @@ class SuggestionForm(forms.Form):
 class TripExpenseForm(forms.ModelForm):
     class Meta:
         model = TripExpense
-        fields = ['amount', 'description', 'currency', 'date', 'receipt']
+        fields = ['description', 'amount',  'currency', 'date', 'receipt']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),  
         }

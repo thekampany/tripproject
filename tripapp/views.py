@@ -70,9 +70,9 @@ def invite_to_tribe(request):
         current_site = request.get_host()
         current_port = request.get_port() 
         invite_url = request.build_absolute_uri(f'/register/invite/{urlsafe_base64_encode(force_bytes(tribe_id))}/')
- 
+        app_url = settings.APP_URL
         subject = 'Invitation to join a tribe'
-
+  
         html_content = render_to_string('tripapp/invite_email.html', {
             'user': request.user,
             'tribe_id': tribe_id,
@@ -81,7 +81,8 @@ def invite_to_tribe(request):
             'port': current_port,
             'uid': urlsafe_base64_encode(force_bytes(tribe_id)),
             'protocol': 'https' if request.is_secure() else 'http',
-            'invite_url': invite_url 
+            'invite_url': invite_url,
+            'app_url': app_url
         })
         text_content = strip_tags(html_content)
 
@@ -224,6 +225,7 @@ def dayprogram_detail(request, id):
     trippers_on_this_trip = dayprogram.trip.trippers.all()
     trippers_names = [tripper.name for tripper in trippers_on_this_trip]
     log_entries = dayprogram.logentries.all()
+    logged_on_tripper = Tripper.objects.filter(name=request.user.username).first()
 
     previous_dayprogram = DayProgram.objects.filter(
         trip=dayprogram.trip,
@@ -264,7 +266,8 @@ def dayprogram_detail(request, id):
           'trippers_names': trippers_names,
           'log_entries': log_entries,
           'previous_dayprogram' : previous_dayprogram,
-          'next_dayprogram' : next_dayprogram
+          'next_dayprogram' : next_dayprogram,
+          'logged_on_tripper' : logged_on_tripper
          })
 
 
