@@ -28,6 +28,9 @@ class TripperForm(forms.ModelForm):
     class Meta:
         model = Tripper
         fields = ['photo', 'api_url', 'api_key']
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['api_url'].initial = 'https://your-dawarich-url.com/api/v1/points' 
 
 class TripperAdminForm(forms.ModelForm):
     class Meta:

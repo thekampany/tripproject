@@ -29,6 +29,7 @@ else:
     print("Scheduled task 'assign_badges' already exists.")
 EOF
 
+python manage.py qcluster &
 
 
 exec "$@"
