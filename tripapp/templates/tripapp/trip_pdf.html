@@ -1,0 +1,187 @@
+                                             
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ trip.name }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'favicon/site.webmanifest' %}">
+    <link rel="mask-icon" href="{% static 'favicon/safari-pinned-tab.svg' %}" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
+    <style>
+        body {
+            {% if trip.image %}
+             background: url('{{ trip.image.url }}') no-repeat center center fixed; 
+             -webkit-background-size: cover;
+             -moz-background-size: cover;
+             -o-background-size: cover;
+             background-size: cover;
+            {% endif %}
+        }
+        ul.no-bullets {
+            list-style-type: none; /* Remove bullets */
+        }
+        .completed {
+            text-decoration: line-through;
+        }
+        .today {
+        border: 2px solid #f88c34; 
+        padding: 5px;
+        }
+        .gray {
+        color: gray;
+        }
+    </style>
+</head>
+<body>
+    <img src="https://holidaytrips.thekampany.com/media/trip_images/sanibel-1945x625-c-default.jpg">
+    <div class="card">
+    <div class="container">
+    <h1>{{ trip.name }}</h1>
+    <br />
+    {{ trip.description }}<br /><br />
+    <h2>Programme</h2>
+        {% for day_program in dayprograms %}
+            {% if day_program.tripdate|date:"Y-m-d" == today|date:"Y-m-d" %}
+              <p class="today">
+            {% endif %}
+            {% if day_program.tripdate|date:"Y-m-d" < today|date:"Y-m-d" %}
+              <p class="gray">
+            {% endif %}
+            {% if day_program.tripdate|date:"Y-m-d" > today|date:"Y-m-d" %}
+              <p>
+            {% endif %}
+                {{ day_program.dayprogramnumber }}&nbsp;
+                ({{ day_program.tripdate|date:'d M' }})&nbsp;
+                <i>{{ day_program.description }}</i>
+            </p>
+        {% endfor %}
+    <br />
+    </div>
+    </div>
+    <div class="card">
+    <div class="container">
+
+       <h2>Check / Pack / Wishlist</h2>
+       <ul class="no-bullets">
+           {% for item in items %}
+              <li class="{% if item.is_completed %}completed{% endif %}">
+              <form method="post" action="{% url 'tripapp:toggle_checklist_item' item.id %}">
+                  {% csrf_token %}
+                  <input type="checkbox" onclick="this.form.submit()" {% if item.is_completed %}checked{% endif %}>
+                  {{ item.text }}
+              </form>
+              </li>
+            {% endfor %}
+        </ul>
+    </div>
+    </div>
+
+    <div class="card">
+    <div class="container">
+    <br />
+    <br />
+    </div>
+    </div>
+
+
+
+    <div class="card">
+    <div class="container">
+        {% for dayprogram in dayprograms %}
+            <center><h1>{{ dayprogram.tripdate|date:'l d M' }}</h1></center>
+            <table width="100%">
+                <tr>
+                <td align="center"><h2>
+                {% if dayprogram.description %}
+                    <div class="dayprogram_description">{{ dayprogram.description }}</div>
+                {% endif %}</h2>
+                </td>
+                </tr>
+            </table>
+        
+            <!--<p>{{ dayprogram.description }}</p>-->
+            {% if dayprogram.necessary_info %}
+               <p>
+               <span style="color:gray;">Information for Today</span><br />
+               {{ dayprogram.necessary_info|linebreaks }}
+               </p>
+            {% endif %}
+            {% if dayprogram.possible_activities %}
+               <p>
+               <span style="color:gray;">Ideas for Today</span><br />
+               {{ dayprogram.possible_activities|linebreaks }}
+               </p>
+            {% endif %}
+        
+            {% if dayprogram.links.all %}
+                   <span style="color:gray;">Travel Documents</span><br />
+            {% endif %}
+            {% for link in dayprogram.links.all %}
+                    <p>
+                        {% if link.url %}
+                            <a href="{{ link.url }}" target="_blank"><img src="{% static 'icons/icon-url.png' %}" width="16" height="16">&nbsp;
+                            {% if link.description %}{{ link.description }}{% else %}Link to travel document{% endif %}</a>
+                        {% endif %}
+                        {% if link.document %}
+                            <a href="{{ link.document.url }}" target="_blank"><img src="{% static 'icons/icon-doc.png' %}" width="16" height="16">&nbsp;
+                            {% if link.description %}{{ link.description }}{% else %}Download Document{% endif %}</a>
+                        {% endif %}
+                    </p>
+             {% endfor %}
+        
+        
+        
+            <br />{{ dayprogram.images.all }}
+                {% for image in dayprogram.images.all %}
+                        <div class="polaroid"><img src="{{ image.image.url }}" alt="{{ image.description }}"></div>
+                        <div class="caption">{{ image.description }}</div><br />
+                {% endfor %}
+            <p>
+            {% if today >= dayprogram.tripdate %}
+              {% if questions %}
+                {% if user.is_authenticated %}
+                  {% for question_with_info in questions_with_badge_info %}
+        
+                  <h3>{{ question_with_info.question.question_text }}</h3>
+        
+                    {% for tripper_badge_info in question_with_info.trippers_badge_info %}
+                     {% if tripper_badge_info.tripper.name == user.username %}
+        
+                      {% if tripper_badge_info.has_badge %}
+                        <p>"{{ question_with_info.question.correct_answer }}" You have the badge for this question!</p>
+                      {% else %}
+                        <form id="questionForm" method="post" action="{% url 'tripapp:check_answer' dayprogram.id question_with_info.question.id %}">
+                          {% csrf_token %}
+                          {{ form.as_p }}
+                          <button type="submit">Check Answer</button>
+                        </form>
+                      {% endif %}
+                     {% endif %}
+                    {% endfor %}
+                  {% endfor %}
+                {% else %}
+                    <p>You need to <a href="{% url 'tripapp:login' %}">login</a> to see and answer the question(s).</p>
+                {% endif %}
+              {% endif %}
+            {% endif %}
+            </p>
+            <p>
+            {% if log_entries %}<h3>Log</h3>{% endif %}
+                {% for log_entry in log_entries %}
+                    <span style="color:gray;">{{ log_entry.tripper.name }}:</span><br /> {{ log_entry.logentry_text }}<br />
+                {% endfor %}
+            </p>
+        {% endfor %}
+    </div>
+    </div>
+        
+        
+</body>
+</html>

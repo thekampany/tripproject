@@ -1,7 +1,9 @@
 from django.contrib import admin
 from .models import Trip, DayProgram, Tripper, Badge, Checklist, ChecklistItem, Image, Question, Point, BingoCard, BingoAnswer, BadgeAssignment, LogEntry, Link, Route
 from django_q.tasks import async_task
-from .models import Tribe, UserProfile, TripExpense
+from .models import Tribe, UserProfile, TripExpense, Location
+from django.core.management import call_command
+from django_q.models import Schedule  # Assuming you have imported Schedule for admin access
 
 class PointAdmin(admin.ModelAdmin):
     list_display = ('name', 'trip')
@@ -17,6 +19,16 @@ class BadgeAdmin(admin.ModelAdmin):
     actions = [run_assign_badges]
 
 
+schedule_admin = admin.site._registry.get(Schedule)
+
+if schedule_admin:
+    # Add the custom action to the existing admin class
+    def run_fetch_locations(modeladmin, request, queryset):
+        call_command('run_fetch_locations')
+        modeladmin.message_user(request, "fetch_locations_for_tripper task executed successfully.")
+    run_fetch_locations.short_description = 'Run fetch_locations_for_tripper now'
+
+    schedule_admin.actions = schedule_admin.actions + [run_fetch_locations] if schedule_admin.actions else [run_fetch_locations]
 
 admin.site.register(Trip)
 admin.site.register(DayProgram)
@@ -36,3 +48,4 @@ admin.site.register(LogEntry)
 admin.site.register(Link)
 admin.site.register(Route)
 admin.site.register(TripExpense)
+admin.site.register(Location)

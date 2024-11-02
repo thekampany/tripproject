@@ -4,12 +4,12 @@
 
 {% block content %}
   <h1>{{ tripper.name }}'s Profile</h1>
+  {% if tripper.photo %}
+    <p><img src="{{ tripper.photo.url }}" alt="{{ tripper.name }}'s photo" height="100"></p>
+  {% endif %}
   <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
       {{ form|crispy }}
       <button type="submit">Save changes</button>
   </form>
-  {% if tripper.photo %}
-    <img src="{{ tripper.photo.url }}" alt="{{ tripper.name }}'s photo" height="100">
-  {% endif %}
 {% endblock %}

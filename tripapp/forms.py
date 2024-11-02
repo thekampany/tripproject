@@ -27,7 +27,7 @@ from django.conf import settings
 class TripperForm(forms.ModelForm):
     class Meta:
         model = Tripper
-        fields = ['photo']
+        fields = ['photo', 'api_url', 'api_key']
 
 class TripperAdminForm(forms.ModelForm):
     class Meta:

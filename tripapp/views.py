@@ -4,7 +4,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Trip, Tripper, Badge, DayProgram, Checklist, ChecklistItem, Image, Question, Point
 from .models import BingoCard, BingoAnswer, BadgeAssignment
-from .models import Tribe, UserProfile, LogEntry, Link, Route, TripExpense
+from .models import Tribe, UserProfile, LogEntry, Link, Route, TripExpense, Location
 from .forms import BadgeForm, TripForm, ChecklistItemForm, ImageForm, BingoAnswerForm
 from .forms import CustomUserCreationForm
 from .forms import AnswerForm, AnswerImageForm, TripperForm, TripperAdminForm
@@ -16,7 +16,6 @@ from .forms import LinkForm, RouteForm, SuggestionForm, TripExpenseForm, TripUpd
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
-from django.utils import timezone
 from django.contrib.auth.models import User
 from .utils import get_random_unsplash_image
 from django.db.models import Count, Q
@@ -29,11 +28,15 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
-from datetime import timedelta, date
+from django.utils import timezone
+from datetime import timedelta, date, datetime
 import uuid
 from .decorators import tripper_required
 from django.http import JsonResponse
+from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+#from weasyprint import HTML
+
 
 def index(request):
     category = "roadtrip"
@@ -399,8 +402,10 @@ def map_view(request):
 def trip_map_view(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     points = trip.points.prefetch_related('dayprograms')
+    #locations = Location.objects.filter(tripper=trip.tripper)  # visited locations dawarich only for tripper
+    locations = Location.objects.all()  # just all visited locations dawarich
 
-    return render(request, 'tripapp/trip_map.html', {'trip': trip, 'points': points})
+    return render(request, 'tripapp/trip_map.html', {'trip': trip, 'points': points, 'locations': locations})
 
 @login_required
 def trip_dayprogram_points(request, trip_id, dayprogram_id):
@@ -409,7 +414,11 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
     trip_points = Point.objects.filter(trip=trip)
 
     points = trip_points.filter(dayprograms=dayprogram)
-
+    filter_date = dayprogram.tripdate
+    start_of_day = timezone.make_aware(datetime.combine(filter_date, datetime.min.time()))
+    end_of_day = start_of_day + timedelta(days=1)
+    locations = Location.objects.filter(timestamp__range=(start_of_day, end_of_day))
+ 
     trip_name_no_spaces = trip.name.replace(" ", "")
     tribe_name_no_spaces = trip.tribe.name.replace(" ","")
     first_point = points.first() if points.exists() else None
@@ -421,6 +430,7 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
         'trip_name_no_spaces':trip_name_no_spaces,
         'tribe_name_no_spaces' : tribe_name_no_spaces,
         'first_point': first_point,
+        'locations': locations,
     }
 
     return render(request, 'tripapp/trip_dayprogram_points.html', context) 
@@ -1032,3 +1042,18 @@ def trip_update(request, trip_id):
         form = TripUpdateForm(instance=trip)
 
     return render(request, 'tripapp/trip_update.html', {'form': form, 'trip': trip})
+
+#def generate_pdf(request, trip_id):
+#    trip = get_object_or_404(Trip, id=trip_id)  
+#    dayprograms = DayProgram.objects.filter(trip=trip).order_by('tripdate').prefetch_related('images')
+
+    #checklist = Checklist.objects.get_or_create(trip=trip)[0]
+    #checklist_items = ChecklistItem.objects.filter(checklist=checklist).order_by('is_completed', 'id') 
+    #items = checklist.items.all()
+    #bingo
+
+#    html_string = render_to_string('tripapp/trip_pdf.html', {'trip': trip,'dayprograms':dayprograms})
+#    pdf = HTML(string=html_string).write_pdf()
+#    response = HttpResponse(pdf, content_type='application/pdf')
+#    response['Content-Disposition'] = 'inline; filename="trip_report.pdf"'
+#    return response

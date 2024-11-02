@@ -117,7 +117,8 @@ class Tripper(models.Model):
     photo = models.ImageField(upload_to='tripper_photos/', null=True, blank=True)
     is_trip_admin = models.BooleanField(default=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
-
+    api_url = models.URLField(help_text="dawarich-api-url", null=True, blank=True)  
+    api_key = models.CharField(max_length=100,help_text="dawarich-api-key", null=True, blank=True)  
     #def count_badges(self):
     #    return self.badges.count()
 
@@ -237,7 +238,7 @@ class TripExpense(models.Model):
     receipt = models.ImageField(upload_to='receipts/', blank=True, null=True)
 
     def __str__(self):
-        return f'{self.amount} {self.currency} on {self.trip.name} by {self.tripper.user.username}'
+        return f'{self.amount} {self.currency} on {self.trip.name} by {self.tripper.name}'
 
     def save(self, *args, **kwargs):
         default_currency = settings.APP_CURRENCY 
@@ -261,3 +262,9 @@ class TripExpense(models.Model):
                 return Decimal(self.amount) * Decimal(conversion_rate)
 
         return self.amount
+
+class Location(models.Model):
+    tripper = models.ForeignKey(Tripper, on_delete=models.CASCADE)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    timestamp = models.DateTimeField()

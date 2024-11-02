@@ -50,6 +50,14 @@
             popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
         });
 
+        var visitedLocationIcon = L.icon({
+            iconUrl: "{% static 'icons/mapicons/mappin-visited.png' %}",
+
+            iconSize:     [16, 16], // size of the icon
+            iconAnchor:   [8, 8], // point of the icon which will correspond to marker's location
+            popupAnchor:  [0, -20] // point from which the popup should open relative to the iconAnchor
+        });
+
 
 
         // Add markers from Django context
@@ -64,7 +72,17 @@
   
             {% endfor %}
         ];
+        var locations = [
+            {% for location in locations %}
+                {
+                    "coords": [{{ location.latitude }}, {{ location.longitude }}],
+                    "timestamp": "{{ location.timestamp }}"
+                },  
+            {% endfor %}
+        ];
 
+
+        
         // Create a feature group to store all the markers
         var markers = L.featureGroup();
 
@@ -78,6 +96,14 @@
             } else {
                marker = L.marker(point.coords).bindPopup(point.name);
             }
+            markers.addLayer(marker);
+        });
+        // visited locations
+        locations.forEach(function(location) {
+            var popupContent = `<b>${location.timestamp}</b>`;
+            console.log('Popup Content:', popupContent,'marker', location.timestamp); // Log the popup content
+            var marker;
+            marker = L.marker(location.coords, {icon: visitedLocationIcon}).bindPopup(popupContent);
             markers.addLayer(marker);
         });
 

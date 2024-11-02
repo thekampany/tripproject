@@ -21,7 +21,7 @@ Unsplash api key in .env is used for displaying roadtrip backgrounds on the welc
 Log in the web container to do some additional steps:  
 ~~`python manage.py migrate`~~ - should no longer be necessary     
 `python manage.py createsuperuser` - in order to use the Django Admin    
-`python manage.py qcluster` - gives the functionality in the application to automatically assign badges on a certain date   
+~~`python manage.py qcluster`~~ - gives the functionality in the application to automatically assign badges on a certain date; should no longer be necessary  
 
 Go to your browser and start with register.  
 
