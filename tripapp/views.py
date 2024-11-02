@@ -402,8 +402,10 @@ def map_view(request):
 def trip_map_view(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     points = trip.points.prefetch_related('dayprograms')
-    #locations = Location.objects.filter(tripper=trip.tripper)  # visited locations dawarich only for tripper
-    locations = Location.objects.all()  # just all visited locations dawarich
+    #all visited locations dawarich -- within dates of the trip
+    start_of_day = timezone.make_aware(datetime.combine(trip.date_from, datetime.min.time()))
+    end_of_day = timezone.make_aware(datetime.combine(trip.date_to, datetime.max.time()))
+    locations = Location.objects.filter(timestamp__range=(start_of_day, end_of_day))
 
     return render(request, 'tripapp/trip_map.html', {'trip': trip, 'points': points, 'locations': locations})
 
