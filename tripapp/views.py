@@ -31,7 +31,7 @@ from django.utils.html import strip_tags
 from django.utils import timezone
 from datetime import timedelta, date, datetime
 import uuid
-from .decorators import tripper_required
+from .decorators import tripper_required, user_owns_tripper
 from django.http import JsonResponse
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -405,13 +405,18 @@ def trip_map_view(request, trip_id):
     #all visited locations dawarich -- within dates of the trip
     start_of_day = timezone.make_aware(datetime.combine(trip.date_from, datetime.min.time()))
     end_of_day = timezone.make_aware(datetime.combine(trip.date_to, datetime.max.time()))
-    locations = Location.objects.filter(timestamp__range=(start_of_day, end_of_day))
+    trippers = trip.trippers.all()
+    locations = Location.objects.filter(
+        tripper__in=trippers,
+        timestamp__range=(start_of_day, end_of_day)
+    )
 
     return render(request, 'tripapp/trip_map.html', {'trip': trip, 'points': points, 'locations': locations})
 
 @login_required
 def trip_dayprogram_points(request, trip_id, dayprogram_id):
     trip = get_object_or_404(Trip, pk=trip_id)
+    trippers = trip.trippers.all()
     dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
     trip_points = Point.objects.filter(trip=trip)
 
@@ -419,7 +424,7 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
     filter_date = dayprogram.tripdate
     start_of_day = timezone.make_aware(datetime.combine(filter_date, datetime.min.time()))
     end_of_day = start_of_day + timedelta(days=1)
-    locations = Location.objects.filter(timestamp__range=(start_of_day, end_of_day))
+    locations = Location.objects.filter(tripper__in=trippers,timestamp__range=(start_of_day, end_of_day))
  
     trip_name_no_spaces = trip.name.replace(" ", "")
     tribe_name_no_spaces = trip.tribe.name.replace(" ","")
@@ -493,7 +498,7 @@ def upload_answerimage(request, bingocard_id):
 
     return render(request, 'tripapp/upload_answerimage.html', {'form': form, 'bingocard': bingocard})
 
-@login_required
+@user_owns_tripper
 def tripper_profile(request, tripper_id):
     tripper = get_object_or_404(Tripper, id=tripper_id)
     if request.method == 'POST':
@@ -838,7 +843,7 @@ def save_event(request):
 
     return JsonResponse({'error': 'Invalid request'})
 
-
+@login_required
 def add_logentry(request, dayprogram_id):
     dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
     current_user = request.user
@@ -856,7 +861,7 @@ def add_logentry(request, dayprogram_id):
 
     return render(request, 'tripapp/add_logentry.html', {'form': form, 'dayprogram': dayprogram})
 
-
+@tripper_required
 def dayprogram_add(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
 
@@ -904,6 +909,7 @@ def tribe_trip_organize(request,tribe_id,trip_id):
          'admin_trips' : admin_trips
         })
 
+@login_required
 def add_badge_and_question(request, dayprogram_id):
     dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
     if request.method == 'POST':
@@ -1012,7 +1018,9 @@ def add_expense(request, trip_id, tripper_id):
             expense.save()
             return redirect('tripapp:trip_balance', trip_id=trip.id)
     else:
-        form = TripExpenseForm()
+        last_expense = TripExpense.objects.filter(tripper=tripper).order_by('-date').first()
+        last_currency = last_expense.currency if last_expense else settings.APP_CURRENCY
+        form = TripExpenseForm(initial={'currency': last_currency})
     return render(request, 'tripapp/add_expense.html', {'form': form, 'trip': trip, 'tripper':tripper})
 
 @login_required
@@ -1026,7 +1034,7 @@ def trip_balance(request, trip_id):
 @login_required
 def trip_expenses_list(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
-    expenses = trip.expenses.all()  
+    expenses = trip.expenses.all().order_by('date')
     tripper = Tripper.objects.filter(name=request.user.username).first()
     app_currency = settings.APP_CURRENCY
     return render(request, 'tripapp/trip_expenses_list.html', {'trip': trip, 'expenses': expenses, 'tripper':tripper, 'app_currency':app_currency})

@@ -7,6 +7,11 @@ Besides the main purpose, you can also entertain your fellow travellers by getin
 
 The Trippers can invite their friends and family to the tribe. People in the tribe can see an overview of the trip and who is winning the badges.
 
+Additional features:  
+Add expenses and keep a simple overview of who owes and who gets.  
+Per trip show points of interest and stopovers on a map.  
+Add a Dawarich api key and see your tracks - did you go where you planned you would go.  
+
 # Installation
 `git clone https://github.com/thekampany/tripproject.git`  
 Edit  docker-compose.yml for portnumbers and dbuser and password  
@@ -34,7 +39,8 @@ Go to your browser and start with register.
 4. Edit the dayprograms for the trip. Can be a lot of work. Remember, everything can be added and edited during your trip.
 5. Optionally add questions to a dayprogram, think of bingo items. 
 6. Optionally upload badges.
-7. When it works out, create another trip, or when it is with a different group, create another tribe.
+7. Optionally a Tripper can add an api-key of a selfhosted Dawarich instance (https://dawarich.app/).
+8. When it works out, create another trip, or when it is with a different group, create another tribe.
 
 
 # Screenshots

@@ -36,7 +36,7 @@
             <p>
                <a href="{% url 'tripapp:trip_detail' slug=trip.slug  %}" class="btn-fixed-width">
                {% for country in trip.country_codes_list %}
-                <img src="https://flagcdn.com/16x12/{{ country }}.png" width="16" height="12" />
+                <img src="https://flagcdn.com/16x12/{{ country|lower }}.png" width="16" height="12" />
                {% endfor %}
                &nbsp;{{ trip.name }}
             </a></p>

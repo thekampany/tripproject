@@ -44,12 +44,12 @@
     <div class="container">
     <h1>{{ trip.name }}</h1>
     {% if not trip.use_facilmap %}
-    <a href="{% url 'tripapp:trip_map_view' trip.id %}" class="btn"><img src="{% static 'icons/maps-iconreverse.png'  %}" width="60" height="50"></a>
+    <a href="{% url 'tripapp:trip_map_view' trip.id %}" class="btn"><img src="{% static 'icons/maps-iconreverse.png'  %}" width="56" height="50"></a>
     {% else %}
-    <a href="{% url 'tripapp:planner_map' trip.id %}" class="btn"><img src="{% static 'icons/maps-iconreverse.png'  %}" width="60" height="50"></a>
+    <a href="{% url 'tripapp:planner_map' trip.id %}" class="btn"><img src="{% static 'icons/maps-iconreverse.png'  %}" width="56" height="50"></a>
     {% endif %}
-    <a href="{% url 'tripapp:trip_bingocards' trip.id %}" class="btn"><img src="{% static 'icons/bingoicon-removebgreverse.png'  %}" width="60" height="50"></a>
-    <a href="{% url 'tripapp:trip_trippers' trip.id %}" class="btn"><img src="{% static 'icons/tourist-guide-icon-removebgreverse.png'  %}" width="60" height="50"></a>
+    <a href="{% url 'tripapp:trip_bingocards' trip.id %}" class="btn"><img src="{% static 'icons/bingoicon-removebgreverse.png'  %}" width="56" height="50"></a>
+    <a href="{% url 'tripapp:trip_trippers' trip.id %}" class="btn"><img src="{% static 'icons/tourist-guide-icon-removebgreverse.png'  %}" width="56" height="50"></a>
     <br /><br />
     <h2>Programme</h2>
         {% for day_program in dayprograms %}

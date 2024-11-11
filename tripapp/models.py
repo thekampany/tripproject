@@ -7,6 +7,9 @@ import uuid
 import requests
 from decimal import Decimal
 from django.conf import settings 
+from PIL import Image as PilImage
+from io import BytesIO
+from django.core.files.base import ContentFile
 
 # Create your models here.
 
@@ -109,6 +112,16 @@ class Image(models.Model):
     image = models.ImageField(upload_to='day_program_images/')
     description = models.CharField(max_length=255, blank=True)
 
+    def save(self, *args, **kwargs):
+        img = PilImage.open(self.image)
+        max_size = (600, 600)  
+        img.thumbnail(max_size)
+        buffer = BytesIO()
+        img.save(buffer, format='JPEG', quality=75)
+        buffer.seek(0)
+        self.image.save(self.image.name, ContentFile(buffer.read()), save=False)
+        super().save(*args, **kwargs)
+
 
 class Tripper(models.Model):
     name = models.CharField(max_length=100)
@@ -119,6 +132,8 @@ class Tripper(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     api_url = models.URLField(help_text="dawarich-api-url", null=True, blank=True)  
     api_key = models.CharField(max_length=100,help_text="dawarich-api-key", null=True, blank=True)  
+    #immich_api_url = models.URLField(help_text="immich-api-url", null=True, blank=True) 
+    #immich_api_key = models.CharField(max_length=100, help_text="immich-api-key", null=True, blank=True)
     #def count_badges(self):
     #    return self.badges.count()
 
@@ -248,6 +263,15 @@ class TripExpense(models.Model):
         else:
             self.converted_amount = self.amount
 
+        if self.receipt:
+            img = PilImage.open(self.receipt)
+            max_size = (600, 600)  
+            img.thumbnail(max_size)
+            buffer = BytesIO()
+            img.save(buffer, format='JPEG', quality=75)
+            buffer.seek(0)
+            self.receipt.save(self.receipt.name, ContentFile(buffer.read()), save=False)
+
         super(TripExpense, self).save(*args, **kwargs)
 
     def convert_to_default_currency(self):
@@ -267,4 +291,12 @@ class Location(models.Model):
     tripper = models.ForeignKey(Tripper, on_delete=models.CASCADE)
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    timestamp = models.DateTimeField()
+
+class ImmichPhotos(models.Model):
+    tripper = models.ForeignKey(Tripper, on_delete=models.CASCADE)
+    immich_photo_id  = models.CharField(max_length=100)  
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    city = models.CharField(max_length=100, null=True, blank=True)  
     timestamp = models.DateTimeField()

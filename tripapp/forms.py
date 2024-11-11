@@ -261,9 +261,20 @@ class TripExpenseForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        initial = kwargs.get('initial', {})
+        if 'currency' not in initial:
+            initial['currency'] = settings.APP_CURRENCY
+            kwargs['initial'] = initial
+        
         super(TripExpenseForm, self).__init__(*args, **kwargs)
-        self.fields['currency'].initial = settings.APP_CURRENCY  
-        #self.fields['currency'].widget.attrs['readonly'] = True  
+        
+
+    def clean_currency(self):
+        currency = self.cleaned_data.get('currency')
+        if currency:
+            return currency.upper()
+        return currency
+
 
 class TripUpdateForm(forms.ModelForm):
     class Meta:

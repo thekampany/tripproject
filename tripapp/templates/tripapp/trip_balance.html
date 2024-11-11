@@ -32,7 +32,7 @@
 <div class="card">
 <div class="container">
 
-<h2>Balance for Trip: {{ trip.name }}</h2>
+<h2>Balance for Trip {{ trip.name }}</h2>
 
 <table>
     <!--<tr>
@@ -44,12 +44,13 @@
         <td>{{ tripper }}</td>
         <td>
         {% if values.balance > 0 %}
-            gets {{ values.balance }}{{ app_currency }}
+            gets</td><td> {{ values.balance|floatformat:2 }}
         {% endif %}
         {% if values.balance < 0 %}
-            owes {{ values.abs_balance }}{{ app_currency }}
+            owes</td><td> {{ values.abs_balance|floatformat:2 }}
         {% endif %}
         </td>
+        <td>{{ app_currency }}</td>
     </tr>
     {% endfor %}
 </table>
