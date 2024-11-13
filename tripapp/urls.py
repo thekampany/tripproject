@@ -79,4 +79,5 @@ urlpatterns = [
     path('facilmap', views.facilmap, name='facilmap'),
     path('planner_map/<int:trip_id>/', views.planner_map, name='planner_map'),
     path('save_event/', views.save_event, name='save_event'),
+    path('set_timezone/', views.set_timezone, name='set_timezone'),
     ]

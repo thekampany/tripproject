@@ -2,7 +2,7 @@
 
 from django.utils import timezone
 from django_q.models import Schedule
-from .models import Badge, Tripper, BadgeAssignment, Trip, Location
+from .models import Badge, Tripper, BadgeAssignment, Trip, Location, ImmichPhotos
 import requests
 from datetime import datetime, timedelta
 
@@ -56,3 +56,45 @@ if not Schedule.objects.filter(func='tripapp.tasks.fetch_locations_for_tripper')
         schedule_type=Schedule.DAILY,
         repeats=-1
     )
+
+
+def fetch_and_store_immich_photos(tripper_id):
+    taken_before = datetime.now()
+    taken_after = taken_before - timedelta(days=1)
+    taken_before = taken_before.isoformat() + 'Z'
+    taken_after = taken_after.isoformat() + 'Z'
+
+    url = ""
+    headers = {"x-api-key": "YOUR_API_KEY"}  
+    payload = {
+        "takenAfter": taken_after,
+        "takenBefore": taken_before,
+        "withExif": True
+    }
+
+    response = requests.post(url, headers=headers, json=payload)
+    if response.status_code != 200:
+        print("Failed to fetch data from Immich API")
+        return
+    
+    data = response.json()
+    assets = data.get("assets", {}).get("items", [])
+
+    try:
+        tripper = Tripper.objects.get(id=tripper_id)
+    except Tripper.DoesNotExist:
+        print("Tripper not found")
+        return
+
+    for item in assets:
+        exif_info = item.get("exifInfo", {})
+        ImmichPhotos.objects.update_or_create(
+            tripper=tripper,
+            immich_photo_id=item["id"],
+            defaults={
+                "latitude": exif_info.get("latitude"),
+                "longitude": exif_info.get("longitude"),
+                "city": exif_info.get("city"),
+                "timestamp": make_aware(datetime.fromisoformat(item["fileCreatedAt"].replace("Z", "")))
+            }
+        )

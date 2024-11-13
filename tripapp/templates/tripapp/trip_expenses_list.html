@@ -4,7 +4,7 @@
 <html>
 <head>
 
-    <title>Organize</title>
+    <title>Expenses for Trip {{ trip.name }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}">
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}">
@@ -33,7 +33,7 @@
 <div class="card">
 <div class="container">
 
-<h2>Expenses for Trip: {{ trip.name }}</h2>
+<h2>Expenses for Trip {{ trip.name }}</h2>
 <table>
     <thead>
         <tr>
@@ -70,7 +70,9 @@
 </table>
 <p>&nbsp;</p>
 <!--add expense-->
-<a href="{% url 'tripapp:add_expense' trip.id tripper.id %}" class="btn btn-primary">Add New Expense</a>
+<a href="{% url 'tripapp:add_expense' trip.id tripper.id %}?next=balance" class="btn btn-primary">Add New Expense</a>
+<p>&nbsp;</p>
+<a href="{% url 'tripapp:trip_balance' trip.id %}" >Back</a>
 
 </div>
 </div>

@@ -135,7 +135,7 @@
     {% endif %}
     <a href="#" data-toggle="modal" data-target="#suggestionModal" class="daydetail-button">Add<br />Suggestion</a>
     {% if dayprogram.trip.use_expenses %}
-       <a href="{% url 'tripapp:add_expense' dayprogram.trip.id logged_on_tripper.id %}" class="daydetail-button">Add<br />Expense</a>
+       <a href="{% url 'tripapp:add_expense' dayprogram.trip.id logged_on_tripper.id %}?next=dayprogram_detail&dayprogram_id={{ dayprogram.id }}" class="daydetail-button">Add<br />Expense</a>
     {% endif %}
     </div>
     <p>&nbsp;</p>

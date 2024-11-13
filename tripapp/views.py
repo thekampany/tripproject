@@ -35,6 +35,7 @@ from .decorators import tripper_required, user_owns_tripper
 from django.http import JsonResponse
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+import json
 #from weasyprint import HTML
 
 
@@ -442,7 +443,7 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
 
     return render(request, 'tripapp/trip_dayprogram_points.html', context) 
 
-@login_required
+@tripper_required
 def trip_bingocards(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     bingocards = trip.bingocards.all()
@@ -1009,6 +1010,9 @@ def add_suggestion(request, dayprogram_id):
 def add_expense(request, trip_id, tripper_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     tripper = get_object_or_404(Tripper, pk=tripper_id)
+    next_url = request.GET.get('next')  
+    dayprogram_id = request.GET.get('dayprogram_id') 
+
     if request.method == 'POST':
         form = TripExpenseForm(request.POST, request.FILES)
         if form.is_valid():
@@ -1016,14 +1020,18 @@ def add_expense(request, trip_id, tripper_id):
             expense.trip = trip
             expense.tripper = tripper
             expense.save()
-            return redirect('tripapp:trip_balance', trip_id=trip.id)
+
+            if next_url == 'balance':
+                return redirect('tripapp:trip_balance', trip_id=trip.id)
+            elif next_url == 'dayprogram_detail' and dayprogram_id:
+                return redirect('tripapp:dayprogram_detail', id=dayprogram_id)
     else:
         last_expense = TripExpense.objects.filter(tripper=tripper).order_by('-date').first()
         last_currency = last_expense.currency if last_expense else settings.APP_CURRENCY
         form = TripExpenseForm(initial={'currency': last_currency})
     return render(request, 'tripapp/add_expense.html', {'form': form, 'trip': trip, 'tripper':tripper})
 
-@login_required
+@tripper_required
 def trip_balance(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     balance = trip.calculate_balance()
@@ -1031,7 +1039,7 @@ def trip_balance(request, trip_id):
     app_currency = settings.APP_CURRENCY
     return render(request, 'tripapp/trip_balance.html', {'trip': trip, 'balance': abs_balance, 'app_currency':app_currency})
 
-@login_required
+@tripper_required
 def trip_expenses_list(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     expenses = trip.expenses.all().order_by('date')
@@ -1067,3 +1075,13 @@ def trip_update(request, trip_id):
 #    response = HttpResponse(pdf, content_type='application/pdf')
 #    response['Content-Disposition'] = 'inline; filename="trip_report.pdf"'
 #    return response
+
+def set_timezone(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        user_timezone = data.get("timezone")
+        if user_timezone:
+            timezone.activate(user_timezone)
+            request.session['user_timezone'] = user_timezone  
+            return JsonResponse({"status": "success"})
+    return JsonResponse({"status": "error"}, status=400)
