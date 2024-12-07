@@ -23,14 +23,16 @@ from crispy_forms.layout import Submit
 from django.forms import inlineformset_factory
 from django.core.validators import MaxLengthValidator
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 class TripperForm(forms.ModelForm):
     class Meta:
         model = Tripper
-        fields = ['photo', 'api_url', 'api_key']
+        fields = ['photo', 'dawarich_url', 'dawarich_api_key', 'immich_url', 'immich_api_key']
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['api_url'].initial = 'https://your-dawarich-url.com/api/v1/points' 
+        self.fields['dawarich_url'].initial = 'https://your-dawarich-url.com/api/v1/points'
+        self.fields['immich_url'].initial = 'https://your-immich-server.com' 
 
 class TripperAdminForm(forms.ModelForm):
     class Meta:
@@ -280,3 +282,34 @@ class TripUpdateForm(forms.ModelForm):
     class Meta:
         model = Trip
         fields = ['name', 'description', 'image', 'country_codes', 'use_expenses']
+
+
+
+class UserUpdateForm(forms.ModelForm):
+    new_password = forms.CharField(
+        label="New Password", 
+        widget=forms.PasswordInput(attrs={'placeholder': 'Enter new password'}), 
+        required=False
+    )
+    confirm_password = forms.CharField(
+        label="Confirm Password", 
+        widget=forms.PasswordInput(attrs={'placeholder': 'Confirm new password'}), 
+        required=False
+    )
+
+    class Meta:
+        model = User
+        fields = ['username', 'email']
+        widgets = {
+            'username': forms.TextInput(attrs={'readonly': 'readonly'}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        new_password = cleaned_data.get("new_password")
+        confirm_password = cleaned_data.get("confirm_password")
+
+        if new_password and new_password != confirm_password:
+            raise ValidationError("Passwords do not match.")
+        return cleaned_data
+

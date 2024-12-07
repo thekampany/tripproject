@@ -1,9 +1,9 @@
 from django.contrib import admin
 from .models import Trip, DayProgram, Tripper, Badge, Checklist, ChecklistItem, Image, Question, Point, BingoCard, BingoAnswer, BadgeAssignment, LogEntry, Link, Route
 from django_q.tasks import async_task
-from .models import Tribe, UserProfile, TripExpense, Location
+from .models import Tribe, UserProfile, TripExpense, Location, ImmichPhotos
 from django.core.management import call_command
-from django_q.models import Schedule  # Assuming you have imported Schedule for admin access
+from django_q.models import Schedule 
 
 class PointAdmin(admin.ModelAdmin):
     list_display = ('name', 'trip')
@@ -12,7 +12,6 @@ class PointAdmin(admin.ModelAdmin):
 def run_assign_badges(modeladmin, request, queryset):
     async_task('tripapp.tasks.assign_badges')
     modeladmin.message_user(request, "The assign_badges task has been executed.")
-
 run_assign_badges.short_description = 'Run assign_badges task'
 
 class BadgeAdmin(admin.ModelAdmin):
@@ -21,14 +20,27 @@ class BadgeAdmin(admin.ModelAdmin):
 
 schedule_admin = admin.site._registry.get(Schedule)
 
-if schedule_admin:
-    # Add the custom action to the existing admin class
-    def run_fetch_locations(modeladmin, request, queryset):
-        call_command('run_fetch_locations')
-        modeladmin.message_user(request, "fetch_locations_for_tripper task executed successfully.")
-    run_fetch_locations.short_description = 'Run fetch_locations_for_tripper now'
 
-    schedule_admin.actions = schedule_admin.actions + [run_fetch_locations] if schedule_admin.actions else [run_fetch_locations]
+def run_fetch_locations(modeladmin, request, queryset):
+    call_command('run_fetch_locations')
+    modeladmin.message_user(request, "fetch_locations_for_tripper task executed successfully.")
+run_fetch_locations.short_description = 'Run fetch_locations_for_tripper now'
+
+def run_fetch_and_store_immich_photos(modeladmin, request, queryset):
+    call_command('run_fetch_and_store_immich_photos')  
+    modeladmin.message_user(request, "fetch_and_store_immich_photos task executed successfully.")
+run_fetch_and_store_immich_photos.short_description = 'Run fetch_and_store_immich_photos now'
+
+if schedule_admin:
+    schedule_admin.actions = (
+        schedule_admin.actions + [run_fetch_locations, run_fetch_and_store_immich_photos]
+        if schedule_admin.actions else
+        [run_fetch_locations, run_fetch_and_store_immich_photos]
+    )
+
+class ImmichAdmin(admin.ModelAdmin):
+    actions = [run_fetch_locations, run_fetch_and_store_immich_photos]
+
 
 admin.site.register(Trip)
 admin.site.register(DayProgram)
@@ -49,3 +61,4 @@ admin.site.register(Link)
 admin.site.register(Route)
 admin.site.register(TripExpense)
 admin.site.register(Location)
+admin.site.register(ImmichPhotos,ImmichAdmin)

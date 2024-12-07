@@ -36,6 +36,7 @@ urlpatterns = [
     path('trip/<int:trip_id>/balance/', views.trip_balance, name='trip_balance'),
     path('trip/<int:trip_id>/expenses/', views.trip_expenses_list, name='trip_expenses_list'),
     path('trip/<int:trip_id>/update/', views.trip_update, name='trip_update'),
+    path('trip/<slug:slug>/checklist/', views.trip_checklist, name='trip_checklist'),
     #path('trip/<int:trip_id>/pdf/', views.generate_pdf, name='trip_pdf'),
     path('tripper/<int:tripper_id>/profile/', views.tripper_profile, name='tripper_profile'),
     #path('tripper/<int:tripper_id>/badges/', views.tripper_badges, name='tripper_badges'),
@@ -80,4 +81,5 @@ urlpatterns = [
     path('planner_map/<int:trip_id>/', views.planner_map, name='planner_map'),
     path('save_event/', views.save_event, name='save_event'),
     path('set_timezone/', views.set_timezone, name='set_timezone'),
-    ]
+    path('profile/update/', views.update_profile, name='update_profile'),
+]

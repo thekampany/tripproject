@@ -34,6 +34,7 @@
 <div class="container">
 
 <h2>Expenses for Trip {{ trip.name }}</h2>
+{% if expenses %}
 <table>
     <thead>
         <tr>
@@ -61,18 +62,19 @@
                 {% endif %}
             </td>
         </tr>
-        {% empty %}
-        <tr>
-            <td colspan="5">No expenses recorded for this trip.</td>
-        </tr>
         {% endfor %}
     </tbody>
 </table>
+{% else %}
+    <p>No expenses recorded for this trip.</p>
+{% endif %}
 <p>&nbsp;</p>
 <!--add expense-->
 <a href="{% url 'tripapp:add_expense' trip.id tripper.id %}?next=balance" class="btn btn-primary">Add New Expense</a>
+&nbsp;
+<a href="{% url 'tripapp:trip_balance' trip.id %}" class="btn btn-primary">See Balance</a>
 <p>&nbsp;</p>
-<a href="{% url 'tripapp:trip_balance' trip.id %}" >Back</a>
+<a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" >Back to Trip</a>
 
 </div>
 </div>

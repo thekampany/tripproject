@@ -12,8 +12,11 @@
     <link rel="mask-icon" href="{% static 'favicon/safari-pinned-tab.svg' %}" color="#5bbad5">
     <meta name="msapplication-TileColor" content="#da532c">
     <meta name="theme-color" content="#ffffff">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <!--<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
     <style>
       body, html {
       background: url('{{ background_image_url }}') no-repeat center center fixed;
@@ -27,9 +30,36 @@
 
 </head>
 <body>
-    <div class="card">
+    <div class="tripappcard">
     <div class="container">
-    <h1>Organize</h1>
+
+      <div class="topcontainer">
+        <div class="titlecontainer">
+            <h1>Organize</h1>
+        </div>
+        <div class="menucontainer">
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <img src="{% static 'icons/usericonreverse.png' %}" alt="{{ user.username }}" class="rounded-circle user-icon" width="20" height="20">
+                <span class="ms-2">{{ user.username }}</span>
+                </a>
+                <ul class="dropdown-menu custom-dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                <li><a class="dropdown-item" href="{% url 'tripapp:update_profile' %}">Account</a></li>
+                <li><a class="dropdown-item" href="{% url 'tripapp:tripper_profile' tripper.id %}">Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'tripapp:trip_list' %}">Trips</a></li>
+                <li><a class="dropdown-item" href="{% url 'tripapp:tribe_trips' %}">Organize</a></li>
+                <li><hr class="dropdown-divider"></li>
+                {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>{% endif %}
+                {% if user.is_authenticated %} <li><a class="dropdown-item" href="{% url 'tripapp:logout' %}">Logout</a></li>{% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+
+    
+    
     <a href="{% url 'tripapp:create_tribe' %}" class="btn-fixed-width">Create a New Tribe</a>&nbsp;
     {% if tribes %}<a href="{% url 'tripapp:invite_to_tribe' %}" class="btn-fixed-width">Invite People to the Tribe</a>{% endif %}
     <br /><br />
@@ -54,10 +84,10 @@
     <h1>Badges</h1>
     <a href="{% url 'tripapp:mytribes_badges_view' %}" class="btn">View Badges</a>
     <a href="{% url 'tripapp:upload_badge' %}" class="btn">Upload Badge</a>
-    <br />
+    <br /><br /><br />
     </div>
     </div>
-    <div class="card">
+    <!--<div class="card">
     <div class="container">
     <br /><br />
     {% if user.is_authenticated %} {{ user.username }}{% else %}<a href="{% url 'tripapp:login' %}">Login</a>{% endif %}
@@ -69,6 +99,6 @@
  
     <br />
     </div>
-    </div>
+    </div>-->
 </body>
 </html>

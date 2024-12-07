@@ -37,12 +37,117 @@ body {
   min-width: 320px;
   max-width: 900px;
   background-color: var(--card-background-color);
+  color: var(--color-text);
+}
+.tripappcard {
+  box-shadow: var(--card-box-shadow);
+  transition: 0.3s;
+  margin: 0 auto;
+  min-width: 320px;
+  max-width: 900px;
+  background-color: var(--card-background-color);
+  color: var(--color-text);
 }
 
 .card:hover {
   box-shadow: var(--card-box-shadow-hover);
 }
+.topcontainer {
+  color: var(--color-text);
+  display: flex;  
+  align-items: stretch;  
+  justify-content: space-between;  
+  height: auto;  
+}
 
+.titlecontainer {
+  color: var(--color-text);
+  flex: 3;  
+  padding: 0px;
+  text-align: left; 
+}
+
+.menucontainer {
+  color: var(--color-text);
+  padding: 10px;
+  text-align: right;  
+}
+
+.menucontainer ul {
+  color: var(--color-text);
+  list-style: none;  
+  padding: 0;
+  margin: 0;
+}
+
+.menucontainer li {
+  color: var(--color-text);
+  margin-left: 15px;  
+}
+.custom-dropdown-menu{
+  --bs-dropdown-bg: rgba(0, 0, 0, 0.125)
+}
+.tripmenucontainer {
+  color: var(--color-text);
+  display: flex;  
+  align-items: stretch;  
+  justify-content: space-between;  
+  height: auto;  
+  gap: 2px;
+  padding: 0px;
+}
+
+
+.tripmenuitem {
+  flex: 1; 
+  text-align: center; 
+}
+.tripmenuitem a.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%; 
+  height: 70px; 
+  /*background-color: var(--card-background-color);*/ 
+  color: var(--color-text);
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.tripmenuitem a.btn img {
+  height: 50px; 
+}
+
+/*.tripmenuitem img {
+  display: block; 
+  margin: 0 auto; 
+}*/
+.tripmenuitem .dropdown .btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 70px; 
+  width: 100%;
+  /*background-color: var(--card-background-color);*/  
+  color: var(--color-text);
+  border-radius: 5px;
+  text-decoration: none;
+  border: none;
+  font-size: 16px;
+}
+
+.tripmenuitem .dropdown-menu {
+  margin-top: 5px; 
+  border-radius: 5px;
+}
+
+.cardcontainer {
+  padding: 2px 16px;
+  text-align:left;
+}
 .container {
   padding: 2px 16px;
   text-align:left;
@@ -144,7 +249,7 @@ a.tripdetail:active {
 a.btn {
              border-radius: 6px;
              background-color: var(--btn-background);
-             padding: 14px 28px;
+             padding: 14px 2px;
              font-size: 16px;
              cursor: pointer;
              display: inline-block;
@@ -176,6 +281,18 @@ a.btn-less-padding {
         }
 
 a.btn-less-padding:hover {background: var(--color-background);}
+
+a.btn-more-padding {
+  border-radius: 6px;
+  background-color: var(--btn-background);
+  padding: 14px 28px;
+  font-size: 16px;
+  cursor: pointer;
+  display: inline-block;
+  text-decoration: none;
+}
+
+a.btn-more-padding:hover {background: var(--color-background);}
 
 
 .bingocard-container {
@@ -306,3 +423,16 @@ a.btn-less-padding:hover {background: var(--color-background);}
   background-color: var(--color-background);
   text-decoration: none;
 }
+
+
+img.user-icon {
+  content: url('/static/icons/usericonreverse.png');
+}
+
+/* Dark mode afbeelding */
+@media (prefers-color-scheme: dark) {
+  img.user-icon {
+      content: url('/static/icons/usericon.png');
+  }
+}
+

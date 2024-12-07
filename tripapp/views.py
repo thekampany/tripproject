@@ -4,7 +4,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Trip, Tripper, Badge, DayProgram, Checklist, ChecklistItem, Image, Question, Point
 from .models import BingoCard, BingoAnswer, BadgeAssignment
-from .models import Tribe, UserProfile, LogEntry, Link, Route, TripExpense, Location
+from .models import Tribe, UserProfile, LogEntry, Link, Route, TripExpense, Location, ImmichPhotos
 from .forms import BadgeForm, TripForm, ChecklistItemForm, ImageForm, BingoAnswerForm
 from .forms import CustomUserCreationForm
 from .forms import AnswerForm, AnswerImageForm, TripperForm, TripperAdminForm
@@ -12,7 +12,7 @@ from .forms import TribeCreationForm, AddTrippersForm, DayProgramForm
 from .forms import QuestionForm, PointForm, BingoCardForm
 from .forms import BadgeAssignmentFormSet, LogEntryForm
 from .forms import BadgeplusQForm, QuestionplusBForm
-from .forms import LinkForm, RouteForm, SuggestionForm, TripExpenseForm, TripUpdateForm
+from .forms import LinkForm, RouteForm, SuggestionForm, TripExpenseForm, TripUpdateForm, UserUpdateForm
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
@@ -56,12 +56,16 @@ def tribe_trips(request):
     for trip in trips:
         trip.country_codes_list = trip.country_codes.split(',') if trip.country_codes else []
     admin_trips = Trip.objects.filter(trippers__name=user, trippers__is_trip_admin=True)
-
+    tripper = None
+    if request.user.is_authenticated:
+        tripper = Tripper.objects.filter(user=request.user).first()
+ 
     return render(request, 'tripapp/tribe_trips.html', 
         {'tribes': tribes,
          'trips': trips, 
          'background_image_url': background_image_url,
-         'admin_trips': admin_trips
+         'admin_trips': admin_trips,
+         'tripper' : tripper
         })
 
 
@@ -106,9 +110,12 @@ def trip_list(request):
     trips = Trip.objects.filter(tribe__in=tribes).order_by('-date_from', '-id')
     category = "roadtrip"
     background_image_url = get_random_unsplash_image(category)
+    tripper = None
+    if request.user.is_authenticated:
+        tripper = Tripper.objects.filter(user=request.user).first()
     for trip in trips:
         trip.country_codes_list = trip.country_codes.split(',') if trip.country_codes else []
-    return render(request, 'tripapp/trip_list.html', {'tribes': tribes, 'trips': trips, 'background_image_url': background_image_url})
+    return render(request, 'tripapp/trip_list.html', {'tribes': tribes, 'trips': trips, 'background_image_url': background_image_url, 'tripper':tripper})
 
 @login_required
 def trip_detail(request, slug):
@@ -118,12 +125,17 @@ def trip_detail(request, slug):
     checklist_items = ChecklistItem.objects.filter(checklist=checklist).order_by('is_completed', 'id')  # Sorteer op is_completed en vervolgens op id
     items = checklist.items.all()
     today = date.today()
+    tripper = None
+    if request.user.is_authenticated:
+        tripper = Tripper.objects.filter(user=request.user).first()
+
     return render(request, 'tripapp/trip_detail.html', {
         'trip': trip,
         'dayprograms': dayprograms,
         'checklist': checklist,
         'items': checklist_items,
-        'today': today
+        'today': today,
+        'tripper': tripper
     })
 
 @login_required
@@ -426,7 +438,8 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
     start_of_day = timezone.make_aware(datetime.combine(filter_date, datetime.min.time()))
     end_of_day = start_of_day + timedelta(days=1)
     locations = Location.objects.filter(tripper__in=trippers,timestamp__range=(start_of_day, end_of_day))
- 
+    photolocations = ImmichPhotos.objects.filter(tripper__in=trippers,timestamp__range=(start_of_day, end_of_day))
+
     trip_name_no_spaces = trip.name.replace(" ", "")
     tribe_name_no_spaces = trip.tribe.name.replace(" ","")
     first_point = points.first() if points.exists() else None
@@ -439,6 +452,7 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
         'tribe_name_no_spaces' : tribe_name_no_spaces,
         'first_point': first_point,
         'locations': locations,
+        'photolocations': photolocations,
     }
 
     return render(request, 'tripapp/trip_dayprogram_points.html', context) 
@@ -903,11 +917,15 @@ def tribe_trip_organize(request,tribe_id,trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     tribe = get_object_or_404(Tribe, pk=tribe_id)
     admin_trips = Trip.objects.filter(trippers__name=request.user, trippers__is_trip_admin=True)
+    tripper = None
+    if request.user.is_authenticated:
+        tripper = Tripper.objects.filter(user=request.user).first()
 
     return render(request, 'tripapp/tribe_trip_organize.html', 
         {'tribe': tribe,
          'trip': trip,
-         'admin_trips' : admin_trips
+         'admin_trips' : admin_trips,
+         'tripper':tripper
         })
 
 @login_required
@@ -1070,12 +1088,16 @@ def trip_update(request, trip_id):
     #items = checklist.items.all()
     #bingo
 
-#    html_string = render_to_string('tripapp/trip_pdf.html', {'trip': trip,'dayprograms':dayprograms})
-#    pdf = HTML(string=html_string).write_pdf()
-#    response = HttpResponse(pdf, content_type='application/pdf')
-#    response['Content-Disposition'] = 'inline; filename="trip_report.pdf"'
-#    return response
-
+#     trip = get_object_or_404(Trip, pk=trip_id)
+#     expenses = trip.expenses.all().order_by('date')
+#     tripper = Tripper.objects.filter(name=request.user.username).first()
+#     app_currency = settings.APP_CURRENCY
+#     html_string = render_to_string('tripapp/trip_pdf.html', {'trip': trip,'expenses':expenses,'tripper':tripper,'app_currency':app_currency})
+#     pdf = HTML(string=html_string).write_pdf()
+#     response = HttpResponse(pdf, content_type='application/pdf')
+#     response['Content-Disposition'] = 'inline; filename="trip_report.pdf"'
+#     return response
+ 
 def set_timezone(request):
     if request.method == "POST":
         data = json.loads(request.body)
@@ -1085,3 +1107,39 @@ def set_timezone(request):
             request.session['user_timezone'] = user_timezone  
             return JsonResponse({"status": "success"})
     return JsonResponse({"status": "error"}, status=400)
+
+@login_required
+def update_profile(request):
+    if request.method == 'POST':
+        form = UserUpdateForm(request.POST, instance=request.user)
+        if form.is_valid():
+            user = form.save(commit=False)
+            new_password = form.cleaned_data.get('new_password')
+            if new_password:
+                user.password = make_password(new_password)
+            user.save()
+            messages.success(request, "Your profile has been updated.")
+            return redirect('tripapp:trip_list')  
+        else:
+            messages.error(request, "There was an error updating your profile.")
+    else:
+        form = UserUpdateForm(instance=request.user)
+    
+    return render(request, 'tripapp/update_profile.html', {'form': form})
+
+@login_required
+def trip_checklist(request,slug):
+    trip = get_object_or_404(Trip, slug=slug)
+    checklist = Checklist.objects.get_or_create(trip=trip)[0]
+    checklist_items = ChecklistItem.objects.filter(checklist=checklist).order_by('is_completed', 'id')  # Sorteer op is_completed en vervolgens op id
+    items = checklist.items.all()
+    tripper = None
+    if request.user.is_authenticated:
+        tripper = Tripper.objects.filter(user=request.user).first()
+
+    return render(request, 'tripapp/trip_checklist.html', {
+        'trip': trip,
+        'checklist': checklist,
+        'items': checklist_items,
+        'tripper': tripper
+    })

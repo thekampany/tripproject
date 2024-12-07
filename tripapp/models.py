@@ -81,17 +81,22 @@ class Trip(models.Model):
         return self.country_codes.split(",") if self.country_codes else []
 
     def calculate_balance(self):
-        trippers = self.trippers.all()
-        total_expenses = sum(expense.converted_amount for expense in self.expenses.all())
+        trippers = self.trippers.all() 
+        expenses = self.expenses.all() 
+        
+        total_expenses = sum(expense.converted_amount for expense in expenses)
         num_trippers = trippers.count()
-        equal_share = total_expenses / Decimal(num_trippers)
+        equal_share = total_expenses / Decimal(num_trippers) if num_trippers > 0 else 0
 
         balance = {}
         for tripper in trippers:
-            spent = sum(expense.converted_amount for expense in tripper.tripexpense_set.all())
+            tripper_expenses = expenses.filter(tripper=tripper)
+            spent = sum(expense.converted_amount for expense in tripper_expenses)
             balance[tripper.name] = spent - equal_share
 
         return balance
+
+
 
     def has_expenses(self):
         return self.expenses.exists() 
@@ -130,10 +135,10 @@ class Tripper(models.Model):
     photo = models.ImageField(upload_to='tripper_photos/', null=True, blank=True)
     is_trip_admin = models.BooleanField(default=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
-    api_url = models.URLField(help_text="dawarich-api-url", null=True, blank=True)  
-    api_key = models.CharField(max_length=100,help_text="dawarich-api-key", null=True, blank=True)  
-    #immich_api_url = models.URLField(help_text="immich-api-url", null=True, blank=True) 
-    #immich_api_key = models.CharField(max_length=100, help_text="immich-api-key", null=True, blank=True)
+    dawarich_url = models.URLField(help_text="Enter dawarich-url including api/v/points if you use Dawarich and want to see locations where you have been displayed on the map", null=True, blank=True)  
+    dawarich_api_key = models.CharField(max_length=100,help_text="dawarich-api-key", null=True, blank=True)  
+    immich_url = models.URLField(help_text="Enter immich-url in order to see locations where you took a picture plotted on the trip map", null=True, blank=True) 
+    immich_api_key = models.CharField(max_length=100, help_text="immich-api-key", null=True, blank=True)
     #def count_badges(self):
     #    return self.badges.count()
 
@@ -300,3 +305,4 @@ class ImmichPhotos(models.Model):
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
     city = models.CharField(max_length=100, null=True, blank=True)  
     timestamp = models.DateTimeField()
+    thumbnail = models.ImageField(upload_to='immich_thumbnails/', null=True, blank=True)  

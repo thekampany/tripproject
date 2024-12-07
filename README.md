@@ -10,7 +10,8 @@ The Trippers can invite their friends and family to the tribe. People in the tri
 Additional features:  
 Add expenses and keep a simple overview of who owes and who gets.  
 Per trip show points of interest and stopovers on a map.  
-Add a Dawarich api key and see your tracks - did you go where you planned you would go.  
+Add a Dawarich api key and see your tracks - did you go where you planned you would go?  
+Add an Immich api key and see where you took a photo  
 
 # Installation
 `git clone https://github.com/thekampany/tripproject.git`  
@@ -40,7 +41,8 @@ Go to your browser and start with register.
 5. Optionally add questions to a dayprogram, think of bingo items. 
 6. Optionally upload badges.
 7. Optionally a Tripper can add an api-key of a selfhosted Dawarich instance (https://dawarich.app/).
-8. When it works out, create another trip, or when it is with a different group, create another tribe.
+8. Optionally a Tripper can add an api-key of a selfhosted Immich instance (https://immich.app/).
+9. When it works out, create another trip, or when it is with a different group, create another tribe.
 
 
 # Screenshots
