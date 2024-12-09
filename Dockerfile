@@ -9,6 +9,8 @@ COPY . .
 
 ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /usr/src/app/wait-for-it.sh
 RUN chmod +x /usr/src/app/wait-for-it.sh
+COPY save_version.sh /usr/src/app/save_version.sh
+RUN chmod +x /usr/src/app/save_version.sh
 
 
 ENV PYTHONUNBUFFERED=1

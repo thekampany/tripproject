@@ -29,19 +29,20 @@
 
 </head>
 <body>
-<div class="card">
+<div class="tripappcard">
 <div class="container">
 
-<h2>Balance for Trip {{ trip.name }}</h2>
+<h1>Balance</h1>
+<span style="color:gray;">{{ trip.name }}</span>
+<br /><br /><br />
 
+{% if not balance.items %}
+<p>Nothing to see here yet.</p>
+{% endif %}
 <table>
-    <!--<tr>
-        <th>Tripper</th>
-        <th>Balance</th>
-    </tr>-->
     {% for tripper, values in balance.items %}
     <tr>
-        <td>{{ tripper }}</td>
+        <td>{% if values in balance.items %}{{ tripper }}{% endif %}</td>
         <td>
         {% if values.balance > 0 %}
             gets</td><td> {{ values.balance|floatformat:2 }}
@@ -50,7 +51,7 @@
             owes</td><td> {{ values.abs_balance|floatformat:2 }}
         {% endif %}
         </td>
-        <td>{{ app_currency }}</td>
+        <td>{% if values in balance.items %}{{ app_currency }}{% endif %}</td>
     </tr>
     {% endfor %}
 </table>

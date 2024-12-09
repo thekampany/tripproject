@@ -82,4 +82,5 @@ urlpatterns = [
     path('save_event/', views.save_event, name='save_event'),
     path('set_timezone/', views.set_timezone, name='set_timezone'),
     path('profile/update/', views.update_profile, name='update_profile'),
+    path("tasks/", views.task_manager, name="task_manager"),
 ]

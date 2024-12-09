@@ -38,6 +38,13 @@ ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
 
+VERSION = "unknown"
+try:
+    with open(os.path.join(BASE_DIR, 'version.txt')) as f:
+        VERSION = f.read().strip()
+except FileNotFoundError:
+    pass
+
 
 # Application definition
 

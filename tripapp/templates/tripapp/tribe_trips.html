@@ -47,15 +47,17 @@
                 <li><a class="dropdown-item" href="{% url 'tripapp:update_profile' %}">Account</a></li>
                 <li><a class="dropdown-item" href="{% url 'tripapp:tripper_profile' tripper.id %}">Settings</a></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="{% url 'tripapp:trip_list' %}">Trips</a></li>
+                <li><a class="dropdown-item" href="{% url 'tripapp:trip_list' %}">My Trips</a></li>
                 <li><a class="dropdown-item" href="{% url 'tripapp:tribe_trips' %}">Organize</a></li>
                 <li><hr class="dropdown-divider"></li>
                 {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>{% endif %}
+                {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'tripapp:task_manager' %}">Background Tasks</a></li>{% endif %}
                 {% if user.is_authenticated %} <li><a class="dropdown-item" href="{% url 'tripapp:logout' %}">Logout</a></li>{% endif %}
                 </ul>
             </div>
         </div>
     </div>
+    <p>&nbsp;</p>
 
 
     

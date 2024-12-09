@@ -36,68 +36,82 @@ from datetime import timedelta
 from django.utils.timezone import make_aware
 
 def fetch_locations_for_tripper():
+    logs = []
     today = timezone.now()
+    logs.append(f"Task start: {today}")
     active_trips = Trip.objects.filter(date_from__lte=today, date_to__gte=today)
-    
+
     for trip in active_trips:
+        logs.append(f"Trip: {trip.name}")
         for tripper in trip.trippers.all():
             last_location = Location.objects.filter(tripper=tripper).order_by('-timestamp').first()
-            start_date = last_location.timestamp if last_location else today - timedelta(days=1)  
-            end_date = start_date + timedelta(hours=1)  
-
-            while start_date < today:
-                if tripper.dawarich_url:
+            start_date = last_location.timestamp if last_location else today - timedelta(days=1)
+            logs.append(f"last location for {tripper.name} stored at: {start_date}")
+            end_date = start_date + timedelta(hours=1)
+            if tripper.dawarich_url:
+                while start_date < today:
                     url = (
                         f"{tripper.dawarich_url}?api_key={tripper.dawarich_api_key}"
                         f"&start_at={start_date.isoformat()}"
                         f"&end_at={end_date.isoformat()}"
-                        f"&per_page=100000"
+                        f"&per_page=100000&order=asc"
                     )
 
-                    response = requests.get(url)
-                    if response.status_code != 200:
-                        print(f"Failed to fetch locations for tripper {tripper.id}")
-                        break  
-
                     try:
+                        response = requests.get(url)
+                        response.raise_for_status()  
                         data = response.json()
+                    except requests.RequestException as e:
+                        logs.append(f"HTTP error for tripper {tripper.id}: {e}")
+                        break
                     except ValueError:
-                        print(f"Invalid JSON response for tripper {tripper.id}")
+                        logs.append(f"Invalid JSON response for tripper {tripper.id}")
                         break
 
-                    if not data:  
-                        print(f"No data returned for interval {start_date} to {end_date}")
-                        break
+                    if not data:
+                        logs.append(f"No data returned for interval {start_date} to {end_date}")
+                        start_date = end_date
+                        end_date += timedelta(hours=1)
+                        continue
 
-
-                    tolerance = 0.00005
-                    previous_lat = None
-                    previous_long = None
+                    tolerance = 0.0001
+                    previous_lat, previous_long = None, None
+                    location_count = 0
 
                     for point in data:
-                        current_lat = point['latitude']
-                        current_long = point['longitude']
+                        current_lat = point.get('latitude')
+                        current_long = point.get('longitude')
+                        timestamp = point.get('timestamp')
 
+                        if not current_lat or not current_long or not timestamp:
+                            logs.append("Invalid point data; skipping.")
+                            continue
 
-                        if previous_lat is not None and previous_long is not None:
-                            if abs(current_lat - previous_lat) < tolerance and abs(current_long - previous_long) < tolerance:
-                                continue
+                        current_lat = float(current_lat)
+                        current_long = float(current_long)
 
-                        Location.objects.create(
-                            tripper=tripper,
-                            latitude=current_lat,
-                            longitude=current_long,
-                            timestamp=make_aware(datetime.fromtimestamp(point['timestamp']))
-                        )
-                        previous_lat = current_lat
-                        previous_long = current_long
-
-
-
+                        if (
+                            previous_lat is None
+                            or previous_long is None
+                            or abs(current_lat - previous_lat) >= tolerance
+                            or abs(current_long - previous_long) >= tolerance
+                        ):
+                            Location.objects.create(
+                                tripper=tripper,
+                                latitude=current_lat,
+                                longitude=current_long,
+                                timestamp=make_aware(datetime.fromtimestamp(timestamp))
+                            )
+                            previous_lat, previous_long = current_lat, current_long
+                            location_count += 1
+                    logs.append(f"Processed {len(data)} points for interval {start_date} to {end_date}, added {location_count}")
                     start_date = end_date
-                    end_date = start_date + timedelta(hours=1)
+                    end_date += timedelta(hours=1)
 
-                    time.sleep(10)
+                    time.sleep(1) 
+    logs.append(f"Task end")
+
+    return "\n".join(logs)
 
 if not Schedule.objects.filter(func='tripapp.tasks.fetch_locations_for_tripper').exists():
     Schedule.objects.create(
@@ -108,75 +122,71 @@ if not Schedule.objects.filter(func='tripapp.tasks.fetch_locations_for_tripper')
 
 
 def fetch_and_store_immich_photos():
+    logs = []
     today = timezone.now().date()
     active_trips = Trip.objects.filter(date_from__lte=today, date_to__gte=today)
+    logs.append(f"Task start: {today}")
+
     for trip in active_trips:
-        #print(trip)
         for tripper in trip.trippers.all():
             last_photolocation = ImmichPhotos.objects.filter(tripper=tripper).order_by('-timestamp').first()
-            #print(last_photolocation.timestamp)
             start_date = last_photolocation.timestamp if last_photolocation else timezone.make_aware(datetime.combine(today, datetime.min.time()))
-            #print(start_date.isoformat())
-            #print(tripper.immich_url)
+            logs.append(f"Start date for {tripper.name}: {start_date.isoformat()}")
+
             if tripper.immich_url:
                 url = f"{tripper.immich_url}api/search/metadata"
-                headers = {"x-api-key": tripper.immich_api_key}  
+                headers = {"x-api-key": tripper.immich_api_key}
                 payload = {
-                    "updatedAfter": start_date.isoformat(),
+                    "takenAfter": start_date.isoformat(),
                     "withExif": True,
                     "type": "IMAGE"
                 }
                 response = requests.post(url, headers=headers, json=payload)
+
                 if response.status_code != 200:
-                    print("Failed to fetch data from Immich API")
-                    return
-        
+                    logs.append(f"Failed to fetch data from Immich API for tripper {tripper.name}")
+                    continue
+
                 data = response.json()
                 assets = data.get("assets", {}).get("items", [])
 
                 for item in assets:
                     exif_info = item.get("exifInfo", {})
-                    if exif_info.get("latitude"):
-                        ImmichPhotos.objects.update_or_create(
-                        tripper=tripper,
-                        immich_photo_id=item["id"],
-                        latitude = exif_info.get("latitude"),
-                        longitude = exif_info.get("longitude"),
-                        city = exif_info.get("city"),
-                        timestamp = make_aware(datetime.fromisoformat(item["fileCreatedAt"].replace("Z", "")))
-                        )
-                        # the photo is available at tripper.immich_url/photos/immich_photo_id; user needs to be logged in etc.
-                        # saving the thumbnail
-                        url = f"{tripper.immich_url}/api/assets/{item['id']}/thumbnail"
-                        headers = {
-                            'x-api-key': f"{tripper.immich_api_key}",
-                            'Accept': 'application/octet-stream',
-                        }
+                    if not exif_info.get("latitude"):
+                        continue
 
-                        try:
-                            response = requests.get(url, headers=headers)
-                            response.raise_for_status()  
+                    thumbnail_url = f"{tripper.immich_url}/api/assets/{item['id']}/thumbnail"
+                    headers = {
+                        'x-api-key': f"{tripper.immich_api_key}",
+                        'Accept': 'application/octet-stream',
+                    }
 
-                            if response.content:
-                                file_name = f"{item['id']}_thumbnail.jpg"
-                                photo, created = ImmichPhotos.objects.update_or_create(
-                                    tripper=tripper,
-                                    immich_photo_id=item["id"],
-                                    defaults={
-                                        "latitude": exif_info.get("latitude"),
-                                        "longitude": exif_info.get("longitude"),
-                                        "city": exif_info.get("city"),
-                                        "timestamp": make_aware(datetime.fromisoformat(item["fileCreatedAt"].replace("Z", ""))),
-                                    }
-                                )
-                                photo.thumbnail.save(file_name, ContentFile(response.content))
-                                photo.save()
-                                print(f"Thumbnail saved for {item['id']}")
-                            else:
-                                print(f"No content received for {item['id']}")
+                    try:
+                        thumbnail_response = requests.get(thumbnail_url, headers=headers)
+                        thumbnail_response.raise_for_status()
 
-                        except Exception as e:
-                            print(f"Error retrieving thumbnail for {item['id']}: {e}")
+                        if thumbnail_response.content:
+                            file_name = f"{item['id']}_thumbnail.jpg"
+
+                            ImmichPhotos.objects.create(
+                                tripper=tripper,
+                                immich_photo_id=item["id"],
+                                latitude=exif_info.get("latitude"),
+                                longitude=exif_info.get("longitude"),
+                                city=exif_info.get("city"),
+                                timestamp=make_aware(datetime.fromisoformat(item["fileCreatedAt"].replace("Z", ""))),
+                                thumbnail=ContentFile(thumbnail_response.content, file_name),
+                            )
+                            logs.append(f"Photo and thumbnail saved for {item['id']}")
+
+                        else:
+                            logs.append(f"No thumbnail content for {item['id']}")
+
+                    except Exception as e:
+                        logs.append(f"Error retrieving thumbnail for {item['id']}: {e}")
+    logs.append(f"Task end")
+
+    return "\n".join(logs)
 
 
 

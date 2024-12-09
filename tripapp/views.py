@@ -38,11 +38,15 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 #from weasyprint import HTML
 
+from django.utils.timezone import now
+from django_q.tasks import async_task
+from django_q.models import Task
+
 
 def index(request):
     category = "roadtrip"
     background_image_url = get_random_unsplash_image(category)
-    return render(request, 'tripapp/index.html', {'background_image_url': background_image_url, 'APP_NAME': settings.APP_NAME})
+    return render(request, 'tripapp/index.html', {'background_image_url': background_image_url, 'APP_NAME': settings.APP_NAME, 'VERSION':settings.VERSION})
 
 
 @login_required
@@ -1143,3 +1147,26 @@ def trip_checklist(request,slug):
         'items': checklist_items,
         'tripper': tripper
     })
+
+@login_required
+def task_manager(request):
+    tasks = [
+        {"name": "assign_badges", "description": "Assign badges to trippers."},
+        {"name": "fetch_locations_for_tripper", "description": "Fetch locations for trippers."},
+        {"name": "fetch_and_store_immich_photos", "description": "Fetch and store Immich photos."},
+    ]
+
+    for task in tasks:
+        last_task = Task.objects.filter(func=f"tripapp.tasks.{task['name']}").order_by("-started").first()
+        task["last_run"] = last_task.started if last_task else "Never"
+        task["status"] = last_task.success if last_task else "Not Run"
+        task["last_message"] = last_task.result if last_task else "No Message"
+
+    if request.method == "POST":
+        task_name = request.POST.get("task_name")
+
+        async_task(f"tripapp.tasks.{task_name}")
+
+        return redirect("tripapp:task_manager")
+
+    return render(request, "tripapp/task_manager.html", {"tasks": tasks})

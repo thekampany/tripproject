@@ -29,12 +29,6 @@
              background-size: cover;
             {% endif %}
         }
-        ul.no-bullets {
-            list-style-type: none; /* Remove bullets */
-        }
-        .completed {
-            text-decoration: line-through;
-        }
         .today {
         border: 2px solid #f88c34; 
         padding: 5px;
@@ -62,17 +56,18 @@
                     <li><a class="dropdown-item" href="{% url 'tripapp:update_profile' %}">Account</a></li>
                     <li><a class="dropdown-item" href="{% url 'tripapp:tripper_profile' tripper.id %}">Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="{% url 'tripapp:trip_list' %}">Trips</a></li>
+                    <li><a class="dropdown-item" href="{% url 'tripapp:trip_list' %}">My Trips</a></li>
                     <li><a class="dropdown-item" href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id  %}">Organize</a></li>
                     <li><hr class="dropdown-divider"></li>
                     {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>{% endif %}
-                    {% if user.is_staff %}<!--<li><a class="dropdown-item" href="{% url 'admin:index' %}">Background Tasks</a></li>-->{% endif %}
+                    {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'tripapp:task_manager' %}">Background Tasks</a></li>{% endif %}
                     {% if user.is_authenticated %} <li><a class="dropdown-item" href="{% url 'tripapp:logout' %}">Logout</a></li>{% endif %}
                     </ul>
                 </div>
             </div>
         </div>
-    
+        <p>&nbsp;</p>
+   
 
     <div class="tripmenucontainer">
         {% if not trip.use_facilmap %}
@@ -89,16 +84,16 @@
             <span class="ms-2">More..</span>
             </a>
             <ul class="dropdown-menu custom-dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-            <li><a class="dropdown-item" href="{% url 'tripapp:trip_expenses_list' trip.id %}">Expenses</a></li>
-            <li><a class="dropdown-item" href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id  %}">Trip Settings</a></li>
-            <li><a class="dropdown-item" href="{% url 'tripapp:trip_checklist' trip.slug  %}">CheckPackList</a></li>
-            <!--<li><a class="dropdown-item" href="">Export / Archive</a></li>-->
+                <li><a class="dropdown-item" href="{% url 'tripapp:trip_checklist' trip.slug  %}">CheckPackList</a></li>
+                <li><a class="dropdown-item" href="{% url 'tripapp:trip_expenses_list' trip.id %}">Expenses</a></li>
+                <li><a class="dropdown-item" href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id  %}">Trip Settings</a></li>
+                <!--<li><a class="dropdown-item" href="">Export / Archive</a></li>-->
             </ul>
         </div>
         </div>
     </div>
 
-    <br /><br />
+    <br />
     <h2>Programme</h2>
         {% for day_program in dayprograms %}
             {% if day_program.tripdate|date:"Y-m-d" == today|date:"Y-m-d" %}
@@ -120,45 +115,6 @@
     <br />
     </div>
     </div>
-    <!--<div class="card">
-    <div class="container">
-    <h2>Trippers and Badges</h2>
-    <p><a href="{% url 'tripapp:trip_trippers' trip.id %}" class="btn">View Trippers on this Trip</a></p>
-    <p><a href="{% url 'tripapp:upload_badge' %}">Upload Badge for this Trip</a></p>
-    <br />
-    </div>
-    </div>-->
-    <div class="tripappcard">
-    <div class="container">
-
-       <h2>Check / Pack / Wishlist</h2>
-       <ul class="no-bullets">
-           {% for item in items %}
-              <li class="{% if item.is_completed %}completed{% endif %}">
-              <form method="post" action="{% url 'tripapp:toggle_checklist_item' item.id %}">
-                  {% csrf_token %}
-                  <input type="checkbox" onclick="this.form.submit()" {% if item.is_completed %}checked{% endif %}>
-                  {{ item.text }}
-              </form>
-              </li>
-            {% endfor %}
-        </ul>
-
-        <a href="{% url 'tripapp:add_checklist_item' trip.id %}" class="btn">Add Checklist Item</a>
-        <br /><br /><br />
-    </div>
-    </div>
-
-    <!--<div class="card">
-    <div class="container">
-    <br />
-    {% if user.is_authenticated %} {{ user.username }}{% else %}<a href="{% url 'tripapp:login' %}">Login</a>{% endif %}
-    &nbsp;&nbsp;<a href="{% url 'tripapp:trip_list'  %}">Home</a>
-    &nbsp;&nbsp;<a href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id  %}">Organize</a>
-
-    <br />
-    </div>
-    </div>-->
 
     
 </body>
