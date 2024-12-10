@@ -36,25 +36,28 @@
 <span style="color:gray;">{{ trip.name }}</span>
 <br /><br /><br />
 
-{% if not balance.items %}
+
+{% if not balance %}
 <p>Nothing to see here yet.</p>
-{% endif %}
+{% else %}
 <table>
     {% for tripper, values in balance.items %}
-    <tr>
-        <td>{% if values in balance.items %}{{ tripper }}{% endif %}</td>
-        <td>
-        {% if values.balance > 0 %}
-            gets</td><td> {{ values.balance|floatformat:2 }}
+        {% if values.balance != 0 %}
+        <tr>
+            <td>{{ tripper }}</td>
+            <td>
+                {% if values.balance > 0 %}
+                    gets</td><td> {{ values.balance|floatformat:2 }}
+                {% elif values.balance < 0 %}
+                    owes</td><td> {{ values.abs_balance|floatformat:2 }}
+                {% endif %}
+            </td>
+            <td>{{ app_currency }}</td>
+        </tr>
         {% endif %}
-        {% if values.balance < 0 %}
-            owes</td><td> {{ values.abs_balance|floatformat:2 }}
-        {% endif %}
-        </td>
-        <td>{% if values in balance.items %}{{ app_currency }}{% endif %}</td>
-    </tr>
     {% endfor %}
 </table>
+{% endif %}
 <p>&nbsp;</p>
 <a href="{% url 'tripapp:trip_expenses_list' trip.id %}" >See all Expenses</a>
 <p>&nbsp;</p>

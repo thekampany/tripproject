@@ -427,8 +427,9 @@ def trip_map_view(request, trip_id):
         tripper__in=trippers,
         timestamp__range=(start_of_day, end_of_day)
     )
+    photolocations = ImmichPhotos.objects.filter(tripper__in=trippers,timestamp__range=(start_of_day, end_of_day))
 
-    return render(request, 'tripapp/trip_map.html', {'trip': trip, 'points': points, 'locations': locations})
+    return render(request, 'tripapp/trip_map.html', {'trip': trip, 'points': points, 'locations': locations, 'photolocations':photolocations})
 
 @login_required
 def trip_dayprogram_points(request, trip_id, dayprogram_id):
@@ -1170,3 +1171,13 @@ def task_manager(request):
         return redirect("tripapp:task_manager")
 
     return render(request, "tripapp/task_manager.html", {"tasks": tasks})
+
+@login_required
+def trip_documents_view(request, trip_id):
+    trip = get_object_or_404(Trip.objects.prefetch_related('dayprograms__links'), id=trip_id)
+    trip_documents = []
+
+    for dayprogram in trip.dayprograms.all():
+        trip_documents.extend(dayprogram.links.all())
+
+    return render(request, 'tripapp/trip_documents.html', {'trip': trip, 'trip_documents': trip_documents})

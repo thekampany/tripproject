@@ -83,4 +83,5 @@ urlpatterns = [
     path('set_timezone/', views.set_timezone, name='set_timezone'),
     path('profile/update/', views.update_profile, name='update_profile'),
     path("tasks/", views.task_manager, name="task_manager"),
+    path('documents/<int:trip_id>/', views.trip_documents_view, name='trip_documents'),
 ]

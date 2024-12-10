@@ -1,10 +1,9 @@
-
 {% load static %}
 <!DOCTYPE html>
 <html>
 <head>
 
-    <title>Expenses for Trip {{ trip.name }}</title>
+    <title>Documents for Trip {{ trip.name }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}">
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}">
@@ -25,60 +24,36 @@
       background-size: cover;
       {% endif %}
       }
-      td {
-        padding:4px;
-      }
 
     </style>
 
 </head>
 <body>
-<div class="card">
+<div class="tripappcard">
 <div class="container">
 
-<h1>Expenses</h1>
+<h1>Documents and Links</h1>
 <span style="color:gray;">{{ trip.name }}</span>
 <br /><br /><br />
 
-{% if expenses %}
-<table>
-    <thead>
-        <tr>
-            <th>Tripper</th>
-            <th>Description</th>
-            <th style="text-align:right;">Amount</th>
-            <th style="text-align:right;">Converted</th>
-            <th>Date</th>
-            <th>Receipt</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for expense in expenses %}
-        <tr>
-            <td>{{ expense.tripper.name }}</td>
-            <td>{{ expense.description }}</td>
-            <td style="text-align:right;">{{ expense.amount }}&nbsp;{{ expense.currency }}</td>
-            <td style="text-align:right;">{{ expense.converted_amount }}&nbsp;{{ app_currency }}</td>
-            <td>{{ expense.date|date:"d-m-Y" }}</td>
-            <td>
-                {% if expense.receipt %}
-                    <a href="{{ expense.receipt.url }}">View Receipt</a>
-                {% else %}
-                    No receipt
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+
+{% if trip_documents %}
+    {% for link in trip_documents %}
+        <p>
+        {% if link.url %}
+            <a href="{{ link.url }}" target="_blank"><img src="{% static 'icons/icon-url.png' %}" width="16" height="16">&nbsp;
+            {% if link.description %}{{ link.description }}{% else %}Link to travel document{% endif %}</a>
+        {% endif %}
+        {% if link.document %}
+            <a href="{{ link.document.url }}" target="_blank"><img src="{% static 'icons/icon-doc.png' %}" width="16" height="16">&nbsp;
+            {% if link.description %}{{ link.description }}{% else %}Download Document{% endif %}</a>
+        {% endif %}
+        </p>
+    {% endfor %}
 {% else %}
-    <p>No expenses recorded for this trip.</p>
+<p>No documents or links for this trip.</p>
 {% endif %}
-<p>&nbsp;</p>
-<!--add expense-->
-<a href="{% url 'tripapp:add_expense' trip.id tripper.id %}?next=balance" class="btn btn-primary">Add New Expense</a>
-&nbsp;
-<a href="{% url 'tripapp:trip_balance' trip.id %}" class="btn btn-primary">See Balance</a>
+
 <p>&nbsp;</p>
 <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" >Back to Trip</a>
 

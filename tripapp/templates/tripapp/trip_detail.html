@@ -86,6 +86,7 @@
             <ul class="dropdown-menu custom-dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                 <li><a class="dropdown-item" href="{% url 'tripapp:trip_checklist' trip.slug  %}">CheckPackList</a></li>
                 <li><a class="dropdown-item" href="{% url 'tripapp:trip_expenses_list' trip.id %}">Expenses</a></li>
+                <li><a class="dropdown-item" href="{% url 'tripapp:trip_documents' trip.id %}">Documents</a></li>
                 <li><a class="dropdown-item" href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id  %}">Trip Settings</a></li>
                 <!--<li><a class="dropdown-item" href="">Export / Archive</a></li>-->
             </ul>
