@@ -68,11 +68,11 @@
     {% for link in dayprogram.links.all %}
             <p>
                 {% if link.url %}
-                    <a href="{{ link.url }}" target="_blank"><img src="{% static 'icons/icon-url.png' %}" width="16" height="16">&nbsp;
+                    <a href="{{ link.url }}" target="_blank"><img src="{% static 'icons/icon-url.png' %}" class="url-icon" width="16" height="16">&nbsp;
                     {% if link.description %}{{ link.description }}{% else %}Link to travel document{% endif %}</a>
                 {% endif %}
                 {% if link.document %}
-                    <a href="{{ link.document.url }}" target="_blank"><img src="{% static 'icons/icon-doc.png' %}" width="16" height="16">&nbsp;
+                    <a href="{{ link.document.url }}" target="_blank"><img src="{% static 'icons/icon-doc.png' %}" class="doc-icon" width="16" height="16">&nbsp;
                     {% if link.description %}{{ link.description }}{% else %}Download Document{% endif %}</a>
                 {% endif %}
             </p>

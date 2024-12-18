@@ -37,12 +37,12 @@
 <br /><br /><br />
 
 
-{% if not balance %}
-<p>Nothing to see here yet.</p>
-{% else %}
+
 <table>
     {% for tripper, values in balance.items %}
         {% if values.balance != 0 %}
+        {% with all_zero=False %}
+        {% endwith %}
         <tr>
             <td>{{ tripper }}</td>
             <td>
@@ -57,7 +57,12 @@
         {% endif %}
     {% endfor %}
 </table>
+
+{% if all_zero %}
+<p>All balances are settled. No outstanding amounts.</p>
 {% endif %}
+
+
 <p>&nbsp;</p>
 <a href="{% url 'tripapp:trip_expenses_list' trip.id %}" >See all Expenses</a>
 <p>&nbsp;</p>

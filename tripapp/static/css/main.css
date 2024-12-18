@@ -434,5 +434,11 @@ img.user-icon {
   img.user-icon {
       content: url('/static/icons/usericon.png');
   }
+  img.doc-icon {
+      content: url('/static/icons/icon-doc-reverse.png');
+}
+  img.url-icon {
+      content: url('/static/icons/icon-url-reverse.png');
+}
 }
 

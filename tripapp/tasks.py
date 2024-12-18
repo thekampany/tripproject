@@ -155,6 +155,10 @@ def fetch_and_store_immich_photos():
                     if not exif_info.get("latitude"):
                         continue
 
+
+                    lat = exif_info.get("latitude")
+                    long = exif_info.get("longitude")
+
                     thumbnail_url = f"{tripper.immich_url}/api/assets/{item['id']}/thumbnail"
                     headers = {
                         'x-api-key': f"{tripper.immich_api_key}",
@@ -171,13 +175,13 @@ def fetch_and_store_immich_photos():
                             ImmichPhotos.objects.create(
                                 tripper=tripper,
                                 immich_photo_id=item["id"],
-                                latitude=exif_info.get("latitude"),
-                                longitude=exif_info.get("longitude"),
+                                latitude=lat,
+                                longitude=long,
                                 city=exif_info.get("city"),
                                 timestamp=make_aware(datetime.fromisoformat(item["fileCreatedAt"].replace("Z", ""))),
                                 thumbnail=ContentFile(thumbnail_response.content, file_name),
                             )
-                            logs.append(f"Photo and thumbnail saved for {item['id']}")
+                            logs.append(f"Saving photo ID: {item['id']}, Latitude: {lat}, Longitude: {long}")
 
                         else:
                             logs.append(f"No thumbnail content for {item['id']}")

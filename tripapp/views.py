@@ -419,17 +419,33 @@ def map_view(request):
 def trip_map_view(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     points = trip.points.prefetch_related('dayprograms')
-    #all visited locations dawarich -- within dates of the trip
+
     start_of_day = timezone.make_aware(datetime.combine(trip.date_from, datetime.min.time()))
     end_of_day = timezone.make_aware(datetime.combine(trip.date_to, datetime.max.time()))
     trippers = trip.trippers.all()
-    locations = Location.objects.filter(
+
+    max_locations = 5000
+    all_locations = Location.objects.filter(
+        tripper__in=trippers,
+        timestamp__range=(start_of_day, end_of_day)
+    ).order_by('timestamp')  
+    limited_locations = all_locations[:max_locations]
+
+    locations_truncated = all_locations.count() > max_locations
+
+    photolocations = ImmichPhotos.objects.filter(
         tripper__in=trippers,
         timestamp__range=(start_of_day, end_of_day)
     )
-    photolocations = ImmichPhotos.objects.filter(tripper__in=trippers,timestamp__range=(start_of_day, end_of_day))
 
-    return render(request, 'tripapp/trip_map.html', {'trip': trip, 'points': points, 'locations': locations, 'photolocations':photolocations})
+    return render(request, 'tripapp/trip_map.html', {
+        'trip': trip,
+        'points': points,
+        'locations': limited_locations,
+        'photolocations': photolocations,
+        'locations_truncated': locations_truncated,
+        'max_locations': max_locations,
+    })
 
 @login_required
 def trip_dayprogram_points(request, trip_id, dayprogram_id):
@@ -461,6 +477,39 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
     }
 
     return render(request, 'tripapp/trip_dayprogram_points.html', context) 
+
+@login_required
+def trip_dayprogram_points_planner(request, trip_id, dayprogram_id):
+    trip = get_object_or_404(Trip, pk=trip_id)
+    trippers = trip.trippers.all()
+    dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
+    trip_points = Point.objects.filter(trip=trip)
+
+    points = trip_points.filter(dayprograms=dayprogram)
+    filter_date = dayprogram.tripdate
+    start_of_day = timezone.make_aware(datetime.combine(filter_date, datetime.min.time()))
+    end_of_day = start_of_day + timedelta(days=1)
+    locations = Location.objects.filter(tripper__in=trippers,timestamp__range=(start_of_day, end_of_day))
+    photolocations = ImmichPhotos.objects.filter(tripper__in=trippers,timestamp__range=(start_of_day, end_of_day))
+
+    trip_name_no_spaces = trip.name.replace(" ", "")
+    tribe_name_no_spaces = trip.tribe.name.replace(" ","")
+    first_point = points.first() if points.exists() else None
+
+    context = {
+        'trip': trip,
+        'dayprogram': dayprogram,
+        'points': points,
+        'trip_name_no_spaces':trip_name_no_spaces,
+        'tribe_name_no_spaces' : tribe_name_no_spaces,
+        'first_point': first_point,
+        'locations': locations,
+        'photolocations': photolocations,
+    }
+
+    return render(request, 'tripapp/trip_dayprogram_points_planner.html', context) 
+
+
 
 @tripper_required
 def trip_bingocards(request, trip_id):
@@ -836,28 +885,35 @@ def planner_map(request, trip_id):
 def save_event(request):
     if request.method == 'POST':
         name = request.POST.get('name')
+        marker_type = request.POST.get('type') 
         latitude = request.POST.get('latitude')
         longitude = request.POST.get('longitude')
         event_id = request.POST.get('id')
         trip_id = request.POST.get('trip')
         trip = get_object_or_404(Trip, pk=trip_id)
+        dayprogram_id = request.POST.get('dayprogram')
+        dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
 
         if event_id:
             # Update existing event
             event = get_object_or_404(Point, pk=event_id)
             event.name = name
+            event.marker_type = marker_type
             event.latitude = latitude
             event.longitude = longitude
             event.trip = trip
             event.save()
+            event.dayprograms.add(dayprogram) 
         else:
             # Create new event
             event = Point.objects.create(
                 name=name,
+                marker_type=marker_type,
                 latitude=latitude,
                 longitude=longitude,
                 trip = trip
             )
+            event.dayprograms.add(dayprogram)
 
         return JsonResponse({'message': 'Event saved successfully!'})
 
@@ -1058,9 +1114,11 @@ def add_expense(request, trip_id, tripper_id):
 def trip_balance(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     balance = trip.calculate_balance()
+    all_zero = all(balance_value == 0 for balance_value in balance.values())
+
     abs_balance = {tripper: {'balance': balance_value, 'abs_balance': abs(balance_value)} for tripper, balance_value in balance.items()}
     app_currency = settings.APP_CURRENCY
-    return render(request, 'tripapp/trip_balance.html', {'trip': trip, 'balance': abs_balance, 'app_currency':app_currency})
+    return render(request, 'tripapp/trip_balance.html', {'trip': trip, 'balance': abs_balance, 'app_currency':app_currency, 'all_zero':all_zero})
 
 @tripper_required
 def trip_expenses_list(request, trip_id):

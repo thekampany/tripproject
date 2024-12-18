@@ -24,6 +24,13 @@
 
     <h1>{{ trip.name }} Map</h1>
 
+
+    <div class="tripmenuitem"><a href="{% url 'tripapp:trip_map_view' trip.id %}" >Switch to planned and visited locations</a></div>
+    {% if trip.use_facilmap %}
+    <div class="tripmenuitem"><a href="{% url 'tripapp:planner_map' trip.id %}" >Displaying Facilmap</a></div>
+    {% endif %}
+
+
 <iframe style="height: 700px; width: 100%; border: none;" src="https://facilmap.org/HT{{ tribe_name_no_spaces }}{{ trip_name_no_spaces }}ad#6/51.995/5.999/Lima" id="facilmap"></iframe>
 <script>
 	window.addEventListener("message", function(evt) {

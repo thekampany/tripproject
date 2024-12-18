@@ -23,6 +23,7 @@ urlpatterns = [
     path('trip/<int:trip_id>/bingocardsadmin/', views.tripadmin_bingocards, name='tripadmin_bingocards'),
     path('trip/<int:trip_id>/bingocards/add/', views.add_bingocard, name='add_bingocard'),
     path('trip/<int:trip_id>/dayprogram/<int:dayprogram_id>/points/', views.trip_dayprogram_points, name='trip_dayprogram_points'),
+    path('trip/<int:trip_id>/dayprogram/<int:dayprogram_id>/planner/', views.trip_dayprogram_points_planner, name='trip_dayprogram_points_planner'),
     path('trip/<int:trip_id>/dayprograms/', views.trip_dayprograms, name='trip_dayprograms'),
     path('trip/<int:trip_id>/add_trippers/<uuid:tribe_id>/', views.add_trippers, name='add_trippers'),
     path('trip/<int:trip_id>/points/', views.trip_points, name='trip_points'),
