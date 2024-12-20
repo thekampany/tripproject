@@ -6,6 +6,8 @@ from .models import Badge, Tripper, BadgeAssignment, Trip, Location, ImmichPhoto
 import requests
 from datetime import datetime, timedelta
 from django.core.files.base import ContentFile
+from django.utils.timezone import make_aware
+import pytz
 
 def assign_badges():
     today = timezone.now().date()
@@ -15,12 +17,12 @@ def assign_badges():
     for badge in badges:
         for trip in active_trips:
             trippers = trip.trippers.all()
-            print(f"Found {trippers.count()} trippers for trip: {trip.name}")
+            logs.append(f"Found {trippers.count()} trippers for trip: {trip.name}")
             for tripper in trippers:
                 tripper.badges.add(badge)
                 tripper.save()
                 BadgeAssignment.objects.create(tripper=tripper, badge=badge, trip=trip)
-                print(f"Badge {badge.name} assigned to Tripper {tripper.name} for Trip {trip.name}.")
+                logs.append(f"Badge {badge.name} assigned to Tripper {tripper.name} for Trip {trip.name}.")
 
 
 if not Schedule.objects.filter(func='tripapp.tasks.assign_badges').exists():
@@ -123,9 +125,9 @@ if not Schedule.objects.filter(func='tripapp.tasks.fetch_locations_for_tripper')
 
 def fetch_and_store_immich_photos():
     logs = []
-    today = timezone.now().date()
-    active_trips = Trip.objects.filter(date_from__lte=today, date_to__gte=today)
+    today = timezone.now()
     logs.append(f"Task start: {today}")
+    active_trips = Trip.objects.filter(date_from__lte=today, date_to__gte=today)
 
     for trip in active_trips:
         for tripper in trip.trippers.all():
@@ -152,12 +154,21 @@ def fetch_and_store_immich_photos():
 
                 for item in assets:
                     exif_info = item.get("exifInfo", {})
-                    if not exif_info.get("latitude"):
+                    logs.append(str(item.get("id", "Unknown ID")))
+                    logs.append(str(exif_info.get("latitude", "No Latitude")))
+
+                    try:
+                        lat = float(exif_info["latitude"]) if exif_info.get("latitude") is not None else None
+                        long = float(exif_info["longitude"]) if exif_info.get("longitude") is not None else None
+                    except (TypeError, ValueError) as e:
+                        logs.append(f"Invalid latitude/longitude for {item['id']}: {e}")
+                        continue
+
+                    if lat is None or long is None:
+                        logs.append(f"Skipping photo ID {item['id']} due to missing or invalid coordinates.")
                         continue
 
 
-                    lat = exif_info.get("latitude")
-                    long = exif_info.get("longitude")
 
                     thumbnail_url = f"{tripper.immich_url}/api/assets/{item['id']}/thumbnail"
                     headers = {
@@ -172,13 +183,17 @@ def fetch_and_store_immich_photos():
                         if thumbnail_response.content:
                             file_name = f"{item['id']}_thumbnail.jpg"
 
+                            utc = pytz.UTC 
+                            utc_timestamp = datetime.fromisoformat(item["fileCreatedAt"].replace("Z", "")).replace(tzinfo=utc)
+                            local_timestamp = utc_timestamp.astimezone(timezone.get_current_timezone())
+
                             ImmichPhotos.objects.create(
                                 tripper=tripper,
                                 immich_photo_id=item["id"],
                                 latitude=lat,
                                 longitude=long,
                                 city=exif_info.get("city"),
-                                timestamp=make_aware(datetime.fromisoformat(item["fileCreatedAt"].replace("Z", ""))),
+                                timestamp=local_timestamp,
                                 thumbnail=ContentFile(thumbnail_response.content, file_name),
                             )
                             logs.append(f"Saving photo ID: {item['id']}, Latitude: {lat}, Longitude: {long}")
@@ -188,6 +203,7 @@ def fetch_and_store_immich_photos():
 
                     except Exception as e:
                         logs.append(f"Error retrieving thumbnail for {item['id']}: {e}")
+
     logs.append(f"Task end")
 
     return "\n".join(logs)
