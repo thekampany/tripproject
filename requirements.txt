@@ -11,3 +11,4 @@ django-bootstrap4
 crispy-bootstrap4
 channels
 uvicorn
+pytz

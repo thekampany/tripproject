@@ -183,6 +183,7 @@ class PointForm(forms.ModelForm):
     MARKER_TYPE_CHOICES = [
         ('default', 'Default'),
         ('bed', 'Bed'),
+        ('restaurant', 'Restaurant')
     ]
 
     marker_type = forms.ChoiceField(

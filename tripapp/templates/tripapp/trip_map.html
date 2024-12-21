@@ -59,6 +59,16 @@
             shadowAnchor: [25, 50],  // the same for the shadow
             popupAnchor:  [0, -50] // point from which the popup should open relative to the iconAnchor
         });
+        var restaurantIcon = L.icon({
+            iconUrl: "{% static 'icons/mapicons/mappin-eat.png' %}",
+            shadowUrl: "{% static 'icons/mapicons/mappin-bed-shadow.png' %}",
+
+            iconSize:     [50, 50], // size of the icon
+            shadowSize:   [50, 50], // size of the shadow
+            iconAnchor:   [25, 50], // point of the icon which will correspond to marker's location
+            shadowAnchor: [25, 50],  // the same for the shadow
+            popupAnchor:  [0, -50] // point from which the popup should open relative to the iconAnchor
+        });
 
         var visitedLocationIcon = L.icon({
             iconUrl: "{% static 'icons/mapicons/mappin-visited.png' %}",
@@ -118,17 +128,19 @@
 
         // Add markers to the feature group
         points.forEach(function(point) {
-            var popupContent = `<b>${point.name}</b><br>${point.days}`;
-            console.log('Popup Content:', popupContent,'marker', point.marker_type); // Log the popup content
+            var popupContent = `<b>${point.name}</b>`;
             var marker;
+            console.log(point.marker_type);
             if (point.marker_type === 'bed') {
                marker = L.marker(point.coords, {icon: bedIcon}).bindPopup(popupContent);
+            } else if (point.marker_type === 'restaurant') {
+                marker = L.marker(point.coords, {icon: restaurantIcon}).bindPopup(popupContent);
             } else {
-               marker = L.marker(point.coords).bindPopup(point.name);
-            }
+                marker = L.marker(point.coords).bindPopup(point.name);
+            }            
             markers.addLayer(marker);
         });
-        // visited locations
+         // visited locations
         locations.forEach(function(location) {
             var popupContent = `<b>${location.timestamp}</b>`;
             var marker;
@@ -173,6 +185,7 @@
                         '<select id="event-type">' +
                         '  <option value="default" selected>Default</option>' +
                         '  <option value="bed">Bed</option>' +
+                        '  <option value="restaurant">Restaurant</option>' +
                         '</select><br>' +
                         '<button id="save-event">Save</button>' +
                         '<button id="delete-event">Delete</button>'
@@ -235,6 +248,7 @@
                         '<select id="event-type">' +
                         '  <option value="default" selected>Default</option>' +
                         '  <option value="bed">Bed</option>' +
+                        '  <option value="restaurant">Restaurant</option>' +
                         '</select><br>' +
                         '<button id="save-event">Save</button>' +
                         '<button id="delete-event">Delete</button>'
@@ -293,6 +307,7 @@
                         '<select id="event-type">' +
                         '  <option value="default" selected>Default</option>' +
                         '  <option value="bed">Bed</option>' +
+                        '  <option value="restaurant">Restaurant</option>' +
                         '</select><br>' +
                         '<button id="save-event">Save</button>' +
                         '<button id="delete-event">Delete</button>'

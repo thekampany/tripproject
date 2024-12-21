@@ -89,8 +89,13 @@ def fetch_locations_for_tripper():
                             logs.append("Invalid point data; skipping.")
                             continue
 
-                        current_lat = float(current_lat)
-                        current_long = float(current_long)
+                        try:
+                            current_lat = float(current_lat)
+                            current_long = float(current_long)
+                            aware_timestamp = make_aware(datetime.fromtimestamp(timestamp))
+                        except (TypeError, ValueError) as e:
+                            logs.append(f"Error processing point data: {e}")
+                            continue
 
                         if (
                             previous_lat is None
@@ -102,7 +107,7 @@ def fetch_locations_for_tripper():
                                 tripper=tripper,
                                 latitude=current_lat,
                                 longitude=current_long,
-                                timestamp=make_aware(datetime.fromtimestamp(timestamp))
+                                timestamp=aware_timestamp,
                             )
                             previous_lat, previous_long = current_lat, current_long
                             location_count += 1
@@ -133,13 +138,16 @@ def fetch_and_store_immich_photos():
         for tripper in trip.trippers.all():
             last_photolocation = ImmichPhotos.objects.filter(tripper=tripper).order_by('-timestamp').first()
             start_date = last_photolocation.timestamp if last_photolocation else timezone.make_aware(datetime.combine(today, datetime.min.time()))
-            logs.append(f"Start date for {tripper.name}: {start_date.isoformat()}")
+            # start_date from photolocation is in local datetime from last photo. 
+            # add 1 milisecond?
+            immich_start_date = start_date + timedelta(milliseconds=1)
+            logs.append(f"Start date for {tripper.name}: {immich_start_date.isoformat()}")
 
             if tripper.immich_url:
                 url = f"{tripper.immich_url}api/search/metadata"
                 headers = {"x-api-key": tripper.immich_api_key}
                 payload = {
-                    "takenAfter": start_date.isoformat(),
+                    "takenAfter": immich_start_date.isoformat(),
                     "withExif": True,
                     "type": "IMAGE"
                 }
@@ -168,8 +176,6 @@ def fetch_and_store_immich_photos():
                         logs.append(f"Skipping photo ID {item['id']} due to missing or invalid coordinates.")
                         continue
 
-
-
                     thumbnail_url = f"{tripper.immich_url}/api/assets/{item['id']}/thumbnail"
                     headers = {
                         'x-api-key': f"{tripper.immich_api_key}",
@@ -182,22 +188,17 @@ def fetch_and_store_immich_photos():
 
                         if thumbnail_response.content:
                             file_name = f"{item['id']}_thumbnail.jpg"
-
-                            utc = pytz.UTC 
-                            utc_timestamp = datetime.fromisoformat(item["fileCreatedAt"].replace("Z", "")).replace(tzinfo=utc)
-                            local_timestamp = utc_timestamp.astimezone(timezone.get_current_timezone())
-
+                            local_datetime = datetime.fromisoformat(item['localDateTime'].replace("Z", "+00:00"))
                             ImmichPhotos.objects.create(
                                 tripper=tripper,
                                 immich_photo_id=item["id"],
                                 latitude=lat,
                                 longitude=long,
                                 city=exif_info.get("city"),
-                                timestamp=local_timestamp,
+                                timestamp=local_datetime,
                                 thumbnail=ContentFile(thumbnail_response.content, file_name),
                             )
-                            logs.append(f"Saving photo ID: {item['id']}, Latitude: {lat}, Longitude: {long}")
-
+                            logs.append(f"Saving photo ID: {item['id']}, Latitude: {lat}, Longitude: {long} in localdatetime {local_datetime.isoformat()}")
                         else:
                             logs.append(f"No thumbnail content for {item['id']}")
 

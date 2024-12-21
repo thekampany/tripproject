@@ -177,6 +177,7 @@ class Point(models.Model):
     MARKER_TYPE = [
         ('default', 'Default'),
         ('bed', 'Bed'),
+        ('restaurant', 'Restaurant')
     ]
     marker_type = models.CharField(max_length=20, choices=MARKER_TYPE, default='default')
 
