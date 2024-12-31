@@ -7,6 +7,9 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
     <script src="{% static 'js/set_timezone.js' %}"></script>
     <style>
@@ -32,7 +35,8 @@
         {% if previous_dayprogram %}
             <a href="{% url 'tripapp:dayprogram_detail' previous_dayprogram.id %}" class="nodec">&larr;</a>
         {% else %}
-            <a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}" class="nodec">&#11025;</a>
+            <a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}" class="nodec">&larr;</a>
+            <!--<a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}" class="nodec">&#11025;</a>-->
         {% endif %}</h2>
         </td>
         <td align="center"><h2>
@@ -44,47 +48,73 @@
         {% if next_dayprogram %}
             <a href="{% url 'tripapp:dayprogram_detail' next_dayprogram.id %}" class="nodec">&rarr;</a>
         {% else %}
-            <a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}" class="nodec">&#11023;</a>
+            <a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}" class="nodec">&rarr;</a>
+            <!--<a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}" class="nodec">&#11023;</a>-->
         {% endif %}</h2>
-        </td></tr></table>
+        </td></tr>
+    </table>
 
-    <!--<p>{{ dayprogram.description }}</p>-->
+    <div class="tripmenucontainer">
+        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}" class="btn">Trip overview</a></div>
+        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_dayprogram_points' dayprogram.trip.id dayprogram.id %}" class="btn">Tripday Map</a></div>
+
+        <div class="tripmenuitem">
+        <div class="dropdown">
+            <a class="btn nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="ms-2">Add..</span>
+            </a>
+            <ul class="dropdown-menu custom-dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                {% if user.username in trippers_names %}
+                    <li><a class="dropdown-item" href="{% url 'tripapp:add_image' dayprogram.id %}">...Image</a></li>
+                    <li><a class="dropdown-item" href="{% url 'tripapp:add_logentry' dayprogram.id %}">...Log</a></li>
+                {% endif %}
+                {% if dayprogram.trip.use_expenses %}
+                    <li><a class="dropdown-item" href="{% url 'tripapp:add_expense' dayprogram.trip.id logged_on_tripper.id %}?next=dayprogram_detail&dayprogram_id={{ dayprogram.id }}">...Expense</a></li>
+                {% endif %}
+                <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#suggestionModal">...Suggestion</a></li>
+                <li><a class="dropdown-item" href="{% url 'tripapp:tribe_trip_organize' dayprogram.trip.tribe.id dayprogram.trip.id  %}">Trip Settings</a></li>
+            </ul>
+        </div>
+        </div>
+    </div>
+
+
     {% if dayprogram.necessary_info %}
-       <p>
-       <span style="color:gray;">Information for Today</span><br />
-       {{ dayprogram.necessary_info|linebreaks }}
-       </p>
+        <p>
+        <span style="color:gray;">Information for Today</span><br />
+        {{ dayprogram.necessary_info|linebreaks }}
+        </p>
     {% endif %}
     {% if dayprogram.possible_activities %}
-       <p>
-       <span style="color:gray;">Ideas for Today</span><br />
-       {{ dayprogram.possible_activities|linebreaks }}
-       </p>
+        <p>
+        <span style="color:gray;">Ideas for Today</span><br />
+        {{ dayprogram.possible_activities|linebreaks }}
+        </p>
     {% endif %}
 
     {% if dayprogram.links.all %}
-           <span style="color:gray;">Travel Documents</span><br />
+        <span style="color:gray;">Travel Documents</span><br />
     {% endif %}
     {% for link in dayprogram.links.all %}
-            <p>
-                {% if link.url %}
-                    <a href="{{ link.url }}" target="_blank"><img src="{% static 'icons/icon-url.png' %}" class="url-icon" width="16" height="16">&nbsp;
-                    {% if link.description %}{{ link.description }}{% else %}Link to travel document{% endif %}</a>
-                {% endif %}
-                {% if link.document %}
-                    <a href="{{ link.document.url }}" target="_blank"><img src="{% static 'icons/icon-doc.png' %}" class="doc-icon" width="16" height="16">&nbsp;
-                    {% if link.description %}{{ link.description }}{% else %}Download Document{% endif %}</a>
-                {% endif %}
-            </p>
+        <p>
+            {% if link.url %}
+                <a href="{{ link.url }}" target="_blank"><img src="{% static 'icons/icon-url.png' %}" class="url-icon" width="16" height="16">&nbsp;
+                {% if link.description %}{{ link.description }}{% else %}Link to travel document{% endif %}</a>
+            {% endif %}
+            {% if link.document %}
+                <a href="{{ link.document.url }}" target="_blank"><img src="{% static 'icons/icon-doc.png' %}" class="doc-icon" width="16" height="16">&nbsp;
+                {% if link.description %}{{ link.description }}{% else %}Download Document{% endif %}</a>
+            {% endif %}
+        </p>
      {% endfor %}
 
 
 
     <br />
-        {% for image in images %}
-                <div class="polaroid"><img src="{{ image.image.url }}" alt="{{ image.description }}"></div>
-                <div class="caption">{{ image.description }}</div><br />
-        {% endfor %}
+    {% for image in images %}
+            <div class="polaroid"><img src="{{ image.image.url }}" alt="{{ image.description }}"></div>
+            <div class="caption">{{ image.description }}</div><br />
+    {% endfor %}
     <p>
     {% if today >= dayprogram.tripdate %}
       {% if questions %}
@@ -122,6 +152,7 @@
     </p>
 </div>
 </div>
+<!-- old menu
 <div class="card">
 <div class="container">
     <p>&nbsp;</p>
@@ -143,6 +174,11 @@
     {% if dayprogram.trip.use_expenses %}   
        <a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}" >Back to Trip Overview</a>
     {% endif %}
+</div>
+</div>
+-->
+
+
     <!-- Suggestion Modal -->
     <div class="modal fade" id="suggestionModal" tabindex="-1" role="dialog" aria-labelledby="suggestionModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -164,7 +200,6 @@
         </div>
     </div>
 
-</div>
-</div>
+
 </body>
 </html>

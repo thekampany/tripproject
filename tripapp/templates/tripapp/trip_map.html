@@ -6,6 +6,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.3.1/gpx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -125,6 +128,8 @@
         
         // Create a feature group to store all the markers
         var markers = L.featureGroup();
+        var locationsLayer = L.featureGroup();
+        var photolocationsLayer = L.featureGroup();
 
         // Add markers to the feature group
         points.forEach(function(point) {
@@ -145,28 +150,56 @@
             var popupContent = `<b>${location.timestamp}</b>`;
             var marker;
             marker = L.marker(location.coords, {icon: visitedLocationIcon}).bindPopup(popupContent);
-            markers.addLayer(marker);
+            locationsLayer.addLayer(marker);
         });
         // visited photolocations
          photolocations.forEach(function(photolocation) {
             var popupContent = `<a href="${photolocation.immich_url}photos/${photolocation.immich_photo_id}"><img src="${photolocation.thumbnail}" alt="Thumbnail" style="max-width: 100px; max-height: 100px; display: block; margin: 0 auto;" /></a><br /> <b>${photolocation.timestamp}</b>`;
             var marker;
             marker = L.marker(photolocation.coords, {icon: visitedPhotoLocationIcon}).bindPopup(popupContent);
-            markers.addLayer(marker);
+            photolocationsLayer.addLayer(marker);
          });
 
         // Add the feature group to the map
         markers.addTo(map);
+        //locationsLayer.addTo(map); //initially off
+        photolocationsLayer.addTo(map);
 
         // Set the view to fit all the markers
-        map.fitBounds(markers.getBounds());
+        var allLayers = L.featureGroup([markers, locationsLayer, photolocationsLayer]);
+        map.fitBounds(allLayers.getBounds());
 
+        var lineCoordinates = [];
+        locations.forEach(function(location) {
+            lineCoordinates.push(location.coords);
+        });
+        var polyline = L.polyline(lineCoordinates, { color: 'blue', weight: 2 }).addTo(map);
+        map.fitBounds(polyline.getBounds());
+
+        var heatmapData = [];
+        locations.forEach(function(location) {
+            heatmapData.push([...location.coords, 0.7]); 
+        });
+        var heatmapLayer = L.heatLayer(heatmapData, {
+            radius: 25, 
+            blur: 15,   
+            maxZoom: 17, 
+        }).addTo(map);
+        console.log(L.heatLayer);
+        
+        var overlays = {
+            "Markers": markers,
+            "Tracked Locations": locationsLayer,
+            "Photolocations": photolocationsLayer,
+            "Lines": polyline,
+            "Heatmap": heatmapLayer
+        };
+        L.control.layers(null, overlays, { collapsed: false }).addTo(map);
 
         function handleMapLongPress(map) {
             var pressTimer;
             var latLng;
 
-            // Voorkom standaard gedrag zoals selectie
             map.getContainer().addEventListener('contextmenu', function(e) {
                 e.preventDefault();
             });
