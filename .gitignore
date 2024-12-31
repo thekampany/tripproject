@@ -2,5 +2,6 @@
 media/
 tripapp/__pycache__/
 .old
+*.tar
 
 
