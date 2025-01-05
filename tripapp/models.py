@@ -232,10 +232,24 @@ class LogEntry(models.Model):
 
 
 class Link(models.Model):
+    CATEGORY_CHOICES = [
+        ('', 'No Category'),
+        ('Transportation', 'Transportation'),
+        ('Lodging', 'Lodging'),
+        ('Food and Drinks','Food and Drinks'),
+        ('Activity', 'Activity'),
+        ('Other', 'Other'),
+    ]
     dayprogram = models.ForeignKey(DayProgram, related_name='links', on_delete=models.CASCADE)
     url = models.URLField(blank=True, null=True)
     document = models.FileField(upload_to='documents/', blank=True, null=True)
     description = models.TextField(blank=True, null=True)
+    category = models.CharField(
+        max_length=20,
+        choices=CATEGORY_CHOICES,
+        blank=True,
+        default=''
+    )
     def __str__(self):
         return self.url or self.document.url
 
@@ -249,6 +263,14 @@ class Route(models.Model):
         return self.description
 
 class TripExpense(models.Model):
+    CATEGORY_CHOICES = [
+        ('', 'No Category'),
+        ('Transportation', 'Transportation'),
+        ('Lodging', 'Lodging'),
+        ('Food and Drinks','Food and Drinks'),
+        ('Activity', 'Activity'),
+        ('Other', 'Other'),
+    ]
     trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name='expenses')
     tripper = models.ForeignKey(Tripper, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -257,7 +279,8 @@ class TripExpense(models.Model):
     date = models.DateField(default=timezone.now)
     description = models.CharField(max_length=30, blank=True, null=True)
     receipt = models.ImageField(upload_to='receipts/', blank=True, null=True)
-
+    #category = models.CharField(max_length=20,choices=CATEGORY_CHOICES,blank=True,default='')
+ 
     def __str__(self):
         return f'{self.amount} {self.currency} on {self.trip.name} by {self.tripper.name}'
 

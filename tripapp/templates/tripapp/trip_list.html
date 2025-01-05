@@ -18,13 +18,70 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
     
     <style>
-      body, html {
+    body, html {
       background: url('{{ background_image_url }}') no-repeat center center fixed;
       -webkit-background-size: cover;
       -moz-background-size: cover;
       -o-background-size: cover;
       background-size: cover;
-      }
+    }
+
+
+    .trip-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .trip-card {
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        text-decoration: none; 
+        color: inherit; 
+        transition: transform 0.2s ease, box-shadow 0.2s ease; 
+    }
+
+    .trip-card:hover {
+        transform: scale(1.02); 
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); 
+    }
+ 
+    .trip-image {
+        height: 0;
+        padding-top: 66.66%; /* 2:3 Aspect Ratio */
+        background-size: cover;
+        background-position: center;
+    }
+
+    .trip-info {
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .trip-flags img {
+        margin: 0 2px;
+    }
+
+    .trip-title a {
+        text-decoration: none;
+        color: #333;
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+
+    .trip-dates {
+        color: gray;
+        font-size: 0.9em;
+    }
 
     </style>
 
@@ -59,15 +116,48 @@
     </div>
     <p>&nbsp;</p>
     {% for tribe in tribes %}
-        {% for trip in trips %}
-            <p>
+<!--        {% for trip in trips %}
+             <p>
                <a href="{% url 'tripapp:trip_detail' slug=trip.slug  %}" class="btn-fixed-width">
                {% for country in trip.country_codes_list %}
                 <img src="https://flagcdn.com/16x12/{{ country|lower }}.png" width="16" height="12" />
                {% endfor %}
                &nbsp;{{ trip.name }}
             </a></p>
-        {% endfor %}
+            {% endfor %}
+-->        
+
+        <div class="trip-list">
+            {% for trip in trips %}
+            <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" class="trip-card">
+                <div class="trip-image" style="
+                background-image: 
+                    {% if trip.image %}
+                        url('{{ trip.image.url }}'); /* Gebruik trip image */
+                    {% elif trip.country_codes_list %}
+                        url('https://flagcdn.com/w320/{{ trip.country_codes_list|first|lower }}.png'); 
+                        filter: grayscale(50%); 
+                        opacity: 0.7; 
+                    {% else %}
+                        url('{% static "images/default-trip.jpg" %}'); 
+                    {% endif %}">
+                </div>
+                <div class="trip-info">
+                    <div class="trip-flags">
+                        {% for country in trip.country_codes_list %}
+                            <img src="https://flagcdn.com/16x12/{{ country|lower }}.png" width="16" height="12" alt="{{ country }} flag" />
+                        {% endfor %}
+                    </div>
+                    <h3 class="trip-title">{{ trip.name }}</h3>
+                    <p class="trip-dates">
+                        <span>{{ trip.date_from|date:"d-M-Y" }}</span> - 
+                        <span>{{ trip.date_to|date:"d-M-Y" }}</span>
+                    </p>
+                </div>
+            </a>
+            {% endfor %}
+        </div> 
+
     {% endfor %}
     <br /><br /><br />
     </div>

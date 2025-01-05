@@ -55,7 +55,7 @@
     </table>
 
     <div class="tripmenucontainer">
-        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}" class="btn">Trip overview</a></div>
+        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}" class="btn">&#8617;&nbsp;Trip Programme</a></div>
         <div class="tripmenuitem"><a href="{% url 'tripapp:trip_dayprogram_points' dayprogram.trip.id dayprogram.id %}" class="btn">Tripday Map</a></div>
 
         <div class="tripmenuitem">
@@ -72,7 +72,14 @@
                     <li><a class="dropdown-item" href="{% url 'tripapp:add_expense' dayprogram.trip.id logged_on_tripper.id %}?next=dayprogram_detail&dayprogram_id={{ dayprogram.id }}">...Expense</a></li>
                 {% endif %}
                 <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#suggestionModal">...Suggestion</a></li>
-                <li><a class="dropdown-item" href="{% url 'tripapp:tribe_trip_organize' dayprogram.trip.tribe.id dayprogram.trip.id  %}">Trip Settings</a></li>
+                {% if user.username in trippers_names %}
+                    <li><a class="dropdown-item" href="{% url 'tripapp:edit_dayprogram' dayprogram.id %}">...Info</a></li>
+                    <li><a class="dropdown-item" href="{% url 'tripapp:dayprogram_questions' dayprogram.id %}">...Question</a></li>
+                    <li><a class="dropdown-item" href="{% url 'tripapp:add_link' dayprogram.id %}">...Link</a></li>
+                {% endif %}
+
+
+
             </ul>
         </div>
         </div>

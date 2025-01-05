@@ -43,9 +43,9 @@
 <table>
     <thead>
         <tr>
-            <th>Tripper</th>
+            <th>By</th>
             <th>Description</th>
-            <th style="text-align:right;">Amount</th>
+            <th style="text-align:right; padding-right: 10px;"">Amount</th>
             <th>Date</th>
             <th>Receipt</th>
         </tr>
@@ -53,9 +53,9 @@
     <tbody>
         {% for expense in expenses %}
         <tr>
-            <td style="vertical-align: top;">{{ expense.tripper.name }}</td>
-            <td style="vertical-align: top;">{{ expense.description }}</td>
-            <td style="text-align:right;vertical-align: top;">
+            <td style="vertical-align: top; padding-right: 10px;">{{ expense.tripper.name }}</td>
+            <td style="vertical-align: top; padding-right: 10px;">{{ expense.description }}</td>
+            <td style="text-align:right;vertical-align: top; padding-right: 10px;">
                 {{ expense.converted_amount }}&nbsp;{{ app_currency }}
                 {% if expense.currency != app_currency %}
                     <br>
@@ -64,8 +64,8 @@
                     </span>
                 {% endif %}
             </td>            
-            <td style="vertical-align: top;">{{ expense.date|date:"d-m-Y" }}</td>
-            <td style="vertical-align: top;">
+            <td style="vertical-align: top; padding-right: 10px;">{{ expense.date|date:"d-m-Y" }}</td>
+            <td style="vertical-align: top; padding-right: 10px;">
                 {% if expense.receipt %}
                     <a href="{{ expense.receipt.url }}">View Receipt</a>
                 {% else %}

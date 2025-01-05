@@ -287,7 +287,7 @@ def dayprogram_detail(request, id):
           'log_entries': log_entries,
           'previous_dayprogram' : previous_dayprogram,
           'next_dayprogram' : next_dayprogram,
-          'logged_on_tripper' : logged_on_tripper
+          'logged_on_tripper' : logged_on_tripper,
          })
 
 
@@ -1233,9 +1233,19 @@ def task_manager(request):
 @login_required
 def trip_documents_view(request, trip_id):
     trip = get_object_or_404(Trip.objects.prefetch_related('dayprograms__links'), id=trip_id)
-    trip_documents = []
+    trip_documents = Link.objects.filter(dayprogram__trip=trip)
 
-    for dayprogram in trip.dayprograms.all():
-        trip_documents.extend(dayprogram.links.all())
+    filter_date = request.GET.get('filter_date')
+    filter_category = request.GET.get('filter_category')
 
-    return render(request, 'tripapp/trip_documents.html', {'trip': trip, 'trip_documents': trip_documents})
+    if filter_date:
+        trip_documents = trip_documents.filter(dayprogram__tripdate=filter_date)
+
+    if filter_category:
+        trip_documents = trip_documents.filter(category=filter_category)
+
+    return render(request, 'tripapp/trip_documents.html', {
+        'trip': trip,
+        'trip_documents': trip_documents,
+    })
+

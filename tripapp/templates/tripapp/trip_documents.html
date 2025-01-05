@@ -34,12 +34,34 @@
 
 <h1>Documents and Links</h1>
 <span style="color:gray;">{{ trip.name }}</span>
-<br /><br /><br />
+<br /><br />
 
+
+<form method="get" class="form-inline mb-4">
+    <div class="form-group mr-2">
+        <label for="filter_date" class="mr-2">Filter by Date:</label>
+        <input type="date" id="filter_date" name="filter_date" class="form-control" value="{{ request.GET.filter_date }}">
+    </div>
+    <div class="form-group mr-2">
+        <label for="filter_category" class="mr-2">Filter by Category:</label>
+        <select id="filter_category" name="filter_category" class="form-control">
+            <option value="" {% if not request.GET.filter_category %}selected{% endif %}>All</option>
+            <option value="Transportation" {% if request.GET.filter_category == "Transportation" %}selected{% endif %}>Transportation</option>
+            <option value="Lodging" {% if request.GET.filter_category == "Lodging" %}selected{% endif %}>Lodging</option>
+            <option value="Food and Drinks" {% if request.GET.filter_category == "Food and Drinks" %}selected{% endif %}>Food and Drinks</option>
+            <option value="Activity" {% if request.GET.filter_category == "Activity" %}selected{% endif %}>Activity</option>
+            <option value="Other" {% if request.GET.filter_category == "Other" %}selected{% endif %}>Other</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Filter</button>
+</form>
+<br /><br />
 
 {% if trip_documents %}
+    <table>
     {% for link in trip_documents %}
-        <p>
+        <tr>
+        <td>
         {% if link.url %}
             <a href="{{ link.url }}" target="_blank"><img src="{% static 'icons/icon-url.png' %}" class="url-icon" width="16" height="16">&nbsp;
             {% if link.description %}{{ link.description }}{% else %}Link to travel document{% endif %}</a>
@@ -48,8 +70,12 @@
             <a href="{{ link.document.url }}" target="_blank"><img src="{% static 'icons/icon-doc.png' %}" class="doc-icon" width="16" height="16">&nbsp;
             {% if link.description %}{{ link.description }}{% else %}Download Document{% endif %}</a>
         {% endif %}
-        </p>
+        </td>
+        <td style="color: gray; padding-left: 10px; padding-right: 10px;">{{ link.dayprogram.tripdate|date:"d-m-Y" }}</td>
+        <td style="color: gray; padding-left: 10px; padding-right: 10px;">{% if link.category %}{{ link.category }}{% endif %}</td>
+        </tr>
     {% endfor %}
+    </table>
 {% else %}
 <p>No documents or links for this trip.</p>
 {% endif %}

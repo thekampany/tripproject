@@ -17,6 +17,9 @@ run_assign_badges.short_description = 'Run assign_badges task'
 class BadgeAdmin(admin.ModelAdmin):
     actions = [run_assign_badges]
 
+class LinkAdmin(admin.ModelAdmin):
+    list_display = ('dayprogram', 'category', 'url', 'description')
+    list_filter = ('category',)
 
 schedule_admin = admin.site._registry.get(Schedule)
 
@@ -57,7 +60,7 @@ admin.site.register(BadgeAssignment)
 admin.site.register(Tribe)
 admin.site.register(UserProfile)
 admin.site.register(LogEntry)
-admin.site.register(Link)
+admin.site.register(Link,LinkAdmin)
 admin.site.register(Route)
 admin.site.register(TripExpense)
 admin.site.register(Location)

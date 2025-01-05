@@ -2,7 +2,7 @@
 {% load crispy_forms_tags %}
 {% block content %}
 
-    <h1>Add Link to DayProgram on {{ dayprogram.tripdate }}</h1>
+    <h1>Add Link to {{ dayprogram.tripdate }}</h1>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form|crispy }}

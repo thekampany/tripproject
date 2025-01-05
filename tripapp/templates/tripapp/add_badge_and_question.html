@@ -1,7 +1,7 @@
 {% extends "base_generic.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
-    <h1>Add Badge and Question for DayProgram on {{ dayprogram.tripdate }}</h1>
+    <h1>Add Badge and Question for {{ dayprogram.tripdate }}</h1>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <h2>Badge Information</h2>

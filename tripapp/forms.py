@@ -164,7 +164,7 @@ class TribeCreationForm(forms.ModelForm):
 class DayProgramForm(forms.ModelForm):
     class Meta:
         model = DayProgram
-        fields = ['description', 'tripdate', 'dayprogramnumber', 'possible_activities', 'necessary_info']
+        fields = ['description', 'tripdate', 'dayprogramnumber', 'necessary_info','possible_activities']
         widgets = {
             'tripdate': forms.DateInput(attrs={'type': 'date'}),
             'description': forms.TextInput(attrs={'maxlength': 50}), 
@@ -240,7 +240,7 @@ class QuestionplusBForm(forms.ModelForm):
 class LinkForm(forms.ModelForm):
     class Meta:
         model = Link
-        fields = ['url', 'document','description']
+        fields = ['url', 'document','description', 'category']
 
 class RouteForm(forms.ModelForm):
     class Meta:
