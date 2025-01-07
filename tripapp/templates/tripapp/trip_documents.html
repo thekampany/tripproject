@@ -25,6 +25,30 @@
       {% endif %}
       }
 
+      #filter-form {
+        display: none;
+        transition: all 0.3s ease-in-out;
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+      }
+
+      #filter-form.show {
+        display: flex; 
+        opacity: 1;
+        max-height: 200px; 
+      }
+
+      #filter-form .form-group {
+        display: flex; 
+        align-items: center;
+        margin-right: 10px; 
+      }
+
+      #filter-form label {
+        margin-right: 5px; 
+      }
+
     </style>
 
 </head>
@@ -35,15 +59,15 @@
 <h1>Documents and Links</h1>
 <span style="color:gray;">{{ trip.name }}</span>
 <br /><br />
+<p>
+    <a href="#" id="toggle-filter" style="color: gray; cursor: pointer;">Filter</a>
+</p>
 
-
-<form method="get" class="form-inline mb-4">
+<form method="get" class="form-inline mb-4" id="filter-form">
     <div class="form-group mr-2">
-        <label for="filter_date" class="mr-2">Filter by Date:</label>
         <input type="date" id="filter_date" name="filter_date" class="form-control" value="{{ request.GET.filter_date }}">
     </div>
     <div class="form-group mr-2">
-        <label for="filter_category" class="mr-2">Filter by Category:</label>
         <select id="filter_category" name="filter_category" class="form-control">
             <option value="" {% if not request.GET.filter_category %}selected{% endif %}>All</option>
             <option value="Transportation" {% if request.GET.filter_category == "Transportation" %}selected{% endif %}>Transportation</option>
@@ -55,7 +79,15 @@
     </div>
     <button type="submit" class="btn btn-primary">Filter</button>
 </form>
-<br /><br />
+
+<script>
+document.getElementById("toggle-filter").addEventListener("click", function (e) {
+    e.preventDefault();
+    const filterForm = document.getElementById("filter-form");
+    filterForm.classList.toggle("show");
+});
+</script>
+<br />
 
 {% if trip_documents %}
     <table>
@@ -71,7 +103,7 @@
             {% if link.description %}{{ link.description }}{% else %}Download Document{% endif %}</a>
         {% endif %}
         </td>
-        <td style="color: gray; padding-left: 10px; padding-right: 10px;">{{ link.dayprogram.tripdate|date:"d-m-Y" }}</td>
+        <td style="color: gray; padding-left: 10px; padding-right: 10px;">{{ link.dayprogram.tripdate|date:"d-M" }}</td>
         <td style="color: gray; padding-left: 10px; padding-right: 10px;">{% if link.category %}{{ link.category }}{% endif %}</td>
         </tr>
     {% endfor %}
@@ -82,6 +114,7 @@
 
 <p>&nbsp;</p>
 <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" >Back to Trip</a>
+<p>&nbsp;</p>
 
 </div>
 </div>

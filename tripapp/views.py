@@ -1126,6 +1126,14 @@ def trip_expenses_list(request, trip_id):
     expenses = trip.expenses.all().order_by('date')
     tripper = Tripper.objects.filter(name=request.user.username).first()
     app_currency = settings.APP_CURRENCY
+    filter_date = request.GET.get('filter_date')
+    filter_category = request.GET.get('filter_category')
+
+    if filter_date:
+        expenses = expenses.filter(date=filter_date)
+    if filter_category:
+        expenses = expenses.filter(category=filter_category)
+
     return render(request, 'tripapp/trip_expenses_list.html', {'trip': trip, 'expenses': expenses, 'tripper':tripper, 'app_currency':app_currency})
 
 @login_required

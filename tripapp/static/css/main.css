@@ -266,6 +266,7 @@ a.btn-fixed-width {
              display: inline-block;
              text-decoration: none;
              width: 250px;
+             margin: 2px;
         }
 
 a.btn-fixed-width:hover {background: var(--color-background);}

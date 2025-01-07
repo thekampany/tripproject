@@ -279,7 +279,7 @@ class TripExpense(models.Model):
     date = models.DateField(default=timezone.now)
     description = models.CharField(max_length=30, blank=True, null=True)
     receipt = models.ImageField(upload_to='receipts/', blank=True, null=True)
-    #category = models.CharField(max_length=20,choices=CATEGORY_CHOICES,blank=True,default='')
+    category = models.CharField(max_length=20,choices=CATEGORY_CHOICES,blank=True,default='')
  
     def __str__(self):
         return f'{self.amount} {self.currency} on {self.trip.name} by {self.tripper.name}'

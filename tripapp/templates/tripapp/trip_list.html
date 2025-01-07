@@ -28,60 +28,79 @@
 
 
     .trip-list {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 20px;
-        padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.trip-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.trip-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.trip-image {
+    height: 0;
+    padding-top: 66.66%;
+    background-size: cover;
+    background-position: center;
+}
+
+.trip-info {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.trip-flags img {
+    margin: 0 2px;
+    filter: brightness(0.7); /* Minder felle kleuren */
+}
+
+.trip-title a {
+    text-decoration: none;
+    color: #333;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.trip-dates {
+    color: gray;
+    font-size: 0.9em;
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #121212;
+        color: #ffffff;
     }
 
     .trip-card {
-        display: flex;
-        flex-direction: column;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        overflow: hidden;
-        background: #fff;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        text-decoration: none; 
-        color: inherit; 
-        transition: transform 0.2s ease, box-shadow 0.2s ease; 
+        background: #1e1e1e;
+        border: 1px solid #333;
+        box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
     }
 
     .trip-card:hover {
-        transform: scale(1.02); 
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); 
-    }
- 
-    .trip-image {
-        height: 0;
-        padding-top: 66.66%; /* 2:3 Aspect Ratio */
-        background-size: cover;
-        background-position: center;
-    }
-
-    .trip-info {
-        padding: 10px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-
-    .trip-flags img {
-        margin: 0 2px;
-    }
-
-    .trip-title a {
-        text-decoration: none;
-        color: #333;
-        font-size: 1.2em;
-        font-weight: bold;
-    }
-
-    .trip-dates {
-        color: gray;
-        font-size: 0.9em;
-    }
+        transform: scale(1.02);
+        box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
+   
 
     </style>
 
@@ -116,16 +135,6 @@
     </div>
     <p>&nbsp;</p>
     {% for tribe in tribes %}
-<!--        {% for trip in trips %}
-             <p>
-               <a href="{% url 'tripapp:trip_detail' slug=trip.slug  %}" class="btn-fixed-width">
-               {% for country in trip.country_codes_list %}
-                <img src="https://flagcdn.com/16x12/{{ country|lower }}.png" width="16" height="12" />
-               {% endfor %}
-               &nbsp;{{ trip.name }}
-            </a></p>
-            {% endfor %}
--->        
 
         <div class="trip-list">
             {% for trip in trips %}
@@ -133,7 +142,7 @@
                 <div class="trip-image" style="
                 background-image: 
                     {% if trip.image %}
-                        url('{{ trip.image.url }}'); /* Gebruik trip image */
+                        url('{{ trip.image.url }}'); 
                     {% elif trip.country_codes_list %}
                         url('https://flagcdn.com/w320/{{ trip.country_codes_list|first|lower }}.png'); 
                         filter: grayscale(50%); 

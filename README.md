@@ -1,17 +1,23 @@
 # Trippanion
 The Selfhosted Trip-Planning-Companion application.   
-You and your friends go on a trip. This app allows you to share all the details of the trip with the people going on the trip with you. Add links to (or upload) relevant travel documents. 
-It is the app in which you answer questions like: what time do we have to be at the airport, should I dress up for dinner or do we go to the beach and eat something there afterwards. 
+You and your family / friends go on a trip. 
+While planning the trip you have a central place to store all the booking mails rather than having some of them in your own mailbox, and others in the mailbox of your spouse / co planner(s).
+During the trip, this app allows you to share all the details of the trip with the people going on the trip with you and that just were not that involved in the planning. It is the app in which you answer questions like: what time do we have to be at the airport, should I dress up for dinner or do we go to the beach and eat something there afterwards. 
 
-Besides the main purpose, you can also entertain your fellow travellers by geting them involved in (road)tripbingo and let them win fancy badges. 
+The application also has the following features:
+Show a map of the trip itinerary and show a map with the points of interest for one particular day.  
+Add expenses and keep a simple overview of who owes and who gets. Also when making expenses in foreign currency.    
+Keep a check/pack/wishlist.  
+Each traveller on the trip can add personal logentries and photos.  
 
-The Trippers can invite their friends and family to the tribe. People in the tribe can see an overview of the trip and who is winning the badges.
+You can also entertain your fellow travellers by geting them involved in (road)tripbingo and let them win fancy badges. 
 
-Additional features:  
-Add expenses and keep a simple overview of who owes and who gets.  
-Per trip show points of interest and stopovers on a map.  
 Add a Dawarich api key and see your tracks - did you go where you planned you would go?  
 Add an Immich api key and see where you took a photo  
+
+The Trippers can invite their friends and family to the tribe. People in the tribe can see an overview of the trip and who is winning the badges. 
+Your (trip)data is on your server and you decide who can view your tripdata. 
+
 
 # Installation
 `git clone https://github.com/thekampany/tripproject.git`  
@@ -60,4 +66,7 @@ For a tripadmin, the functions to organize the trip are brought together in one 
 
  
 # Struggles - Unfinished Business
-I want to integrate facilmap. It offers very nice planning options on the map. But how to integrate this with the parts of the trip that are kept in the database?
+Facilmap can be opened in a trip. It offers very nice planning options on the map. I am not yet satisfied with the way it is integrated in teh app. Work in progress.  
+
+# Credits
+Flags from https://flagpedia.net

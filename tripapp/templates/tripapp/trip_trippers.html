@@ -16,6 +16,66 @@
       background-size: cover;
       {% endif %}
      }
+
+     .trip-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .trip-card img {
+            width: 100%;
+            height: auto;
+            max-height: 150px;
+            object-fit: cover;
+        }
+
+        .trip-card .card-body {
+            padding: 15px;
+        }
+
+        .trip-card .tripper-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .trip-card .badges-link {
+            font-size: 0.9em;
+            color: gray;
+        }
+
+        .container-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        /* Dark Mode */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #121212;
+                color: #ffffff;
+            }
+
+            .trip-card {
+                background-color: #1e1e1e;
+                color: #ffffff;
+            }
+
+            .trip-card .badges-link {
+                color: #bbbbbb;
+            }
+
+            .trip-card .badges-link a:hover {
+                color: #ffffff;
+            }
+        }
+
     </style>
 
 </head>
@@ -24,53 +84,52 @@
 <div class="container">
 
     <h1>{{ trip.name }} Trippers</h1>
-        <table>
-        {% for tripper in trippers %}
-            <tr>
-                <td style="vertical-align:middle">
-                {% if tripper.photo %}
-                   {% if user.is_authenticated and user.username == tripper.name %}
-                      <a href="{% url 'tripapp:tripper_profile' tripper.id %}">
-                      <img src="{{ tripper.photo.url }}" alt="Profile" height="60px" width="60px">
-                      </a>
-                   {% else %}
-                      <img src="{{ tripper.photo.url }}" alt="Profile" height="60px" width="60px">
-                   {% endif %}
-                {% else %}
-                   {% if user.is_authenticated and user.username == tripper.name %}
-                      <a href="{% url 'tripapp:tripper_profile' tripper.id %}">
-                      <img src="{% static 'profile.png' %}" alt="Profile" height="60px" width="60px">
-                      </a>
-                   {% else %}
-                      <img src="{% static 'profile.png' %}" alt="Profile" height="60px" width="60px">
-                   {% endif %}
-                {% endif %}
-                </td>
-                <td style="vertical-align:middle">
-                {% if user.is_authenticated and user.username == tripper.name %} 
-                   <a href="{% url 'tripapp:tripper_profile' tripper.id %}">{{ tripper.name }}</a>
-                {% else %}
-                   {{ tripper.name }}
-                {% endif %}
-                </td>
-                <td style="vertical-align:middle"> 
-                <a href="{% url 'tripapp:trip_tripper_badgeassignments' trip.id tripper.id %}">Badges this trip: {{ tripper.badge_count }}</a>
-                <a href="{% url 'tripapp:tripper_badgeassignments' tripper.id %}">(Total: {{ tripper.total_badge_count }})</a>               
-                </td>
-            </tr>
-        {% endfor %}
-        </table>
-<p>&nbsp;</p>
-<!--<p><a href="{% url 'tripapp:upload_badge' %}" class="btn">Upload Badge for this Trip</a></p>-->
-{% if trip.use_expenses and trip.has_expenses %}
-<p><a href="{% url 'tripapp:trip_balance' trip.id %}">Trippers owe Trippers?</a></p>
-{% endif %}
 
-</div>
-</div>
-<div class="card">
-<div class="container">
-    <a href="{% url 'tripapp:trip_detail' trip.slug %}">Back to Trip</a>
+
+    <div class="container-cards">
+      {% for tripper in trippers %}
+      <div class="trip-card">
+          <!-- Tripper Image -->
+          <img src="{% if tripper.photo %}{{ tripper.photo.url }}{% else %}{% static 'profile.png' %}{% endif %}" 
+               alt="Profile">
+
+          <!-- Tripper Info -->
+          <div class="card-body">
+              <!-- Tripper Name -->
+              <div class="tripper-name">
+                  {% if user.is_authenticated and user.username == tripper.name %}
+                      <a href="{% url 'tripapp:tripper_profile' tripper.id %}">{{ tripper.name }}</a>
+                  {% else %}
+                      {{ tripper.name }}
+                  {% endif %}
+              </div>
+
+              <!-- Badges Link -->
+              <div class="badges-link">
+                  <a href="{% url 'tripapp:trip_tripper_badgeassignments' trip.id tripper.id %}">
+                      Badges this trip: {{ tripper.badge_count }}
+                  </a>
+                  <br>
+                  <a href="{% url 'tripapp:tripper_badgeassignments' tripper.id %}">
+                      (Total: {{ tripper.total_badge_count }})
+                  </a>
+              </div>
+          </div>
+      </div>
+      {% endfor %}
+   </div>
+
+   <p>&nbsp;</p>
+   <!--<p><a href="{% url 'tripapp:upload_badge' %}" class="btn">Upload Badge for this Trip</a></p>-->
+   {% if trip.use_expenses and trip.has_expenses %}
+   <p><a href="{% url 'tripapp:trip_balance' trip.id %}">Trippers owe Trippers?</a></p>
+   {% endif %}
+
+
+   <p>&nbsp;</p>
+   <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" >Back to Trip</a>
+   <p>&nbsp;</p>
+
 </div>
 </div>
 </body>
