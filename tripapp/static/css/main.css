@@ -8,8 +8,8 @@
 
   --btn-background: #f88c34;
   --dayprogram-background: rgba(255,255,255,0.8);
+  --bs-dropdown-bg-overr: rgba(255, 255, 255, 0.700);
 }
-
 @media (prefers-color-scheme: dark) {
   /* Re-assign previous variables */
   :root {
@@ -21,6 +21,7 @@
     --card-box-shadow-hover: 0 8px 16px 0 rgba(255,255,255,0.2);
     --btn-background: #34a0f8;
     --dayprogram-background: rgba(0,0,0,0.8);
+    --bs-dropdown-bg-overr: rgba(255, 255, 255, 0.100);
   }
 }
 
@@ -85,7 +86,7 @@ body {
   margin-left: 15px;  
 }
 .custom-dropdown-menu{
-  --bs-dropdown-bg: rgba(0, 0, 0, 0.125)
+  --bs-dropdown-bg: var(--bs-dropdown-bg-overr);
 }
 .tripmenucontainer {
   color: var(--color-text);
@@ -437,9 +438,28 @@ img.user-icon {
   }
   img.doc-icon {
       content: url('/static/icons/icon-doc-reverse.png');
-}
+  }
   img.url-icon {
       content: url('/static/icons/icon-url-reverse.png');
-}
+  }
+  img.iconedittrip{
+      content: url('/static/icons/iconedittrip-reverse.png');
+  }
+  img.iconeditbadge{
+      content: url('/static/icons/iconeditbadge-reverse.png');
+  }
+  img.iconeditbingo{
+      content: url('/static/icons/iconeditbingo-reverse.png');
+  }
+  img.iconedittripper{
+      content: url('/static/icons/iconedittripper-reverse.png');
+  }
+  img.iconeditmap{
+      content: url('/static/icons/iconeditmap-reverse.png');
+  }
+  img.iconeditdayprogram{
+      content: url('/static/icons/iconeditdayprogram-reverse.png');
+  }
+
 }
 

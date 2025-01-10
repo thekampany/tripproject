@@ -244,7 +244,7 @@
                             filter: grayscale(50%); 
                             opacity: 0.7; 
                         {% else %}
-                            url('{% static "images/default-trip.jpg" %}'); 
+                            url('{% static "default-trip.png" %}'); 
                         {% endif %}">
                         <span>{{ trip.name }}</span>
                     </div>
@@ -252,6 +252,9 @@
 
                     <div class="trip-icons">
                         {% if trip in admin_trips %}
+                            <a href="{% url 'tripapp:trip_update' trip.id %}">
+                                <img src="{% static 'icons/iconedittrip.png'  %}" alt="Edit Trip">
+                            </a>
                             <a href="{% url 'tripapp:add_trippers' trip.id tribe.id %}">
                                 <img src="{% static 'icons/iconedittripper.png' %}" alt="Edit Trippers">
                             </a>
@@ -280,7 +283,7 @@
 
     <br />
     <h1>Badges</h1>
-    <a href="{% url 'tripapp:mytribes_badges_view' %}" class="btn-fixed-width">View Badges</a>
+    <a href="{% url 'tripapp:mytribes_badges_view' %}" class="btn-fixed-width">View Badges</a>&nbsp;
     <a href="{% url 'tripapp:upload_badge' %}" class="btn-fixed-width">Upload Badge</a>
     <br /><br /><br />
     </div>
