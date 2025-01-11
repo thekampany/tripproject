@@ -31,16 +31,21 @@
 
     <h1>{{ trip.name }} Map</h1>
 
-    <div class="tripmenuitem"><a href="{% url 'tripapp:trip_map_view' trip.id %}" >Displaying planned and visited locations</a></div>
-    {% if trip.use_facilmap %}
-    <div class="tripmenuitem"><a href="{% url 'tripapp:planner_map' trip.id %}" >Switch to Facilmap</a></div>
-    {% endif %}
 
 
     <div id="map"></div>
-    {% if locations_truncated %}
-    <p>Only the first {{ max_locations }} locations are shown. Zoom in via map on dayprogram.</p>
+    {% if trip.use_facilmap %}
+        <p>
+        <a href="{% url 'tripapp:trip_map_view' trip.id %}" >Displaying planned and visited locations</a>&nbsp;
+        <a href="{% url 'tripapp:planner_map' trip.id %}" >Switch to Facilmap</a></p>
+    {% else %}
+        <p>Displaying planned and visited locations</p>
     {% endif %}
+
+    {% if locations_truncated %}
+    <p>Only the first {{ max_locations }} locations are shown. See more via tripdayprograms.</p>
+    {% endif %}
+    
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
         // Initialize the map

@@ -197,6 +197,7 @@ a.nodec:link {
   border-radius: 6px;
   background-color: var(--dayprogram-background);
   padding: 2px 12px;
+  text-decoration: none;
 }
 
 /* visited link */
@@ -205,6 +206,7 @@ a.nodec:visited {
   border-radius: 6px;
   background-color: var(--dayprogram-background);
   padding: 2px 12px;
+  text-decoration: none;
 }
 
 /* mouse over link */
