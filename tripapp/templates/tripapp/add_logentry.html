@@ -6,7 +6,7 @@
     <form method="post">
         {% csrf_token %}
         {{ form|crispy }}
-        <button type="submit">Save Log Entry</button>
+        <button type="submit" class="btn">Save Log Entry</button>
     </form>
     <br />
     <a href="{% url 'tripapp:dayprogram_detail' dayprogram.id %}">Back to Day Program</a>

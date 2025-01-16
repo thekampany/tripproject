@@ -15,7 +15,7 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form|crispy }}
-        <button type="submit">Upload</button>
+        <button type="submit" class="btn">Upload</button>
     {% if form.errors %}
         <div class="errors">
             <ul>

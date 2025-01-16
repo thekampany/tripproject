@@ -110,7 +110,7 @@ class DayProgram(models.Model):
     necessary_info = models.TextField(blank=True)
 
     def __str__(self):
-        return f"{self.trip.name} - {self.description[:50]}"
+        return f"{self.trip.name} - {self.dayprogramnumber} - {self.description[:50]}"
 
 class Image(models.Model):
     day_program = models.ForeignKey(DayProgram, related_name='images', on_delete=models.CASCADE)
@@ -250,6 +250,19 @@ class Link(models.Model):
         blank=True,
         default=''
     )
+    scheduled_item = models.ForeignKey(
+        'ScheduledItem',
+        on_delete=models.SET_NULL,
+        related_name='links',
+        null=True,
+        blank=True,
+        help_text="Optional: Associate this link with a specific ScheduledItem."
+    )
+    def save(self, *args, **kwargs):
+        if self.scheduled_item and self.scheduled_item.dayprogram != self.dayprogram:
+            raise ValueError("The Link's DayProgram must match the ScheduledItem's DayProgram.")
+        super().save(*args, **kwargs)
+ 
     def __str__(self):
         return self.url or self.document.url
 
@@ -330,3 +343,34 @@ class ImmichPhotos(models.Model):
     city = models.CharField(max_length=100, null=True, blank=True)  
     timestamp = models.DateTimeField()
     thumbnail = models.ImageField(upload_to='immich_thumbnails/', null=True, blank=True)  
+
+
+class ScheduledItem(models.Model):
+    CATEGORY_CHOICES = [
+        ('', 'No Category'),
+        ('Transportation', 'Transportation'),
+        ('Lodging', 'Lodging'),
+        ('Food and Drinks','Food and Drinks'),
+        ('Activity', 'Activity'),
+        ('Other', 'Other'),
+    ]
+    TRANSPORTATION_TYPE_CHOICES = [
+        ('', 'Not Specified'),
+        ('Airplane', 'Airplane'),
+        ('Bus', 'Bus'),
+        ('Train','Train'),
+        ('Taxi', 'Taxi'),
+        ('Other', 'Other'),
+    ]
+
+    dayprogram = models.ForeignKey(DayProgram, on_delete=models.CASCADE, related_name='scheduled_items')
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    start_address = models.CharField(max_length=255)
+    end_address = models.CharField(max_length=255, blank=True, null=True)
+    transportation_type = models.CharField(max_length=50, choices=TRANSPORTATION_TYPE_CHOICES,blank=True,null=True)
+
+    def __str__(self):
+        trip_date = self.dayprogram.tripdate.strftime("%d-%m-%Y") if self.dayprogram.tripdate else "No Date"
+        return f"({self.start_time} - {self.end_time}) {self.get_category_display()} on {trip_date}" 

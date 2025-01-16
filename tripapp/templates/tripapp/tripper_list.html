@@ -2,7 +2,7 @@
 
 {% block content %}
   <h1>Trippers on {{ trip.name }}</h1>
-    Make a tripper admin and/or assign a badge to a tripper<br />
+    Make a tripper admin and/or assign a badge to a tripper<br /><br />
     {% for tripper in trippers %}
      
         <p><a href="{% url 'tripapp:edit_tripper' tripper.id trip.id %}">{{ tripper.name }}</a></p>

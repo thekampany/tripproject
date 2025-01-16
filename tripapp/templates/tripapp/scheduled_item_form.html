@@ -1,0 +1,30 @@
+{% extends "base_generic.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container">
+    <h2>
+        {% if scheduled_item %}
+            Edit Scheduled Item
+        {% else %}
+            Add Scheduled Item
+        {% endif %}
+    </h2>
+    <p>Day: {{ dayprogram.tripdate }}</p>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn">
+            {% if scheduled_item %}
+                Update
+            {% else %}
+                Add
+            {% endif %}
+        </button>
+        <br />
+        <a href="{% url 'tripapp:dayprogram_detail' dayprogram.id %}">Cancel</a>
+        <br /><br />
+    </form>
+</div>
+{% endblock %}

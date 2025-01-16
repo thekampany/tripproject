@@ -2,10 +2,11 @@
 {% load crispy_forms_tags %}
 {% block content %}
 
-    <h1>Add Link to {{ dayprogram.tripdate }}</h1>
+    <h1>Add Link or Document</h1>
+    to {{ dayprogram.tripdate }}
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form|crispy }}
-        <button type="submit">Save</button>
+        <button type="submit" class="btn">Save</button>
     </form>
 {% endblock %}

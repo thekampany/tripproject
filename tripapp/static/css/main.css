@@ -6,7 +6,8 @@
   --card-box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
   --card-box-shadow-hover: 0 8px 16px 0 rgba(0,0,0,0.2);
 
-  --btn-background: #f88c34;
+  /*--btn-background: #f88c34; */
+  --btn-background: #ef98aa;
   --dayprogram-background: rgba(255,255,255,0.8);
   --bs-dropdown-bg-overr: rgba(255, 255, 255, 0.700);
 }
@@ -19,7 +20,8 @@
     --card-background-color: rgba(0, 0, 0, 0.7);
     --card-box-shadow: 0 4px 8px 0 rgba(255,255,255,0.2);
     --card-box-shadow-hover: 0 8px 16px 0 rgba(255,255,255,0.2);
-    --btn-background: #34a0f8;
+    /*--btn-background: #34a0f8; */
+    --btn-background: #C70039;
     --dayprogram-background: rgba(0,0,0,0.8);
     --bs-dropdown-bg-overr: rgba(255, 255, 255, 0.100);
   }
@@ -364,7 +366,7 @@ a.btn-more-padding:hover {background: var(--color-background);}
 }
 
 .polaroid {
-    width: 300px; /* Adjust as needed */
+    width: 300px; 
     padding: 10px;
     background: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);

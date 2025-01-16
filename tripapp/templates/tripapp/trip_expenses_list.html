@@ -140,9 +140,9 @@ document.getElementById("toggle-filter").addEventListener("click", function (e) 
 {% endif %}
 <p>&nbsp;</p>
 <!--add expense-->
-<a href="{% url 'tripapp:add_expense' trip.id tripper.id %}?next=balance" class="btn btn-primary">Add New Expense</a>
+<a href="{% url 'tripapp:add_expense' trip.id tripper.id %}?next=balance" class="btn">Add New Expense</a>
 &nbsp;
-<a href="{% url 'tripapp:trip_balance' trip.id %}" class="btn btn-primary">See Balance</a>
+<a href="{% url 'tripapp:trip_balance' trip.id %}" class="btn">See Balance</a>
 <p>&nbsp;</p>
 <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" >Back to Trip</a>
 <p>&nbsp;</p>

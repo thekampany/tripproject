@@ -162,9 +162,26 @@
             maxZoom: 17, 
         }).addTo(map);
 
+        var gpxRoutesLayer = L.layerGroup();
+        // Add route to the map
+        {% for route in dayprogram.routes.all %}
+            new L.GPX("{{ route.gpx_file.url }}", {
+                async: true,
+                polyline_options: {
+                color: 'blue',        
+                opacity: 0.7,         
+                weight: 4,            
+                dashArray: '5, 10'
+                }    
+            }).on('loaded', function(e) {
+                map.fitBounds(e.target.getBounds());
+            }).addTo(gpxRoutesLayer);
+        {% endfor %}
+        gpxRoutesLayer.addTo(map);
 
         var overlays = {
             "Markers": markers,
+            "GPX Route": gpxRoutesLayer,
             "Tracked Locations": locationsLayer,
             "Photolocations": photolocationsLayer,
             "Lines": polyline,
@@ -172,20 +189,6 @@
         };
         L.control.layers(null, overlays, { collapsed: false }).addTo(map);
 
-
-        // Add route to the map
-        {% for route in dayprogram.routes.all %}
-            new L.GPX("{{ route.gpx_file.url }}", {
-                async: true
-                polyline_options: {
-                color: 'blue',        
-                opacity: 0.7,         
-                weight: 4,            
-                dashArray: '5, 10'    
-            }).on('loaded', function(e) {
-                map.fitBounds(e.target.getBounds());
-            }).addTo(map);
-        {% endfor %}
 
         function handleMapLongPress(map) {
             var pressTimer;

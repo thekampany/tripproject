@@ -22,7 +22,7 @@
     <form method="post" id="create-trip-form">
         {% csrf_token %}
         {{ form|crispy }}
-        <button type="submit">Create Trip</button>
+        <button type="submit" class="btn">Create Trip</button>
     </form>
 
     <button id="confirm-submit" style="display:none;">Confirm Submit</button>

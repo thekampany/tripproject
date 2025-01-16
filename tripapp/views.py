@@ -4,7 +4,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Trip, Tripper, Badge, DayProgram, Checklist, ChecklistItem, Image, Question, Point
 from .models import BingoCard, BingoAnswer, BadgeAssignment
-from .models import Tribe, UserProfile, LogEntry, Link, Route, TripExpense, Location, ImmichPhotos
+from .models import Tribe, UserProfile, LogEntry, Link, Route, TripExpense, Location, ImmichPhotos, ScheduledItem
 from .forms import BadgeForm, TripForm, ChecklistItemForm, ImageForm, BingoAnswerForm
 from .forms import CustomUserCreationForm
 from .forms import AnswerForm, AnswerImageForm, TripperForm, TripperAdminForm
@@ -12,7 +12,7 @@ from .forms import TribeCreationForm, AddTrippersForm, DayProgramForm
 from .forms import QuestionForm, PointForm, BingoCardForm
 from .forms import BadgeAssignmentFormSet, LogEntryForm
 from .forms import BadgeplusQForm, QuestionplusBForm
-from .forms import LinkForm, RouteForm, SuggestionForm, TripExpenseForm, TripUpdateForm, UserUpdateForm
+from .forms import LinkForm, RouteForm, SuggestionForm, TripExpenseForm, TripUpdateForm, UserUpdateForm, ScheduledItemForm
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
@@ -273,7 +273,9 @@ def dayprogram_detail(request, id):
                 'has_badge': has_badge
             })
         questions_with_badge_info.append(question_info)
-
+    links_without_scheduled_item = dayprogram.links.filter(scheduled_item__isnull=True)
+    links_with_scheduled_item = dayprogram.links.filter(scheduled_item__isnull=False)
+    scheduled_items = dayprogram.scheduled_items.all()
 
     return render(request, 'tripapp/dayprogram_detail.html', 
          {'dayprogram': dayprogram, 
@@ -288,6 +290,9 @@ def dayprogram_detail(request, id):
           'previous_dayprogram' : previous_dayprogram,
           'next_dayprogram' : next_dayprogram,
           'logged_on_tripper' : logged_on_tripper,
+          'links_without_scheduled_item' : links_without_scheduled_item,
+          'links_with_scheduled_item' : links_with_scheduled_item,
+          'scheduled_items' : scheduled_items,
          })
 
 
@@ -1028,7 +1033,7 @@ def add_link(request, dayprogram_id):
             link.save()
             return redirect('tripapp:trip_dayprograms', trip_id=dayprogram.trip.id)
     else:
-        form = LinkForm()
+        form = LinkForm(dayprogram=dayprogram)
 
     return render(request, 'tripapp/add_link.html', {
         'form': form,
@@ -1257,3 +1262,22 @@ def trip_documents_view(request, trip_id):
         'trip_documents': trip_documents,
     })
 
+def add_or_edit_scheduled_item(request, dayprogram_id, scheduled_item_id=None):
+    dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
+
+    if scheduled_item_id:
+        scheduled_item = get_object_or_404(ScheduledItem, id=scheduled_item_id, dayprogram=dayprogram)
+    else:
+        scheduled_item = None
+
+    if request.method == 'POST':
+        form = ScheduledItemForm(request.POST, instance=scheduled_item)
+        if form.is_valid():
+            scheduled_item = form.save(commit=False)
+            scheduled_item.dayprogram = dayprogram
+            scheduled_item.save()
+            return redirect('tripapp:dayprogram_detail', id=dayprogram.id)
+    else:
+        form = ScheduledItemForm(instance=scheduled_item)
+
+    return render(request, 'tripapp/scheduled_item_form.html', {'form': form, 'dayprogram': dayprogram, 'scheduled_item': scheduled_item})

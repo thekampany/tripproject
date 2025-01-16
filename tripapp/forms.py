@@ -15,6 +15,7 @@ from .models import LogEntry
 from .models import Link
 from .models import Route
 from .models import TripExpense
+from .models import ScheduledItem
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
@@ -238,9 +239,21 @@ class QuestionplusBForm(forms.ModelForm):
         fields = ['question_text', 'correct_answer']
 
 class LinkForm(forms.ModelForm):
+    scheduled_item = forms.ModelChoiceField(
+        queryset=ScheduledItem.objects.all(),
+        required=False,  
+        empty_label="Choose Scheduled Item for this link/document (optional)",  
+        widget=forms.Select(attrs={'class': 'form-control'})  
+    )
     class Meta:
         model = Link
-        fields = ['url', 'document','description', 'category']
+        fields = ['url', 'document','description', 'category', 'scheduled_item']
+    def __init__(self, *args, **kwargs):
+        dayprogram = kwargs.pop('dayprogram', None)
+        super().__init__(*args, **kwargs)
+
+        if dayprogram:
+            self.fields['scheduled_item'].queryset = ScheduledItem.objects.filter(dayprogram=dayprogram)
 
 class RouteForm(forms.ModelForm):
     class Meta:
@@ -314,3 +327,23 @@ class UserUpdateForm(forms.ModelForm):
             raise ValidationError("Passwords do not match.")
         return cleaned_data
 
+
+class ScheduledItemForm(forms.ModelForm):
+    class Meta:
+        model = ScheduledItem
+        fields = [
+            'category',
+            'transportation_type',
+            'start_time',
+            'end_time',
+            'start_address',
+            'end_address',
+        ]
+        widgets = {
+            'start_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+            'end_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+            'start_address': forms.TextInput(attrs={'class': 'form-control'}),
+            'end_address': forms.TextInput(attrs={'class': 'form-control'}),
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'transportation_type': forms.Select(attrs={'class': 'form-control'}),
+        }
