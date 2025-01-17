@@ -156,12 +156,13 @@
                             {% endif %}
                         <td>{{ item.start_time|time:"H:i" }}</td>
                         <td>{{ item.start_address }}</td>
+                        <td><a style="color:gray;font-size:xx-small;" href="{% url 'tripapp:edit_scheduled_item' dayprogram.id item.id %}">[Edit]</a></td>
                     </tr>
-                    <tr><td></td><td>{{ item.end_time|time:"H:i" }}</td><td>{{ item.end_address }}</td></tr>
+                    <tr><td></td><td>{{ item.end_time|time:"H:i" }}</td><td>{{ item.end_address }}</td><td></td></tr>
                     <tr>
                         {% if item.links.all %}
                             <td></td>
-                            <td colspan="2">
+                            <td colspan="3">
                                 {% for link in item.links.all %}
                                     <p>
                                     {% if link.url %}

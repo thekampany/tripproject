@@ -275,7 +275,7 @@ def dayprogram_detail(request, id):
         questions_with_badge_info.append(question_info)
     links_without_scheduled_item = dayprogram.links.filter(scheduled_item__isnull=True)
     links_with_scheduled_item = dayprogram.links.filter(scheduled_item__isnull=False)
-    scheduled_items = dayprogram.scheduled_items.all()
+    scheduled_items = dayprogram.scheduled_items.all().order_by('start_time')
 
     return render(request, 'tripapp/dayprogram_detail.html', 
          {'dayprogram': dayprogram, 
