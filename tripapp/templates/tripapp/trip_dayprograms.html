@@ -20,7 +20,7 @@
                         {% if user_is_tripper %}
                         <a href="{% url 'tripapp:edit_dayprogram' dayprogram.id %}">Edit</a>&nbsp;
                         <a href="{% url 'tripapp:dayprogram_questions' dayprogram.id %}">Questions</a>
-                        <a href="{% url 'tripapp:add_scheduled_item' dayprogram.id %}">Scheduled Item</a>
+                        <a href="{% url 'tripapp:dayprogram_scheduled_items' dayprogram.id %}">Scheduled Items</a>
                         <a href="{% url 'tripapp:add_link' dayprogram.id %}">Link</a>
                         {% endif %}
                      </td>
@@ -29,7 +29,7 @@
         </tbody>
     </table>
     {% if trip in admin_trips %}
-    <a href="{% url 'tripapp:dayprogram_add' trip.id %}" class="btn btn-primary">Add a Day</a>&nbsp;
+    <a href="{% url 'tripapp:dayprogram_add' trip.id %}" class="btn">Add a Day</a>&nbsp;
     {% endif %}
     <p>&nbsp;</p>
     <p>

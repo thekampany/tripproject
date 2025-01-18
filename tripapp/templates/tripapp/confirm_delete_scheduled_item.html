@@ -1,0 +1,14 @@
+{% extends "base_generic.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<h1>Confirm Delete</h1>
+<p>Are you sure you want to delete the scheduled item?</p>
+<p><strong>{{ scheduled_item }}</strong></p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+    <a href="{% url 'tripapp:dayprogram_scheduled_items' dayprogram.id %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

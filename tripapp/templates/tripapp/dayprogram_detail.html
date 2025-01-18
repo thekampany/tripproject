@@ -69,6 +69,13 @@
         display: block;
         margin-bottom: 8px; 
     }
+    .scheduled-item-card {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+    }
+
     td {
         padding-right : 16px;
     }
@@ -141,49 +148,68 @@
 
         {% if scheduled_items %}
         <div class="dayprogramcard">
-            <p><span class="dayprogramcard-title">Scheduled Items</span></p>
+            <p><span class="dayprogramcard-title">Scheduled Items for Today</span></p>
             <table>
                 {% for item in scheduled_items %}
                     <tr>
-                        <td>{% if item.category == 'Transportation' %}
-                                {% if item.transportation_type != 'Other' %}
-                                  {{ item.transportation_type }}
-                                {% else %}
-                                  {{ item.category }}
-                                {% endif %}
-                            {% else %}
-                                {{ item.category }}
-                            {% endif %}
-                        <td>{{ item.start_time|time:"H:i" }}</td>
-                        <td>{{ item.start_address }}</td>
-                        <td><a style="color:gray;font-size:xx-small;" href="{% url 'tripapp:edit_scheduled_item' dayprogram.id item.id %}">[Edit]</a></td>
-                    </tr>
-                    <tr><td></td><td>{{ item.end_time|time:"H:i" }}</td><td>{{ item.end_address }}</td><td></td></tr>
-                    <tr>
-                        {% if item.links.all %}
-                            <td></td>
-                            <td colspan="3">
-                                {% for link in item.links.all %}
-                                    <p>
-                                    {% if link.url %}
-                                        <a href="{{ link.url }}" target="_blank" style="text-decoration:none;">
-                                            <img src="{% static 'icons/icon-url.png' %}" class="url-icon" width="16" height="16">
-                                            {% if link.description %}{{ link.description }}{% else %}Link to travel document{% endif %}
-                                        </a>
+                        <td colspan="4">
+                            <div class="scheduled-item-card">
+                                <table style="width: 100%;">
+                                    <tr>
+                                        <td width="140px">
+                                            {% if item.category == 'Transportation' %}
+                                                {% if item.transportation_type != 'Other' %}
+                                                    {{ item.transportation_type }}
+                                                {% else %}
+                                                    {{ item.category }}
+                                                {% endif %}
+                                            {% else %}
+                                                {{ item.category }}
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ item.start_time|time:"H:i" }}</td>
+                                        <td>{{ item.start_address }}</td>
+                                        <td style="text-align:right;">{% if user.username in trippers_names %}
+                                            <a style="color:gray;font-size:xx-small;" 
+                                               href="{% url 'tripapp:edit_scheduled_item' dayprogram.id item.id %}">[Edit]</a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td>{% if item.end_time %}{{ item.end_time|time:"H:i" }}{% endif %}</td>
+                                        <td>{% if item.end_address %}{{ item.end_address }}{% endif %}</td>
+                                        <td></td>
+                                    </tr>
+                                    {% if item.links.all %}
+                                        <tr>
+                                            <td></td>
+                                            <td colspan="3">
+                                                {% for link in item.links.all %}
+                                                    <p>
+                                                        {% if link.url %}
+                                                            <a href="{{ link.url }}" target="_blank" style="text-decoration:none;">
+                                                                <img src="{% static 'icons/icon-url.png' %}" class="url-icon" width="16" height="16">
+                                                                {% if link.description %}{{ link.description }}{% else %}Link to travel document{% endif %}
+                                                            </a>
+                                                        {% endif %}
+                                                        {% if link.document %}
+                                                            <a href="{{ link.document.url }}" target="_blank" style="text-decoration:none;">
+                                                                <img src="{% static 'icons/icon-doc.png' %}" class="doc-icon" width="16" height="16">
+                                                                {% if link.description %}{{ link.description }}{% else %}Download Document{% endif %}
+                                                            </a>
+                                                        {% endif %}
+                                                    </p>
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
                                     {% endif %}
-                                    {% if link.document %}
-                                        <a href="{{ link.document.url }}" target="_blank" style="text-decoration:none;">
-                                            <img src="{% static 'icons/icon-doc.png' %}" class="doc-icon" width="16" height="16">
-                                            {% if link.description %}{{ link.description }}{% else %}Download Document{% endif %}
-                                        </a>
-                                    {% endif %}
-                                    </p>
-                                {% endfor %}
-                            </td>
-                        {% endif %}
+                                </table>
+                            </div>
+                        </td>
                     </tr>
                 {% endfor %}
-            </table>
+            </table>            
         </div>
         {% endif %}
 

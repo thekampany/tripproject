@@ -1262,6 +1262,7 @@ def trip_documents_view(request, trip_id):
         'trip_documents': trip_documents,
     })
 
+@login_required
 def add_or_edit_scheduled_item(request, dayprogram_id, scheduled_item_id=None):
     dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
 
@@ -1281,3 +1282,26 @@ def add_or_edit_scheduled_item(request, dayprogram_id, scheduled_item_id=None):
         form = ScheduledItemForm(instance=scheduled_item)
 
     return render(request, 'tripapp/scheduled_item_form.html', {'form': form, 'dayprogram': dayprogram, 'scheduled_item': scheduled_item})
+
+
+@login_required
+def dayprogram_scheduled_items(request, dayprogram_id):
+    dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
+    scheduled_items = dayprogram.scheduled_items.all().order_by('start_time')
+
+    return render(request, 'tripapp/dayprogram_scheduled_items.html', 
+         {'dayprogram': dayprogram, 
+          'scheduled_items' : scheduled_items,
+         })
+
+@login_required
+def delete_scheduled_item(request, dayprogram_id, scheduled_item_id):
+    dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
+    scheduled_item = get_object_or_404(ScheduledItem, id=scheduled_item_id, dayprogram=dayprogram)
+
+    if request.method == 'POST':
+        scheduled_item.delete()
+        return redirect('tripapp:dayprogram_scheduled_items', dayprogram_id=dayprogram.id)
+
+    return render(request, 'tripapp/confirm_delete_scheduled_item.html', 
+        {'scheduled_item': scheduled_item, 'dayprogram': dayprogram})
