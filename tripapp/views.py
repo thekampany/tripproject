@@ -178,7 +178,7 @@ def trip_trippers(request, id):
     trippers = trip.trippers.annotate(
         badge_count=Count('badge_assignments', filter=Q(badge_assignments__trip=trip)),
         total_badge_count=Count('badge_assignments') 
-    ).order_by('-badge_count')
+    ).order_by('-badge_count', '-total_badge_count')
 
     return render(request, 'tripapp/trip_trippers.html', {'trip': trip, 'trippers': trippers})
 

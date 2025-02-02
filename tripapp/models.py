@@ -29,19 +29,23 @@ class UserProfile(models.Model):
 
 class Badge(models.Model):
     ACHIEVEMENT_METHODS = [
-        ('admin_assigned', 'Assigned by Admin'),
+        ('admin_assigned', 'Assigned by your TourAdmin'),
         ('question_correct', 'Correct Answer to Question'),
         ('time_based' , 'Assigned on a specific date'),
-        ('threshold' , 'Assigned when number of uploads has been reached'),
+        ('threshold' , 'Assigned when you did something multiple times'),
     ]
     LEVEL = [
         ('global', 'Global'),
         ('tribal', 'Tribal'),
+        ('trip', 'Trip')
     ]
     THRESHOLD_TYPES = [
         ('bingo_answer_uploads', 'Bingo Answer Uploads'),
         ('correct_answers', 'Correct Answers'),
         ('image_uploads', 'Image Uploads'),
+        ('tripper_has_api_key','User has api integrations configured'),
+        ('log_entries','Log Entries'),
+        ('trip_count','Trip Count')
     ]
 
     name = models.CharField(max_length=100)
@@ -50,6 +54,7 @@ class Badge(models.Model):
     level = models.CharField(max_length=20,choices=LEVEL, default='tribal')
     assignment_date = models.DateField(null=True, blank=True)
     tribe = models.ForeignKey(Tribe, on_delete=models.CASCADE, null=True, blank=True, related_name='badges')
+    #trip
     threshold_value = models.PositiveIntegerField(null=True, blank=True, help_text="The value that needs to be reached to earn this badge.")
     threshold_type = models.CharField(max_length=20, choices=THRESHOLD_TYPES, null=True, blank=True, help_text="The type of threshold to achieve.")
 
@@ -116,6 +121,7 @@ class Image(models.Model):
     day_program = models.ForeignKey(DayProgram, related_name='images', on_delete=models.CASCADE)
     image = models.ImageField(upload_to='day_program_images/')
     description = models.CharField(max_length=255, blank=True)
+    #uploaded_by
 
     def save(self, *args, **kwargs):
         img = PilImage.open(self.image)
@@ -202,7 +208,6 @@ class BingoAnswer(models.Model):
         return f"{self.tripper.name} - {self.bingocard.description}"
 
     def count_trip_answers(self):
-        # Tel het aantal antwoorden voor dezelfde trip en dezelfde tripper
         return BingoAnswer.objects.filter(
             tripper=self.tripper,
             bingocard__trip=self.bingocard.trip
@@ -271,6 +276,7 @@ class Route(models.Model):
     dayprogram = models.ForeignKey(DayProgram, related_name='routes', on_delete=models.CASCADE)
     description = models.TextField()
     gpx_file = models.FileField(upload_to='gpx_files/')
+    #uploaded_by
 
     def __str__(self):
         return self.description

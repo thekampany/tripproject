@@ -11,10 +11,14 @@
     <h1>{{ tripper.name }}'s Badges in {{ trip.name }}</h1>
     <div class="badgecontainer">
         {% for badge in badges %}
-                <p><img class="img" src="{{ badge.image.url }}" alt="{{ badge.name }}"></p>
-                {{ badge.name }}
+            {% if badge.level == 'global' %}
+               <p><img src="{% static badge.image %}" alt="{{ badge.name }}"></p>
+               {{ badge.name }}
+            {% else %}
+               <p><img class="img" src="{{ badge.image.url }}" alt="{{ badge.name }}"></p>
+               {{ badge.name }}
+            {% endif %}
         {% endfor %}
-
     </div>
 </div>
 

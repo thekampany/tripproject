@@ -3,6 +3,7 @@
 /usr/src/app/wait-for-it.sh db:5432 --timeout=30 --strict -- echo "Database is up"
 
 python manage.py migrate --noinput
+python manage.py seed_global_badges
 
 python manage.py shell << 'EOF'
 from django_q.models import Schedule

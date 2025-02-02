@@ -1,11 +1,12 @@
 {% extends "base_generic.html" %}
+{% load static %}
 
 {% block content %}
     <h1>Badges</h1>
     <div style="text-align:center;" class="badgecontainer">
 
 
-    {% if tribal_badges %}<h2>Tribal Badges</h2>{% endif %}
+    {% if tribal_badges %}<h2>Badges in my Tribe</h2>{% endif %}
     <div class="badge-list">
         {% for badge in tribal_badges %}
             <div class="badge">
@@ -30,7 +31,7 @@
     <div class="badge-list">
         {% for badge in global_badges %}
             <div class="badge">
-                <img src="{{ badge.image.url }}" alt="{{ badge.name }}" style="max-width: 100px;">
+                <img src="{% static badge.image %}" alt="{{ badge.name }}" style="max-width: 100px;">
                 <p>{{ badge.name }}</p>
             </div>
         {% endfor %}

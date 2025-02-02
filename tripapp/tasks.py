@@ -2,7 +2,7 @@
 
 from django.utils import timezone
 from django_q.models import Schedule
-from .models import Badge, Tripper, BadgeAssignment, Trip, Location, ImmichPhotos
+from .models import Badge, Tripper, BadgeAssignment, Trip, Location, ImmichPhotos, BingoAnswer, LogEntry
 import requests
 from datetime import datetime, timedelta
 from django.core.files.base import ContentFile
@@ -10,19 +10,106 @@ from django.utils.timezone import make_aware
 import pytz
 
 def assign_badges():
+    logs = []
+
+    #assign badges on date
     today = timezone.now().date()
     badges = Badge.objects.filter(assignment_date=today)
     active_trips = Trip.objects.filter(date_from__lte=today, date_to__gte=today)
-
+        
     for badge in badges:
         for trip in active_trips:
             trippers = trip.trippers.all()
             logs.append(f"Found {trippers.count()} trippers for trip: {trip.name}")
+            
             for tripper in trippers:
                 tripper.badges.add(badge)
                 tripper.save()
                 BadgeAssignment.objects.create(tripper=tripper, badge=badge, trip=trip)
                 logs.append(f"Badge {badge.name} assigned to Tripper {tripper.name} for Trip {trip.name}.")
+                
+    #assign badges for bingo answer uploads
+    bingoanswerbadges = Badge.objects.filter(
+        level='global', 
+        achievement_method='threshold',
+        threshold_type='bingo_answer_uploads'
+    ).exclude(threshold_value__isnull=True)  
+
+    for badge in bingoanswerbadges:
+        for trip in active_trips:
+            trippers = trip.trippers.all()
+            logs.append(f"Found {trippers.count()} trippers for trip: {trip.name}")
+            
+            for tripper in trippers:
+                answer_count = BingoAnswer.objects.filter(tripper=tripper).count()
+                
+                if answer_count >= badge.threshold_value:
+                    if not tripper.badges.filter(pk=badge.pk).exists(): 
+                        tripper.badges.add(badge)
+                        tripper.save()
+                        BadgeAssignment.objects.create(tripper=tripper, badge=badge)
+                        logs.append(f"Badge '{badge.name}' assigned to Tripper {tripper.name} due to {answer_count} bingo answers.")
+    
+    #assign badges for log entries
+    logentrybadges = Badge.objects.filter(
+        level='global', 
+        achievement_method='threshold',
+        threshold_type='log_entries'
+    ).exclude(threshold_value__isnull=True)  
+
+    for badge in logentrybadges:
+        for trip in active_trips:
+            trippers = trip.trippers.all()
+            logs.append(f"Found {trippers.count()} trippers for trip: {trip.name}")
+            
+            for tripper in trippers:
+                logentry_count = LogEntry.objects.filter(tripper=tripper).count()
+                
+                if logentry_count >= badge.threshold_value:
+                    if not tripper.badges.filter(pk=badge.pk).exists(): 
+                        tripper.badges.add(badge)
+                        tripper.save()
+                        BadgeAssignment.objects.create(tripper=tripper, badge=badge)
+                        logs.append(f"Badge '{badge.name}' assigned to Tripper {tripper.name} due to writing {logentry_count} log entries.")
+    
+    # Assign badges for having an API key
+    api_key_badges = Badge.objects.filter(
+        level='global', 
+        achievement_method='threshold',
+        threshold_type='tripper_has_api_key'
+    ).exclude(threshold_value__isnull=True)  
+    for api_key_badge in api_key_badges:
+        for trip in active_trips:
+            trippers = trip.trippers.all()
+            logs.append(f"Checking API keys for {trippers.count()} trippers in trip: {trip.name}")
+            
+            for tripper in trippers:
+                if tripper.dawarich_api_key or tripper.immich_api_key:
+                    if not tripper.badges.filter(pk=api_key_badge.pk).exists(): 
+                        tripper.badges.add(api_key_badge)
+                        tripper.save()
+                        BadgeAssignment.objects.create(tripper=tripper, badge=api_key_badge)
+                        logs.append(f"Badge '{api_key_badge.name}' assigned to Tripper {tripper.name} for having an API key.")
+
+    # Assign badges for being in multiple trips
+    multiple_trips_badges = Badge.objects.filter(
+        level='global', 
+        achievement_method='threshold',
+        threshold_type='trip_count'
+    ).exclude(threshold_value__isnull=True)  
+    for multiple_trips_badge in multiple_trips_badges:
+        trippers = Tripper.objects.all()
+        for tripper in trippers:
+            trip_count = tripper.trips.count()
+            if trip_count >= multiple_trips_badge.threshold_value:
+                if not tripper.badges.filter(pk=multiple_trips_badge.pk).exists():
+                    tripper.badges.add(multiple_trips_badge)
+                    tripper.save()
+                    BadgeAssignment.objects.create(tripper=tripper, badge=multiple_trips_badge)
+                    logs.append(f"Badge '{multiple_trips_badge.name}' assigned to Tripper {tripper.name} for participating in {trip_count} trips.")
+
+    logs.append(f"Task end")
+    return "\n".join(logs)
 
 
 if not Schedule.objects.filter(func='tripapp.tasks.assign_badges').exists():

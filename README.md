@@ -35,12 +35,12 @@ Log in the web container to do some additional steps:
 `python manage.py createsuperuser` - in order to use the Django Admin    
 ~~`python manage.py qcluster`~~ - gives the functionality in the application to automatically assign badges on a certain date; should no longer be necessary  
 
-Go to your browser and start with register.  
+Go to your browser using the url from your .env and start with register.  
 
 
 # Getting Started
 
-1. Create a Tribe by entering a name. A Tribe is you, the people on your trip and de people that you allow to see the tripdetails.
+1. Create a Tribe by entering a name. A Tribe is you, the people on your trip and the people that you allow to see the tripdetails.
 2. Invite the people to the tribe you just created.
 3. Create a Trip. Define a period. For all days in the period a dayprogram will already be generated. You can add dayprograms later. You can choose an image. This image will then be used as the background for all the trip pages. On trip level you can also indicate to use Facilmap (https://facilmap.org). When you create a trip automatically a Facilmap will be created based on tribe and trip. When you use Facilmap then you can add makers and lines on the Facilmap. When you do not Facilmap, then you can add points and you can upload gpx files to show routes on the map. In general: if most of your trip is fixed already, then set the points and routes yourself while configuring the trip. When your trip is still largely unplanned, then facilmap is a helpful planning tool.
 4. Edit the dayprograms for the trip. Can be a lot of work. Remember, everything can be added and edited during your trip.
