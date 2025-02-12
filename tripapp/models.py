@@ -85,6 +85,10 @@ class Trip(models.Model):
     def get_country_codes(self):
         return self.country_codes.split(",") if self.country_codes else []
 
+    def get_first_country_code(self):
+        country_codes = self.get_country_codes()
+        return country_codes[0] if country_codes else None
+
     def calculate_balance(self):
         trippers = self.trippers.all() 
         expenses = self.expenses.all() 

@@ -14,6 +14,7 @@ def assign_badges():
 
     #assign badges on date
     today = timezone.now().date()
+    logs.append(f"Assign Badges on date")
     badges = Badge.objects.filter(assignment_date=today)
     active_trips = Trip.objects.filter(date_from__lte=today, date_to__gte=today)
         
@@ -29,6 +30,7 @@ def assign_badges():
                 logs.append(f"Badge {badge.name} assigned to Tripper {tripper.name} for Trip {trip.name}.")
                 
     #assign badges for bingo answer uploads
+    logs.append(f"Assign Badges for BingoAnswer Uploads")
     bingoanswerbadges = Badge.objects.filter(
         level='global', 
         achievement_method='threshold',
@@ -51,6 +53,7 @@ def assign_badges():
                         logs.append(f"Badge '{badge.name}' assigned to Tripper {tripper.name} due to {answer_count} bingo answers.")
     
     #assign badges for log entries
+    logs.append(f"Assign Badges for adding Logs")
     logentrybadges = Badge.objects.filter(
         level='global', 
         achievement_method='threshold',
@@ -73,6 +76,7 @@ def assign_badges():
                         logs.append(f"Badge '{badge.name}' assigned to Tripper {tripper.name} due to writing {logentry_count} log entries.")
     
     # Assign badges for having an API key
+    logs.append(f"Assign Badges for Trippers with API key")
     api_key_badges = Badge.objects.filter(
         level='global', 
         achievement_method='threshold',
@@ -92,6 +96,7 @@ def assign_badges():
                         logs.append(f"Badge '{api_key_badge.name}' assigned to Tripper {tripper.name} for having an API key.")
 
     # Assign badges for being in multiple trips
+    logs.append(f"Assign Badges for Trippers that went on multiple trips")
     multiple_trips_badges = Badge.objects.filter(
         level='global', 
         achievement_method='threshold',

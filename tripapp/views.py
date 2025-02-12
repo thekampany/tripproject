@@ -36,6 +36,7 @@ from django.http import JsonResponse
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
+import requests
 #from weasyprint import HTML
 
 from django.utils.timezone import now
@@ -420,6 +421,19 @@ def map_view(request):
     points = Point.objects.all()
     return render(request, 'tripapp/map.html', {'points': points})
 
+
+def get_country_coords(country_code):
+    url = f"https://nominatim.openstreetmap.org/search?country={country_code}&format=json&limit=1"
+    response = requests.get(url, headers={'User-Agent': 'trip-planner-app'})
+    
+    if response.status_code == 200:
+        data = response.json()
+        if data:
+            return float(data[0]['lat']), float(data[0]['lon'])
+    
+    return None  
+
+
 @login_required
 def trip_map_view(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
@@ -442,6 +456,8 @@ def trip_map_view(request, trip_id):
         tripper__in=trippers,
         timestamp__range=(start_of_day, end_of_day)
     )
+    first_country_code = trip.get_first_country_code() 
+    country_coords = get_country_coords(first_country_code) if first_country_code else None
 
     return render(request, 'tripapp/trip_map.html', {
         'trip': trip,
@@ -450,7 +466,10 @@ def trip_map_view(request, trip_id):
         'photolocations': photolocations,
         'locations_truncated': locations_truncated,
         'max_locations': max_locations,
+        'country_coords': country_coords,
     })
+
+
 
 @login_required
 def trip_dayprogram_points(request, trip_id, dayprogram_id):
@@ -470,6 +489,9 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
     tribe_name_no_spaces = trip.tribe.name.replace(" ","")
     first_point = points.first() if points.exists() else None
 
+    first_country_code = trip.get_first_country_code() 
+    country_coords = get_country_coords(first_country_code) if first_country_code else None
+
     context = {
         'trip': trip,
         'dayprogram': dayprogram,
@@ -479,6 +501,7 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
         'first_point': first_point,
         'locations': locations,
         'photolocations': photolocations,
+        'country_coords': country_coords,
     }
 
     return render(request, 'tripapp/trip_dayprogram_points.html', context) 

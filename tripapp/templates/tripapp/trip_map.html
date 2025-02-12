@@ -49,7 +49,11 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
         // Initialize the map
-        var map = L.map('map');
+        {% if country_coords and not points and not locations and not photolocations %}
+           var map = L.map('map').setView([{{ country_coords.0 }},{{ country_coords.1 }}], 7);
+        {% else %}
+           var map = L.map('map');
+        {% endif %}
         console.log("Map initialized:", map);
         // Set up the OSM layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -337,7 +341,7 @@
                 var latLng = e.latlng;
                 console.log('Touch Event!');
 
-                var newMarker = L.marker(latLng).addTo(markers);
+                var newMarker = L.marker(latLng).addTo(map);
 
                 newMarker.bindPopup(
                     '<input type="text" id="event-name" placeholder="Event Name"><br>' +
