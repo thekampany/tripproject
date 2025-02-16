@@ -4,17 +4,19 @@ You and your family / friends go on a trip.
 While planning the trip you have a central place to store all the booking mails rather than having some of them in your own mailbox, and others in the mailbox of your spouse / co planner(s).
 During the trip, this app allows you to share all the details of the trip with the people going on the trip with you and that just were not that involved in the planning. It is the app in which you answer questions like: what time do we have to be at the airport, should I dress up for dinner or do we go to the beach and eat something there afterwards. 
 
-The application also has the following features:
-Show a map of the trip itinerary and show a map with the points of interest for one particular day.  
-Add expenses and keep a simple overview of who owes and who gets. Also when making expenses in foreign currency.    
-Keep a check/pack/wishlist.  
-Each traveller on the trip can add personal logentries and photos.  
+The application also has the following features:  
+:globe_with_meridians: Show a map of the trip itinerary and show a map with the points of interest for one particular day.  
+:moneybag: Add expenses and keep a simple overview of who owes and who gets. Including currency conversion.    
+:heavy_check_mark: Keep a check/pack/wishlist.  
+:camera: Each traveller on the trip can add personal logentries and photos.  
+:link: Add documents for easy access like hotelreservations, flightconfirmations, but also copy of your passport or medical documents.  
+:game_die: You can also entertain your fellow travellers by geting them involved in (road)tripbingo and let them win fancy badges.  
 
-You can also entertain your fellow travellers by geting them involved in (road)tripbingo and let them win fancy badges. 
-
+Integrations with other selfhosted apps:  
 Add a Dawarich api key and see your tracks - did you go where you planned you would go?  
 Add an Immich api key and see where you took a photo  
 
+Control your data:  
 The Trippers can invite their friends and family to the tribe. People in the tribe can see an overview of the trip and who is winning the badges. 
 Your (trip)data is on your server and you decide who can view your tripdata. 
 
