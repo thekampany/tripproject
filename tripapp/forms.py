@@ -16,6 +16,7 @@ from .models import Link
 from .models import Route
 from .models import TripExpense
 from .models import ScheduledItem
+from .models import TripperDocument
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
@@ -347,3 +348,9 @@ class ScheduledItemForm(forms.ModelForm):
             'category': forms.Select(attrs={'class': 'form-control'}),
             'transportation_type': forms.Select(attrs={'class': 'form-control'}),
         }
+
+
+class TripperDocumentForm(forms.ModelForm):
+    class Meta:
+        model = TripperDocument
+        fields = ['document', 'description', 'category']

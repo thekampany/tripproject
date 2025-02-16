@@ -2,16 +2,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-
     <title>Documents for Trip {{ trip.name }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon/favicon-16x16.png' %}">
-    <link rel="manifest" href="{% static 'favicon/site.webmanifest' %}">
-    <link rel="mask-icon" href="{% static 'favicon/safari-pinned-tab.svg' %}" color="#5bbad5">
-    <meta name="msapplication-TileColor" content="#da532c">
-    <meta name="theme-color" content="#ffffff">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
     <style>
@@ -24,7 +16,7 @@
       background-size: cover;
       {% endif %}
       }
-
+      /* Filter form styles */
       #filter-form {
         display: none;
         transition: all 0.3s ease-in-out;
@@ -44,78 +36,93 @@
         align-items: center;
         margin-right: 10px; 
       }
-
-      #filter-form label {
-        margin-right: 5px; 
-      }
-
     </style>
-
 </head>
 <body>
 <div class="tripappcard">
 <div class="container">
+    <h1>Documents and Links</h1>
+    <span style="color:gray;">{{ trip.name }}</span>
+    <br /><br />
+    <p><a href="#" id="toggle-filter" style="color: gray; cursor: pointer;">Filter</a></p>
 
-<h1>Documents and Links</h1>
-<span style="color:gray;">{{ trip.name }}</span>
-<br /><br />
-<p>
-    <a href="#" id="toggle-filter" style="color: gray; cursor: pointer;">Filter</a>
-</p>
+    <!-- Filter Form -->
+    <form method="get" class="form-inline mb-4" id="filter-form">
+        <div class="form-group mr-2">
+            <input type="date" id="filter_date" name="filter_date" class="form-control" value="{{ request.GET.filter_date }}">
+        </div>
+        <div class="form-group mr-2">
+            <select id="filter_category" name="filter_category" class="form-control">
+                <option value="" {% if not request.GET.filter_category %}selected{% endif %}>All</option>
+                <option value="Transportation" {% if request.GET.filter_category == "Transportation" %}selected{% endif %}>Transportation</option>
+                <option value="Lodging" {% if request.GET.filter_category == "Lodging" %}selected{% endif %}>Lodging</option>
+                <option value="Food and Drinks" {% if request.GET.filter_category == "Food and Drinks" %}selected{% endif %}>Food and Drinks</option>
+                <option value="Activity" {% if request.GET.filter_category == "Activity" %}selected{% endif %}>Activity</option>
+                <option value="Passport" {% if request.GET.filter_category == "Passport" %}selected{% endif %}>Passport</option>
+                <option value="Medical" {% if request.GET.filter_category == "Medical" %}selected{% endif %}>Medical</option>
+                <option value="Insurance" {% if request.GET.filter_category == "Insurance" %}selected{% endif %}>Insurance</option>
+                <option value="Other" {% if request.GET.filter_category == "Other" %}selected{% endif %}>Other</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </form>
 
-<form method="get" class="form-inline mb-4" id="filter-form">
-    <div class="form-group mr-2">
-        <input type="date" id="filter_date" name="filter_date" class="form-control" value="{{ request.GET.filter_date }}">
-    </div>
-    <div class="form-group mr-2">
-        <select id="filter_category" name="filter_category" class="form-control">
-            <option value="" {% if not request.GET.filter_category %}selected{% endif %}>All</option>
-            <option value="Transportation" {% if request.GET.filter_category == "Transportation" %}selected{% endif %}>Transportation</option>
-            <option value="Lodging" {% if request.GET.filter_category == "Lodging" %}selected{% endif %}>Lodging</option>
-            <option value="Food and Drinks" {% if request.GET.filter_category == "Food and Drinks" %}selected{% endif %}>Food and Drinks</option>
-            <option value="Activity" {% if request.GET.filter_category == "Activity" %}selected{% endif %}>Activity</option>
-            <option value="Other" {% if request.GET.filter_category == "Other" %}selected{% endif %}>Other</option>
-        </select>
-    </div>
-    <button type="submit" class="btn btn-primary">Filter</button>
-</form>
+    <script>
+        document.getElementById("toggle-filter").addEventListener("click", function (e) {
+            e.preventDefault();
+            const filterForm = document.getElementById("filter-form");
+            filterForm.classList.toggle("show");
+        });
+    </script>
+    <br />
 
-<script>
-document.getElementById("toggle-filter").addEventListener("click", function (e) {
-    e.preventDefault();
-    const filterForm = document.getElementById("filter-form");
-    filterForm.classList.toggle("show");
-});
-</script>
-<br />
+    <!-- Trip Documents Section -->
+    {% if trip_documents %}
+        <table>
+        {% for link in trip_documents %}
+            <tr>
+                <td>
+                    {% if link.url %}
+                        <a href="{{ link.url }}" target="_blank">
+                            <img src="{% static 'icons/icon-url.png' %}" class="url-icon" width="16" height="16">
+                            {% if link.description %}{{ link.description }}{% else %}Link to travel document{% endif %}
+                        </a>
+                    {% endif %}
+                    {% if link.document %}
+                        <a href="{{ link.document.url }}" target="_blank">
+                            <img src="{% static 'icons/icon-doc.png' %}" class="doc-icon" width="16" height="16">
+                            {% if link.description %}{{ link.description }}{% else %}Download Document{% endif %}
+                        </a>
+                    {% endif %}
+                </td>
+                <td style="color: gray; padding-left: 10px;">{{ link.dayprogram.tripdate|date:"d-M" }}</td>
+                <td style="color: gray; padding-left: 10px;">{% if link.category %}{{ link.category }}{% endif %}</td>
+            </tr>
+        {% endfor %}
+        </table>
+    {% endif %}
 
-{% if trip_documents %}
-    <table>
-    {% for link in trip_documents %}
-        <tr>
-        <td>
-        {% if link.url %}
-            <a href="{{ link.url }}" target="_blank"><img src="{% static 'icons/icon-url.png' %}" class="url-icon" width="16" height="16">&nbsp;
-            {% if link.description %}{{ link.description }}{% else %}Link to travel document{% endif %}</a>
-        {% endif %}
-        {% if link.document %}
-            <a href="{{ link.document.url }}" target="_blank"><img src="{% static 'icons/icon-doc.png' %}" class="doc-icon" width="16" height="16">&nbsp;
-            {% if link.description %}{{ link.description }}{% else %}Download Document{% endif %}</a>
-        {% endif %}
-        </td>
-        <td style="color: gray; padding-left: 10px; padding-right: 10px;">{{ link.dayprogram.tripdate|date:"d-M" }}</td>
-        <td style="color: gray; padding-left: 10px; padding-right: 10px;">{% if link.category %}{{ link.category }}{% endif %}</td>
-        </tr>
-    {% endfor %}
-    </table>
-{% else %}
-<p>No documents or links for this trip.</p>
-{% endif %}
+    <!-- Tripper Documents Section -->
+    {% if tripper_documents %}
+        <table>
+        {% for document in tripper_documents %}
+            <tr>
+                <td>
+                    <a href="{{ document.document.url }}" target="_blank">
+                        <img src="{% static 'icons/icon-doc.png' %}" class="doc-icon" width="16" height="16">
+                        {% if document.description %}{{ document.description }}{% else %}Download Document{% endif %}
+                    </a>
+                </td>
+                <td style="color: gray; padding-left: 10px;">{{ document.tripper.name }}</td>
+                <td style="color: gray; padding-left: 10px;">{% if document.category %}{{ document.category }}{% endif %}</td>
+            </tr>
+        {% endfor %}
+        </table>
+    {% endif %}
 
-<p>&nbsp;</p>
-<a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" >Back to Trip</a>
-<p>&nbsp;</p>
-
+    <p>&nbsp;</p>
+    <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}">Back to Trip</a>
+    <p>&nbsp;</p>
 </div>
 </div>
 </body>

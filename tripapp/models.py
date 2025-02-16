@@ -384,3 +384,27 @@ class ScheduledItem(models.Model):
     def __str__(self):
         trip_date = self.dayprogram.tripdate.strftime("%d-%m-%Y") if self.dayprogram.tripdate else "No Date"
         return f"({self.start_time} - {self.end_time}) {self.get_category_display()} on {trip_date}" 
+
+
+class TripperDocument(models.Model):
+    CATEGORY_CHOICES = [
+        ('', 'No Category'),
+        ('Passport', 'Passport'),
+        ('Visa', 'Visa'),
+        ('Medical', 'Medical'),
+        ('Insurance', 'Insurance'),
+        ('Other', 'Other'),
+    ]
+    tripper = models.ForeignKey(Tripper, related_name='documents', on_delete=models.CASCADE)
+    document = models.FileField(upload_to='tripper_documents/', blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    category = models.CharField(
+        max_length=20,
+        choices=CATEGORY_CHOICES,
+        blank=True,
+        default=''
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Document for {self.tripper.name} - {self.category or 'No Category'}"

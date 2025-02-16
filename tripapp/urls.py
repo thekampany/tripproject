@@ -89,4 +89,6 @@ urlpatterns = [
     path('profile/update/', views.update_profile, name='update_profile'),
     path("tasks/", views.task_manager, name="task_manager"),
     path('documents/<int:trip_id>/', views.trip_documents_view, name='trip_documents'),
+    path('upload_document/', views.upload_tripper_document, name='upload_tripper_document'),
+    path('delete_document/<int:document_id>/', views.delete_tripper_document, name='delete_tripper_document'),
 ]

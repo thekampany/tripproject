@@ -5,6 +5,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import Trip, Tripper, Badge, DayProgram, Checklist, ChecklistItem, Image, Question, Point
 from .models import BingoCard, BingoAnswer, BadgeAssignment
 from .models import Tribe, UserProfile, LogEntry, Link, Route, TripExpense, Location, ImmichPhotos, ScheduledItem
+from .models import TripperDocument
 from .forms import BadgeForm, TripForm, ChecklistItemForm, ImageForm, BingoAnswerForm
 from .forms import CustomUserCreationForm
 from .forms import AnswerForm, AnswerImageForm, TripperForm, TripperAdminForm
@@ -13,6 +14,7 @@ from .forms import QuestionForm, PointForm, BingoCardForm
 from .forms import BadgeAssignmentFormSet, LogEntryForm
 from .forms import BadgeplusQForm, QuestionplusBForm
 from .forms import LinkForm, RouteForm, SuggestionForm, TripExpenseForm, TripUpdateForm, UserUpdateForm, ScheduledItemForm
+from .forms import TripperDocumentForm
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
@@ -598,6 +600,8 @@ def upload_answerimage(request, bingocard_id):
 @user_owns_tripper
 def tripper_profile(request, tripper_id):
     tripper = get_object_or_404(Tripper, id=tripper_id)
+    documents = TripperDocument.objects.filter(tripper=tripper)  
+
     if request.method == 'POST':
         form = TripperForm(request.POST, request.FILES, instance=tripper)
         if form.is_valid():
@@ -605,7 +609,12 @@ def tripper_profile(request, tripper_id):
             return redirect('tripapp:tripper_profile', tripper_id=tripper.id)
     else:
         form = TripperForm(instance=tripper)
-    return render(request, 'tripapp/tripper_profile.html', {'form': form, 'tripper': tripper})
+    return render(request, 'tripapp/tripper_profile.html', 
+                {'form': form, 
+                'tripper': tripper,
+                'documents': documents,
+                'document_form': TripperDocumentForm()
+                })
 
 @login_required
 def assign_badge(request, tripper_id, badge_id, trip_id=None):
@@ -1270,6 +1279,7 @@ def task_manager(request):
 def trip_documents_view(request, trip_id):
     trip = get_object_or_404(Trip.objects.prefetch_related('dayprograms__links'), id=trip_id)
     trip_documents = Link.objects.filter(dayprogram__trip=trip)
+    tripper_documents = TripperDocument.objects.filter(tripper__trips=trip)
 
     filter_date = request.GET.get('filter_date')
     filter_category = request.GET.get('filter_category')
@@ -1279,10 +1289,12 @@ def trip_documents_view(request, trip_id):
 
     if filter_category:
         trip_documents = trip_documents.filter(category=filter_category)
+        tripper_documents = tripper_documents.filter(category=filter_category)
 
     return render(request, 'tripapp/trip_documents.html', {
         'trip': trip,
         'trip_documents': trip_documents,
+        'tripper_documents': tripper_documents,
     })
 
 @login_required
@@ -1328,3 +1340,25 @@ def delete_scheduled_item(request, dayprogram_id, scheduled_item_id):
 
     return render(request, 'tripapp/confirm_delete_scheduled_item.html', 
         {'scheduled_item': scheduled_item, 'dayprogram': dayprogram})
+
+
+@login_required
+def upload_tripper_document(request):
+    tripper = request.user.tripper
+    if request.method == 'POST':
+        form = TripperDocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            document = form.save(commit=False)
+            document.tripper = tripper
+            document.save()
+            return redirect('tripapp:tripper_profile', tripper_id=tripper.id)
+    return redirect('tripapp:tripper_profile', tripper_id=tripper.id)
+
+@login_required
+def delete_tripper_document(request, document_id):
+    tripper = request.user.tripper
+    document = get_object_or_404(TripperDocument, id=document_id)
+    if document.tripper != request.user.tripper:
+        return HttpResponseForbidden("You do not have permission to delete this document.")
+    document.delete()
+    return redirect('tripapp:tripper_profile', tripper_id=tripper.id)
