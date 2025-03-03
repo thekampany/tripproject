@@ -3,6 +3,7 @@
 {% extends 'base_generic.html' %}
 {% load crispy_forms_tags %}
 {% block content %}
+
   <h1>Upload Answer Image for {{ bingocard.description }}</h1>
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}

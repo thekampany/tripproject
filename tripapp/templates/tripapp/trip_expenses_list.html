@@ -133,6 +133,11 @@ document.getElementById("toggle-filter").addEventListener("click", function (e) 
             </td>
         </tr>
         {% endfor %}
+        <tr>
+            <td colspan="2" style="text-align: right; padding-right: 10px;">Total:</td>
+            <td style="text-align:right; padding-right: 10px;">{{ total_amount }}&nbsp;{{ app_currency }}</td>
+            <td colspan="2"></td>
+        </tr>
     </tbody>
 </table>
 {% else %}

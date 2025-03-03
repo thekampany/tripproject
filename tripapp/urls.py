@@ -19,6 +19,7 @@ urlpatterns = [
     path('trip/<int:id>/edit/', views.add_or_edit_trip, name='edit_trip'),
     path('trip/<int:trip_id>/add_checklist_item/', views.add_checklist_item, name='add_checklist_item'),
     path('trip/<int:trip_id>/map/', views.trip_map_view, name='trip_map_view'),
+    path('trip/<int:trip_id>/tripperbingocard/', views.trip_tripper_bingocard, name='trip_tripper_bingocard'),
     path('trip/<int:trip_id>/bingocards/', views.trip_bingocards, name='trip_bingocards'),
     path('trip/<int:trip_id>/bingocardsadmin/', views.tripadmin_bingocards, name='tripadmin_bingocards'),
     path('trip/<int:trip_id>/bingocards/add/', views.add_bingocard, name='add_bingocard'),

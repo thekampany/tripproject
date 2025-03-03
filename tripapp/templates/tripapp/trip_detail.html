@@ -75,7 +75,7 @@
         {% else %}
         <div class="tripmenuitem"><a href="{% url 'tripapp:planner_map' trip.id %}" class="btn"><img src="{% static 'icons/maps-iconreverse.png'  %}" width="56" height="50"></a></div>
         {% endif %}
-        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_bingocards' trip.id %}" class="btn"><img src="{% static 'icons/bingoicon-removebgreverse.png'  %}" width="56" height="50"></a></div>
+        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_tripper_bingocard' trip.id %}" class="btn"><img src="{% static 'icons/bingoicon-removebgreverse.png'  %}" width="56" height="50"></a></div>
         <div class="tripmenuitem"><a href="{% url 'tripapp:trip_trippers' trip.id %}" class="btn"><img src="{% static 'icons/tourist-guide-icon-removebgreverse.png'  %}" width="56" height="50"></a></div>
 
         <div class="tripmenuitem">
@@ -85,7 +85,9 @@
             </a>
             <ul class="dropdown-menu custom-dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                 <li><a class="dropdown-item" href="{% url 'tripapp:trip_checklist' trip.slug  %}">CheckPackList</a></li>
+                {% if trip.use_expenses %}
                 <li><a class="dropdown-item" href="{% url 'tripapp:trip_expenses_list' trip.id %}">Expenses</a></li>
+                {% endif %}
                 <li><a class="dropdown-item" href="{% url 'tripapp:trip_documents' trip.id %}">Documents</a></li>
                 <li><a class="dropdown-item" href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id  %}">Trip Settings</a></li>
                 <!--<li><a class="dropdown-item" href="">Export / Archive</a></li>-->

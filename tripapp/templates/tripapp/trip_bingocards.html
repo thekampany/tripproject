@@ -63,15 +63,6 @@
                     {% endif %}
                 {% endfor %}
             </div>
-            {% if user.is_authenticated %}
-            {% if user.username in trippers_names %}
-                {% if card.id not in user_answered_cards_ids %}
-                <div class="upload-section">
-                    <a href="{% url 'tripapp:upload_answerimage' card.id %}" class="upload-link">Upload your photo</a>
-                </div>
-                {% endif %}
-            {% endif %}
-            {% endif %}
         </div>
     </div>
     {% endfor %}

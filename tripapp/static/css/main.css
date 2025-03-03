@@ -321,8 +321,7 @@ a.btn-more-padding:hover {background: var(--color-background);}
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
-    color: #0056b3;
+    padding: 5px;
 }
 
 .bingo-image {
@@ -338,14 +337,14 @@ a.btn-more-padding:hover {background: var(--color-background);}
 }
 
 .answer {
-    margin-bottom: 15px;
+    margin-bottom: 5px;
 }
 
 .answer-image {
     max-width: 100%;
     height: auto;
     display: block;
-    margin: 10px 0;
+    margin: 5px 0;
 }
 
 .upload-section {

@@ -209,12 +209,6 @@ def upload_badge(request):
     return render(request, 'tripapp/upload_badge.html', {'form': form})
 
 
-#@login_required
-#def tripper_badges(request, tripper_id):
-#    tripper = get_object_or_404(Tripper, id=tripper_id)
-#    badges = tripper.badges.all()
-#    return render(request, 'tripapp/tripper_badges.html', {'tripper': tripper, 'badges': badges})
-
 @login_required
 def tripper_badgeassignments(request, tripper_id):
     tripper = get_object_or_404(Tripper, id=tripper_id)
@@ -223,12 +217,6 @@ def tripper_badgeassignments(request, tripper_id):
     count_tripper_badges = BadgeAssignment.objects.filter(tripper=tripper).count()
     return render(request, 'tripapp/tripper_badgeassignments.html', {'tripper': tripper, 'badges': badges, 'count_tripper_badges':count_tripper_badges})
 
-#@login_required
-#def trip_tripper_badges(request, trip_id, tripper_id):
-#    trip = get_object_or_404(Trip, id=trip_id)
-#    tripper = get_object_or_404(Tripper, id=tripper_id)
-#    badges = tripper.badges.all()
-#    return render(request, 'tripapp/trip_tripper_badges.html', {'trip': trip, 'tripper': tripper, 'badges': badges})
 
 @login_required
 def trip_tripper_badgeassignments(request, trip_id, tripper_id):
@@ -542,6 +530,29 @@ def trip_dayprogram_points_planner(request, trip_id, dayprogram_id):
 
 
 @tripper_required
+def trip_tripper_bingocard(request, trip_id):
+    trip = get_object_or_404(Trip, pk=trip_id)
+    bingocards = trip.bingocards.all()
+    bingo_answers = BingoAnswer.objects.filter(bingocard__in=bingocards)
+    user_answers = BingoAnswer.objects.filter(tripper__name=request.user)
+    user_answered_cards_ids = set(user_answers.values_list('bingocard_id', flat=True))
+    trippers_on_this_trip = trip.trippers.annotate(
+        answer_count=Count('bingoanswer', filter=Q(bingoanswer__bingocard__trip=trip))
+    ).order_by('-answer_count')
+    trippers_names = [tripper.name for tripper in trippers_on_this_trip]
+
+
+    return render(request, 'tripapp/trip_bingocard.html', {
+        'trip': trip,
+        'bingocards': bingocards,
+        'user_answers': user_answers,
+        'bingo_answers': bingo_answers,
+        'user_answered_cards_ids': user_answered_cards_ids,
+        'trippers_names': trippers_names,
+        'trippers_on_this_trip': trippers_on_this_trip,  
+         })
+
+@tripper_required
 def trip_bingocards(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     bingocards = trip.bingocards.all()
@@ -551,6 +562,7 @@ def trip_bingocards(request, trip_id):
     trippers_on_this_trip = trip.trippers.all()
     trippers_names = [tripper.name for tripper in trippers_on_this_trip]
 
+
     return render(request, 'tripapp/trip_bingocards.html', {
         'trip': trip,
         'bingocards': bingocards,
@@ -559,6 +571,7 @@ def trip_bingocards(request, trip_id):
         'user_answered_cards_ids': user_answered_cards_ids,
         'trippers_names': trippers_names,
          })
+
 
 @login_required
 def bingocard_detail(request, pk):
@@ -591,7 +604,7 @@ def upload_answerimage(request, bingocard_id):
                         BadgeAssignment.objects.create(tripper=tripper, badge=badge, trip=bingocard.trip)
                         tripper.badges.add(badge)
 
-            return redirect('tripapp:trip_bingocards',trip_id=bingocard.trip.id) 
+            return redirect('tripapp:trip_tripper_bingocard',trip_id=bingocard.trip.id) 
     else:
         form = BingoAnswerForm()
 
@@ -1171,7 +1184,9 @@ def trip_expenses_list(request, trip_id):
     if filter_category:
         expenses = expenses.filter(category=filter_category)
 
-    return render(request, 'tripapp/trip_expenses_list.html', {'trip': trip, 'expenses': expenses, 'tripper':tripper, 'app_currency':app_currency})
+    total_amount = sum(expense.converted_amount for expense in expenses)
+
+    return render(request, 'tripapp/trip_expenses_list.html', {'trip': trip, 'expenses': expenses, 'tripper':tripper, 'app_currency':app_currency, 'total_amount': total_amount})
 
 @login_required
 def trip_update(request, trip_id):
