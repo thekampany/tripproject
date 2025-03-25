@@ -30,7 +30,13 @@ else:
     print("Scheduled task 'assign_badges' already exists.")
 EOF
 
-python manage.py qcluster &
+
+if pgrep -f "python manage.py qcluster" > /dev/null; then
+    echo "qcluster is already running"
+else
+    echo "Starting qcluster..."
+    python manage.py qcluster &
+fi
 
 
 exec "$@"

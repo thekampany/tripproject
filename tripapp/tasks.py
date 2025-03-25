@@ -8,51 +8,66 @@ from datetime import datetime, timedelta
 from django.core.files.base import ContentFile
 from django.utils.timezone import make_aware
 import pytz
+import time
+
 
 def assign_badges():
     logs = []
 
     #assign badges on date
     today = timezone.now().date()
-    logs.append(f"Assign Badges on date")
+    logs.append(f"Start Assigning Badges on date\n")
     badges = Badge.objects.filter(assignment_date=today)
     active_trips = Trip.objects.filter(date_from__lte=today, date_to__gte=today)
-        
-    for badge in badges:
-        for trip in active_trips:
-            trippers = trip.trippers.all()
-            logs.append(f"Found {trippers.count()} trippers for trip: {trip.name}")
-            
-            for tripper in trippers:
-                tripper.badges.add(badge)
-                tripper.save()
-                BadgeAssignment.objects.create(tripper=tripper, badge=badge, trip=trip)
-                logs.append(f"Badge {badge.name} assigned to Tripper {tripper.name} for Trip {trip.name}.")
-                
+
+    if badges.exists(): 
+        for badge in badges:
+            for trip in active_trips:
+                trippers = trip.trippers.all()
+                tripper_count = trippers.count()
+                logs.append(f"Found {tripper_count} trippers for trip: {trip.name}")
+
+                assignments = []
+                for tripper in trippers:
+                    tripper.badges.add(badge) 
+                    assignments.append(BadgeAssignment(tripper=tripper, badge=badge, trip=trip))
+
+                    logs.append(f"Badge {badge.name} assigned to Tripper {tripper.name} for Trip {trip.name}.")
+
+                BadgeAssignment.objects.bulk_create(assignments)
+
+    else:
+        logs.append("No Badges on this date to be assigned")
+
+
     #assign badges for bingo answer uploads
-    logs.append(f"Assign Badges for BingoAnswer Uploads")
+    logs.append(f"Assign Badges for BingoAnswer Uploads\n")
     bingoanswerbadges = Badge.objects.filter(
         level='global', 
         achievement_method='threshold',
         threshold_type='bingo_answer_uploads'
     ).exclude(threshold_value__isnull=True)  
 
-    for badge in bingoanswerbadges:
-        for trip in active_trips:
-            trippers = trip.trippers.all()
-            logs.append(f"Found {trippers.count()} trippers for trip: {trip.name}")
-            
-            for tripper in trippers:
-                answer_count = BingoAnswer.objects.filter(tripper=tripper).count()
+    if bingoanswerbadges.exists(): 
+        for badge in bingoanswerbadges:
+            for trip in active_trips:
+                trippers = trip.trippers.all()
+                logs.append(f"Found {trippers.count()} trippers for trip: {trip.name}")
                 
-                if answer_count >= badge.threshold_value:
-                    if not tripper.badges.filter(pk=badge.pk).exists(): 
-                        tripper.badges.add(badge)
-                        tripper.save()
-                        BadgeAssignment.objects.create(tripper=tripper, badge=badge)
-                        logs.append(f"Badge '{badge.name}' assigned to Tripper {tripper.name} due to {answer_count} bingo answers.")
+                for tripper in trippers:
+                    answer_count = BingoAnswer.objects.filter(tripper=tripper).count()
+                    
+                    if answer_count >= badge.threshold_value:
+                        if not tripper.badges.filter(pk=badge.pk).exists(): 
+                            tripper.badges.add(badge)
+                            tripper.save()
+                            BadgeAssignment.objects.create(tripper=tripper, badge=badge)
+                            logs.append(f"Badge '{badge.name}' assigned to Tripper {tripper.name} due to {answer_count} bingo answers.")
+    else:
+        logs.append("No Badges for bingoanswers to be assigned")
     
     #assign badges for log entries
+    logs.append(f"\n")
     logs.append(f"Assign Badges for adding Logs")
     logentrybadges = Badge.objects.filter(
         level='global', 
@@ -60,60 +75,71 @@ def assign_badges():
         threshold_type='log_entries'
     ).exclude(threshold_value__isnull=True)  
 
-    for badge in logentrybadges:
-        for trip in active_trips:
-            trippers = trip.trippers.all()
-            logs.append(f"Found {trippers.count()} trippers for trip: {trip.name}")
-            
-            for tripper in trippers:
-                logentry_count = LogEntry.objects.filter(tripper=tripper).count()
+    if active_trips:
+        for badge in logentrybadges:
+            for trip in active_trips:
+                trippers = trip.trippers.all()
+                logs.append(f"Found {trippers.count()} trippers for trip: {trip.name}")
                 
-                if logentry_count >= badge.threshold_value:
-                    if not tripper.badges.filter(pk=badge.pk).exists(): 
-                        tripper.badges.add(badge)
-                        tripper.save()
-                        BadgeAssignment.objects.create(tripper=tripper, badge=badge)
-                        logs.append(f"Badge '{badge.name}' assigned to Tripper {tripper.name} due to writing {logentry_count} log entries.")
-    
+                for tripper in trippers:
+                    logentry_count = LogEntry.objects.filter(tripper=tripper).count()
+                    
+                    if logentry_count >= badge.threshold_value:
+                        if not tripper.badges.filter(pk=badge.pk).exists(): 
+                            tripper.badges.add(badge)
+                            tripper.save()
+                            BadgeAssignment.objects.create(tripper=tripper, badge=badge)
+                            logs.append(f"Badge '{badge.name}' assigned to Tripper {tripper.name} due to writing {logentry_count} log entries.")
+    else:
+        logs.append(f"No Badges for logentries")
+
     # Assign badges for having an API key
+    logs.append(f"\n")
     logs.append(f"Assign Badges for Trippers with API key")
     api_key_badges = Badge.objects.filter(
         level='global', 
         achievement_method='threshold',
         threshold_type='tripper_has_api_key'
     ).exclude(threshold_value__isnull=True)  
-    for api_key_badge in api_key_badges:
-        for trip in active_trips:
-            trippers = trip.trippers.all()
-            logs.append(f"Checking API keys for {trippers.count()} trippers in trip: {trip.name}")
-            
-            for tripper in trippers:
-                if tripper.dawarich_api_key or tripper.immich_api_key:
-                    if not tripper.badges.filter(pk=api_key_badge.pk).exists(): 
-                        tripper.badges.add(api_key_badge)
-                        tripper.save()
-                        BadgeAssignment.objects.create(tripper=tripper, badge=api_key_badge)
-                        logs.append(f"Badge '{api_key_badge.name}' assigned to Tripper {tripper.name} for having an API key.")
+    if active_trips:
+        for api_key_badge in api_key_badges:
+            for trip in active_trips:
+                trippers = trip.trippers.all()
+                logs.append(f"Checking API keys for {trippers.count()} trippers in trip: {trip.name}")
+                
+                for tripper in trippers:
+                    if tripper.dawarich_api_key or tripper.immich_api_key:
+                        if not tripper.badges.filter(pk=api_key_badge.pk).exists(): 
+                            tripper.badges.add(api_key_badge)
+                            tripper.save()
+                            BadgeAssignment.objects.create(tripper=tripper, badge=api_key_badge)
+                            logs.append(f"Badge '{api_key_badge.name}' assigned to Tripper {tripper.name} for having an API key.")
+    else:
+        logs.append(f"No badges for trippers with api keys")
 
     # Assign badges for being in multiple trips
+    logs.append(f"\n")
     logs.append(f"Assign Badges for Trippers that went on multiple trips")
     multiple_trips_badges = Badge.objects.filter(
         level='global', 
         achievement_method='threshold',
         threshold_type='trip_count'
-    ).exclude(threshold_value__isnull=True)  
-    for multiple_trips_badge in multiple_trips_badges:
-        trippers = Tripper.objects.all()
-        for tripper in trippers:
-            trip_count = tripper.trips.count()
-            if trip_count >= multiple_trips_badge.threshold_value:
-                if not tripper.badges.filter(pk=multiple_trips_badge.pk).exists():
-                    tripper.badges.add(multiple_trips_badge)
-                    tripper.save()
-                    BadgeAssignment.objects.create(tripper=tripper, badge=multiple_trips_badge)
-                    logs.append(f"Badge '{multiple_trips_badge.name}' assigned to Tripper {tripper.name} for participating in {trip_count} trips.")
+    ).exclude(threshold_value__isnull=True)
+    if active_trips:  
+        for multiple_trips_badge in multiple_trips_badges:
+            trippers = Tripper.objects.all()
+            for tripper in trippers:
+                trip_count = tripper.trips.count()
+                if trip_count >= multiple_trips_badge.threshold_value:
+                    if not tripper.badges.filter(pk=multiple_trips_badge.pk).exists():
+                        tripper.badges.add(multiple_trips_badge)
+                        tripper.save()
+                        BadgeAssignment.objects.create(tripper=tripper, badge=multiple_trips_badge)
+                        logs.append(f"Badge '{multiple_trips_badge.name}' assigned to Tripper {tripper.name} for participating in {trip_count} trips.")
+    else:
+        logs.append(f"No badges for multiple trips")
 
-    logs.append(f"Task end")
+    logs.append(f"\nTask end")
     return "\n".join(logs)
 
 
@@ -125,15 +151,15 @@ if not Schedule.objects.filter(func='tripapp.tasks.assign_badges').exists():
     )
 
 
-import time
-from datetime import timedelta
-from django.utils.timezone import make_aware
 
 def fetch_locations_for_tripper():
     logs = []
     today = timezone.now()
     logs.append(f"Task start: {today}")
     active_trips = Trip.objects.filter(date_from__lte=today, date_to__gte=today)
+
+    if not active_trips:
+       logs.append(f"No active trips")
 
     for trip in active_trips:
         logs.append(f"Trip: {trip.name}")

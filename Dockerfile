@@ -11,6 +11,7 @@ ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.s
 RUN chmod +x /usr/src/app/wait-for-it.sh
 COPY save_version.sh /usr/src/app/save_version.sh
 RUN chmod +x /usr/src/app/save_version.sh
+RUN mkdir -p /app/media/exports && chmod -R 777 /app/media
 
 
 ENV PYTHONUNBUFFERED=1

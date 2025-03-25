@@ -45,6 +45,13 @@ from django.utils.timezone import now
 from django_q.tasks import async_task
 from django_q.models import Task
 
+import os
+import zipfile
+import base64
+from django.http import FileResponse
+from io import BytesIO
+from PIL import Image
+
 
 def index(request):
     category = "roadtrip"
@@ -1377,3 +1384,227 @@ def delete_tripper_document(request, document_id):
         return HttpResponseForbidden("You do not have permission to delete this document.")
     document.delete()
     return redirect('tripapp:tripper_profile', tripper_id=tripper.id)
+
+
+
+def export_trip_markdown_zip(request, trip_id):
+    trip = get_object_or_404(Trip, pk=trip_id)
+    
+    # Markdown-content
+    md_content = f"# {trip.name}\n\n**Datum:** {trip.date_from} - {trip.date_to}\n\n{trip.description}\n\n## Programma\n"
+    
+    image_files = []  
+
+    for day in trip.dayprograms.all().order_by('dayprogramnumber'):
+        md_content += f"\n### {day.tripdate}: {day.description}\n{day.necessary_info}\n{day.possible_activities}\n"
+
+        for image in day.images.all():
+            image_filename = os.path.basename(image.image.name)  
+            md_content += f"\n![{image.description}]({image_filename})\n"
+            image_files.append((image_filename, image.image.path))  
+
+
+    md_content += "\n## Trippers\n"
+    for tripper in trip.trippers.all():
+        md_content += f"- {tripper.name}\n"
+        if tripper.photo:
+            photo_filename = os.path.basename(tripper.photo.name)
+            md_content += f"  ![{tripper.name}]({photo_filename})\n"
+            image_files.append((photo_filename, tripper.photo.path))
+
+    md_content += "\n## Bingocards\n"
+    bingocards = trip.bingocards.all()
+    if not bingocards:
+        md_content += "_Not on this trip._\n"
+
+    # ZIP
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+        zip_file.writestr(f"{trip.slug}.md", md_content)  
+        
+        for filename, filepath in image_files:
+            if os.path.exists(filepath):  
+                zip_file.write(filepath, filename)
+
+    zip_buffer.seek(0)  
+    
+    # ZIP as download
+    response = HttpResponse(zip_buffer.getvalue(), content_type="application/zip")
+    response["Content-Disposition"] = f'attachment; filename="{trip.slug}.zip"'
+    return response
+
+
+
+def encode_image_to_base64(image_path, max_size=(300, 300)):  
+    full_path = os.path.join(settings.MEDIA_ROOT, image_path)
+    
+    if not os.path.exists(full_path):
+        print(f"⚠️ file not found: {full_path}")  
+        return None
+
+    try:
+        with Image.open(full_path) as img:
+            img.thumbnail(max_size)  
+            
+            buffer = BytesIO()
+            img.save(buffer, format="JPEG", quality=85)  
+            base64_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
+            
+            return f"data:image/jpeg;base64,{base64_str}"
+    
+    except Exception as e:
+        print(f"⚠️ Error processing image: {e}")
+        return None
+
+def generate_html_with_images(trip):
+
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="nl">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{trip.name}</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; }}
+            h1, h2, h3 {{ color: #2c3e50; }}
+            img {{ max-width: 100%; height: auto; margin-top: 10px; }}
+            .container {{ max-width: 800px; margin: auto; }}
+            .card {{ background: #f8f9fa; padding: 15px; border-radius: 8px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>{trip.name}</h1>
+            <p>{trip.description}</p>
+
+    """
+
+
+    html_content += "<h2>📅 Dayprograms</h2>"
+
+    for day in trip.dayprograms.all().order_by('dayprogramnumber'):
+
+        html_content += f"""
+        <div class="card">
+            <h3>🗓 {day.dayprogramnumber} - {day.tripdate} - {day.description}</h3>
+            <p>{day.necessary_info}</p>
+            <p>{day.possible_activities}</p>
+        </div>
+        """
+
+        if day.scheduled_items.exists():
+            html_content += "<h4> Scheduled Items</h4><ul>"
+            for item in day.scheduled_items.all():
+                html_content += f"""
+                <li>
+                    <strong>{item.start_time} - {item.end_time}:</strong> {item.category}  
+                    <br>📍 {item.start_address} ➝ {item.end_address if item.end_address else 'N/A'}
+                </li>
+                """
+                if item.category == "Transportation" and item.transportation_type:
+                    html_content += f"<br>🚗 Type: {item.transportation_type}"
+            html_content += "</ul>"
+
+
+        for image in day.images.all():
+            img_base64 = encode_image_to_base64(image.image.name)  
+
+            if img_base64:
+                html_content += f'<img src="{img_base64}" >'
+            else:
+                html_content += "<p>⚠️ No Image File</p>"
+
+        if day.logentries.exists():
+            html_content += "<h4>📝 Log Entries</h4><ul>"
+            for log in day.logentries.all():
+                html_content += f"<li><strong>{log.tripper.name}:</strong> {log.logentry_text}</li>"
+            html_content += "</ul>"
+
+    html_content += "<h2>Trippers</h2>"
+
+    for tripper in trip.trippers.all():
+        html_content += f"""
+            <div class="card">
+            <h3>{tripper.name}</h3>"""
+
+        #if tripper.photo:
+        #    img_base64 = encode_image_to_base64(tripper.photo.name)
+        #    if img_base64:
+        #        html_content += f'<img src="{img_base64}" width="100px"  height="100px" >'
+
+        # Badges
+        badge_assignments = BadgeAssignment.objects.filter(trip=trip, tripper=tripper).select_related('badge')
+        badge_count = badge_assignments.count()
+        html_content += f'<p>🏅 Badges this trip: {badge_count}</p>'
+
+        for assignment in badge_assignments:
+            if assignment.badge.image:
+                img_base64 = encode_image_to_base64(assignment.badge.image.name)
+                if img_base64:
+                    html_content += f'<img src="{img_base64}" width="200px"  height="200px">'
+            
+
+        html_content += "</div>"
+
+
+    #bingocards            
+    html_content += "<h2>TripBingo</h2>"
+    trippers_on_this_trip = trip.trippers.annotate(
+        answer_count=Count('bingoanswer', filter=Q(bingoanswer__bingocard__trip=trip))
+    ).order_by('-answer_count')
+    html_content += f"""<table>"""
+    for tripper in trippers_on_this_trip:
+        html_content += f"""
+        <tr>
+            <td>{ tripper.name }</td>
+            <td style="text-align:right;">{ tripper.answer_count }</td>
+        </tr>"""
+    html_content += f"""</table>"""
+
+    html_content += "<table border='0'>"
+
+    bingocards = trip.bingocards.all()
+    for bingocard in bingocards:
+        html_content += f'<tr><td style="vertical-align: top;">{bingocard.description}</td><td>'
+        
+        bingo_answers = BingoAnswer.objects.filter(bingocard=bingocard).select_related('tripper')
+        
+        if bingo_answers.exists():
+            for answer in bingo_answers:
+                if answer.answerimage:
+                    img_base64 = encode_image_to_base64(answer.answerimage.name)
+                    if img_base64:
+                        html_content += f'{answer.tripper.name}<br>'
+                        html_content += f'<img src="{img_base64}" width="200px"  height="200px"><br>'
+        else:
+            html_content += "No Answers"
+
+        html_content += "</td></tr>"
+
+    html_content += "</table>"
+
+
+
+    html_content += """
+        </div>
+    </body>
+    </html>
+    """
+
+    return html_content
+
+
+def create_zip_with_html(request, trip_id):
+    trip = get_object_or_404(Trip, pk=trip_id)    
+    zip_filename = f"{trip.slug}_export.zip"
+    zip_path = os.path.join(settings.MEDIA_ROOT, "exports", zip_filename) 
+    os.makedirs(os.path.dirname(zip_path), exist_ok=True)  
+
+    html_content = generate_html_with_images(trip)
+    html_filename = f"{trip.slug}_trip_export.html"
+
+    with zipfile.ZipFile(zip_path, "w") as zip_file:
+        zip_file.writestr(html_filename, html_content)
+    
+    return FileResponse(open(zip_path, "rb"), as_attachment=True, filename=zip_filename)

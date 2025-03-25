@@ -73,9 +73,9 @@
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
-            gap: 10px;
-            padding: 15px;
-            background: #ef98aa;
+            gap: 5px;
+            padding: 10px;
+            background: gray;
         }
 
         .trip-icons img {
@@ -164,8 +164,8 @@
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
-            gap: 10px;
-            padding: 15px;
+            gap: 5px;
+            padding: 10px;
             background: #1e1e1e;
         }
       
@@ -238,11 +238,11 @@
                     <div class="trip-name" style="
                     background-image: 
                         {% if trip.image %}
-                            url('{{ trip.image.url }}'); /* Gebruik trip image */
+                            url('{{ trip.image.url }}'); 
                         {% elif trip.country_codes_list %}
                             url('https://flagcdn.com/w320/{{ trip.country_codes_list|first|lower }}.png'); 
-                            filter: grayscale(50%); 
-                            opacity: 0.7; 
+                            filter: grayscale(5%); 
+                            opacity: 0.9; 
                         {% else %}
                             url('{% static "default-trip.png" %}'); 
                         {% endif %}">

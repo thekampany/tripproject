@@ -4,22 +4,21 @@ You and your family / friends go on a trip.
 While planning the trip you have a central place to store all the booking mails rather than having some of them in your own mailbox, and others in the mailbox of your spouse / co planner(s).
 During the trip, this app allows you to share all the details of the trip with the people going on the trip with you and that just were not that involved in the planning. It is the app in which you answer questions like: what time do we have to be at the airport, should I dress up for dinner or do we go to the beach and eat something there afterwards. 
 
-The application also has the following features:  
-:globe_with_meridians: Show a map of the trip itinerary and show a map with the points of interest for one particular day.  
-:moneybag: Add expenses and keep a simple overview of who owes and who gets. Including currency conversion.    
-:heavy_check_mark: Keep a check/pack/wishlist.  
-:camera: Each traveller on the trip can add personal logentries and photos.  
-:link: Add documents for easy access like hotelreservations, flightconfirmations, but also copy of your passport or medical documents.  
-:game_die: You can also entertain your fellow travellers by geting them involved in (road)tripbingo and let them win fancy badges.  
+_The application also has the following features:_  
+:globe_with_meridians:  Show a map of the trip itinerary and show a map with the points of interest for one particular day.  
+:moneybag:  Add expenses and keep a simple overview of who owes and who gets. Including currency conversion.    
+:heavy_check_mark:  Keep a check/pack/wishlist.  
+:camera:  Each traveller on the trip can add personal logentries and photos.  
+:link:  Add documents for easy access like hotelreservations, flightconfirmations, but also copy of your passport or medical documents.  
+:game_die:  You can also entertain your fellow travellers by geting them involved in (road)tripbingo and let them win fancy badges.  
 
-Integrations with other selfhosted apps:  
+_Integrations with other selfhosted apps:_  
 Add a Dawarich api key and see your tracks - did you go where you planned you would go?  
 Add an Immich api key and see where you took a photo  
 
-Control your data:  
-The Trippers can invite their friends and family to the tribe. People in the tribe can see an overview of the trip and who is winning the badges. 
+_Control your data:_  
 Your (trip)data is on your server and you decide who can view your tripdata. 
-
+The application provides the option to export the details of trip to a zipped html file. So you can keep a memory of the trip also when you shutdown your instance.
 
 # Installation
 `git clone https://github.com/thekampany/tripproject.git`  
@@ -33,9 +32,7 @@ Unsplash api key in .env is used for displaying roadtrip backgrounds on the welc
 `docker compose up -d`  
 
 Log in the web container to do some additional steps:  
-~~`python manage.py migrate`~~ - should no longer be necessary     
 `python manage.py createsuperuser` - in order to use the Django Admin    
-~~`python manage.py qcluster`~~ - gives the functionality in the application to automatically assign badges on a certain date; should no longer be necessary  
 
 Go to your browser using the url from your .env and start with register.  
 
@@ -64,8 +61,8 @@ For a tripadmin, the functions to organize the trip are brought together in one 
 ![Screenshot](/screenshots/trippanion-screenshot-5-trippers.png )
 
  
-# Struggles - Unfinished Business
-Facilmap can be opened in a trip. It offers very nice planning options on the map. I am not yet satisfied with the way it is integrated in teh app. Work in progress.  
+# Unfinished Business
+Facilmap can be opened in a trip. It offers very nice planning options on the map. I am not yet satisfied with the way it is integrated in the app. Work in progress.  
 
 # Credits
 Flags from https://flagpedia.net
