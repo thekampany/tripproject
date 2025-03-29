@@ -93,7 +93,8 @@ def assign_badges():
     else:
         logs.append(f"No Badges for logentries")
 
-    # Assign badges for having an API key
+    # Assign badges for having an API key 
+    # to be replaced by for having locations or photos
     logs.append(f"\n")
     logs.append(f"Assign Badges for Trippers with API key")
     api_key_badges = Badge.objects.filter(
@@ -118,26 +119,31 @@ def assign_badges():
         logs.append(f"No badges for trippers with api keys")
 
     # Assign badges for being in multiple trips
-    logs.append(f"\n")
-    logs.append(f"Assign Badges for Trippers that went on multiple trips")
+    logs.append("\nAssign Badges for Trippers that went on multiple trips")
+
     multiple_trips_badges = Badge.objects.filter(
-        level='global', 
-        achievement_method='threshold',
-        threshold_type='trip_count'
+        level="global",
+        achievement_method="threshold",
+        threshold_type="trip_count"
     ).exclude(threshold_value__isnull=True)
-    if active_trips:  
-        for multiple_trips_badge in multiple_trips_badges:
-            trippers = Tripper.objects.all()
-            for tripper in trippers:
-                trip_count = tripper.trips.count()
-                if trip_count >= multiple_trips_badge.threshold_value:
+
+    if multiple_trips_badges.exists():  
+        trippers = Tripper.objects.annotate(trip_count=models.Count("trips")) 
+
+        assignments = []  
+
+        for tripper in trippers:
+            for multiple_trips_badge in multiple_trips_badges:
+                if tripper.trip_count >= multiple_trips_badge.threshold_value:
                     if not tripper.badges.filter(pk=multiple_trips_badge.pk).exists():
                         tripper.badges.add(multiple_trips_badge)
-                        tripper.save()
-                        BadgeAssignment.objects.create(tripper=tripper, badge=multiple_trips_badge)
-                        logs.append(f"Badge '{multiple_trips_badge.name}' assigned to Tripper {tripper.name} for participating in {trip_count} trips.")
+                        assignments.append(BadgeAssignment(tripper=tripper, badge=multiple_trips_badge))
+                        logs.append(f"Badge '{multiple_trips_badge.name}' assigned to Tripper {tripper.name} for participating in {tripper.trip_count} trips.")
+
+        if assignments:
+            BadgeAssignment.objects.bulk_create(assignments)
     else:
-        logs.append(f"No badges for multiple trips")
+        logs.append("No badges for multiple trips")
 
     logs.append(f"\nTask end")
     return "\n".join(logs)
@@ -251,6 +257,9 @@ def fetch_and_store_immich_photos():
     today = timezone.now()
     logs.append(f"Task start: {today}")
     active_trips = Trip.objects.filter(date_from__lte=today, date_to__gte=today)
+
+    if not active_trips:
+       logs.append(f"No active trips")
 
     for trip in active_trips:
         for tripper in trip.trippers.all():

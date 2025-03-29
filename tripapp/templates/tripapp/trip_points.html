@@ -25,13 +25,13 @@
                         {% endfor %}
                     </td>
                     <td>
-                        <a href="{% url 'tripapp:edit_point' trip.id point.id %}" class="btn btn-warning">Edit</a>
+                        <a href="{% url 'tripapp:edit_point' trip.id point.id %}" class="btn">Edit</a>
                     </td>
                     <td>
                         {% if user.is_staff %}
                         <form action="{% url 'tripapp:delete_point' trip.id point.id %}" method="post" style="display:inline;">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this point?');">Delete</button>
+                            <button type="submit" class="btn" onclick="return confirm('Are you sure you want to delete this point?');">Delete</button>
                         </form>
                         {% endif %}
                     </td>
@@ -39,7 +39,7 @@
             {% endfor %}
         </tbody>
     </table>
-    <a href="{% url 'tripapp:add_point' trip.id %}" class="btn btn-primary">Add Point</a>
+    <a href="{% url 'tripapp:add_point' trip.id %}" class="btn">Add Point</a>
     <br />
     <table class="table">
         <thead>

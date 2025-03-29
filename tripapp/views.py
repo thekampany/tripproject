@@ -1528,11 +1528,6 @@ def generate_html_with_images(trip):
             <div class="card">
             <h3>{tripper.name}</h3>"""
 
-        #if tripper.photo:
-        #    img_base64 = encode_image_to_base64(tripper.photo.name)
-        #    if img_base64:
-        #        html_content += f'<img src="{img_base64}" width="100px"  height="100px" >'
-
         # Badges
         badge_assignments = BadgeAssignment.objects.filter(trip=trip, tripper=tripper).select_related('badge')
         badge_count = badge_assignments.count()

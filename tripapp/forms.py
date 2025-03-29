@@ -354,3 +354,6 @@ class TripperDocumentForm(forms.ModelForm):
     class Meta:
         model = TripperDocument
         fields = ['document', 'description', 'category']
+        widgets = {
+            'description': forms.TextInput(attrs={'placeholder': 'documentdescription...'}),
+        }

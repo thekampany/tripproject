@@ -10,24 +10,23 @@
   <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
       {{ form|crispy }}
-      <button type="submit" class="btn">Save changes</button>
+      <button type="submit" class="btn">Save Profile changes</button>
   </form>
 <hr>
-<h2>Documents</h2>
-(Here add pictures of your passport, insurance etc.)
-<ul>
+<p>&nbsp;</p>
+<h1>{{ tripper.name }}'s Documents</h1>
+
   {% for document in documents %}
-    <li>
+      <a href="{{ document.document.url }}"><img src="{{ document.document.url }}" height="60"></a>
       <a href="{{ document.document.url }}">{{ document.document.name }}</a>
       <form method="post" action="{% url 'tripapp:delete_tripper_document' document.id %}" style="display: inline;">
         {% csrf_token %}
-        <button type="submit" class="btn">Delete</button>
+        <button type="submit">[Delete]</button>
       </form>
-    </li>
   {% empty %}
-    <li>No documents uploaded yet.</li>
+    No documents uploaded yet.
   {% endfor %}
-</ul>
+
 
 <h3>Upload new document</h3>
 <form method="post" enctype="multipart/form-data" action="{% url 'tripapp:upload_tripper_document' %}">

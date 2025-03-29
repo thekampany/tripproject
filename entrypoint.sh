@@ -2,32 +2,27 @@
 
 /usr/src/app/wait-for-it.sh db:5432 --timeout=30 --strict -- echo "Database is up"
 
+python manage.py makemigrations --noinput
 python manage.py migrate --noinput
 python manage.py seed_global_badges
 
 python manage.py shell << 'EOF'
-from django_q.models import Schedule
+tasks = [
+    ('tripapp.tasks.fetch_locations_for_tripper', "fetch_locations"),
+    ('tripapp.tasks.assign_badges', "assign_badges"),
+    ('tripapp.tasks.fetch_and_store_immich_photos', "fetch_photos"),
+]
 
-if not Schedule.objects.filter(func='tripapp.tasks.fetch_locations_for_tripper').exists():
-    print("Creating scheduled task 'fetch_locations' ...")
-    Schedule.objects.create(
-        func='tripapp.tasks.fetch_locations_for_tripper',
-        schedule_type=Schedule.DAILY,
-        repeats=-1
-    )
-else:
-    print("Scheduled task 'fetch_locations' already exists.")
-
-
-if not Schedule.objects.filter(func='tripapp.tasks.assign_badges').exists():
-    print("Scheduled task 'assign_badges' does not exist yet. Creating...")
-    Schedule.objects.create(
-        func='tripapp.tasks.assign_badges',
-        schedule_type=Schedule.DAILY,
-        repeats=-1
-    )
-else:
-    print("Scheduled task 'assign_badges' already exists.")
+for func, name in tasks:
+    if not Schedule.objects.filter(func=func).exists():
+        print(f"Creating scheduled task '{name}' ...")
+        Schedule.objects.create(
+            func=func,
+            schedule_type=Schedule.HOURLY,
+            repeats=-1
+        )
+    else:
+        print(f"Scheduled task '{name}' already exists.")
 EOF
 
 

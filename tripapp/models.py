@@ -70,7 +70,7 @@ class Trip(models.Model):
     slug = models.SlugField(unique=True, blank=True)
     date_from = models.DateField(blank=True, null=True)
     date_to = models.DateField(blank=True, null=True)
-    country_codes = models.CharField(max_length=200, blank=True, null=True, help_text="Comma-separated list of country codes")
+    country_codes = models.CharField(max_length=200, blank=True, null=True, help_text="A two-letter country code of the country you are visiting. Separate by comma in case of multiple countries")
     use_facilmap = models.BooleanField(default=False)
     use_expenses = models.BooleanField(default=False, help_text="Off means that we choose not to look at who owes who how much")
 

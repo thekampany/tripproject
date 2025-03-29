@@ -40,7 +40,7 @@
                     <tr>
                         <td>{{ task.description }}</td>
                         <td>{{ task.last_run|date:"d-m-Y H:i:s" }}</td>
-                        <td>{{ task.last_message }}</td>
+                        <td>{{ task.last_message|linebreaksbr }}</td>
                         <td>
                             <form method="post" action="">
                                 {% csrf_token %}
