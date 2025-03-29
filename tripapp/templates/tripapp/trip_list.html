@@ -172,7 +172,11 @@
     {% else %}
 
         <a href="{% url 'tripapp:tribe_trips' %}" class="trip-card">
-            <span style="text-decoration: none;">+</span>
+            <div class="trip-image" style="background-image: url('{% static "default-trip.png" %}'); ">
+            </div>
+            <div class="trip-info">
+                <h3 class="trip-title"><span style="text-decoration: none;">+</span></h3>
+            </div>
         </a>
 
     {% endif %}

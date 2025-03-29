@@ -27,7 +27,7 @@
     No documents uploaded yet.
   {% endfor %}
 
-
+<p>&nbsp;</p>
 <h3>Upload new document</h3>
 <form method="post" enctype="multipart/form-data" action="{% url 'tripapp:upload_tripper_document' %}">
     {% csrf_token %}

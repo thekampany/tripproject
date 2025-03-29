@@ -172,10 +172,11 @@ def create_trip(request, tribe_id):
 
             # Ensure the logged-in user is also a Tripper for this trip
             user = request.user
-            tripper, created = Tripper.objects.get_or_create(name=user.username)
+            tripper, created = Tripper.objects.get_or_create(user=user, defaults={'name': user.username})
             tripper.trips.add(trip)
             tripper.is_trip_admin = True
             tripper.save()
+
 
             return redirect('tripapp:tribe_trips')
     else:
@@ -454,7 +455,7 @@ def trip_map_view(request, trip_id):
         timestamp__range=(start_of_day, end_of_day)
     )
     first_country_code = trip.get_first_country_code() 
-    country_coords = get_country_coords(first_country_code) if first_country_code else None
+    country_coords = get_country_coords(first_country_code) if first_country_code else get_country_coords('nl')
 
     return render(request, 'tripapp/trip_map.html', {
         'trip': trip,
@@ -1209,24 +1210,6 @@ def trip_update(request, trip_id):
 
     return render(request, 'tripapp/trip_update.html', {'form': form, 'trip': trip})
 
-#def generate_pdf(request, trip_id):
-#    trip = get_object_or_404(Trip, id=trip_id)  
-#    dayprograms = DayProgram.objects.filter(trip=trip).order_by('tripdate').prefetch_related('images')
-
-    #checklist = Checklist.objects.get_or_create(trip=trip)[0]
-    #checklist_items = ChecklistItem.objects.filter(checklist=checklist).order_by('is_completed', 'id') 
-    #items = checklist.items.all()
-    #bingo
-
-#     trip = get_object_or_404(Trip, pk=trip_id)
-#     expenses = trip.expenses.all().order_by('date')
-#     tripper = Tripper.objects.filter(name=request.user.username).first()
-#     app_currency = settings.APP_CURRENCY
-#     html_string = render_to_string('tripapp/trip_pdf.html', {'trip': trip,'expenses':expenses,'tripper':tripper,'app_currency':app_currency})
-#     pdf = HTML(string=html_string).write_pdf()
-#     response = HttpResponse(pdf, content_type='application/pdf')
-#     response['Content-Disposition'] = 'inline; filename="trip_report.pdf"'
-#     return response
  
 def set_timezone(request):
     if request.method == "POST":

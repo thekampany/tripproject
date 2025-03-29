@@ -22,18 +22,20 @@ The application provides the option to export the details of trip to a zipped ht
 
 # Installation
 `git clone https://github.com/thekampany/tripproject.git`  
+
 Edit  docker-compose.yml for portnumbers and dbuser and password  
 
 `cp .env.sample .env`  
-Edit .env  
 
+Edit .env  
 Emailsettings in .env are needed for inviting others to the trip and resetting passwords.  
 Unsplash api key in .env is used for displaying roadtrip backgrounds on the welcome and organize page. Can be left blank. Unsplash images are not used on the pages for a specific trip, here you can upload your own background image.   
-  
+The superuser in .env is an adminuser that you create to access the Django admin. This can also be the first user for logging in.  
+
 `docker compose build`  
 `docker compose up -d`  
 
-Go to your browser using the url from your .env and start with register.  
+Go to your browser using the url from your .env and start with register or use the superuser from your .env file to log in.
 
 
 # Getting Started
