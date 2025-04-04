@@ -25,6 +25,7 @@ APP_CURRENCY = os.getenv('APP_CURRENCY')
 EXCHANGERATE_API_KEY = os.getenv('EXCHANGERATE_API_KEY')
 
 UNSPLASH_ACCESS_KEY = os.getenv('UNSPLASH_ACCESS_KEY')
+STATICMAPS_URL = os.getenv('STATICMAPS_URL')
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

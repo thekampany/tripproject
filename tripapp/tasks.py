@@ -1,15 +1,16 @@
 # tasks.py
 
 from django.utils import timezone
+from django.db import models
 from django_q.models import Schedule
-from .models import Badge, Tripper, BadgeAssignment, Trip, Location, ImmichPhotos, BingoAnswer, LogEntry
+from .models import Badge, Tripper, BadgeAssignment, Trip, Location, ImmichPhotos, BingoAnswer, LogEntry, DayProgram
 import requests
 from datetime import datetime, timedelta
 from django.core.files.base import ContentFile
 from django.utils.timezone import make_aware
 import pytz
 import time
-
+from .utils import generate_static_map
 
 def assign_badges():
     logs = []
@@ -343,5 +344,27 @@ if not Schedule.objects.filter(func='tripapp.tasks.fetch_and_store_immich_photos
     Schedule.objects.create(
         func='tripapp.tasks.fetch_and_store_immich_photos',
         schedule_type=Schedule.HOURLY,
+        repeats=-1
+    )
+
+
+def update_dayprogram_maps():
+    logs = []
+    today = timezone.now().date()
+    relevant_dayprograms = DayProgram.objects.filter(tripdate__gte=today - timezone.timedelta(days=1))
+    logs.append(f"Start generating static maps for {relevant_dayprograms.count()} relevant days")
+
+    for dayprogram in relevant_dayprograms:
+        logs.append(f"Generating map for DayProgram {dayprogram.id} on {dayprogram.tripdate}")
+        generate_static_map(dayprogram)
+
+    logs.append(f"End Generating")
+    return "\n".join(logs)
+
+
+if not Schedule.objects.filter(func='tripapp.tasks.update_dayprogram_maps').exists():
+    Schedule.objects.create(
+        func='tripapp.tasks.update_dayprogram_maps',
+        schedule_type=Schedule.DAILY,
         repeats=-1
     )

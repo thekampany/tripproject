@@ -1263,6 +1263,7 @@ def task_manager(request):
         {"name": "assign_badges", "description": "Assign badges to trippers."},
         {"name": "fetch_locations_for_tripper", "description": "Fetch locations for trippers."},
         {"name": "fetch_and_store_immich_photos", "description": "Fetch and store Immich photos."},
+        {"name": "update_dayprogram_maps", "description": "Add staticmaps per day for offline use."},
     ]
 
     for task in tasks:
@@ -1428,13 +1429,10 @@ def encode_image_to_base64(image_path, max_size=(300, 300)):
     try:
         with Image.open(full_path) as img:
             img.thumbnail(max_size)  
-            
             buffer = BytesIO()
-            img.save(buffer, format="JPEG", quality=85)  
+            img.save(buffer, format="PNG") 
             base64_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
-            
-            return f"data:image/jpeg;base64,{base64_str}"
-    
+            return f"data:image/png;base64,{base64_str}"    
     except Exception as e:
         print(f"⚠️ Error processing image: {e}")
         return None
@@ -1503,6 +1501,10 @@ def generate_html_with_images(trip):
             for log in day.logentries.all():
                 html_content += f"<li><strong>{log.tripper.name}:</strong> {log.logentry_text}</li>"
             html_content += "</ul>"
+
+        if day.map_image:
+            img_base64 = encode_image_to_base64(day.map_image.name)  
+            html_content += f'<p><img src="{img_base64}" ></p>'
 
     html_content += "<h2>Trippers</h2>"
 
