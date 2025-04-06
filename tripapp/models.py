@@ -118,6 +118,8 @@ class DayProgram(models.Model):
     possible_activities = models.TextField(blank=True)
     necessary_info = models.TextField(blank=True)
     map_image = models.ImageField(upload_to='maps/', blank=True, null=True)  
+    recorded_weather = models.JSONField(null=True, blank=True)
+    recorded_weather_text = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.trip.name} - {self.dayprogramnumber} - {self.description[:50]}"

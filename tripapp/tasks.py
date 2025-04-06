@@ -11,6 +11,7 @@ from django.utils.timezone import make_aware
 import pytz
 import time
 from .utils import generate_static_map
+from django.conf import settings
 
 def assign_badges():
     logs = []
@@ -368,3 +369,79 @@ if not Schedule.objects.filter(func='tripapp.tasks.update_dayprogram_maps').exis
         schedule_type=Schedule.DAILY,
         repeats=-1
     )
+
+
+WEATHER_CODE_TO_EMOJI = {
+    0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️",
+    45: "🌫️", 48: "🌫️", 51: "🌦️", 53: "🌦️", 55: "🌧️",
+    61: "🌧️", 63: "🌧️", 65: "🌧️", 66: "🌧️", 67: "🌧️",
+    71: "🌨️", 73: "🌨️", 75: "🌨️", 77: "🌨️",
+    80: "🌧️", 81: "🌧️", 82: "🌧️",
+    95: "⛈️", 96: "⛈️", 99: "⛈️"
+}
+
+
+def fetch_and_store_yesterdays_weather():
+    logs = []
+    yesterday = datetime.today() - timedelta(days=1)
+    dayprograms = DayProgram.objects.filter(tripdate=yesterday)
+
+    for dp in dayprograms:
+        points = dp.points.all()
+        if not points:
+            continue
+
+        avg_lat = sum(p.latitude for p in points) / len(points)
+        avg_lon = sum(p.longitude for p in points) / len(points)
+
+        temp_unit = settings.TEMPERATURE_UNIT.upper()
+        temp_param = "&temperature_unit=fahrenheit" if temp_unit == 'F' else ""
+        temp_symbol = "°F" if temp_unit == 'F' else "°C"
+
+        url = (
+            f"https://api.open-meteo.com/v1/forecast?"
+            f"latitude={avg_lat}&longitude={avg_lon}"
+            f"&daily=weather_code,precipitation_sum,temperature_2m_max,temperature_2m_min,sunrise,sunset"
+            f"{temp_param}"
+            f"&timezone=Europe%2FBerlin"
+            f"&start_date={yesterday}&end_date={yesterday}"
+        )
+
+        try:
+            response = requests.get(url)
+            data = response.json()
+            daily = data.get("daily", {})
+            if not daily:
+                continue
+
+            dp.recorded_weather = daily
+
+            code = daily["weather_code"][0]
+            emoji = WEATHER_CODE_TO_EMOJI.get(code, "🌈")
+            t_max = daily["temperature_2m_max"][0]
+            t_min = daily["temperature_2m_min"][0]
+            rain = daily["precipitation_sum"][0]
+            sunrise = daily["sunrise"][0][-5:]
+            sunset = daily["sunset"][0][-5:]
+
+            description = (
+                f"{emoji} On {yesterday.strftime('%-d %B')} we had this weather:\n"
+                f"🌡️ Max: {t_max}{temp_symbol}, Min: {t_min}{temp_symbol}\n"
+                f"💧 {rain} mm\n"
+                f"🌅 Sunrise: {sunrise} – 🌇 Sunset: {sunset}"
+            )
+
+            dp.recorded_weather_text = description
+            dp.save()
+            logs.append(f"Weather recorded for {dp.tripdate}")
+        except Exception as e:
+            logs.append(f"Error retrieving weather for {dp.tripdate}: {e}")
+
+
+if not Schedule.objects.filter(func='tripapp.tasks.fetch_and_store_yesterdays_weather').exists():
+    Schedule.objects.create(
+        func='tripapp.tasks.fetch_and_store_yesterdays_weather',
+        schedule_type=Schedule.DAILY,
+        repeats=-1
+    )
+
