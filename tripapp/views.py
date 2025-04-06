@@ -276,6 +276,56 @@ def dayprogram_detail(request, id):
     links_with_scheduled_item = dayprogram.links.filter(scheduled_item__isnull=False)
     scheduled_items = dayprogram.scheduled_items.all().order_by('start_time')
 
+    # -------- Weather --------
+    weather_forecast_data = None
+    if dayprogram.tripdate in [ date.today() + timedelta(days=i) for i in range(0, 4)]:
+        points = dayprogram.points.all()
+        if points.exists():
+            lat = sum(p.latitude for p in points) / len(points)
+            lon = sum(p.longitude for p in points) / len(points)
+
+            trip_date = dayprogram.tripdate
+
+            # Open-Meteo API
+            if settings.TEMPERATURE_UNIT == 'C':
+                url = (
+                    f"https://api.open-meteo.com/v1/forecast?"
+                    f"latitude={lat}&longitude={lon}"
+                    f"&daily=temperature_2m_max,weather_code"
+                    f"&timezone=Europe%2FBerlin"
+                    f"&start_date={trip_date}&end_date={trip_date}"
+                )
+            if settings.TEMPERATURE_UNIT == 'F':
+                url = (
+                    f"https://api.open-meteo.com/v1/forecast?"
+                    f"latitude={lat}&longitude={lon}"
+                    f"&daily=temperature_2m_max,weather_code"
+                    f"&timezone=Europe%2FBerlin"
+                    f"&&temperature_unit=fahrenheit"
+                    f"&start_date={trip_date}&end_date={trip_date}"
+                )
+
+
+            try:
+                response = requests.get(url, timeout=5)
+                if response.status_code == 200:
+                    data = response.json()
+                    dates = data['daily']['time']
+                    temps = data['daily']['temperature_2m_max']
+                    codes = data['daily']['weather_code']
+
+                    for i, d in enumerate(dates):
+                        if d == trip_date.isoformat():
+                            weather_forecast_data = {
+                                'date': d,
+                                'temperature_max': temps[i],
+                                'weather_code': codes[i],
+                            }
+                            break
+            except Exception as e:
+                print(f"Error retrieving weather: {e}")
+    # -------- End Weather --------
+
     return render(request, 'tripapp/dayprogram_detail.html', 
          {'dayprogram': dayprogram, 
           'images': images, 
@@ -292,6 +342,7 @@ def dayprogram_detail(request, id):
           'links_without_scheduled_item' : links_without_scheduled_item,
           'links_with_scheduled_item' : links_with_scheduled_item,
           'scheduled_items' : scheduled_items,
+          'weather_forecast_data' : weather_forecast_data,
          })
 
 

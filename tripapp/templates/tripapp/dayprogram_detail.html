@@ -1,4 +1,6 @@
 {% load static %}
+{% load weather_filters %}
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -106,7 +108,14 @@
             {% endif %}
         </div>
     </div>
-    <p>&nbsp;</p>
+    <p style="color:grey;font-style:italic;text-align:right">
+        {% if weather_forecast_data %}Forecast: 
+        {{ weather_forecast_data.weather_code|get_weather_description }}&nbsp;
+        {{ weather_forecast_data.temperature_max }}&nbsp;&deg;C
+        {% endif %}
+    </p>
+    <h2>{{ dayprogram.description }}</h2>
+    <div class="dayprogramcard-container">
 
 
 
@@ -140,10 +149,6 @@
         </div>
     </div>
     <p>&nbsp;</p>
-    <h2>{{ dayprogram.description }}</h2>
-    <div class="dayprogramcard-container">
-
-
 
         {% if dayprogram.necessary_info %}
         <div class="dayprogramcard">

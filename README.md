@@ -31,11 +31,14 @@ Edit .env
 Emailsettings in .env are needed for inviting others to the trip and resetting passwords.  
 Unsplash api key in .env is used for displaying roadtrip backgrounds on the welcome and organize page. Can be left blank. Unsplash images are not used on the pages for a specific trip, here you can upload your own background image.   
 The superuser in .env is an adminuser that you create to access the Django admin. This can also be the first user for logging in.  
+Optionally enter a url of your docker staticmaps selfhostedinstance. This will enable the option to generate maps that will be part of downloadable offline html.  
+
+After setting up the .env file, do:  
 
 `docker compose build`  
 `docker compose up -d`  
 
-Go to your browser using the url from your .env and start with register or use the superuser from your .env file to log in.
+Go to your browser using the app_url as in your .env and start with register or use the superuser from your .env file to log in.
 
 
 # Getting Started
@@ -66,4 +69,5 @@ For a tripadmin, the functions to organize the trip are brought together in one 
 Facilmap can be opened in a trip. It offers very nice planning options on the map. I am not yet satisfied with the way it is integrated in the app. Work in progress.  
 
 # Credits
-Flags from https://flagpedia.net
+Flags from https://flagpedia.net  
+Weather from https://api.open-meteo.com  
