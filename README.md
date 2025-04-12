@@ -24,6 +24,7 @@ The application provides the option to export the details of trip to a zipped ht
 `git clone https://github.com/thekampany/tripproject.git`  
 
 Edit  docker-compose.yml for portnumbers and dbuser and password  
+When you are editing portnumbers also check portnumber in nginx.conf  
 
 `cp .env.sample .env`  
 

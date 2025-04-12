@@ -4,6 +4,9 @@ from django.conf import settings
 from django.core.files.base import ContentFile
 import logging
 from tripapp.models import Location
+import numpy as np
+from rdp import rdp
+import gpxpy
 
 logger = logging.getLogger(__name__)
 
@@ -27,12 +30,22 @@ def get_random_unsplash_image(category):
         return None
 
 
+
+def simplify_locations(locations, epsilon=0.0005):
+    coords = np.array([[loc.latitude, loc.longitude] for loc in locations])
+    simplified = rdp(coords, epsilon=epsilon)
+    return simplified 
+
+
+
 def generate_static_map(dayprogram):
     staticmaps_url = settings.STATICMAPS_URL
+    staticmaps_api_key = settings.STATICMAPS_API_KEY
+
     if not staticmaps_url:
         logger.info(f"No staticmaps url {staticmaps_url}")
         return  
-
+    
     markers = []
     polylines = []
 
@@ -43,13 +56,41 @@ def generate_static_map(dayprogram):
 
     tripdate = dayprogram.tripdate
     logger.info(f"Dayprogram tripdate {tripdate} ")
-    locations = Location.objects.filter(timestamp__date=tripdate)
 
-    if locations.exists():
-        polyline = "|".join([f"{loc.latitude},{loc.longitude}" for loc in date.locations.all()])
-        polylines.append((polyline, "0000FF", "weight:6"))
+    locations = list(Location.objects.filter(timestamp__date=tripdate))
 
-    #routes to be added
+    if locations:
+        logger.info(f"Found {len(locations)} locations for polyline.")
+        
+        coords = np.array([[loc.latitude, loc.longitude] for loc in locations])
+        if len(coords) > 150:
+            simplified = rdp(coords, epsilon=0.0005)
+            logger.info(f"Reduced from {len(coords)} to {len(simplified)} points using RDP.")
+        else:
+            simplified = coords
+        
+        polylines.extend(simplified) 
+
+    routes = dayprogram.routes.all()
+    for route in dayprogram.routes.all():
+        if route.gpx_file:
+            with route.gpx_file.open("r") as f:
+                gpx_data = f.read()
+                gpx = gpxpy.parse(gpx_data)
+                gpx_points = []
+                for track in gpx.tracks:
+                    for segment in track.segments:
+                        for point in segment.points:
+                            gpx_points.append([point.latitude, point.longitude])
+                    
+                if gpx_points:
+                    coords = np.array(gpx_points)
+                    if len(coords) > 150:
+                        simplified = rdp(coords, epsilon=0.0005)
+                    else:
+                        simplified = coords
+                    polylines.extend(simplified)
+                    
 
     params = {
         "width": 800,
@@ -58,14 +99,19 @@ def generate_static_map(dayprogram):
     }
 
     if markers:
-        params["markers"] = f"markers=width:28|height:28|{'|'.join(markers)}"
+        params["markers"] = f"markers=width:20|height:20|{'|'.join(markers)}"
 
     if polylines:
-        params["polyline"] = [
-            f"polyline=weight:6|color:{color}|{coords}" for coords, color, *_ in polylines
-        ]
+        polyline_str = "|".join([f"{lat},{lon}" for lat, lon in polylines])
+        params["polyline"] = f"polyline=weight:6|color:0000FF|{polyline_str}"
 
-    request_url = f"{staticmaps_url}?{'&'.join(params.get('polyline', []) + [params['markers']] if markers else [])}"
+    base_url = f"{staticmaps_url}?{'&'.join(params.get('polyline', []) + [params['markers']] if markers else [])}"
+
+    if staticmaps_api_key:
+        request_url = f"{base_url}&api_key={staticmaps_api_key}"
+    else:
+        request_url = base_url
+
     logger.info(f"{request_url}")
     response = requests.get(request_url)
     if response.status_code == 200:

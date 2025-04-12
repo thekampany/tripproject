@@ -51,6 +51,8 @@ import base64
 from django.http import FileResponse
 from io import BytesIO
 from PIL import Image
+from collections import Counter
+from statistics import mean
 
 
 def index(request):
@@ -287,41 +289,38 @@ def dayprogram_detail(request, id):
             trip_date = dayprogram.tripdate
 
             # Open-Meteo API
-            if settings.TEMPERATURE_UNIT == 'C':
-                url = (
-                    f"https://api.open-meteo.com/v1/forecast?"
-                    f"latitude={lat}&longitude={lon}"
-                    f"&daily=temperature_2m_max,weather_code"
-                    f"&timezone=Europe%2FBerlin"
-                    f"&start_date={trip_date}&end_date={trip_date}"
-                )
-            if settings.TEMPERATURE_UNIT == 'F':
-                url = (
-                    f"https://api.open-meteo.com/v1/forecast?"
-                    f"latitude={lat}&longitude={lon}"
-                    f"&daily=temperature_2m_max,weather_code"
-                    f"&timezone=Europe%2FBerlin"
-                    f"&&temperature_unit=fahrenheit"
-                    f"&start_date={trip_date}&end_date={trip_date}"
-                )
+            base_url = (
+                f"https://api.open-meteo.com/v1/forecast?"
+                f"latitude={lat}&longitude={lon}"
+                f"&hourly=temperature_2m,weather_code"
+                f"&timezone=Europe%2FBerlin"
+                f"&start_date={trip_date}&end_date={trip_date}"
+            )
 
+            if settings.TEMPERATURE_UNIT == 'F':
+                base_url += "&temperature_unit=fahrenheit"
 
             try:
-                response = requests.get(url, timeout=5)
+                response = requests.get(base_url, timeout=5)
                 if response.status_code == 200:
                     data = response.json()
-                    dates = data['daily']['time']
-                    temps = data['daily']['temperature_2m_max']
-                    codes = data['daily']['weather_code']
+                    times = data["hourly"]["time"]
+                    weather_codes = data["hourly"]["weather_code"]
+                    temperatures = data["hourly"]["temperature_2m"]
 
-                    for i, d in enumerate(dates):
-                        if d == trip_date.isoformat():
-                            weather_forecast_data = {
-                                'date': d,
-                                'temperature_max': temps[i],
-                                'weather_code': codes[i],
-                            }
-                            break
+                    if weather_codes:
+                        avg_code = round(mean(weather_codes))
+                        max_code = max(weather_codes)
+                        most_common_code = Counter(weather_codes).most_common(1)[0][0]
+                        max_temp = max(temperatures)
+
+                        weather_forecast_data = {
+                            "date": trip_date.isoformat(),
+                            "weather_code_avg": avg_code,
+                            "weather_code_max": max_code,
+                            "weather_code_mode": most_common_code,
+                            "temperature_max": max_temp,
+                         }
             except Exception as e:
                 print(f"Error retrieving weather: {e}")
     # -------- End Weather --------
@@ -1315,13 +1314,16 @@ def task_manager(request):
         {"name": "fetch_locations_for_tripper", "description": "Fetch locations for trippers."},
         {"name": "fetch_and_store_immich_photos", "description": "Fetch and store Immich photos."},
         {"name": "update_dayprogram_maps", "description": "Add staticmaps per day for offline use."},
-    ]
+        {"name": "fetch_and_store_yesterdays_weather", "description": "Get weatherreports to show in offline zip"},
+       ]
 
     for task in tasks:
         last_task = Task.objects.filter(func=f"tripapp.tasks.{task['name']}").order_by("-started").first()
         task["last_run"] = last_task.started if last_task else "Never"
         task["status"] = last_task.success if last_task else "Not Run"
         task["last_message"] = last_task.result if last_task else "No Message"
+
+    previous_url = request.META.get('HTTP_REFERER', '/fallback-url/')
 
     if request.method == "POST":
         task_name = request.POST.get("task_name")
@@ -1330,7 +1332,7 @@ def task_manager(request):
 
         return redirect("tripapp:task_manager")
 
-    return render(request, "tripapp/task_manager.html", {"tasks": tasks})
+    return render(request, "tripapp/task_manager.html", {"tasks": tasks, "previous_url":previous_url})
 
 @login_required
 def trip_documents_view(request, trip_id):
@@ -1521,9 +1523,12 @@ def generate_html_with_images(trip):
         <div class="card">
             <h3>🗓 {day.dayprogramnumber} - {day.tripdate} - {day.description}</h3>
             <p>{day.necessary_info}</p>
-            <p>{day.possible_activities}</p>
-        </div>
-        """
+            <p>{day.possible_activities}</p>"""
+        
+        if day.recorded_weather_text:
+            html_content += f"""<p>{day.recorded_weather_text}</p>"""
+
+        html_content += f"""</div>"""
 
         if day.scheduled_items.exists():
             html_content += "<h4> Scheduled Items</h4><ul>"
@@ -1550,7 +1555,7 @@ def generate_html_with_images(trip):
         if day.logentries.exists():
             html_content += "<h4>📝 Log Entries</h4><ul>"
             for log in day.logentries.all():
-                html_content += f"<li><strong>{log.tripper.name}:</strong> {log.logentry_text}</li>"
+                html_content += f"<strong>{log.tripper.name}:</strong> {log.logentry_text}"
             html_content += "</ul>"
 
         if day.map_image:

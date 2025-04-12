@@ -38,3 +38,13 @@ WEATHER_CODE_EMOJIS = {
 @register.filter
 def get_weather_description(code):
     return WEATHER_CODE_EMOJIS.get(code, "❓")
+
+@register.filter
+def get_recorded_weather_summary(text):
+    import re
+    match = re.search(r'weather:(.*?mm)', text, re.DOTALL)
+    if match:
+        summary = match.group(1).strip()
+        summary = summary.replace('\n', ' ')
+        return ' '.join(summary.split())
+    return ''

@@ -108,16 +108,8 @@
             {% endif %}
         </div>
     </div>
-    <p style="color:grey;font-style:italic;text-align:right">
-        {% if weather_forecast_data %}Forecast: 
-        {{ weather_forecast_data.weather_code|get_weather_description }}&nbsp;
-        {{ weather_forecast_data.temperature_max }}&nbsp;&deg;C
-        {% endif %}
-    </p>
-    <h2>{{ dayprogram.description }}</h2>
-    <div class="dayprogramcard-container">
 
-
+    <p>&nbsp;</p>
 
     <div class="tripmenucontainer">
         <div class="tripmenuitem"><a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}" class="btn">&#8634;&nbsp;Trip Programme</a></div>
@@ -148,7 +140,21 @@
         </div>
         </div>
     </div>
-    <p>&nbsp;</p>
+
+    <p style="color:grey;font-style:italic;text-align:right">
+        {% if weather_forecast_data %}Forecast: 
+            {{ weather_forecast_data.weather_code_avg|get_weather_description }}&nbsp;
+            {{ weather_forecast_data.temperature_max }}&nbsp;&deg;C
+        {% else %}
+            {% if dayprogram.recorded_weather_text %}
+               {{ dayprogram.recorded_weather_text|get_recorded_weather_summary  }}
+            {% endif %}
+        {% endif %}
+    </p>
+
+    <h2>{{ dayprogram.description }}</h2>
+
+    <div class="dayprogramcard-container">
 
         {% if dayprogram.necessary_info %}
         <div class="dayprogramcard">

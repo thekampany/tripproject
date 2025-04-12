@@ -12,3 +12,6 @@ crispy-bootstrap4
 channels
 uvicorn
 pytz
+rdp
+numpy
+gpxpy

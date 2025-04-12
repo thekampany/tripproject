@@ -12,13 +12,15 @@ import pytz
 import time
 from .utils import generate_static_map
 from django.conf import settings
+from collections import Counter
+from statistics import mean
 
 def assign_badges():
     logs = []
 
     #assign badges on date
     today = timezone.now().date()
-    logs.append(f"Start Assigning Badges on date\n")
+    logs.append(f"Check Assigning Badges on date\n")
     badges = Badge.objects.filter(assignment_date=today)
     active_trips = Trip.objects.filter(date_from__lte=today, date_to__gte=today)
 
@@ -39,11 +41,11 @@ def assign_badges():
                 BadgeAssignment.objects.bulk_create(assignments)
 
     else:
-        logs.append("No Badges on this date to be assigned")
+        logs.append("No Badges on this date to be assigned\n")
 
 
     #assign badges for bingo answer uploads
-    logs.append(f"Assign Badges for BingoAnswer Uploads\n")
+    logs.append(f"Check assign Badges for BingoAnswer Uploads\n")
     bingoanswerbadges = Badge.objects.filter(
         level='global', 
         achievement_method='threshold',
@@ -65,12 +67,14 @@ def assign_badges():
                             tripper.save()
                             BadgeAssignment.objects.create(tripper=tripper, badge=badge)
                             logs.append(f"Badge '{badge.name}' assigned to Tripper {tripper.name} due to {answer_count} bingo answers.")
+                    else:
+                        logs.append(f"Not enough answers yet")
     else:
         logs.append("No Badges for bingoanswers to be assigned")
     
     #assign badges for log entries
     logs.append(f"\n")
-    logs.append(f"Assign Badges for adding Logs")
+    logs.append(f"Check assign Badges for adding Logs")
     logentrybadges = Badge.objects.filter(
         level='global', 
         achievement_method='threshold',
@@ -92,13 +96,15 @@ def assign_badges():
                             tripper.save()
                             BadgeAssignment.objects.create(tripper=tripper, badge=badge)
                             logs.append(f"Badge '{badge.name}' assigned to Tripper {tripper.name} due to writing {logentry_count} log entries.")
+                    else:
+                        logs.append(f"Not enough logs yet")
     else:
         logs.append(f"No Badges for logentries")
 
     # Assign badges for having an API key 
     # to be replaced by for having locations or photos
     logs.append(f"\n")
-    logs.append(f"Assign Badges for Trippers with API key")
+    logs.append(f"Check assign Badges for Trippers with API key")
     api_key_badges = Badge.objects.filter(
         level='global', 
         achievement_method='threshold',
@@ -117,11 +123,13 @@ def assign_badges():
                             tripper.save()
                             BadgeAssignment.objects.create(tripper=tripper, badge=api_key_badge)
                             logs.append(f"Badge '{api_key_badge.name}' assigned to Tripper {tripper.name} for having an API key.")
+                    else:
+                        logs.append(f"None found, no badge")
     else:
         logs.append(f"No badges for trippers with api keys")
 
     # Assign badges for being in multiple trips
-    logs.append("\nAssign Badges for Trippers that went on multiple trips")
+    logs.append("\nCheck assign Badges for Trippers that went on multiple trips")
 
     multiple_trips_badges = Badge.objects.filter(
         level="global",
@@ -264,6 +272,7 @@ def fetch_and_store_immich_photos():
        logs.append(f"No active trips")
 
     for trip in active_trips:
+        logs.append(f"Trip:{trip.name}")
         for tripper in trip.trippers.all():
             last_photolocation = ImmichPhotos.objects.filter(tripper=tripper).order_by('-timestamp').first()
             start_date = last_photolocation.timestamp if last_photolocation else timezone.make_aware(datetime.combine(today, datetime.min.time()))
@@ -383,7 +392,7 @@ WEATHER_CODE_TO_EMOJI = {
 
 def fetch_and_store_yesterdays_weather():
     logs = []
-    yesterday = datetime.today() - timedelta(days=1)
+    yesterday = (datetime.today() - timedelta(days=1)).date()
     dayprograms = DayProgram.objects.filter(tripdate=yesterday)
 
     for dp in dayprograms:
@@ -401,23 +410,34 @@ def fetch_and_store_yesterdays_weather():
         url = (
             f"https://api.open-meteo.com/v1/forecast?"
             f"latitude={avg_lat}&longitude={avg_lon}"
-            f"&daily=weather_code,precipitation_sum,temperature_2m_max,temperature_2m_min,sunrise,sunset"
+            f"&daily=precipitation_sum,temperature_2m_max,temperature_2m_min,sunrise,sunset"
+            f"&hourly=weather_code"
             f"{temp_param}"
             f"&timezone=Europe%2FBerlin"
             f"&start_date={yesterday}&end_date={yesterday}"
         )
 
         try:
-            response = requests.get(url)
+            response = requests.get(url, timeout=10)
             data = response.json()
+
             daily = data.get("daily", {})
-            if not daily:
+            hourly = data.get("hourly", {})
+
+            if not daily or "weather_code" not in hourly:
                 continue
 
-            dp.recorded_weather = daily
+            weather_codes = hourly["weather_code"]
+            if not weather_codes:
+                continue
 
-            code = daily["weather_code"][0]
-            emoji = WEATHER_CODE_TO_EMOJI.get(code, "🌈")
+            avg_code = round(mean(weather_codes))
+            max_code = max(weather_codes)
+            mode_code = Counter(weather_codes).most_common(1)[0][0]
+
+            emoji_avg = WEATHER_CODE_TO_EMOJI.get(avg_code, "🌈")
+            emoji_mode = WEATHER_CODE_TO_EMOJI.get(mode_code, "🌈")
+
             t_max = daily["temperature_2m_max"][0]
             t_min = daily["temperature_2m_min"][0]
             rain = daily["precipitation_sum"][0]
@@ -425,17 +445,20 @@ def fetch_and_store_yesterdays_weather():
             sunset = daily["sunset"][0][-5:]
 
             description = (
-                f"{emoji} On {yesterday.strftime('%-d %B')} we had this weather:\n"
+                f"On {yesterday.strftime('%-d %B')} we had this weather:{emoji_avg}{emoji_mode} \n"
                 f"🌡️ Max: {t_max}{temp_symbol}, Min: {t_min}{temp_symbol}\n"
                 f"💧 {rain} mm\n"
                 f"🌅 Sunrise: {sunrise} – 🌇 Sunset: {sunset}"
             )
 
+            dp.recorded_weather = data  
             dp.recorded_weather_text = description
             dp.save()
             logs.append(f"Weather recorded for {dp.tripdate}")
         except Exception as e:
             logs.append(f"Error retrieving weather for {dp.tripdate}: {e}")
+
+    return logs
 
 
 if not Schedule.objects.filter(func='tripapp.tasks.fetch_and_store_yesterdays_weather').exists():
