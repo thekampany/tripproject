@@ -1,12 +1,20 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 from django.contrib.auth.views import LoginView,LogoutView
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
+from rest_framework.routers import DefaultRouter
 
 app_name = 'tripapp'
 
+router = DefaultRouter()
+router.register(r'trips', views.TripViewSet)
+
+
 urlpatterns = [
+    path('api/', include(router.urls)),
+    path('api/tribes/<uuid:tribe_id>/trips/', views.TripsByTribeView.as_view(), name='trips-by-tribe'),
+    path('api/trippers/<int:tripper_id>/trips/', views.TripsByTripperView.as_view(), name='trips-by-tripper'),
     path('index', views.index, name='index'),
     path('', views.index, name='index'),
     path('home', views.trip_list, name='trip_list'),

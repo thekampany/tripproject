@@ -8,7 +8,7 @@
 
   /*--btn-background: #f88c34; */
   /*--btn-background: #ef98aa; */
-  --btn-background: gray;
+  --btn-background: lightgray;
   --dayprogram-background: rgba(255,255,255,0.8);
   --bs-dropdown-bg-overr: rgba(255, 255, 255, 0.700);
 }
@@ -314,12 +314,13 @@ a.btn-more-padding:hover {background: var(--color-background);}
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    width: 300px;
-    margin: 20px;
+    width: 240px;
+    margin: 0px;
 }
 
 .bingocard-content {
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
     align-items: center;
     padding: 5px;

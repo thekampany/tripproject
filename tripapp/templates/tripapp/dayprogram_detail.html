@@ -124,9 +124,9 @@
                 {% if user.username in trippers_names %}
                     <li><a class="dropdown-item" href="{% url 'tripapp:add_image' dayprogram.id %}">...Image</a></li>
                     <li><a class="dropdown-item" href="{% url 'tripapp:add_logentry' dayprogram.id %}">...Log</a></li>
-                {% endif %}
-                {% if dayprogram.trip.use_expenses %}
+                    {% if dayprogram.trip.use_expenses %}
                     <li><a class="dropdown-item" href="{% url 'tripapp:add_expense' dayprogram.trip.id logged_on_tripper.id %}?next=dayprogram_detail&dayprogram_id={{ dayprogram.id }}">...Expense</a></li>
+                    {% endif %}
                 {% endif %}
                 <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#suggestionModal">...Suggestion</a></li>
                 {% if user.username in trippers_names %}

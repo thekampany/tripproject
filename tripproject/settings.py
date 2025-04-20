@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap4',
     'bootstrap4',
     'channels',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [

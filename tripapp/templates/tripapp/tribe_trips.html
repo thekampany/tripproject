@@ -75,7 +75,7 @@
             flex-wrap: wrap;
             gap: 5px;
             padding: 10px;
-            background: gray;
+            background: lightgray;
         }
 
         .trip-icons img {
@@ -228,13 +228,14 @@
     {% if tribes %}<a href="{% url 'tripapp:invite_to_tribe' %}" class="btn-fixed-width">Invite People to the Tribe</a>{% endif %}
     <br /><br />
     {% for tribe in tribes %}
-        <h3>You are in Tribe: {{ tribe.name }}</h3>
+        <span style="color:gray;">Trips in Tribe: {{ tribe.name }}</span>
         <div class="trip-container">
           <a href="{% url 'tripapp:create_trip' tribe.id %}" class="new-trip-card">
             <span style="text-decoration: none;">+</span>
         </a>
         {% for trip in trips %}
                 <div class="trip-card">
+                    <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" style="text-decoration:none;">
                     <div class="trip-name" style="
                     background-image: 
                         {% if trip.image %}
@@ -248,7 +249,7 @@
                         {% endif %}">
                         <span>{{ trip.name }}</span>
                     </div>
-    
+                    </a>
 
                     <div class="trip-icons">
                         {% if trip in admin_trips %}
@@ -265,6 +266,7 @@
                                 <img src="{% static 'icons/maps-iconreverse.png' %}" alt="Planner Map">
                             </a>
                         {% endif %}
+                        {% if tripper %}
                         <a href="{% url 'tripapp:trip_dayprograms' trip.id %}">
                             <img src="{% static 'icons/iconeditdayprogram.png' %}" alt="Edit Day Programs">
                         </a>
@@ -274,6 +276,7 @@
                         <a href="{% url 'tripapp:tripadmin_bingocards' trip.id %}">
                             <img src="{% static 'icons/iconeditbingo.png' %}" alt="Edit Bingo">
                         </a>
+                        {% endif %}
                     </div>
                 </div>
             {% endfor %}

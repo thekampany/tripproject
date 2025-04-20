@@ -31,7 +31,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 20px;
-    padding: 20px;
+    padding: 0px;
 }
 
 .trip-card {
@@ -84,6 +84,48 @@
     font-size: 0.9em;
 }
 
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+  top: 0; left: 0; right: 0; bottom: 0;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #4CAF50;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
 /* Dark Mode */
 @media (prefers-color-scheme: dark) {
     body {
@@ -111,8 +153,14 @@
     <div class="container">
     <div class="topcontainer">
         <div class="titlecontainer">
-            <h1>My Trips</h1>
+            {% if only_mine %}
+               <h1>My Trips</h1>
+            {% else %}
+               <h1>Trips</h1>
+            {% endif %}
         </div>
+
+
         <div class="menucontainer">
             <div class="dropdown">
                 <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -133,38 +181,41 @@
             </div>
         </div>
     </div>
+
     <p>&nbsp;</p>
     {% if tribes %}
         {% for tribe in tribes %}
 
             <div class="trip-list">
                 {% for trip in trips %}
-                <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" class="trip-card">
-                    <div class="trip-image" style="
-                    background-image: 
-                        {% if trip.image %}
-                            url('{{ trip.image.url }}'); 
-                        {% elif trip.country_codes_list %}
-                            url('https://flagcdn.com/w320/{{ trip.country_codes_list|first|lower }}.png'); 
-                            filter: grayscale(5%); 
-                            opacity: 0.9; 
-                        {% else %}
-                            url('{% static "default-trip.png" %}'); 
-                        {% endif %}">
-                    </div>
-                    <div class="trip-info">
-                        <div class="trip-flags">
-                            {% for country in trip.country_codes_list %}
-                                <img src="https://flagcdn.com/16x12/{{ country|lower }}.png" width="16" height="12" alt="{{ country }} flag" />
-                            {% endfor %}
-                        </div>
-                        <h3 class="trip-title">{{ trip.name }}</h3>
-                        <p class="trip-dates">
-                            <span>{{ trip.date_from|date:"d-M-Y" }}</span> - 
-                            <span>{{ trip.date_to|date:"d-M-Y" }}</span>
-                        </p>
-                    </div>
-                </a>
+                    {% if not only_mine or trip.is_tripper %}
+                        <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" class="trip-card">
+                            <div class="trip-image" style="
+                            background-image: 
+                                {% if trip.image %}
+                                    url('{{ trip.image.url }}'); 
+                                {% elif trip.country_codes_list %}
+                                    url('https://flagcdn.com/w320/{{ trip.country_codes_list|first|lower }}.png'); 
+                                    filter: grayscale(5%); 
+                                    opacity: 0.9; 
+                                {% else %}
+                                    url('{% static "default-trip.png" %}'); 
+                                {% endif %}">
+                            </div>
+                            <div class="trip-info">
+                                <div class="trip-flags">
+                                    {% for country in trip.country_codes_list %}
+                                        <img src="https://flagcdn.com/16x12/{{ country|lower }}.png" width="16" height="12" alt="{{ country }} flag" />
+                                    {% endfor %}
+                                </div>
+                                <h3 class="trip-title">{{ trip.name }}</h3>
+                                <p class="trip-dates">
+                                    <span>{{ trip.date_from|date:"d-M-Y" }}</span> - 
+                                    <span>{{ trip.date_to|date:"d-M-Y" }}</span>
+                                </p>
+                            </div>
+                        </a>
+                    {% endif %}
                 {% endfor %}
             </div> 
 
@@ -175,15 +226,36 @@
             <div class="trip-image" style="background-image: url('{% static "default-trip.png" %}'); ">
             </div>
             <div class="trip-info">
-                <h3 class="trip-title"><span style="text-decoration: none;">+</span></h3>
+                <h3 class="trip-title"><span style="text-decoration: none;">Create Trip</span></h3>
             </div>
         </a>
 
     {% endif %}
     <br /><br /><br />
+
+    <label class="switch">
+        <input type="checkbox" id="toggle-mine" {% if only_mine %}checked{% endif %}>
+        <span class="slider round"></span>
+    </label>
+    <span style="color: #888; font-size: 14px; margin-left: 8px;">Show only trips on which I am a tripper</span>
+    <br /><br />
+    <script>
+    document.getElementById('toggle-mine').addEventListener('change', function () {
+        const url = new URL(window.location.href);
+        if (this.checked) {
+        url.searchParams.set('only_mine', 'true');
+        } else {
+        url.searchParams.delete('only_mine');
+        }
+        window.location.href = url.toString();
+    });
+    </script>
+
+
     </div>
     </div>
  
-    
+
+
 </body>
 </html>

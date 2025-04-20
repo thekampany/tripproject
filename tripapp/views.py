@@ -54,6 +54,10 @@ from PIL import Image
 from collections import Counter
 from statistics import mean
 
+from rest_framework import viewsets
+from .serializers import TripSerializer
+
+
 
 def index(request):
     category = "roadtrip"
@@ -126,12 +130,22 @@ def trip_list(request):
     trips = Trip.objects.filter(tribe__in=tribes).order_by('-date_from', '-id')
     category = "roadtrip"
     background_image_url = get_random_unsplash_image(category)
+    only_mine = request.GET.get("only_mine") == "true"
+
     tripper = None
     if request.user.is_authenticated:
         tripper = Tripper.objects.filter(user=request.user).first()
+        for trip in trips:
+            trip.is_tripper = tripper in trip.trippers.all()
+    else:
+        for trip in trips:
+            trip.is_tripper = False
+    
+
     for trip in trips:
         trip.country_codes_list = trip.country_codes.split(',') if trip.country_codes else []
-    return render(request, 'tripapp/trip_list.html', {'tribes': tribes, 'trips': trips, 'background_image_url': background_image_url, 'tripper':tripper})
+
+    return render(request, 'tripapp/trip_list.html', {'tribes': tribes, 'trips': trips, 'background_image_url': background_image_url, 'tripper':tripper,"only_mine": only_mine})
 
 @login_required
 def trip_detail(request, slug):
@@ -610,7 +624,7 @@ def trip_tripper_bingocard(request, trip_id):
         'trippers_on_this_trip': trippers_on_this_trip,  
          })
 
-@tripper_required
+@login_required
 def trip_bingocards(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     bingocards = trip.bingocards.all()
@@ -1644,3 +1658,24 @@ def create_zip_with_html(request, trip_id):
         zip_file.writestr(html_filename, html_content)
     
     return FileResponse(open(zip_path, "rb"), as_attachment=True, filename=zip_filename)
+
+from rest_framework import generics
+
+class TripViewSet(viewsets.ModelViewSet):
+    queryset = Trip.objects.all()
+    serializer_class = TripSerializer
+
+
+class TripsByTribeView(generics.ListAPIView):
+    serializer_class = TripSerializer
+
+    def get_queryset(self):
+        tribe_id = self.kwargs['tribe_id']
+        return Trip.objects.filter(tribe__id=tribe_id)
+
+class TripsByTripperView(generics.ListAPIView):
+    serializer_class = TripSerializer
+
+    def get_queryset(self):
+        tripper_id = self.kwargs['tripper_id']
+        return Trip.objects.filter(trippers__id=tripper_id)
