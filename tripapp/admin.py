@@ -4,6 +4,8 @@ from django_q.tasks import async_task
 from .models import Tribe, UserProfile, TripExpense, Location, ImmichPhotos, ScheduledItem
 from django.core.management import call_command
 from django_q.models import Schedule 
+from rest_framework_api_key.models import APIKey
+from rest_framework_api_key.admin import APIKeyModelAdmin
 
 class PointAdmin(admin.ModelAdmin):
     list_display = ('name', 'trip')
@@ -70,3 +72,8 @@ admin.site.register(TripExpense)
 admin.site.register(Location)
 admin.site.register(ImmichPhotos,ImmichAdmin)
 admin.site.register(ScheduledItem)
+
+try:
+    admin.site.register(APIKey, APIKeyModelAdmin)
+except admin.sites.AlreadyRegistered:
+    pass

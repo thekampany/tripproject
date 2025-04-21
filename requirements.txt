@@ -16,3 +16,4 @@ rdp
 numpy
 gpxpy
 djangorestframework
+djangorestframework-api-key==3.*

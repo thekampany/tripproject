@@ -1660,22 +1660,26 @@ def create_zip_with_html(request, trip_id):
     return FileResponse(open(zip_path, "rb"), as_attachment=True, filename=zip_filename)
 
 from rest_framework import generics
+from rest_framework_api_key.permissions import HasAPIKey
 
 class TripViewSet(viewsets.ModelViewSet):
-    queryset = Trip.objects.all()
+    permission_classes = [HasAPIKey]
+    queryset = Trip.objects.all().order_by('date_from')
     serializer_class = TripSerializer
 
 
 class TripsByTribeView(generics.ListAPIView):
+    permission_classes = [HasAPIKey]
     serializer_class = TripSerializer
 
     def get_queryset(self):
         tribe_id = self.kwargs['tribe_id']
-        return Trip.objects.filter(tribe__id=tribe_id)
+        return Trip.objects.filter(tribe__id=tribe_id).order_by('date_from')
 
 class TripsByTripperView(generics.ListAPIView):
+    permission_classes = [HasAPIKey]
     serializer_class = TripSerializer
 
     def get_queryset(self):
         tripper_id = self.kwargs['tripper_id']
-        return Trip.objects.filter(trippers__id=tripper_id)
+        return Trip.objects.filter(trippers__id=tripper_id).order_by('date_from')
