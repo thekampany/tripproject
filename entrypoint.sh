@@ -31,6 +31,7 @@ EOF
 
 
 python manage.py shell << 'EOF'
+from django_q.models import Schedule
 tasks = [
     ('tripapp.tasks.fetch_locations_for_tripper', "fetch_locations"),
     ('tripapp.tasks.assign_badges', "assign_badges"),

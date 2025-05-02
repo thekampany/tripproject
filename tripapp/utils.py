@@ -47,7 +47,7 @@ def generate_static_map(dayprogram):
         return  
     
     markers = []
-    polylines = []
+    polyline_params = []
 
     if dayprogram.points.exists():
         logger.info(f"Points")
@@ -69,7 +69,9 @@ def generate_static_map(dayprogram):
         else:
             simplified = coords
         
-        polylines.extend(simplified) 
+        polyline_str = "|".join([f"{lat},{lon}" for lat, lon in simplified])
+        polyline_params.append(f"polyline=weight:4|color:0000FF|{polyline_str}") 
+
 
     routes = dayprogram.routes.all()
     for route in dayprogram.routes.all():
@@ -89,23 +91,23 @@ def generate_static_map(dayprogram):
                         simplified = rdp(coords, epsilon=0.0005)
                     else:
                         simplified = coords
-                    polylines.extend(simplified)
-                    
+                    polyline_str = "|".join([f"{lat},{lon}" for lat, lon in simplified])
+                    polyline_params.append(f"polyline=weight:4|color:FF0000|{polyline_str}")  
 
     params = {
         "width": 800,
         "height": 600,
         "format": "png",
     }
-
+    marker_param = None
     if markers:
-        params["markers"] = f"markers=width:20|height:20|{'|'.join(markers)}"
+        marker_param = f"markers=width:20|height:20|{'|'.join(markers)}"
 
-    if polylines:
-        polyline_str = "|".join([f"{lat},{lon}" for lat, lon in polylines])
-        params["polyline"] = f"polyline=weight:6|color:0000FF|{polyline_str}"
+    query_parts = polyline_params
+    if marker_param:
+        query_parts.append(marker_param)
 
-    base_url = f"{staticmaps_url}?{'&'.join(params.get('polyline', []) + [params['markers']] if markers else [])}"
+    base_url = f"{staticmaps_url}?{'&'.join(query_parts)}"
 
     if staticmaps_api_key:
         request_url = f"{base_url}&api_key={staticmaps_api_key}"

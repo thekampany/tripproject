@@ -1664,7 +1664,7 @@ from rest_framework_api_key.permissions import HasAPIKey
 
 class TripViewSet(viewsets.ModelViewSet):
     permission_classes = [HasAPIKey]
-    queryset = Trip.objects.all().order_by('date_from')
+    queryset = Trip.objects.all().order_by('-date_from')
     serializer_class = TripSerializer
 
 
@@ -1674,7 +1674,7 @@ class TripsByTribeView(generics.ListAPIView):
 
     def get_queryset(self):
         tribe_id = self.kwargs['tribe_id']
-        return Trip.objects.filter(tribe__id=tribe_id).order_by('date_from')
+        return Trip.objects.filter(tribe__id=tribe_id).order_by('-date_from')
 
 class TripsByTripperView(generics.ListAPIView):
     permission_classes = [HasAPIKey]
@@ -1682,4 +1682,4 @@ class TripsByTripperView(generics.ListAPIView):
 
     def get_queryset(self):
         tripper_id = self.kwargs['tripper_id']
-        return Trip.objects.filter(trippers__id=tripper_id).order_by('date_from')
+        return Trip.objects.filter(trippers__id=tripper_id).order_by('-date_from')

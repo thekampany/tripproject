@@ -1,6 +1,9 @@
 services:
   web:
     image: thekampany/trippanion_web:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     volumes:
       - static_volume:/usr/src/app/staticfiles
       - media_volume:/usr/src/app/media
@@ -14,6 +17,9 @@ services:
 
   nginx:
     image: thekampany/trippanion_nginx:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
     container_name: trippanion_nginx
     ports:
       - "8043:8043"

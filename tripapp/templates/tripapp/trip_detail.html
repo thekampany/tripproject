@@ -96,7 +96,7 @@
                     <li><a class="dropdown-item" href="{% url 'tripapp:trip_documents' trip.id %}">Documents</a></li>
                 {% endif %}
                 <li><a class="dropdown-item" href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id  %}">Trip Settings</a></li>
-                <li><a class="dropdown-item" href="{% url 'tripapp:export_trip_html_zip' trip.id %}">Export to zip</a></li>
+                <li><a class="dropdown-item" href="{% url 'tripapp:export_trip_html_zip' trip.id %}">Export Trip</a></li>
             </ul>
         </div>
         </div>

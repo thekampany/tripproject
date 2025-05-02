@@ -1,7 +1,8 @@
 # Trippanion
 The Selfhosted Trip-Planning-Companion application.   
+
 You and your family / friends go on a trip. 
-While planning the trip you have a central place to store all the booking mails rather than having some of them in your own mailbox, and others in the mailbox of your spouse / co planner(s).
+While planning the trip you have a central place to store all information coming out of the booking mails rather than having some of them in your own mailbox, and others in the mailbox of your spouse / co planner(s).  
 During the trip, this app allows you to share all the details of the trip with the people going on the trip with you and that just were not that involved in the planning. It is the app in which you answer questions like: what time do we have to be at the airport, should I dress up for dinner or do we go to the beach and eat something there afterwards. 
 
 _The application also has the following features:_  
@@ -21,6 +22,9 @@ Your (trip)data is on your server and you decide who can view your tripdata.
 The application provides the option to export the details of trip to a zipped html file. So you can keep a memory of the trip also when you shutdown your instance.
 
 # Installation
+
+## By cloning the repository
+
 `git clone https://github.com/thekampany/tripproject.git`  
 
 Edit  docker-compose.yml for portnumbers and dbuser and password  
@@ -42,7 +46,55 @@ After setting up the .env file, do:
 Go to your browser using the app_url as in your .env and start with register or use the superuser from your .env file to log in.
 
 
-# Getting Started
+## Docker Compose
+
+Setup the .env file
+
+```
+services:
+  web:
+    image: thekampany/trippanion_web:latest
+    volumes:
+      - static_volume:/usr/src/app/staticfiles
+      - media_volume:/usr/src/app/media
+    expose:
+      - 8000
+    env_file:
+      - .env
+    depends_on:
+      - db
+    container_name: trippanion_web
+
+  nginx:
+    image: thekampany/trippanion_nginx:latest
+    container_name: trippanion_nginx
+    ports:
+      - "8043:8043"
+    volumes:
+      - static_volume:/usr/src/app/staticfiles
+      - media_volume:/usr/src/app/media
+    depends_on:
+      - web
+
+  db:
+    image: postgres:13
+    container_name: trippanion_db
+    volumes:
+      - tripapp_postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: tripappdb
+      POSTGRES_USER: tripappuser
+      POSTGRES_PASSWORD: tripapppassword
+
+volumes:
+  static_volume:
+  media_volume:
+  tripapp_postgres_data:
+
+```
+
+
+# Getting Started & Using the application
 
 1. Create a Tribe by entering a name. A Tribe is you, the people on your trip and the people that you allow to see the tripdetails.
 2. Invite the people to the tribe you just created.
