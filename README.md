@@ -54,12 +54,12 @@ Create  .env file.
 APP_NAME = 'Trippanion' #shows only on welcome page  
 APP_URL = 'http://mytrippanion.mydomain.com' #include port when needed  
 DEBUG = False  
-DJANGO_KEY = 'xxxxx'   
+DJANGO_KEY = 'xxxxx'  # enter a long string 
 APP_CURRENCY = 'EUR'  # when enabling expenses in what currency do you want to see them?  
 TEMPERATURE_UNIT = 'C' # C or F for showing temperature in weather forecast  
 TIME_ZONE = 'Europe/Amsterdam'  
 DATABASE_URL = postgres://tripappuser:tripapppassword@db:5432/tripappdb  
-CSRF_TRUSTED_ORIGINS = http://localhost:8080,http://example.com  
+CSRF_TRUSTED_ORIGINS = http://localhost:8043,http://example.com  
 DEFAULT_FROM_EMAIL = 'holidaytrips@example.com' # emailsettings in order to invite others and do password resets  
 EMAIL_HOST = 'smtp.server.tld'  
 EMAIL_PORT = 587  
