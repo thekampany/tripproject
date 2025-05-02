@@ -48,7 +48,35 @@ Go to your browser using the app_url as in your .env and start with register or 
 
 ## Docker Compose
 
-Setup the .env file
+Create  .env file.  
+
+```
+APP_NAME = 'Trippanion' #shows only on welcome page  
+APP_URL = 'http://mytrippanion.mydomain.com' #include port when needed  
+DEBUG = False  
+DJANGO_KEY = 'xxxxx'   
+APP_CURRENCY = 'EUR'  # when enabling expenses in what currency do you want to see them?  
+TEMPERATURE_UNIT = 'C' # C or F for showing temperature in weather forecast  
+TIME_ZONE = 'Europe/Amsterdam'  
+DATABASE_URL = postgres://tripappuser:tripapppassword@db:5432/tripappdb  
+CSRF_TRUSTED_ORIGINS = http://localhost:8080,http://example.com  
+DEFAULT_FROM_EMAIL = 'holidaytrips@example.com' # emailsettings in order to invite others and do password resets  
+EMAIL_HOST = 'smtp.server.tld'  
+EMAIL_PORT = 587  
+EMAIL_USE_TLS = True  
+EMAIL_HOST_USER = 'username'   
+EMAIL_HOST_PASSWORD = 'password'  
+SUPERUSER_NAME=admin #needed if you want to use Django admin, for convenience keep it same as the user you are registering for yourself  
+SUPERUSER_EMAIL=admin@example.com  
+SUPERUSER_PASSWORD=adminpassword  
+UNSPLASH_ACCESS_KEY = 'xxxxx' #optional - for showing background images on trip overview page  
+EXCHANGERATE_API_KEY = 'xxxxxxxxx' #optional - for calculating tripexpenses to the app_currency: exchangerate-api.com  
+STATICMAPS_URL = 'http://mystaticmaps.mydomain.com/api/staticmaps' #optional - for being able to generate offline maps using https://github.com/dietrichmax/docker-staticmaps  
+STATICMAPS_API_KEY = 'xxxxxxxx' # use when your staticmaps server has allow_api_keyless_access set to false  
+```
+
+
+In the same folder as env file save docker-compose.yml file with below content:   
 
 ```
 services:
