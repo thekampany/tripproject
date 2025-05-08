@@ -93,7 +93,7 @@
                     "coords": [{{ location.latitude }}, {{ location.longitude }}],
                     "timestamp": "{{ location.timestamp }}"
                 },  
-            {% endfor %}
+           {% endfor %}
         ];
         var photolocations = [
             {% for photolocation in photolocations %}
@@ -108,6 +108,7 @@
                 {% endif %}  
             {% endfor %}
         ];
+
 
         // Create a feature group to store all the markers
         var markers = L.featureGroup();
@@ -405,7 +406,6 @@
   {% else %}
     <p>No points defined for this day / No registered tracked locations</p>
   {% endif %}
-
 </div>
 </div>
 </body>

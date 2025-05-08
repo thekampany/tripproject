@@ -46,6 +46,7 @@ urlpatterns = [
     path('trip/<int:trip_id>/balance/', views.trip_balance, name='trip_balance'),
     path('trip/<int:trip_id>/expenses/', views.trip_expenses_list, name='trip_expenses_list'),
     path('trip/<int:trip_id>/update/', views.trip_update, name='trip_update'),
+    path('trip/<int:trip_id>/reorder_dayprograms/', views.reorder_dayprograms, name='reorder_dayprograms'),
     path('trip/<slug:slug>/checklist/', views.trip_checklist, name='trip_checklist'),
     path("trips/<int:trip_id>/export/", views.export_trip_markdown_zip, name="export_trip_markdown_zip"),
     path("trips/<int:trip_id>/archive/", views.create_zip_with_html, name="export_trip_html_zip"),

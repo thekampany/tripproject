@@ -78,6 +78,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
 ]
 
 ROOT_URLCONF = 'tripproject.urls'
@@ -141,13 +142,27 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+SUPPORTED_LANGUAGES = ['en', 'nl']
+LANGUAGE_CODE = os.getenv('LANGUAGE_CODE', 'en')
+if LANGUAGE_CODE not in SUPPORTED_LANGUAGES:
+    LANGUAGE_CODE = 'en'
+
+LANGUAGES = [
+  ('en', 'English'),
+  ('nl', 'Nederlands')
+]
 
 TIME_ZONE = os.getenv('TIME_ZONE')
 
 USE_I18N = True
+USE_L10N = False
 
 USE_TZ = True
+
+
+LOCALE_PATHS = [
+    BASE_DIR / 'locale',  
+]
 
 
 # Static files (CSS, JavaScript, Images)
@@ -210,3 +225,4 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+CRISPY_ALLOWED_TEMPLATE_PACKS = ["bootstrap4"]

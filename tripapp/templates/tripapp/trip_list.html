@@ -1,4 +1,6 @@
 {% load static %}
+{% load i18n %}
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -170,10 +172,10 @@ input:checked + .slider:before {
                 </a>
                 <ul class="dropdown-menu custom-dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                 <li><a class="dropdown-item" href="{% url 'tripapp:update_profile' %}">Account</a></li>
-                {% if tripper %}<li><a class="dropdown-item" href="{% url 'tripapp:tripper_profile' tripper.id %}">Settings</a></li>{% endif %}
+                {% if tripper %}<li><a class="dropdown-item" href="{% url 'tripapp:tripper_profile' tripper.id %}">{% trans "Settings" %}</a></li>{% endif %}
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="{% url 'tripapp:trip_list' %}">My Trips</a></li>
-                <li><a class="dropdown-item" href="{% url 'tripapp:tribe_trips' %}">Organize</a></li>
+                <li><a class="dropdown-item" href="{% url 'tripapp:trip_list' %}">{% trans "My Trips" %}</a></li>
+                <li><a class="dropdown-item" href="{% url 'tripapp:tribe_trips' %}">{% trans "Organize" %}</a></li>
                 <li><hr class="dropdown-divider"></li>
                 {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>{% endif %}
                 {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'tripapp:task_manager' %}">Background Tasks</a></li>{% endif %}
@@ -227,7 +229,7 @@ input:checked + .slider:before {
             <div class="trip-image" style="background-image: url('{% static "default-trip.png" %}'); ">
             </div>
             <div class="trip-info">
-                <h3 class="trip-title"><span style="text-decoration: none;">Create Trip</span></h3>
+                <h3 class="trip-title"><span style="text-decoration: none;">{% trans "Create Trip" %}</span></h3>
             </div>
         </a>
 
@@ -238,7 +240,7 @@ input:checked + .slider:before {
         <input type="checkbox" id="toggle-mine" {% if only_mine %}checked{% endif %}>
         <span class="slider round"></span>
     </label>
-    <span style="color: #888; font-size: 14px; margin-left: 8px;">Show only trips on which I am a tripper</span>
+    <span style="color: #888; font-size: 14px; margin-left: 8px;">{% trans "Show only trips on which I am a tripper" %}</span>
     <br /><br />
     <script>
     document.getElementById('toggle-mine').addEventListener('change', function () {

@@ -76,7 +76,7 @@ STATICMAPS_API_KEY = 'xxxxxxxx' # use when your staticmaps server has allow_api_
 ```
 
 
-In the same folder as env file save docker-compose.yml file with below content:   
+In the same folder as .env file save docker-compose.yml file with below content:   
 
 ```
 services:
@@ -120,6 +120,9 @@ volumes:
   tripapp_postgres_data:
 
 ```
+After creating the .env and docker-compose.yml file do:  
+`docker compose up -d`  
+
 
 
 # Getting Started & Using the application

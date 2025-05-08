@@ -1,4 +1,5 @@
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -31,23 +32,26 @@
     <div class="card">
     <div class="container">
     <span style="color:gray;font-style:italic;">{{ APP_NAME }}&nbsp;{{ VERSION }}</span>
-    <h1>Welcome!</h1>
+    <h1>{% trans "Welcome" %}!</h1>
 
     <span style="color:gray;font-style:italic;">
     <table>
     <tr>
-    <td>New?</td><td>Already joined?</td>
+    <td>{% trans "New" %}?</td><td>{%trans "Already joined" %}?</td>
     </tr>
     <tr>
-    <td><a href="{% url 'tripapp:register' %}" class="btn-more-padding">Register</a></td>
-    <td><a href="{% url 'tripapp:trip_list' %}" class="btn-more-padding">My Trips</a></td>
+    <td><a href="{% url 'tripapp:register' %}" class="btn-more-padding">{% trans "Register" %}</a></td>
+    <td><a href="{% url 'tripapp:trip_list' %}" class="btn-more-padding">{% trans "My Trips" %}</a></td>
     </tr>
     </table>
-    <br />
+    <br />{% blocktrans %}
     You and your friends go on a trip. Here you can share all the details of the trip with the people going on the trip (the Trippers)
     and you can share it with family and friends elsewhere (the Tribe).
+    {% endblocktrans %}
     <br /><br />
+    {% blocktrans %}
     Click Register to join and click My Trips to start a Tribe, invite people and lay out the trip for the trippers.
+    {% endblocktrans %}
     </span>
     <br /><br />
     {% if user.is_authenticated %} {{ user.username }}{% else %}<a href="{% url 'tripapp:login' %}">Login</a>{% endif %}

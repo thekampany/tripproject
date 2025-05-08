@@ -1,4 +1,6 @@
 {% extends "base_generic.html" %}
+{% load i18n %}
+
 {% block content %}
     <h1>Day Programs for {{ trip.name }}</h1>
     <table class="table">
@@ -33,6 +35,7 @@
     {% endif %}
     <p>&nbsp;</p>
     <p>
-    <a href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id %}">Back to Organize Trip</a>
+    <a href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id %}">Back to Organize Trip</a>&nbsp;|&nbsp;
+    <a href="{% url 'tripapp:trip_detail' slug=trip.slug  %}">Go to Trip</a>
     </p>
 {% endblock %}

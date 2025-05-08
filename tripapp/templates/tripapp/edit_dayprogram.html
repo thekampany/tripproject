@@ -1,10 +1,10 @@
 {% extends "base_generic.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
-    <h1>Edit DayProgram for {{ dayprogram.trip.name }} on {{ dayprogram.tripdate }}</h1>
+    <h1>Edit DayProgram for {{ dayprogram.trip.name }} on {{ dayprogram.tripdate|date:'d-m' }}</h1>
     <form method="post">
         {% csrf_token %}
         {{ form|crispy }}
-        <button type="submit" class="btn">Save Changes</button>
+        <button type="submit" class="btn btn-primary">Submit</button>
     </form>
 {% endblock %}

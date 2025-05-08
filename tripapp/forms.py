@@ -21,11 +21,12 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit
-from django.forms import inlineformset_factory
+from crispy_forms.layout import Layout, Row, Column, Submit, HTML
+from django.forms.models import BaseInlineFormSet, inlineformset_factory
 from django.core.validators import MaxLengthValidator
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db import models
 
 class TripperForm(forms.ModelForm):
     class Meta:
@@ -126,7 +127,7 @@ class ChecklistItemForm(forms.ModelForm):
         fields = ['text', 'is_completed']
 
 class AnswerForm(forms.Form):
-    answer = forms.CharField(label='Your Answer', max_length=255)
+    answer = forms.CharField(max_length=255)
 
 class AnswerImageForm(forms.Form):
     answerimage = forms.ImageField()
@@ -180,6 +181,15 @@ class QuestionForm(forms.ModelForm):
         model = Question
         fields = ['question_text', 'correct_answer', 'badge']
 
+    def __init__(self, *args, **kwargs):
+        dayprogram = kwargs.pop('dayprogram', None)
+        super().__init__(*args, **kwargs)
+        if dayprogram:
+            tribe = dayprogram.trip.tribe
+            self.fields['badge'].queryset = Badge.objects.filter(
+                models.Q(level='global') |
+                models.Q(level='tribal', tribe=tribe)
+            )
 
 class PointForm(forms.ModelForm):
     MARKER_TYPE_CHOICES = [
@@ -202,17 +212,41 @@ class PointForm(forms.ModelForm):
         trip = kwargs.pop('trip', None)
         super(PointForm, self).__init__(*args, **kwargs)
         if trip:
-            self.fields['dayprograms'].queryset = DayProgram.objects.filter(trip=trip)
+            self.fields['dayprograms'].queryset = DayProgram.objects.filter(trip=trip).order_by('date')
 
 
 class BadgeAssignmentForm(forms.ModelForm):
     class Meta:
         model = BadgeAssignment
         fields = [ 'badge']
+    def __init__(self, *args, **kwargs):
+        trip = kwargs.pop('trip', None)
+        super().__init__(*args, **kwargs)
+        if trip:
+            tribe = trip.tribe
+            self.fields['badge'].queryset = Badge.objects.filter(
+                models.Q(level='global') |
+                models.Q(level='tribal', tribe=tribe)
+            )
 
+class BaseBadgeAssignmentFormSet(BaseInlineFormSet):
+    def __init__(self, *args, **kwargs):
+        self.trip = kwargs.pop('trip', None)
+        super().__init__(*args, **kwargs)
+
+    def _construct_form(self, i, **kwargs):
+        kwargs['trip'] = self.trip
+        return super()._construct_form(i, **kwargs)
+    
 BadgeAssignmentFormSet = inlineformset_factory(
-    Tripper, BadgeAssignment, form=BadgeAssignmentForm, extra=1, can_delete=True
+    Tripper,
+    BadgeAssignment,
+    form=BadgeAssignmentForm,
+    formset=BaseBadgeAssignmentFormSet,
+    extra=1,
+    can_delete=True
 )
+
 
 
 class LogEntryForm(forms.ModelForm):

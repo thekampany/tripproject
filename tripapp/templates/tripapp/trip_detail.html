@@ -1,5 +1,6 @@
                                              
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -20,6 +21,16 @@
     <script src="{% static 'js/set_timezone.js' %}"></script>
 
     <style>
+        :root {
+        --border-color: #d3d3d3;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --border-color: #404040;
+            }
+        }
+
+
         body {
             {% if trip.image %}
              background: url('{{ trip.image.url }}') no-repeat center center fixed; 
@@ -36,7 +47,54 @@
         .gray {
         color: gray;
         }
-    </style>
+
+
+        .dayprogram-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .dayprogram-item {
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            display:flex;
+            transition: background-color 0.2s;
+
+        }
+
+        .dayprogram-item.today {
+            border: 2px solid #C70039;
+        }
+
+        .dayprogram-item.gray {
+            color: #777;
+            cursor: default;
+        }
+
+        .dayprogram-item.dragging {
+            opacity: 0.5;
+            background-color: #cfe2ff;
+        }
+        .drag-handle {
+            cursor: grab;
+            font-size: 1.5rem;
+            color: #888;
+            user-select: none;
+            margin-left:auto;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+        .dayprogram-item.gray .drag-handle {
+            cursor: not-allowed;
+            opacity: 0.5; 
+            pointer-events: none; 
+        }
+</style>
 </head>
 <body>
     <div class="tripappcard">
@@ -54,10 +112,10 @@
                     </a>
                     <ul class="dropdown-menu custom-dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                     <li><a class="dropdown-item" href="{% url 'tripapp:update_profile' %}">Account</a></li>
-                    {% if tripper %}<li><a class="dropdown-item" href="{% url 'tripapp:tripper_profile' tripper.id %}">Settings</a></li>{% endif %}
+                    {% if tripper %}<li><a class="dropdown-item" href="{% url 'tripapp:tripper_profile' tripper.id %}">{% trans "Settings" %}</a></li>{% endif %}
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="{% url 'tripapp:trip_list' %}">My Trips</a></li>
-                    <li><a class="dropdown-item" href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id  %}">Organize</a></li>
+                    <li><a class="dropdown-item" href="{% url 'tripapp:trip_list' %}">{% trans "My Trips" %}</a></li>
+                    <li><a class="dropdown-item" href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id  %}">{% trans "Organize" %}</a></li>
                     <li><hr class="dropdown-divider"></li>
                     {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>{% endif %}
                     {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'tripapp:task_manager' %}">Background Tasks</a></li>{% endif %}
@@ -85,48 +143,177 @@
         <div class="tripmenuitem">
         <div class="dropdown">
             <a class="btn nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            <span class="ms-2">More..</span>
+            <span class="ms-2">{% trans "More" %}..</span>
             </a>
             <ul class="dropdown-menu custom-dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                 <li><a class="dropdown-item" href="{% url 'tripapp:trip_checklist' trip.slug  %}">CheckPackList</a></li>
                 {% if tripper %}
                     {% if trip.use_expenses %}
-                    <li><a class="dropdown-item" href="{% url 'tripapp:trip_expenses_list' trip.id %}">Expenses</a></li>
+                    <li><a class="dropdown-item" href="{% url 'tripapp:trip_expenses_list' trip.id %}">{% trans "Expenses" %}</a></li>
                     {% endif %}
-                    <li><a class="dropdown-item" href="{% url 'tripapp:trip_documents' trip.id %}">Documents</a></li>
+                    <li><a class="dropdown-item" href="{% url 'tripapp:trip_documents' trip.id %}">{% trans "Documents" %}</a></li>
                 {% endif %}
                 <li><a class="dropdown-item" href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id  %}">Trip Settings</a></li>
-                <li><a class="dropdown-item" href="{% url 'tripapp:export_trip_html_zip' trip.id %}">Export Trip</a></li>
+                <li><a class="dropdown-item" href="{% url 'tripapp:export_trip_html_zip' trip.id %}">{% trans "Export Trip" %}</a></li>
             </ul>
         </div>
         </div>
     </div>
 
     <br />
-    <h2>Programme</h2>
-        {% for day_program in dayprograms %}
-            {% if day_program.tripdate|date:"Y-m-d" == today|date:"Y-m-d" %}
-              <p class="today">
+    <h2>{% trans "Programme" %}</h2>
+
+        <ul id="dayprogram-list" class="dayprogram-list">
+            {% for day_program in dayprograms %}
+                <li class="dayprogram-item 
+                           {% if day_program.tripdate|date:'Y-m-d' == today|date:'Y-m-d' %}today{% endif %}
+                           {% if day_program.tripdate|date:'Y-m-d' < today|date:'Y-m-d' %}gray{% endif %}" 
+                    data-id="{{ day_program.id }}">
+                    <a href="{% url 'tripapp:dayprogram_detail' day_program.id %}" class="tripdetail">
+                        {{ day_program.dayprogramnumber }}&nbsp;
+                        ({{ day_program.tripdate|date:'d M' }})&nbsp;
+                        <i>{{ day_program.description }}</i>
+                    </a>
+                    {% if tripper.is_trip_admin %}
+                        {% if day_program.tripdate|date:'Y-m-d' > today|date:'Y-m-d' %}
+                            <div class="drag-handle" title="Drag for reorder">&#9783;</div>
+                        {% endif %}
+                    {%endif %}
+                </li>
+            {% endfor %}
+        </ul>
+        
+        {% if tripper.is_trip_admin %}
+            {% if trip.date_to|date:'Y-m-d' > today|date:'Y-m-d'  %}
+            <div align="right"><span style="color:gray"><button id="save-order-btn">{% trans "Save Reordering" %}</button></span></div>
             {% endif %}
-            {% if day_program.tripdate|date:"Y-m-d" < today|date:"Y-m-d" %}
-              <p class="gray">
-            {% endif %}
-            {% if day_program.tripdate|date:"Y-m-d" > today|date:"Y-m-d" %}
-              <p>
-            {% endif %}
-                <a href="{% url 'tripapp:dayprogram_detail' day_program.id %}" class="tripdetail">
-                {{ day_program.dayprogramnumber }}&nbsp;
-                ({{ day_program.tripdate|date:'d M' }})&nbsp;
-                <i>{{ day_program.description }}</i>
-                </a>
-            </p>
-        {% endfor %}
+        {% endif %}
+        
+
+        
     <br />
     </div>
     </div>
 
     
 </body>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+    const list = document.getElementById('dayprogram-list');
+    let draggingEl = null;
+
+    if (!list) return;
+
+    function handleDragStart(e) {
+
+ 
+        draggingEl = e.target;
+        e.target.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        const dragging = document.querySelector('.dragging');
+        const afterElement = getDragAfterElement(list, e.clientY);
+        if (afterElement == null) {
+            list.appendChild(dragging);
+        } else {
+            list.insertBefore(dragging, afterElement);
+        }
+    }
+
+    function handleDragEnd(e) {
+        e.target.classList.remove('dragging');
+    }
+
+    function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.dayprogram-item:not(.dragging)')];
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    // Enable drag events
+    document.querySelectorAll('.dayprogram-item').forEach(item => {
+        item.setAttribute('draggable', true);
+        item.addEventListener('dragstart', handleDragStart);
+        item.addEventListener('dragend', handleDragEnd);
+    });
+
+    list.addEventListener('dragover', handleDragOver);
+
+    // Touch support
+    list.querySelectorAll('.dayprogram-item').forEach(item => {
+        const handle = item.querySelector('.drag-handle');
+
+        if (!handle) return;
+
+        handle.addEventListener('touchstart', e => {
+            e.stopPropagation();
+            draggingEl = item;
+            item.classList.add('dragging');
+            touchStartY = e.touches[0].clientY;
+        });
+
+        item.addEventListener('touchmove', e => {
+            if (!draggingEl) return;
+
+            e.preventDefault();
+            const touchY = e.touches[0].clientY;
+            const afterElement = getDragAfterElement(list, touchY);
+
+            if (afterElement == null) {
+                list.appendChild(draggingEl);
+            } else {
+                list.insertBefore(draggingEl, afterElement);
+            }
+        });
+
+        item.addEventListener('touchend', e => {
+            if (draggingEl) draggingEl.classList.remove('dragging');
+            draggingEl = null;
+        });
+    });
+    // Save
+    const saveBtn = document.getElementById('save-order-btn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            const newOrder = Array.from(list.children).map((li, index) => ({
+                id: li.dataset.id,
+                new_order: index + 1
+            }));
+
+            fetch("{% url 'tripapp:reorder_dayprograms' trip.id %}", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({ order: newOrder })
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert("Error when saving");
+                }
+            });
+        });
+    }
+});
+</script>
+
+
+
+
 
 
 </html>

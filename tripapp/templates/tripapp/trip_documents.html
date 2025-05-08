@@ -1,4 +1,5 @@
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -41,7 +42,7 @@
 <body>
 <div class="tripappcard">
 <div class="container">
-    <h1>Documents and Links</h1>
+    <h1>{% trans "Documents and Links" %}</h1>
     <span style="color:gray;">{{ trip.name }}</span>
     <br /><br />
     <p><a href="#" id="toggle-filter" style="color: gray; cursor: pointer;">Filter</a></p>
@@ -76,9 +77,9 @@
     </script>
     <br />
 
+    <table>
     <!-- Trip Documents Section -->
     {% if trip_documents %}
-        <table>
         {% for link in trip_documents %}
             <tr>
                 <td>
@@ -99,12 +100,10 @@
                 <td style="color: gray; padding-left: 10px;">{% if link.category %}{{ link.category }}{% endif %}</td>
             </tr>
         {% endfor %}
-        </table>
     {% endif %}
 
     <!-- Tripper Documents Section -->
     {% if tripper_documents %}
-        <table>
         {% for document in tripper_documents %}
             <tr>
                 <td>
@@ -117,11 +116,10 @@
                 <td style="color: gray; padding-left: 10px;">{% if document.category %}{{ document.category }}{% endif %}</td>
             </tr>
         {% endfor %}
-        </table>
     {% endif %}
-
+    </table>
     <p>&nbsp;</p>
-    <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}">Back to Trip</a>
+    <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}">&larr;Trip</a>
     <p>&nbsp;</p>
 </div>
 </div>

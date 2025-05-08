@@ -1,6 +1,7 @@
 {% extends "base_generic.html" %}
 <!-- tripper_profile.html -->
 {% load crispy_forms_tags %}
+{% load i18n %}
 
 {% block content %}
   <h1>{{ tripper.name }}'s Profile</h1>
@@ -10,21 +11,21 @@
   <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
       {{ form|crispy }}
-      <button type="submit" class="btn">Save Profile changes</button>
+      <button type="submit" class="btn">{% trans "Save" %} Profile</button>
   </form>
 <hr>
 <p>&nbsp;</p>
-<h1>{{ tripper.name }}'s Documents</h1>
+<h1>{{ tripper.name }}'s {% trans "Documents" %}</h1>
 
   {% for document in documents %}
       <a href="{{ document.document.url }}"><img src="{{ document.document.url }}" height="60"></a>
-      <a href="{{ document.document.url }}">{{ document.document.name }}</a>
+      <a href="{{ document.document.url }}">{{ document.description }}</a>
       <form method="post" action="{% url 'tripapp:delete_tripper_document' document.id %}" style="display: inline;">
         {% csrf_token %}
-        <button type="submit">[Delete]</button>
+        <button type="submit">{% trans "Delete" %}</button>
       </form>
   {% empty %}
-    No documents uploaded yet.
+    {% trans "No documents uploaded yet" %}
   {% endfor %}
 
 <p>&nbsp;</p>

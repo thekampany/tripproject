@@ -531,6 +531,11 @@ def trip_map_view(request, trip_id):
         'country_coords': country_coords,
     })
 
+def convert_to_float(value):
+    try:
+        return float(value.replace(',', '.')) if isinstance(value, str) else float(value)
+    except ValueError:
+        raise ValidationError(f"No valid float: {value}")
 
 
 @login_required
@@ -541,12 +546,13 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
     trip_points = Point.objects.filter(trip=trip)
 
     points = trip_points.filter(dayprograms=dayprogram)
+ 
     filter_date = dayprogram.tripdate
     start_of_day = timezone.make_aware(datetime.combine(filter_date, datetime.min.time()))
     end_of_day = start_of_day + timedelta(days=1)
     locations = Location.objects.filter(tripper__in=trippers,timestamp__range=(start_of_day, end_of_day))
     photolocations = ImmichPhotos.objects.filter(tripper__in=trippers,timestamp__range=(start_of_day, end_of_day))
-
+    
     trip_name_no_spaces = trip.name.replace(" ", "")
     tribe_name_no_spaces = trip.tribe.name.replace(" ","")
     first_point = points.first() if points.exists() else None
@@ -787,7 +793,12 @@ def edit_tripper(request, tripper_id, trip_id):
 
     if request.method == 'POST':
         form = TripperAdminForm(request.POST, request.FILES, instance=tripper)
-        formset = BadgeAssignmentFormSet(request.POST, instance=tripper, queryset=BadgeAssignment.objects.filter(trip=trip))
+        formset = BadgeAssignmentFormSet(
+            request.POST,
+            instance=tripper,
+            queryset=BadgeAssignment.objects.filter(trip=trip),
+            trip=trip
+        )
         if form.is_valid() and formset.is_valid():
             form.save()
             instances = formset.save(commit=False)
@@ -798,11 +809,18 @@ def edit_tripper(request, tripper_id, trip_id):
             return redirect('tripapp:tribe_trips')
     else:
         form = TripperAdminForm(instance=tripper)
-        formset = BadgeAssignmentFormSet(instance=tripper, queryset=BadgeAssignment.objects.filter(trip=trip))
+        formset = BadgeAssignmentFormSet(
+            instance=tripper,
+            queryset=BadgeAssignment.objects.filter(trip=trip),
+            trip=trip
+        )
 
-    return render(request, 'tripapp/edit_tripper.html', {'form': form, 'formset': formset, 'tripper': tripper, 'trip': trip})
-
-
+    return render(request, 'tripapp/edit_tripper.html', {
+        'form': form,
+        'formset': formset,
+        'tripper': tripper,
+        'trip': trip
+    })
 
 @login_required
 def tripper_list(request, trip_id):
@@ -854,7 +872,7 @@ def add_question(request, dayprogram_id):
             question.save()
             return redirect('tripapp:dayprogram_questions', dayprogram_id=dayprogram.id)
     else:
-        form = QuestionForm()
+        form = QuestionForm(dayprogram=dayprogram)
 
     return render(request, 'tripapp/add_question.html', {
         'form': form,
@@ -1542,7 +1560,6 @@ def generate_html_with_images(trip):
         if day.recorded_weather_text:
             html_content += f"""<p>{day.recorded_weather_text}</p>"""
 
-        html_content += f"""</div>"""
 
         if day.scheduled_items.exists():
             html_content += "<h4> Scheduled Items</h4><ul>"
@@ -1575,6 +1592,19 @@ def generate_html_with_images(trip):
         if day.map_image:
             img_base64 = encode_image_to_base64(day.map_image.name)  
             html_content += f'<p><img src="{img_base64}" ></p>'
+
+        if day.question_set.exists():
+            html_content += "<h4>❓ Question(s)</h4><ul>"
+            for question in day.question_set.all():
+                html_content += f"<strong>{question.question_text}</strong><br>"
+                if trip.date_to > timezone.now().date():
+                    html_content += f"not yet disclosed"
+                else:
+                    html_content += f"Answer we were looking for: {question.correct_answer}"
+            html_content += "</ul>"
+
+        html_content += f"""</div>"""
+
 
     html_content += "<h2>Trippers</h2>"
 
@@ -1658,6 +1688,51 @@ def create_zip_with_html(request, trip_id):
         zip_file.writestr(html_filename, html_content)
     
     return FileResponse(open(zip_path, "rb"), as_attachment=True, filename=zip_filename)
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from datetime import timedelta
+from .models import Trip, DayProgram
+from django.contrib.auth.decorators import login_required
+
+@csrf_exempt
+@login_required
+def reorder_dayprograms(request, trip_id):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid method'}, status=405)
+
+    try:
+        trip = Trip.objects.get(id=trip_id)
+    except Trip.DoesNotExist:
+        return JsonResponse({'error': 'Trip not found'}, status=404)
+
+    tripper = request.user.tripper
+    if not tripper or not tripper.is_trip_admin or trip not in tripper.trips.all():
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+    try:
+        data = json.loads(request.body)
+        order = data['order']  # lijst van dicts: [{'id': 12, 'new_order': 1}, ...]
+
+        programs = {dp.id: dp for dp in DayProgram.objects.filter(trip=trip)}
+
+        current_date = trip.date_from
+
+        for item in sorted(order, key=lambda x: x['new_order']):
+            dp_id = int(item['id'])
+            if dp_id in programs:
+                dp = programs[dp_id]
+                dp.dayprogramnumber = item['new_order']
+                dp.tripdate = current_date
+                dp.save()
+                current_date += timedelta(days=1)
+
+        return JsonResponse({'status': 'success'})
+    
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
 
 from rest_framework import generics
 from rest_framework_api_key.permissions import HasAPIKey

@@ -1,0 +1,196 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-05-07 22:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:116
+#: tripapp/templates/tripapp/trip_detail.html:164
+msgid "Programme"
+msgstr "Programma"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:122
+msgid "Add"
+msgstr "Invoegen"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:129
+#, fuzzy
+#| msgid "Expense"
+msgid "Expense"
+msgstr "Uitgave"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:132
+#, fuzzy
+#| msgid "Suggestion"
+msgid "Suggestion"
+msgstr "Suggestie"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:135
+#: tripapp/templates/tripapp/dayprogram_detail.html:282
+msgid "Question"
+msgstr "Vraag"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:136
+#, fuzzy
+#| msgid "Scheduled Items for Today"
+msgid "Scheduled Item"
+msgstr "Gepland Item"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:137
+msgid "Link"
+msgstr "Koppeling"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:163
+msgid "Information for Today"
+msgstr "Belangrijke Informatie"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:171
+msgid "Ideas for Today"
+msgstr "Ideeen voor vandaag"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:179
+msgid "Scheduled Items for Today"
+msgstr "Geplande Items"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:221
+#: tripapp/templates/tripapp/dayprogram_detail.html:255
+msgid "Link to travel document"
+msgstr "Koppeling naar document"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:248
+#: tripapp/templates/tripapp/trip_documents.html:45
+msgid "Documents and Links"
+msgstr "Documenten en Koppelingen"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:259
+msgid "Download Document"
+msgstr "Download Document"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:291
+msgid "You have the badge for this question!"
+msgstr "Je hebt de badge voor deze vraag!"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:296
+msgid "Check Answer"
+msgstr "Controleer"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:304
+msgid "to see and answer the question(s)."
+msgstr "om vraag te zien en te beantwoorden"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:331
+msgid "Your Suggestion for this Day:"
+msgstr "Jouw suggestie voor deze dag:"
+
+#: tripapp/templates/tripapp/index.html:35
+msgid "Welcome"
+msgstr "Welkom"
+
+#: tripapp/templates/tripapp/index.html:40
+msgid "New"
+msgstr "Nieuw"
+
+#: tripapp/templates/tripapp/index.html:40
+msgid "Already joined"
+msgstr "Al geregistreerd"
+
+#: tripapp/templates/tripapp/index.html:43
+msgid "Register"
+msgstr "Registreren"
+
+#: tripapp/templates/tripapp/index.html:44
+#: tripapp/templates/tripapp/trip_detail.html:117
+#: tripapp/templates/tripapp/trip_list.html:177
+msgid "My Trips"
+msgstr "Mijn Trips"
+
+#: tripapp/templates/tripapp/index.html:47
+msgid ""
+"\n"
+"    You and your friends go on a trip. Here you can share all the details of "
+"the trip with the people going on the trip (the Trippers)\n"
+"    and you can share it with family and friends elsewhere (the Tribe).\n"
+"    "
+msgstr ""
+"\n"
+"Jij en je vrienden gaan op een trip. Hier kun je al de details van de trip "
+"delen met de mensen die meegaan (de Trippers) en met andere familie en "
+"vrienden (de Tribe).\n"
+"    "
+
+#: tripapp/templates/tripapp/index.html:52
+msgid ""
+"\n"
+"    Click Register to join and click My Trips to start a Tribe, invite "
+"people and lay out the trip for the trippers.\n"
+"    "
+msgstr ""
+"\n"
+"Klik Registreren om je aan te melden. Klik Mijn Trips om een Tribe te "
+"starten mensen uit te nodigen en je Trip te organiseren.\n"
+"   "
+
+#: tripapp/templates/tripapp/trip_detail.html:115
+#: tripapp/templates/tripapp/trip_list.html:175
+msgid "Settings"
+msgstr "Instellingen"
+
+#: tripapp/templates/tripapp/trip_detail.html:118
+#: tripapp/templates/tripapp/trip_list.html:178
+msgid "Organize"
+msgstr "Organiseer"
+
+#: tripapp/templates/tripapp/trip_detail.html:146
+msgid "More"
+msgstr "Meer"
+
+#: tripapp/templates/tripapp/trip_detail.html:152
+msgid "Expenses"
+msgstr "Uitgaven"
+
+#: tripapp/templates/tripapp/trip_detail.html:154
+#: tripapp/templates/tripapp/tripper_profile.html:18
+msgid "Documents"
+msgstr "Documenten"
+
+#: tripapp/templates/tripapp/trip_detail.html:188
+msgid "Save Reordering"
+msgstr "Bewaar nieuwe dagvolgorde"
+
+#: tripapp/templates/tripapp/trip_list.html:232
+msgid "Create Trip"
+msgstr "Maak Trip"
+
+#: tripapp/templates/tripapp/trip_list.html:243
+msgid "Show only trips on which I am a tripper"
+msgstr "Toon alleen trips waar ik tripper ben"
+
+#: tripapp/templates/tripapp/trip_points.html:9
+msgid "Point description"
+msgstr "Omschrijving"
+
+#: tripapp/templates/tripapp/tripper_profile.html:14
+msgid "Save"
+msgstr "Bewaar"
+
+#: tripapp/templates/tripapp/tripper_profile.html:25
+msgid "Delete"
+msgstr "Verwijder"
+
+#: tripapp/templates/tripapp/tripper_profile.html:28
+msgid "No documents uploaded yet"
+msgstr "Geen documenten ge-upload"

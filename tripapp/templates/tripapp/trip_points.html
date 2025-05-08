@@ -1,11 +1,12 @@
 {% extends "base_generic.html" %}
+{% load i18n %}
 
 {% block content %}
     <h1>Points for Trip {{ trip.name }}</h1>
     <table class="table">
         <thead>
             <tr>
-                <th>Name</th>
+                <th>{% trans "Point description" %}</th>
                 <th>Latitude</th>
                 <th>Longitude</th>
                 <th>Day Programs</th>
@@ -71,7 +72,8 @@
     <a href="{% url 'tripapp:upload_route' trip.id %}" class="btn">Upload a Route</a>
     <p>&nbsp;</p>
     <p>
-    <a href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id %}">Back to Organize Trip</a>
+    <a href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id %}">Back to Organize Trip</a>&nbsp;|&nbsp;
+    <a href="{% url 'tripapp:trip_detail' slug=trip.slug  %}">Go to Trip</a>
     </p>
  
 {% endblock %}

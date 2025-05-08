@@ -1,5 +1,6 @@
 {% load static %}
 {% load weather_filters %}
+{% load i18n %}
 
 <!DOCTYPE html>
 <html>
@@ -112,28 +113,28 @@
     <p>&nbsp;</p>
 
     <div class="tripmenucontainer">
-        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}" class="btn">&#8634;&nbsp;Trip Programme</a></div>
+        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}" class="btn">&#8634;&nbsp;{% trans "Programme" %}</a></div>
         <div class="tripmenuitem"><a href="{% url 'tripapp:trip_dayprogram_points' dayprogram.trip.id dayprogram.id %}" class="btn">Tripday Map</a></div>
 
         <div class="tripmenuitem">
         <div class="dropdown">
             <a class="btn nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            <span class="ms-2">Add..</span>
+            <span class="ms-2">{% trans "Add" %}..</span>
             </a>
             <ul class="dropdown-menu custom-dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                 {% if user.username in trippers_names %}
                     <li><a class="dropdown-item" href="{% url 'tripapp:add_image' dayprogram.id %}">...Image</a></li>
                     <li><a class="dropdown-item" href="{% url 'tripapp:add_logentry' dayprogram.id %}">...Log</a></li>
                     {% if dayprogram.trip.use_expenses %}
-                    <li><a class="dropdown-item" href="{% url 'tripapp:add_expense' dayprogram.trip.id logged_on_tripper.id %}?next=dayprogram_detail&dayprogram_id={{ dayprogram.id }}">...Expense</a></li>
+                    <li><a class="dropdown-item" href="{% url 'tripapp:add_expense' dayprogram.trip.id logged_on_tripper.id %}?next=dayprogram_detail&dayprogram_id={{ dayprogram.id }}">...{% trans "Expense" %}</a></li>
                     {% endif %}
                 {% endif %}
-                <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#suggestionModal">...Suggestion</a></li>
+                <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#suggestionModal">...{% trans "Suggestion" %}</a></li>
                 {% if user.username in trippers_names %}
                     <li><a class="dropdown-item" href="{% url 'tripapp:edit_dayprogram' dayprogram.id %}">...Info</a></li>
-                    <li><a class="dropdown-item" href="{% url 'tripapp:dayprogram_questions' dayprogram.id %}">...Question</a></li>
-                    <li><a class="dropdown-item" href="{% url 'tripapp:add_scheduled_item' dayprogram.id %}">...Scheduled Item</a></li>
-                    <li><a class="dropdown-item" href="{% url 'tripapp:add_link' dayprogram.id %}">...Link</a></li>
+                    <li><a class="dropdown-item" href="{% url 'tripapp:dayprogram_questions' dayprogram.id %}">...{% trans "Question" %}</a></li>
+                    <li><a class="dropdown-item" href="{% url 'tripapp:add_scheduled_item' dayprogram.id %}">...{% trans "Scheduled Item" %}</a></li>
+                    <li><a class="dropdown-item" href="{% url 'tripapp:add_link' dayprogram.id %}">...{% trans "Link" %}</a></li>
                 {% endif %}
 
             </ul>
@@ -159,7 +160,7 @@
         {% if dayprogram.necessary_info %}
         <div class="dayprogramcard">
             <p>
-                <span class="dayprogramcard-title">Information for Today</span>
+                <span class="dayprogramcard-title">{% trans "Information for Today" %}</span>
                 {{ dayprogram.necessary_info|linebreaks }}
             </p>
         </div>
@@ -167,7 +168,7 @@
         {% if dayprogram.possible_activities %}
         <div class="dayprogramcard">
             <p>
-                <span class="dayprogramcard-title">Ideas for Today</span>
+                <span class="dayprogramcard-title">{% trans "Ideas for Today" %}</span>
                 {{ dayprogram.possible_activities|linebreaks }}
             </p>
         </div>
@@ -175,7 +176,7 @@
 
         {% if scheduled_items %}
         <div class="dayprogramcard">
-            <p><span class="dayprogramcard-title">Scheduled Items for Today</span></p>
+            <p><span class="dayprogramcard-title">{% trans "Scheduled Items for Today" %}</span></p>
             <table>
                 {% for item in scheduled_items %}
                     <tr>
@@ -217,7 +218,7 @@
                                                         {% if link.url %}
                                                             <a href="{{ link.url }}" target="_blank" style="text-decoration:none;">
                                                                 <img src="{% static 'icons/icon-url.png' %}" class="url-icon" width="16" height="16">
-                                                                {% if link.description %}{{ link.description }}{% else %}Link to travel document{% endif %}
+                                                                {% if link.description %}{{ link.description }}{% else %}{% trans "Link to travel document" %}{% endif %}
                                                             </a>
                                                         {% endif %}
                                                         {% if link.document %}
@@ -244,18 +245,18 @@
         {% if links_without_scheduled_item %}
         <div class="dayprogramcard">
             <p>
-                <span class="dayprogramcard-title">Documents and Links</span>
+                <span class="dayprogramcard-title">{% trans "Documents and Links" %}</span>
             </p>
         {% endif %}
         {% for link in links_without_scheduled_item %}
             <p>
                 {% if link.url %}
                     <a href="{{ link.url }}" target="_blank" style="text-decoration:none;"><img src="{% static 'icons/icon-url.png' %}" class="url-icon" width="16" height="16">&nbsp;
-                    {% if link.description %}{{ link.description }}{% else %}Link to travel document{% endif %}</a>
+                    {% if link.description %}{{ link.description }}{% else %}{% trans "Link to travel document" %}{% endif %}</a>
                 {% endif %}
                 {% if link.document %}
                     <a href="{{ link.document.url }}" target="_blank" style="text-decoration:none;"><img src="{% static 'icons/icon-doc.png' %}" class="doc-icon" width="16" height="16">&nbsp;
-                    {% if link.description %}{{ link.description }}{% else %}Download Document{% endif %}</a>
+                    {% if link.description %}{{ link.description }}{% else %}{% trans "Download Document" %}{% endif %}</a>
                 {% endif %}
             </p>
         {% endfor %}
@@ -278,21 +279,21 @@
           {% for question_with_info in questions_with_badge_info %}
           <div class="dayprogramcard">
             <p>
-                <span class="dayprogramcard-title">Question</span>
+                <span class="dayprogramcard-title">{% trans "Question" %}</span>
             </p>
 
-            <h3>{{ question_with_info.question.question_text }}</h3>
+            {{ question_with_info.question.question_text }}
 
             {% for tripper_badge_info in question_with_info.trippers_badge_info %}
              {% if tripper_badge_info.tripper.name == user.username %}
 
               {% if tripper_badge_info.has_badge %}
-                <p>"{{ question_with_info.question.correct_answer }}" You have the badge for this question!</p>
+                <p>"{{ question_with_info.question.correct_answer }}"{% trans "You have the badge for this question!" %}</p>
               {% else %}
                 <form id="questionForm" method="post" action="{% url 'tripapp:check_answer' dayprogram.id question_with_info.question.id %}">
                   {% csrf_token %}
                   {{ form.as_p }}
-                  <button type="submit">Check Answer</button>
+                  <button type="submit">{% trans "Check Answer" %}</button>
                 </form>
               {% endif %}
              {% endif %}
@@ -300,7 +301,7 @@
            </div>
           {% endfor %}
         {% else %}
-            <p>You need to <a href="{% url 'tripapp:login' %}">login</a> to see and answer the question(s).</p>
+            <p>You need to <a href="{% url 'tripapp:login' %}">login</a>{% trans "to see and answer the question(s)." %}</p>
         {% endif %}
       {% endif %}
     {% endif %}
@@ -327,7 +328,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="suggestionModalLabel">Your Suggestion for this Day:</h5>
+                    <h5 class="modal-title" id="suggestionModalLabel">{% trans "Your Suggestion for this Day:" %}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
