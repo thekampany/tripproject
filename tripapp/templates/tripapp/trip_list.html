@@ -127,25 +127,7 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(26px);
 }
-
-/* Dark Mode */
-@media (prefers-color-scheme: dark) {
-    body {
-        background-color: #121212;
-        color: #ffffff;
-    }
-
-    .trip-card {
-        background: #1e1e1e;
-        border: 1px solid #333;
-        box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
-    }
-
-    .trip-card:hover {
-        transform: scale(1.02);
-        box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
-    }
-    .fab {
+.fab {
         position: fixed;
         bottom: 20px;
         right: 20px;
@@ -167,7 +149,25 @@ input:checked + .slider:before {
     .fab:hover {
         background-color: rgba(255, 255, 255, 0.6);
         }
-    </style>
+ 
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #121212;
+        color: #ffffff;
+    }
+
+    .trip-card {
+        background: #1e1e1e;
+        border: 1px solid #333;
+        box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
+    }
+
+    .trip-card:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
+    }
+   </style>
 
 
 </head>

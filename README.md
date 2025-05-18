@@ -1,7 +1,7 @@
 # Trippanion
 The Selfhosted Trip-Planning-Companion application.   
 
-You and your family / friends go on a trip. 
+You and your family / friends go on a trip.  
 _While planning the trip_   
 You have a central place to store all information coming out of the booking mails rather than having some of them in your own mailbox, and others in the mailbox of your spouse / co planner(s).  
 
