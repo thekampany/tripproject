@@ -56,13 +56,15 @@ from statistics import mean
 
 from rest_framework import viewsets
 from .serializers import TripSerializer
+from django.contrib.auth.forms import AuthenticationForm
 
+from django.templatetags.static import static
 
 
 def index(request):
     category = "roadtrip"
     background_image_url = get_random_unsplash_image(category)
-    return render(request, 'tripapp/index.html', {'background_image_url': background_image_url, 'APP_NAME': settings.APP_NAME, 'VERSION':settings.VERSION})
+    return render(request, 'tripapp/index.html', {'background_image_url': background_image_url, 'APP_NAME': settings.APP_NAME, 'VERSION':settings.VERSION,'form': AuthenticationForm()})
 
 
 @login_required
@@ -478,10 +480,6 @@ def mytribes_badges_view(request):
 
 
 
-@login_required
-def map_view(request):
-    points = Point.objects.all()
-    return render(request, 'tripapp/map.html', {'points': points})
 
 
 def get_country_coords(country_code):
@@ -529,6 +527,29 @@ def trip_map_view(request, trip_id):
         'locations_truncated': locations_truncated,
         'max_locations': max_locations,
         'country_coords': country_coords,
+    })
+
+@login_required
+def tribe_map_view(request, tribe_id):
+    tribe = get_object_or_404(Tribe, id=tribe_id)
+    trips = Trip.objects.filter(tribe=tribe)
+
+    trip_locations = []
+    for trip in trips:
+        code = trip.get_first_country_code()
+        coords = get_country_coords(code) if code else get_country_coords('nl')
+        if coords:  
+            photo_url = trip.image.url if trip.image else static('favicon/apple-touch-icon.png')
+            trip_locations.append({
+                'name': trip.name,
+                'latitude': coords[0],
+                'longitude': coords[1],
+                'photo_url': photo_url,
+                'trip_url': reverse('tripapp:trip_detail', kwargs={'slug': trip.slug}),
+            })
+    return render(request, 'tripapp/tribe_map.html', {
+        'tribe': tribe,
+        'trip_locations': trip_locations,
     })
 
 def convert_to_float(value):
@@ -1369,7 +1390,7 @@ def task_manager(request):
 @login_required
 def trip_documents_view(request, trip_id):
     trip = get_object_or_404(Trip.objects.prefetch_related('dayprograms__links'), id=trip_id)
-    trip_documents = Link.objects.filter(dayprogram__trip=trip)
+    trip_documents = Link.objects.filter(dayprogram__trip=trip).order_by('dayprogram__tripdate')
     tripper_documents = TripperDocument.objects.filter(tripper__trips=trip)
 
     filter_date = request.GET.get('filter_date')
@@ -1545,6 +1566,11 @@ def generate_html_with_images(trip):
             <p>{trip.description}</p>
 
     """
+    if trip.image:
+        img_base64 = encode_image_to_base64(trip.image.name,(800,600))  
+
+        if img_base64:
+            html_content += f'<img src="{img_base64}" >'
 
 
     html_content += "<h2>📅 Dayprograms</h2>"

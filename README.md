@@ -2,8 +2,15 @@
 The Selfhosted Trip-Planning-Companion application.   
 
 You and your family / friends go on a trip. 
-While planning the trip you have a central place to store all information coming out of the booking mails rather than having some of them in your own mailbox, and others in the mailbox of your spouse / co planner(s).  
-During the trip, this app allows you to share all the details of the trip with the people going on the trip with you and that just were not that involved in the planning. It is the app in which you answer questions like: what time do we have to be at the airport, should I dress up for dinner or do we go to the beach and eat something there afterwards. 
+_While planning the trip_   
+You have a central place to store all information coming out of the booking mails rather than having some of them in your own mailbox, and others in the mailbox of your spouse / co planner(s).  
+
+_During the trip,_ 
+this app allows you to share all the details of the trip with the people going on the trip with you and that just were not that involved in the planning. It is the app in which you answer questions like: what time do we have to be at the airport? Do we have an active day in nature, or do we have a cultural day with museumsvitis? etc.  
+
+_After the trip_
+the app provides you with the schedule and with all the content you added as a memory.  
+
 
 _The application also has the following features:_  
 :globe_with_meridians:  Show a map of the trip itinerary and show a map with the points of interest for one particular day.  

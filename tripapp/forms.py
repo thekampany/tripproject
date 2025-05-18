@@ -175,7 +175,7 @@ class DayProgramForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['description'].validators.append(MaxLengthValidator(50))  
-
+    
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
@@ -212,7 +212,7 @@ class PointForm(forms.ModelForm):
         trip = kwargs.pop('trip', None)
         super(PointForm, self).__init__(*args, **kwargs)
         if trip:
-            self.fields['dayprograms'].queryset = DayProgram.objects.filter(trip=trip).order_by('date')
+            self.fields['dayprograms'].queryset = DayProgram.objects.filter(trip=trip).order_by('tripdate')
 
 
 class BadgeAssignmentForm(forms.ModelForm):

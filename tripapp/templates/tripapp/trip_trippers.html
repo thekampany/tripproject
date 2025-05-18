@@ -1,4 +1,5 @@
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -107,11 +108,11 @@
               <!-- Badges Link -->
               <div class="badges-link">
                   <a href="{% url 'tripapp:trip_tripper_badgeassignments' trip.id tripper.id %}">
-                      Badges this trip: {{ tripper.badge_count }}
+                      {% trans "Badges this trip" %}: {{ tripper.badge_count }}
                   </a>
                   <br>
                   <a href="{% url 'tripapp:tripper_badgeassignments' tripper.id %}">
-                      (Total: {{ tripper.total_badge_count }})
+                      ({% trans "Total" %}: {{ tripper.total_badge_count }})
                   </a>
               </div>
           </div>
@@ -122,12 +123,12 @@
    <p>&nbsp;</p>
    <!--<p><a href="{% url 'tripapp:upload_badge' %}" class="btn">Upload Badge for this Trip</a></p>-->
    {% if trip.use_expenses and trip.has_expenses %}
-   <p><a href="{% url 'tripapp:trip_balance' trip.id %}">Trippers owe Trippers?</a></p>
+   <p><a href="{% url 'tripapp:trip_balance' trip.id %}">{% trans "Trippers owe Trippers" %}?</a></p>
    {% endif %}
 
 
    <p>&nbsp;</p>
-   <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" >Back to Trip</a>
+   <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" >&larr;Trip</a>
    <p>&nbsp;</p>
 
 </div>

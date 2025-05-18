@@ -1,5 +1,6 @@
 {% load static %}
 {% load i18n %}
+{% load crispy_forms_tags %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -23,7 +24,35 @@
       -o-background-size: cover;
       background-size: cover;
       }
+      .overlay {
+        display: none;
+        position: fixed;
+        z-index: 999;
+        left: 0; top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+      }
 
+      .overlay-content {
+        background-color: rgba(255,255,255,0.6);
+        margin: 10% auto;
+        padding: 30px;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 400px;
+        position: relative;
+      }
+
+      .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+      }
     </style>
 
 
@@ -54,7 +83,8 @@
     {% endblocktrans %}
     </span>
     <br /><br />
-    {% if user.is_authenticated %} {{ user.username }}{% else %}<a href="{% url 'tripapp:login' %}">Login</a>{% endif %}
+    <!--{% if user.is_authenticated %} {{ user.username }}{% else %}<a href="{% url 'tripapp:login' %}">Login</a>{% endif %}-->
+    {% if user.is_authenticated %} {{ user.username }}{% else %}<a href="javascript:void(0);" onclick="openLogin()">Login</a>{% endif %}
     {% if user.is_authenticated %} <a href="{% url 'tripapp:logout' %}">Logout</a>{% endif %}&nbsp;&nbsp;
     {% if user.is_staff %}
     <a href="{% url 'admin:index' %}">Admin</a>
@@ -62,5 +92,29 @@
     <br />
     </div>
     </div>
+
+    <div id="loginOverlay" class="overlay">
+      <div class="overlay-content">
+        <span class="close-btn" onclick="closeLogin()">&times;</span>
+        <h2>Login</h2>
+        <form method="post" action="{% url 'tripapp:login' %}">
+          {% csrf_token %}
+          {{ form|crispy }}
+          <button type="submit" class="btn btn-primary mt-2">Login</button>
+        </form>
+        <br />
+        <a href="{% url 'tripapp:password_reset' %}">Forgot Password?</a>
+      </div>
+    </div>
+
+
+    <script>
+      function openLogin() {
+        document.getElementById("loginOverlay").style.display = "block";
+      }
+      function closeLogin() {
+        document.getElementById("loginOverlay").style.display = "none";
+      }
+      </script>
 </body>
 </html>

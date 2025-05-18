@@ -1,10 +1,11 @@
 
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html>
 <head>
 
-    <title>Expenses for Trip {{ trip.name }}</title>
+    <title>{% trans "Expenses for Trip" %} {{ trip.name }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}">
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}">
@@ -60,7 +61,7 @@
 <div class="card">
 <div class="container">
 
-<h1>Expenses</h1>
+<h1>{% trans "Expenses" %}</h1>
 <span style="color:gray;">{{ trip.name }}</span>
 <br /><br />
 <p>
@@ -97,11 +98,11 @@ document.getElementById("toggle-filter").addEventListener("click", function (e) 
 <table>
     <thead>
         <tr>
-            <th>By</th>
-            <th>Description</th>
-            <th style="text-align:right; padding-right: 10px;"">Amount</th>
-            <th>Date</th>
-            <th>Receipt</th>
+            <th>{% trans "By" %}</th>
+            <th>{% trans "Description" %}</th>
+            <th style="text-align:right; padding-right: 10px;"">{% trans "Amount" %}</th>
+            <th>{% trans "Date" %}</th>
+            <th>{% trans "Receipt" %}</th>
         </tr>
     </thead>
     <tbody>
@@ -134,22 +135,22 @@ document.getElementById("toggle-filter").addEventListener("click", function (e) 
         </tr>
         {% endfor %}
         <tr>
-            <td colspan="2" style="text-align: right; padding-right: 10px;">Total:</td>
+            <td colspan="2" style="text-align: right; padding-right: 10px;">{% trans "Total" %}:</td>
             <td style="text-align:right; padding-right: 10px;">{{ total_amount }}&nbsp;{{ app_currency }}</td>
             <td colspan="2"></td>
         </tr>
     </tbody>
 </table>
 {% else %}
-    <p>No expenses recorded for this trip.</p>
+    <p>{% trans "No expenses recorded for this trip" %}.</p>
 {% endif %}
 <p>&nbsp;</p>
 <!--add expense-->
-<a href="{% url 'tripapp:add_expense' trip.id tripper.id %}?next=balance" class="btn">Add New Expense</a>
+<a href="{% url 'tripapp:add_expense' trip.id tripper.id %}?next=balance" class="btn">{% trans "Add New Expense" %}</a>
 &nbsp;
-<a href="{% url 'tripapp:trip_balance' trip.id %}" class="btn">See Balance</a>
+<a href="{% url 'tripapp:trip_balance' trip.id %}" class="btn">{% trans "See Balance" %}</a>
 <p>&nbsp;</p>
-<a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" >Back to Trip</a>
+<a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" >&larr;Trip</a>
 <p>&nbsp;</p>
 
 </div>

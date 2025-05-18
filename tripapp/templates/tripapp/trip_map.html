@@ -1,4 +1,5 @@
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -36,10 +37,10 @@
     <div id="map"></div>
     {% if trip.use_facilmap %}
         <p>
-        <a href="{% url 'tripapp:trip_map_view' trip.id %}" >Displaying planned and visited locations</a>&nbsp;
+        <a href="{% url 'tripapp:trip_map_view' trip.id %}" >{% trans "Displaying planned and visited locations" %}</a>&nbsp;
         <a href="{% url 'tripapp:planner_map' trip.id %}" >Switch to Facilmap</a></p>
     {% else %}
-        <p>Displaying planned and visited locations</p>
+        <p>{% trans "Displaying planned and visited locations" %}</p>
     {% endif %}
 
     {% if locations_truncated %}
@@ -393,12 +394,8 @@
         handleMapTouchStart(map);
 
     </script>
-    </div>
-    </div>
-
-   <div class="card">
-   <div class="container">
-       <p><a href="{% url 'tripapp:trip_detail' trip.slug %}">Back to Trip</a></p>
+    <p>&nbsp;</p>
+    <p><a href="{% url 'tripapp:trip_detail' trip.slug %}">&larr;Trip</a></p>
    </div>
    </div>
 

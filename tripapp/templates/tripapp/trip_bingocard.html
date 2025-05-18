@@ -1,6 +1,7 @@
 <!-- trip_bingocards.html -->
 
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -135,21 +136,26 @@
     
 <!-- how many did other users upload? what is ranking? see everything when trip is over or somebody won -->    
 <p>&nbsp;</p>
-<table>
-    <tr>
-        <th>Tripper&nbsp;&nbsp;</th>
-        <th>#Answers</th>
-    </tr>
-    {% for tripper in trippers_on_this_trip %}
-    <tr>
-        <td>{{ tripper.name }}</td>
-        <td style="text-align:right;">{{ tripper.answer_count }}</td>
-    </tr>
-    {% endfor %}
-</table>
-<p><a href="{% url 'tripapp:trip_bingocards' trip.id %}">See all answers</a></p>
-<p>&nbsp;</p>
-<p><a href="{% url 'tripapp:trip_detail' trip.slug %}">Back to Trip</a></p>
+{% if bingocards %}
+    <table>
+        <tr>
+            <th>Tripper&nbsp;&nbsp;</th>
+            <th>{% trans "#Answers" %}</th>
+        </tr>
+        {% for tripper in trippers_on_this_trip %}
+        <tr>
+            <td>{{ tripper.name }}</td>
+            <td style="text-align:right;">{{ tripper.answer_count }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <p><a href="{% url 'tripapp:trip_bingocards' trip.id %}">{% trans "See all answers" %}</a></p>
+    <p>&nbsp;</p>
+{% else %}
+    {% trans "No Bingo created for this trip" %}
+    <p>&nbsp;</p>
+{% endif %}
+<p><a href="{% url 'tripapp:trip_detail' trip.slug %}">&larr;Trip</a></p>
 </div>
 </div>
 </body>

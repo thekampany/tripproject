@@ -1,9 +1,10 @@
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html>
 <head>
 
-    <title>Balance for Trip {{ trip.name }}</title>
+    <title>{% trans "Balance for Trip" %}{{ trip.name }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}">
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}">
@@ -32,7 +33,7 @@
 <div class="tripappcard">
 <div class="container">
 
-<h1>Balance</h1>
+<h1>{% trans "Balance" %}</h1>
 <span style="color:gray;">{{ trip.name }}</span>
 <br /><br /><br />
 
@@ -59,14 +60,14 @@
 </table>
 
 {% if all_zero %}
-<p>All balances are settled. No outstanding amounts.</p>
+<p>{% trans "All balances are settled. No outstanding amounts." %}</p>
 {% endif %}
 
 
 <p>&nbsp;</p>
-<a href="{% url 'tripapp:trip_expenses_list' trip.id %}" >See all Expenses</a>
+<a href="{% url 'tripapp:trip_expenses_list' trip.id %}" >{% trans "See all Expenses" %}</a>
 <p>&nbsp;</p>
-<a href="{% url 'tripapp:trip_trippers' trip.id %}" >Back</a>
+<a href="{% url 'tripapp:trip_trippers' trip.id %}" >&larr;</a>
 
 </div>
 </div>
