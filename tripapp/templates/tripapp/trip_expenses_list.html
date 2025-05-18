@@ -129,7 +129,7 @@ document.getElementById("toggle-filter").addEventListener("click", function (e) 
             <td style="vertical-align: top; padding-right: 10px;">{{ expense.date|date:"d-M" }}</td>
             <td style="vertical-align: top; padding-right: 10px;">
                 {% if expense.receipt %}
-                    <a href="{{ expense.receipt.url }}">View</a>
+                    <a href="{{ expense.receipt.url }}">&#x1F9FE;</a>
                {% endif %}
             </td>
         </tr>

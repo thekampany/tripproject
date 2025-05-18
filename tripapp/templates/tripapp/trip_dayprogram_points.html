@@ -119,7 +119,14 @@
         points.forEach(function(point) {
             var popupContent = `<b>${point.name}</b>`;
             var marker;
-            console.log(point.marker_type);
+            console.log('marker_type:', point.marker_type);
+            console.log('coords:', point.coords);
+
+            if (!point.coords || !Array.isArray(point.coords) || point.coords.length !== 2 || 
+                typeof point.coords[0] !== 'number' || typeof point.coords[1] !== 'number') {
+                console.warn('Ongeldige coördinaten voor punt:', point);
+                return; 
+            }
             if (point.marker_type === 'bed') {
                marker = L.marker(point.coords, {icon: bedIcon}).bindPopup(popupContent);
             } else if (point.marker_type === 'restaurant') {
@@ -158,9 +165,10 @@
         locations.forEach(function(location) {
             lineCoordinates.push(location.coords);
         });
-        var polyline = L.polyline(lineCoordinates, { color: 'blue', weight: 2 }).addTo(map);
-        map.fitBounds(polyline.getBounds());
-
+        if (lineCoordinates.length > 0) {
+            var polyline = L.polyline(lineCoordinates, { color: 'blue', weight: 2 }).addTo(map);
+            map.fitBounds(polyline.getBounds());
+        }
         var heatmapData = [];
         locations.forEach(function(location) {
             heatmapData.push([...location.coords, 0.7]); 
@@ -196,7 +204,15 @@
             "Lines": polyline,
             "Heatmap": heatmapLayer
         };
-        L.control.layers(null, overlays, { collapsed: false }).addTo(map);
+        const validOverlays = {};
+        for (const [key, layer] of Object.entries(overlays)) {
+            if (layer && typeof layer.addTo === 'function') {
+                validOverlays[key] = layer;
+            }
+        }
+
+        L.control.layers(null, validOverlays, { collapsed: false }).addTo(map);
+        //L.control.layers(null, overlays, { collapsed: false }).addTo(map);
 
     {% endif %}   
 

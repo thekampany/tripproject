@@ -94,6 +94,49 @@
             opacity: 0.5; 
             pointer-events: none; 
         }
+
+        .fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.4);
+            color: white;
+            font-size: 24px;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            transition: background-color 0.2s;
+            }
+        .fab:hover {
+            background-color: rgba(255, 255, 255, 0.6);
+            }
+            .fab2 {
+            position: fixed;
+            bottom: 20px;
+            right: 80px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.4);
+            color: white;
+            font-size: 24px;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            transition: background-color 0.2s;
+            }
+
 </style>
 </head>
 <body>
@@ -176,7 +219,7 @@
                     </a>
                     {% if tripper.is_trip_admin %}
                         {% if day_program.tripdate|date:'Y-m-d' > today|date:'Y-m-d' %}
-                            <div class="drag-handle" title="Drag for reorder">&#9783;</div>
+                            <div class="drag-handle" title="Drag for reorder">&#10495;</div>
                         {% endif %}
                     {%endif %}
                 </li>
@@ -185,11 +228,13 @@
         
         {% if tripper.is_trip_admin %}
             {% if trip.date_to|date:'Y-m-d' > today|date:'Y-m-d'  %}
-            <div align="right"><span style="color:gray"><button id="save-order-btn">{% trans "Save Reordering" %}</button></span></div>
+            <div align="right"><button id="save-order-btn" class="fab2">&#128190;</button></div>
             {% endif %}
         {% endif %}
         
-
+        <a href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id  %}" class="fab" title="Organize">&#128221;</a>
+        
+        
         
     <br />
     </div>

@@ -1,9 +1,10 @@
 # Trippanion
 The Selfhosted Trip-Planning-Companion application.   
 
-You and your family / friends go on a trip.  
+You and your family / friends go on a trip. 
+
 _While planning the trip_   
-You have a central place to store all information coming out of the booking mails rather than having some of them in your own mailbox, and others in the mailbox of your spouse / co planner(s).  
+You have a central place to store all information coming out of the booking mails rather than having some of them in your own mailbox / app, and others in the mailbox or apps of your spouse / co planner(s).  
 
 _During the trip,_ 
 this app allows you to share all the details of the trip with the people going on the trip with you and that just were not that involved in the planning. It is the app in which you answer questions like: what time do we have to be at the airport? Do we have an active day in nature, or do we have a cultural day with museumsvitis? etc.  
