@@ -6,9 +6,10 @@
     <title>{{ trip.name }} Map</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.0.0/dist/geosearch.css" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         body {
@@ -21,7 +22,22 @@
         #map {
             height: 600px;
         }
-    </style>
+        .leaflet-popup-content {
+            background-color: rgba(255, 255, 255, 0.8) !important; 
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: transparent !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
+
+        .leaflet-popup-tip {
+            background: transparent !important;
+        }
+     </style>
 </head>
 <body>
     <div class="card">
@@ -33,14 +49,6 @@
 
     <div id="map"></div>
   
-    {% if trip.use_facilmap %}
-        <p>
-        <a href="{% url 'tripapp:trip_map_view' trip.id %}" >{% trans "Displaying planned and visited locations" %}</a>&nbsp;
-        <a href="{% url 'tripapp:planner_map' trip.id %}" >Switch to Facilmap</a></p>
-    {% else %}
-        <p>{% trans "Displaying planned and visited locations" %}</p>
-    {% endif %}
-
     {% if locations_truncated %}
     <p>Only the first {{ max_locations }} locations are shown. See more via tripdayprograms.</p>
     {% endif %}
@@ -48,6 +56,7 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.3.1/gpx.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+    <script src="https://unpkg.com/leaflet-geosearch@latest/dist/bundle.min.js"></script>
     <script>
         // Initialize the map
         {% if country_coords and not points and not locations and not photolocations %}
@@ -61,6 +70,15 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 19,
         }).addTo(map);
+
+        var scaleControl = L.control.scale();
+        scaleControl.setPosition('bottomleft');
+        map.addControl(scaleControl);
+
+        const search = new GeoSearch.GeoSearchControl({
+        provider: new GeoSearch.OpenStreetMapProvider(),style: 'bar',
+        });
+        map.addControl(search);
 
         var bedIcon = L.icon({
             iconUrl: "{% static 'icons/mapicons/mappin-bed.png' %}",
@@ -220,9 +238,8 @@
             }
         }
 
-        L.control.layers(null, validOverlays, { collapsed: false }).addTo(map);
-        //L.control.layers(null, overlays, { collapsed: false }).addTo(map);
-
+        L.control.layers(null, validOverlays, { collapsed: false ,position: 'bottomright'}).addTo(map);
+ 
         function handleMapLongPress(map) {
             var pressTimer;
             var latLng;
@@ -240,16 +257,23 @@
                     var newMarker = L.marker(latLng).addTo(map);
 
                     newMarker.bindPopup(
-                    '<input type="text" id="event-name" placeholder="Event Name"><br>' +
-                        '<label for="event-type">Type:</label> ' +
-                        '<select id="event-type">' +
-                        '  <option value="default" selected>Default</option>' +
-                        '  <option value="bed">Bed</option>' +
-                        '  <option value="restaurant">Restaurant</option>' +
-                        '</select><br>' +
-                        '<button id="save-event">Save</button>' +
-                        '<button id="delete-event">Delete</button>'
-                    ).openPopup();
+                        `<div class="p-2 leaflet-custom-popup" style="min-width:200px;">
+                    <div class="form-group">
+                    <input type="text" id="event-name" class="form-control mb-2" placeholder="Point Description">
+                    </div>
+                    <div class="form-group">
+                    <select id="event-type" class="form-control mb-3">
+                        <option value="default" selected>Default</option>
+                        <option value="bed">Bed</option>
+                        <option value="restaurant">Restaurant</option>
+                    </select>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                    <button id="save-event" class="btn">Save</button>
+                    <button id="delete-event" class="btn">Delete</button>
+                    </div>
+                </div>`
+                   ).openPopup();
 
                     newMarker.on('popupopen', function() {
                         document.getElementById('save-event').addEventListener('click', function() {
@@ -303,15 +327,22 @@
                 var newMarker = L.marker(latLng).addTo(markers);
 
                 newMarker.bindPopup(
-                    '<input type="text" id="event-name" placeholder="Event Name"><br>' +
-                        '<label for="event-type">Type:</label> ' +
-                        '<select id="event-type">' +
-                        '  <option value="default" selected>Default</option>' +
-                        '  <option value="bed">Bed</option>' +
-                        '  <option value="restaurant">Restaurant</option>' +
-                        '</select><br>' +
-                        '<button id="save-event">Save</button>' +
-                        '<button id="delete-event">Delete</button>'
+                    `<div class="p-2 leaflet-custom-popup" style="min-width:200px;">
+                    <div class="form-group">
+                    <input type="text" id="event-name" class="form-control mb-2" placeholder="Point Description">
+                    </div>
+                    <div class="form-group">
+                    <select id="event-type" class="form-control mb-3">
+                        <option value="default" selected>Default</option>
+                        <option value="bed">Bed</option>
+                        <option value="restaurant">Restaurant</option>
+                    </select>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                    <button id="save-event" class="btn">Save</button>
+                    <button id="delete-event" class="btn">Delete</button>
+                    </div>
+                </div>`
                 ).openPopup();
 
                 newMarker.on('popupopen', function() {
@@ -362,16 +393,23 @@
                 var newMarker = L.marker(latLng).addTo(map);
 
                 newMarker.bindPopup(
-                    '<input type="text" id="event-name" placeholder="Event Name"><br>' +
-                        '<label for="event-type">Type:</label> ' +
-                        '<select id="event-type">' +
-                        '  <option value="default" selected>Default</option>' +
-                        '  <option value="bed">Bed</option>' +
-                        '  <option value="restaurant">Restaurant</option>' +
-                        '</select><br>' +
-                        '<button id="save-event">Save</button>' +
-                        '<button id="delete-event">Delete</button>'
-                ).openPopup();
+                    `<div class="p-2 leaflet-custom-popup" style="min-width:200px;">
+                    <div class="form-group">
+                    <input type="text" id="event-name" class="form-control mb-2" placeholder="Point Description">
+                    </div>
+                    <div class="form-group">
+                    <select id="event-type" class="form-control mb-3">
+                        <option value="default" selected>Default</option>
+                        <option value="bed">Bed</option>
+                        <option value="restaurant">Restaurant</option>
+                    </select>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                    <button id="save-event" class="btn">Save</button>
+                    <button id="delete-event" class="btn">Delete</button>
+                    </div>
+                </div>`
+               ).openPopup();
 
                 newMarker.on('popupopen', function() {
                     document.getElementById('save-event').addEventListener('click', function() {

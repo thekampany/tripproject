@@ -178,19 +178,19 @@ body {
 }
 a:link {
   color: var(--color-text);
+  text-decoration: none;
 }
 
-/* visited link */
 a:visited {
   color: var(--color-text);
+  text-decoration: none;
 }
 
-/* mouse over link */
 a:hover {
   color: var(--color-text);
+  text-decoration: none;
 }
 
-/* selected link */
 a:active {
   color: var(--color-text);
 }

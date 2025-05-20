@@ -137,7 +137,7 @@ After creating the .env and docker-compose.yml file do:
 
 1. Create a Tribe by entering a name. A Tribe is you, the people on your trip and the people that you allow to see the tripdetails.
 2. Invite the people to the tribe you just created.
-3. Create a Trip. Define a period. For all days in the period a dayprogram will already be generated. You can add dayprograms later. You can choose an image. This image will then be used as the background for all the trip pages. On trip level you can also indicate to use Facilmap (https://facilmap.org). When you create a trip automatically a Facilmap will be created based on tribe and trip. When you use Facilmap then you can add makers and lines on the Facilmap. When you do not Facilmap, then you can add points and you can upload gpx files to show routes on the map. In general: if most of your trip is fixed already, then set the points and routes yourself while configuring the trip. When your trip is still largely unplanned, then facilmap is a helpful planning tool.
+3. Create a Trip. Define a period. For all days in the period a dayprogram will already be generated. You can add dayprograms later. You can choose an image. This image will then be used as the background for all the trip pages.   
 4. Edit the dayprograms for the trip. Can be a lot of work. Remember, everything can be added and edited during your trip.
 5. Optionally add questions to a dayprogram, think of bingo items. 
 6. Optionally upload badges.
@@ -157,9 +157,8 @@ For a tripadmin, the functions to organize the trip are brought together in one 
 ![Screenshot](/screenshots/trippanion-screenshot-5-trippers.png )
 
  
-# Unfinished Business
-Facilmap can be opened in a trip. It offers very nice planning options on the map. I am not yet satisfied with the way it is integrated in the app. Work in progress.  
-
 # Credits
 Flags from https://flagpedia.net  
 Weather from https://api.open-meteo.com  
+Leaflet https://leafletjs.com/
+Leaflet-geosearch https://smeijer.github.io/leaflet-geosearch/
