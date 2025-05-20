@@ -6,20 +6,20 @@ You and your family / friends go on a trip.
 _While planning the trip_   
 You have a central place to store all information coming out of the booking mails rather than having some of them in your own mailbox / app, and others in the mailbox or apps of your spouse / co planner(s).  
 
-_During the trip,_ 
+_During the trip,_  
 this app allows you to share all the details of the trip with the people going on the trip with you and that just were not that involved in the planning. It is the app in which you answer questions like: what time do we have to be at the airport? Do we have an active day in nature, or do we have a cultural day with museumsvitis? etc.  
 
-_After the trip_
-the app provides you with the schedule and with all the content you added as a memory.  
+_After the trip_  
+the app provides you the option to export the itinerary and all the content you added as a memory.  
 
 
 _The application also has the following features:_  
-:globe_with_meridians:  Show a map of the trip itinerary and show a map with the points of interest for one particular day.  
-:moneybag:  Add expenses and keep a simple overview of who owes and who gets. Including currency conversion.    
-:heavy_check_mark:  Keep a check/pack/wishlist.  
-:camera:  Each traveller on the trip can add personal logentries and photos.  
-:link:  Add documents for easy access like hotelreservations, flightconfirmations, but also copy of your passport or medical documents.  
-:game_die:  You can also entertain your fellow travellers by geting them involved in (road)tripbingo and let them win fancy badges.  
+- :globe_with_meridians:  Show a map of the trip itinerary and show a map with the points of interest for one particular day.  
+- :moneybag:  Add expenses and keep a simple overview of who owes and who gets. Including currency conversion.  
+- :heavy_check_mark:  Keep a check/pack/wishlist.  
+- :camera:  Each traveller on the trip can add personal logentries and photos.  
+- :link:  Add documents for easy access like hotelreservations, flightconfirmations, but also copy of your passport or medical documents.  
+- :game_die:  You can also entertain your fellow travellers by geting them involved in (road)tripbingo and let them win fancy badges.  
 
 _Integrations with other selfhosted apps:_  
 Add a Dawarich api key and see your tracks - did you go where you planned you would go?  
@@ -160,5 +160,5 @@ For a tripadmin, the functions to organize the trip are brought together in one 
 # Credits
 Flags from https://flagpedia.net  
 Weather from https://api.open-meteo.com  
-Leaflet https://leafletjs.com/
-Leaflet-geosearch https://smeijer.github.io/leaflet-geosearch/
+Leaflet https://leafletjs.com/  
+Leaflet-geosearch https://smeijer.github.io/leaflet-geosearch/  
