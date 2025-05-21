@@ -161,4 +161,4 @@ For a tripadmin, the functions to organize the trip are brought together in one 
 Flags from https://flagpedia.net  
 Weather from https://api.open-meteo.com  
 Leaflet https://leafletjs.com/  
-Leaflet-geosearch https://smeijer.github.io/leaflet-geosearch/  
+Leaflet-control-geocoder https://github.com/perliedman/leaflet-control-geocoder
