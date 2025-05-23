@@ -79,7 +79,6 @@
            {% endif %}
            {% if trip in admin_trips %}
            <p><a href="{% url 'tripapp:tripper_list' trip.id %}" class="btn-less-padding"><img src="{% static 'icons/iconeditbadge.png'  %}" width="40" height="40" ></a>&nbsp;{% trans "Assign Badges" %}</p>
-           <p><a href="{% url 'tripapp:planner_map' trip.id %}" class="btn-less-padding"><img src="{% static 'icons/maps-iconreverse.png' %}" width="40" height="40" ></a>&nbsp;{% trans "Tripmap" %}</p>
            {% endif %}
           
           <br /><br />

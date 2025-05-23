@@ -55,7 +55,7 @@ from collections import Counter
 from statistics import mean
 
 from rest_framework import viewsets
-from .serializers import TripSerializer
+from .serializers import TripSerializer, TripMapDataSerializer
 from django.contrib.auth.forms import AuthenticationForm
 
 from django.templatetags.static import static
@@ -480,8 +480,6 @@ def mytribes_badges_view(request):
 
 
 
-
-
 def get_country_coords(country_code):
     url = f"https://nominatim.openstreetmap.org/search?country={country_code}&format=json&limit=1"
     response = requests.get(url, headers={'User-Agent': 'trip-planner-app'})
@@ -594,38 +592,6 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
     }
 
     return render(request, 'tripapp/trip_dayprogram_points.html', context) 
-
-@login_required
-def trip_dayprogram_points_planner(request, trip_id, dayprogram_id):
-    trip = get_object_or_404(Trip, pk=trip_id)
-    trippers = trip.trippers.all()
-    dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
-    trip_points = Point.objects.filter(trip=trip)
-
-    points = trip_points.filter(dayprograms=dayprogram)
-    filter_date = dayprogram.tripdate
-    start_of_day = timezone.make_aware(datetime.combine(filter_date, datetime.min.time()))
-    end_of_day = start_of_day + timedelta(days=1)
-    locations = Location.objects.filter(tripper__in=trippers,timestamp__range=(start_of_day, end_of_day))
-    photolocations = ImmichPhotos.objects.filter(tripper__in=trippers,timestamp__range=(start_of_day, end_of_day))
-
-    trip_name_no_spaces = trip.name.replace(" ", "")
-    tribe_name_no_spaces = trip.tribe.name.replace(" ","")
-    first_point = points.first() if points.exists() else None
-
-    context = {
-        'trip': trip,
-        'dayprogram': dayprogram,
-        'points': points,
-        'trip_name_no_spaces':trip_name_no_spaces,
-        'tribe_name_no_spaces' : tribe_name_no_spaces,
-        'first_point': first_point,
-        'locations': locations,
-        'photolocations': photolocations,
-    }
-
-    return render(request, 'tripapp/trip_dayprogram_points_planner.html', context) 
-
 
 
 @tripper_required
@@ -1021,26 +987,6 @@ def tripadmin_bingocards(request, trip_id):
 
 def permission_denied(request):
     return render(request, 'tripapp/permission_denied.html')
-
-def facilmap(request):
-    return render(request, 'tripapp/facilmap.html')
-
-def planner_map(request, trip_id):
-    trip = get_object_or_404(Trip, pk=trip_id)
-    trip_name_no_spaces = trip.name.replace(" ", "")
-    tribe_name_no_spaces = trip.tribe.name.replace(" ","")
-
-    context = {
-      'trip' : trip,
-      'trip_name_no_spaces' : trip_name_no_spaces,
-      'tribe_name_no_spaces' : tribe_name_no_spaces
-    }
-    if trip.use_facilmap:
-       return render(request, 'tripapp/planner_map.html', context )
-    else:
-       points = trip.points.prefetch_related('dayprograms')
-       return render(request, 'tripapp/trip_map.html', {'trip': trip, 'points': points})
-
 
 @csrf_exempt
 def save_event(request):
@@ -1762,6 +1708,8 @@ def reorder_dayprograms(request, trip_id):
 
 from rest_framework import generics
 from rest_framework_api_key.permissions import HasAPIKey
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 class TripViewSet(viewsets.ModelViewSet):
     permission_classes = [HasAPIKey]
@@ -1784,3 +1732,28 @@ class TripsByTripperView(generics.ListAPIView):
     def get_queryset(self):
         tripper_id = self.kwargs['tripper_id']
         return Trip.objects.filter(trippers__id=tripper_id).order_by('-date_from')
+
+
+class TribeMapDataAPIView(APIView):
+    permission_classes = [HasAPIKey]
+
+    def get(self, request, tribe_id):
+        tribe = get_object_or_404(Tribe, id=tribe_id)
+        trips = Trip.objects.filter(tribe=tribe)
+
+        data = []
+        for trip in trips:
+            code = trip.get_first_country_code()
+            coords = get_country_coords(code or 'nl')
+            if coords:
+                photo_url = trip.image.url if trip.image else static('favicon/apple-touch-icon.png')
+                data.append({
+                    'name': trip.name,
+                    'latitude': coords[0],
+                    'longitude': coords[1],
+                    'photo_url': request.build_absolute_uri(photo_url),
+                    'trip_url': request.build_absolute_uri(reverse('tripapp:trip_detail', kwargs={'slug': trip.slug})),
+                })
+
+        serializer = TripMapDataSerializer(data, many=True)
+        return Response(serializer.data)
