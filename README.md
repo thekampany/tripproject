@@ -147,8 +147,6 @@ After creating the .env and docker-compose.yml file do:
 
 
 # Screenshots
-Users see the programme of the trip, see a map of the trip, read the information for a specific day, add suggestions for the day themselves, add photos and text of what they saw, as a reference for later. Trippers can also participate in the tripbingo and see how many badges they have in comparison to the others.
-For a tripadmin, the functions to organize the trip are brought together in one overview.
 
 ![Screenshot](/screenshots/trippanion-screenshot-1-mytrips.png )
 ![Screenshot](/screenshots/trippanion-screenshot-2-tripdetail.png )

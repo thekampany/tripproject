@@ -999,7 +999,8 @@ def save_event(request):
         trip_id = request.POST.get('trip')
         trip = get_object_or_404(Trip, pk=trip_id)
         dayprogram_id = request.POST.get('dayprogram')
-        dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
+        if dayprogram_id:
+           dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
 
         if event_id:
             # Update existing event
@@ -1010,7 +1011,8 @@ def save_event(request):
             event.longitude = longitude
             event.trip = trip
             event.save()
-            event.dayprograms.add(dayprogram) 
+            if dayprogram_id:
+               event.dayprograms.add(dayprogram) 
         else:
             # Create new event
             event = Point.objects.create(
@@ -1020,7 +1022,8 @@ def save_event(request):
                 longitude=longitude,
                 trip = trip
             )
-            event.dayprograms.add(dayprogram)
+            if dayprogram_id:
+               event.dayprograms.add(dayprogram)
 
         return JsonResponse({'message': 'Event saved successfully!'})
 

@@ -45,9 +45,10 @@
 
     <h1>{{ trip.name }} Map</h1>
 
-
-
-    <div id="map"></div>
+    <div id="map"
+        data-trip-id="{{ trip.id }}"
+        data-csrf="{{ csrf_token }}">
+    </div>
   
     {% if locations_truncated %}
     <p>Only the first {{ max_locations }} locations are shown. See more via tripdayprograms.</p>
@@ -237,115 +238,54 @@
 
         L.control.layers(null, validOverlays, { collapsed: true ,position: 'bottomright'}).addTo(map);
  
-        function handleMapLongPress(map) {
-            var pressTimer;
-            var latLng;
-
-            map.getContainer().addEventListener('contextmenu', function(e) {
-                e.preventDefault();
-            });
-
-            map.on('touchstart', function(e) {
-                latLng = e.latlng;
-
-                pressTimer = setTimeout(function() {
-                    console.log('Longpress detected at:', latLng);
-
-                    var newMarker = L.marker(latLng).addTo(map);
-
-                    newMarker.bindPopup(
-                        `<div class="p-2 leaflet-custom-popup" style="min-width:200px;">
-                    <div class="form-group">
-                    <input type="text" id="event-name" class="form-control mb-2" placeholder="Point Description">
-                    </div>
-                    <div class="form-group">
-                    <select id="event-type" class="form-control mb-3">
-                        <option value="default" selected>Default</option>
-                        <option value="bed">Bed</option>
-                        <option value="restaurant">Restaurant</option>
-                    </select>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                    <button id="save-event" class="btn">Save</button>
-                    <button id="delete-event" class="btn">Delete</button>
-                    </div>
-                </div>`
-                   ).openPopup();
-
-                    newMarker.on('popupopen', function() {
-                        document.getElementById('save-event').addEventListener('click', function() {
-                            var eventName = document.getElementById('event-name').value;
-                            var eventType = document.getElementById('event-type').value; 
-                                $.ajax({
-                                url: '/save_event/',
-                                method: 'POST',
-                                data: {
-                                    'name': eventName,
-                                    'type': eventType,
-                                    'latitude': latLng.lat,
-                                    'longitude': latLng.lng,
-                                    'trip': {{ trip.id }},
-                                    'csrfmiddlewaretoken': '{{ csrf_token }}'
-                                },
-                                success: function(response) {
-                                    console.log('Event saved successfully!');
-                                },
-                                error: function(xhr, status, error) {
-                                    console.error('Error saving event:', error);
-                                }
-                            });
-
-                            map.closePopup();
-                        });
-
-                        document.getElementById('delete-event').addEventListener('click', function() {
-                            map.removeLayer(newMarker);
-                            map.closePopup();
-                        });
-                    });
-
-                }, 800); 
-            });
-
-            map.on('touchend touchcancel', function() {
-                clearTimeout(pressTimer);
-            });
-        }
-
-        handleMapLongPress(map);
 
         // Function to handle double-clicks on the map
         function handleMapDoubleClick(map) {
+            const mapElement = document.getElementById('map');
+            const tripId = mapElement.dataset.tripId;
+            const csrfToken = mapElement.dataset.csrf;
+            console.log("Trip Id", tripId);
             console.log("Attaching dblclick event listener to map...");
-            map.on('dblclick', function(e) {
-                var latLng = e.latlng;
-                console.log('doubleclicked!');
 
-                var newMarker = L.marker(latLng).addTo(markers);
+            map.on('dblclick', function (e) {
+                var latLng = e.latlng;
+                console.log('doubleclicked!', latLng);
+
+                var newMarker = L.marker(latLng).addTo(map);
 
                 newMarker.bindPopup(
                     `<div class="p-2 leaflet-custom-popup" style="min-width:200px;">
-                    <div class="form-group">
-                    <input type="text" id="event-name" class="form-control mb-2" placeholder="Point Description">
-                    </div>
-                    <div class="form-group">
-                    <select id="event-type" class="form-control mb-3">
-                        <option value="default" selected>Default</option>
-                        <option value="bed">Bed</option>
-                        <option value="restaurant">Restaurant</option>
-                    </select>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                    <button id="save-event" class="btn">Save</button>
-                    <button id="delete-event" class="btn">Delete</button>
-                    </div>
-                </div>`
+                        <div class="form-group">
+                            <input type="text" class="form-control mb-2 event-name" placeholder="Point Description">
+                        </div>
+                        <div class="form-group">
+                            <select class="form-control mb-3 event-type">
+                                <option value="default" selected>Default</option>
+                                <option value="bed">Bed</option>
+                                <option value="restaurant">Restaurant</option>
+                            </select>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <button class="btn save-event">Save</button>
+                            <button class="btn delete-event">Delete</button>
+                        </div>
+                    </div>`
                 ).openPopup();
 
-                newMarker.on('popupopen', function() {
-                    document.getElementById('save-event').addEventListener('click', function() {
-                        var eventName = document.getElementById('event-name').value;
-                        var eventType = document.getElementById('event-type').value; 
+                setTimeout(() => {
+                    const popupContent = document.querySelector('.leaflet-popup-content');
+
+                    const nameInput = popupContent.querySelector('.event-name');
+                    const typeSelect = popupContent.querySelector('.event-type');
+                    const saveBtn = popupContent.querySelector('.save-event');
+                    const deleteBtn = popupContent.querySelector('.delete-event');
+
+
+                    saveBtn.addEventListener('click', function () {
+                        const eventName = nameInput.value;
+                        const eventType = typeSelect.value;
+
+                        console.log('Saving event:', eventName, eventType);
 
                         $.ajax({
                             url: '/save_event/',
@@ -355,13 +295,13 @@
                                 'type': eventType,
                                 'latitude': latLng.lat,
                                 'longitude': latLng.lng,
-                                'trip': {{ trip.id }},
-                                'csrfmiddlewaretoken': '{{ csrf_token }}'
+                                'trip': tripId,
+                                'csrfmiddlewaretoken': csrfToken
                             },
-                            success: function(response) {
+                            success: function (response) {
                                 console.log('Event saved successfully!');
                             },
-                            error: function(xhr, status, error) {
+                            error: function (xhr, status, error) {
                                 console.error('Error saving event:', error);
                             }
                         });
@@ -369,11 +309,11 @@
                         map.closePopup();
                     });
 
-                    document.getElementById('delete-event').addEventListener('click', function() {
-                        markers.removeLayer(newMarker);
+                    deleteBtn.addEventListener('click', function () {
+                        map.removeLayer(newMarker);
                         map.closePopup();
                     });
-                });
+                }, 0);  
             });
         }
 
@@ -381,69 +321,6 @@
 
         map.doubleClickZoom.disable();
 
-        // Function to handle double-clicks on the map
-        function handleMapTouchStart(map) {
-            map.on('touchstart', function(e) {
-                var latLng = e.latlng;
-                console.log('Touch Event!');
-
-                var newMarker = L.marker(latLng).addTo(map);
-
-                newMarker.bindPopup(
-                    `<div class="p-2 leaflet-custom-popup" style="min-width:200px;">
-                    <div class="form-group">
-                    <input type="text" id="event-name" class="form-control mb-2" placeholder="Point Description">
-                    </div>
-                    <div class="form-group">
-                    <select id="event-type" class="form-control mb-3">
-                        <option value="default" selected>Default</option>
-                        <option value="bed">Bed</option>
-                        <option value="restaurant">Restaurant</option>
-                    </select>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                    <button id="save-event" class="btn">Save</button>
-                    <button id="delete-event" class="btn">Delete</button>
-                    </div>
-                </div>`
-               ).openPopup();
-
-                newMarker.on('popupopen', function() {
-                    document.getElementById('save-event').addEventListener('click', function() {
-                        var eventName = document.getElementById('event-name').value;
-                        var eventType = document.getElementById('event-type').value; 
-
-                        $.ajax({
-                            url: '/save_event/',
-                            method: 'POST',
-                            data: {
-                                'name': eventName,
-                                'type': eventType, 
-                                'latitude': latLng.lat,
-                                'longitude': latLng.lng,
-                                'trip': {{ trip.id }},
-                                'csrfmiddlewaretoken': '{{ csrf_token }}'
-                            },
-                            success: function(response) {
-                                console.log('Event saved successfully!');
-                            },
-                            error: function(xhr, status, error) {
-                                console.error('Error saving event:', error);
-                            }
-                        });
-
-                        map.closePopup();
-                    });
-
-                    document.getElementById('delete-event').addEventListener('click', function() {
-                        markers.removeLayer(newMarker);
-                        map.closePopup();
-                    });
-                });
-            });
-        }
-
-        handleMapTouchStart(map);
 
     </script>
     <p>&nbsp;</p>
