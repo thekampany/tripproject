@@ -106,7 +106,6 @@
         {% endfor %}
     ];
 
-
     trippoints.forEach(function(point) {
 
         if (point.photo_url) {
@@ -119,13 +118,28 @@
             });
 
             var marker = L.marker([point.latitude, point.longitude], { icon: tripIcon }).addTo(map);
+            marker.trip_url = point.trip_url;
+            marker.tripname = point.tripname;
     
-            marker.on('click', function () {
-                window.location.href = point.trip_url;
+            oms.addMarker(marker);
+
+            marker.on('click', function() {
+                if (!spiderfiedMarkers.has(marker)) {
+                    window.location.href = marker.trip_url;
+                }
             });
 
-            oms.addMarker(marker);        }
+         }
     });
+
+    oms.addListener('click', function(marker) {
+        var popupContent = `<strong>${marker.tripname}</strong><br><a href="${marker.trip_url}">see trip</a>`;
+        marker.bindPopup(popupContent).openPopup();
+    });
+
+    if (trippoints.length === 1) {
+        window.location.href = trippoints[0].trip_url;
+    }
 
     var allMarkers = oms.getMarkers();
     if (allMarkers.length > 0) {

@@ -263,9 +263,6 @@
                             <a href="{% url 'tripapp:tripper_list' trip.id %}">
                                 <img src="{% static 'icons/iconeditbadge.png' %}" alt="Edit Badges">
                             </a>
-                            <a href="{% url 'tripapp:planner_map' trip.id %}">
-                                <img src="{% static 'icons/maps-iconreverse.png' %}" alt="Planner Map">
-                            </a>
                         {% endif %}
                         {% if tripper %}
                         <a href="{% url 'tripapp:trip_dayprograms' trip.id %}">

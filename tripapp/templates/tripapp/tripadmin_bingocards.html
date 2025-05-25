@@ -2,6 +2,10 @@
 
 {% block content %}
     <h1>BingoCards for Trip {{ trip.name }}</h1>
+    {% if user_is_tripper %}
+        <a href="{% url 'tripapp:add_bingocard' trip.id %}" class="btn">Add BingoCard</a>
+    {% endif %}
+    <p>&nbsp;</p>
    <table class="table">
         <thead>
             <tr>
@@ -24,9 +28,6 @@
             {% endfor %}
         </tbody>
     </table>
-    {% if user_is_tripper %}
-    <a href="{% url 'tripapp:add_bingocard' trip.id %}" class="btn">Add BingoCard</a>
-    {% endif %}
     <p>&nbsp;</p>
     <p>
     <a href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id %}">Back to Organize Trip</a>

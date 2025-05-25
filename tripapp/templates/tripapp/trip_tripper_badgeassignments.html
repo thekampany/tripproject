@@ -3,10 +3,12 @@
 <html>
 <head>
     <title>{{ tripper.name }}'s Badges</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
 </head>
 <body>
 <div class="card">
+<div class="container">
  
     <h1>{{ tripper.name }}'s Badges in {{ trip.name }}</h1>
     <div class="badgecontainer">
@@ -20,10 +22,8 @@
             {% endif %}
         {% endfor %}
     </div>
-</div>
+    <p>&nbsp;</p>
 
-<div class="card">
-<div class="container">
     <a href="{% url 'tripapp:trip_trippers' trip.id %}">Back to Trippers</a>
 </div>
 </div>

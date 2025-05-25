@@ -171,11 +171,7 @@
    
 
     <div class="tripmenucontainer">
-        {% if not trip.use_facilmap %}
         <div class="tripmenuitem"><a href="{% url 'tripapp:trip_map_view' trip.id %}" class="btn"><img src="{% static 'icons/maps-iconreverse.png'  %}" width="56" height="50"></a></div>
-        {% else %}
-        <div class="tripmenuitem"><a href="{% url 'tripapp:planner_map' trip.id %}" class="btn"><img src="{% static 'icons/maps-iconreverse.png'  %}" width="56" height="50"></a></div>
-        {% endif %}
         {% if tripper %}
         <div class="tripmenuitem"><a href="{% url 'tripapp:trip_tripper_bingocard' trip.id %}" class="btn"><img src="{% static 'icons/bingoicon-removebgreverse.png'  %}" width="56" height="50"></a></div>
         {% else %}

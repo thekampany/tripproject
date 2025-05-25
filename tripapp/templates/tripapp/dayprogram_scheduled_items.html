@@ -3,10 +3,10 @@
 
 
 {% block content %}
-<h1>Scheduled Items for {{ dayprogram.tripdate }}</h1>
+<h1>Scheduled Items for {{ dayprogram.tripdate|date:"d-M" }}</h1>
 
 <div>
-    <a href="{% url 'tripapp:add_scheduled_item' dayprogram.id %}" class="btn">+ Add Scheduled Item</a>
+    <a href="{% url 'tripapp:add_scheduled_item' dayprogram.id %}" class="btn">Add Scheduled Item</a>
 </div>
 
 <table class="table table-striped mt-3">
@@ -23,7 +23,8 @@
     <tbody>
         {% for item in scheduled_items %}
         <tr>
-            <td>
+            <td colspan="5">
+                <a href="{% url 'tripapp:edit_scheduled_item' dayprogram.id item.id %}">
                 {% if item.category == 'Transportation' %}
                     {% if item.transportation_type != 'Other' %}
                         {{ item.transportation_type }}
@@ -33,16 +34,16 @@
                 {% else %}
                     {{ item.category }}
                 {% endif %}
+                {{ item.start_time|time:"H:i" }}
+                {{ item.end_time|time:"H:i" }}
+                {{ item.start_address }}
+                {{ item.end_address }}
+                </a>
             </td>
-            <td>{{ item.start_time|time:"H:i" }}</td>
-            <td>{{ item.end_time|time:"H:i" }}</td>
-            <td>{{ item.start_address }}</td>
-            <td>{{ item.end_address }}</td>
             <td>
-                <a href="{% url 'tripapp:edit_scheduled_item' dayprogram.id item.id %}" class="btn">Edit</a>
                 <form action="{% url 'tripapp:delete_scheduled_item' dayprogram.id item.id %}" method="post" style="display:inline;">
                     {% csrf_token %}
-                    <button type="submit" class="btn" onclick="return confirm('Are you sure you want to delete this item?');">Delete</button>
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this item?');">Delete</button>
                 </form>
             </td>
         </tr>
@@ -53,5 +54,4 @@
         {% endfor %}
     </tbody>
 </table>
-<!--<a href="{% url 'tripapp:dayprogram_detail' dayprogram.id %}" class="btn btn-secondary">Back to Day Program</a>-->
 {% endblock %}

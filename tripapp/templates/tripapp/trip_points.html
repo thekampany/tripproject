@@ -3,36 +3,34 @@
 
 {% block content %}
     <h1>Points for Trip {{ trip.name }}</h1>
+
+    <a href="{% url 'tripapp:add_point' trip.id %}" class="btn">Add Point</a>
+    <br /><br />
     <table class="table">
         <thead>
             <tr>
                 <th>{% trans "Point description" %}</th>
-                <th>Latitude</th>
-                <th>Longitude</th>
                 <th>Day Programs</th>
-                <th>Edit</th>
                 <th>Delete</th>
             </tr>
         </thead>
         <tbody>
             {% for point in points %}
                 <tr>
-                    <td>{{ point.name }}</td>
-                    <td>{{ point.latitude }}</td>
-                    <td>{{ point.longitude }}</td>
-                    <td>
-                        {% for dayprogram in point.dayprograms.all %}
-                            {{ dayprogram.tripdate }}<br>
-                        {% endfor %}
+                    <td><a href="{% url 'tripapp:edit_point' trip.id point.id %}">{{ point.name }}<br />
+                        Lat: {{ point.latitude }}<br />
+                        Lng: {{ point.longitude }}</a>
                     </td>
                     <td>
-                        <a href="{% url 'tripapp:edit_point' trip.id point.id %}" class="btn">Edit</a>
+                        {% for dayprogram in point.dayprograms.all %}
+                            {{ dayprogram.tripdate|date:"d-M" }}<br>
+                        {% endfor %}
                     </td>
                     <td>
                         {% if user.is_staff %}
                         <form action="{% url 'tripapp:delete_point' trip.id point.id %}" method="post" style="display:inline;">
                             {% csrf_token %}
-                            <button type="submit" class="btn" onclick="return confirm('Are you sure you want to delete this point?');">Delete</button>
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this point?');">Delete</button>
                         </form>
                         {% endif %}
                     </td>
@@ -40,8 +38,10 @@
             {% endfor %}
         </tbody>
     </table>
-    <a href="{% url 'tripapp:add_point' trip.id %}" class="btn">Add Point</a>
-    <br /><br />
+    <p>&nbsp;</p>
+    <a href="{% url 'tripapp:upload_route' trip.id %}" class="btn">Upload a Route</a>
+    <p>&nbsp;</p>
+
     <table class="table">
         <thead>
             <tr>
@@ -55,7 +55,7 @@
                 <tr>
                     <td>{{ route.description }}</td>
                     <td>
-                        {{ route.dayprogram.tripdate }}
+                        {{ route.dayprogram.tripdate|date:"d-M" }}
                     </td>
                     <td>
                         {% if user.is_staff %}
@@ -69,7 +69,6 @@
             {% endfor %}
         </tbody>
     </table>
-    <a href="{% url 'tripapp:upload_route' trip.id %}" class="btn">Upload a Route</a>
     <p>&nbsp;</p>
     <p>
     <a href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id %}">Back to Organize Trip</a>&nbsp;|&nbsp;

@@ -1124,6 +1124,7 @@ def add_badge_and_question(request, dayprogram_id):
         'dayprogram': dayprogram
     })
 
+@login_required
 def add_link(request, dayprogram_id):
     dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
 
@@ -1141,6 +1142,51 @@ def add_link(request, dayprogram_id):
         'form': form,
         'dayprogram': dayprogram
     })
+
+@login_required
+def edit_link(request, dayprogram_id, link_id):
+    dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
+    link = get_object_or_404(Link, pk=link_id)
+
+    if request.method == 'POST':
+        form = LinkForm(request.POST, instance=link, dayprogram=dayprogram)
+        if form.is_valid():
+            form.save()
+            return redirect('tripapp:dayprogram_links', dayprogram_id=dayprogram.id)
+    else:
+        form = LinkForm(instance=link, dayprogram=dayprogram)
+
+    return render(request, 'tripapp/edit_link.html', {'form': form, 'link': link})
+
+@login_required
+def delete_link(request, dayprogram_id, link_id):
+    if request.method == 'POST':
+       dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
+       link = get_object_or_404(Link, id=link_id)
+       link.delete()
+       return redirect('tripapp:dayprogram_links', dayprogram_id=dayprogram.id)
+    else:
+       return redirect('tripapp:dayprogram_links', dayprogram_id=dayprogram.id)
+
+
+
+@login_required
+def dayprogram_links(request, dayprogram_id):
+    dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
+    links = dayprogram.links.all()
+    trip = dayprogram.trip
+    try:
+        tripper = Tripper.objects.get(name=request.user, trips=trip)
+        is_trip_admin = tripper.is_trip_admin
+    except Tripper.DoesNotExist:
+        is_trip_admin = False
+    return render(request, 'tripapp/dayprogram_links.html', {
+        'dayprogram': dayprogram,
+        'links': links,
+        'is_trip_admin': is_trip_admin,
+    })
+
+
 
 @login_required
 def upload_route(request,trip_id):

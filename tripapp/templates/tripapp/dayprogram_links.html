@@ -1,0 +1,35 @@
+{% extends "base_generic.html" %}
+{% block content %}
+    <h1>Links for Day Program {{ dayprogram.tripdate|date:"d-M" }}</h1>
+    <a href="{% url 'tripapp:add_link' dayprogram.id %}" class="btn">Add Link</a>
+    <br /><br />
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Link or Document</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for link in links %}
+                <tr>
+                    <td>
+                        <a href="{% url 'tripapp:edit_link' dayprogram.id link.id %}">
+                            {{ link.description }}&nbsp;{{ link.category }}
+                            {% if link.url %}{{ link.url }}{% endif %}
+                            {% if link.document %}{{ link.document }}{% endif %}
+                        </a>
+                </td>
+                <td>
+                    {% if is_trip_admin %}
+                    <form action="{% url 'tripapp:delete_link' dayprogram.id link.id %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this link?');">Delete</button>
+                    </form>
+                    {% endif %}                
+                </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
