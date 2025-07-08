@@ -91,7 +91,7 @@ def assign_badges():
                     logentry_count = LogEntry.objects.filter(tripper=tripper).count()
                     
                     if logentry_count >= badge.threshold_value:
-                        if not tripper.badges.filter(pk=badge.pk).exists(): 
+                        if not BadgeAssignment.objects.filter(tripper=tripper, badge=badge).exists():
                             tripper.badges.add(badge)
                             tripper.save()
                             BadgeAssignment.objects.create(tripper=tripper, badge=badge)
@@ -118,11 +118,9 @@ def assign_badges():
                 
                 for tripper in trippers:
                     if tripper.dawarich_api_key or tripper.immich_api_key:
-                        if not tripper.badges.filter(pk=api_key_badge.pk).exists(): 
-                            tripper.badges.add(api_key_badge)
-                            tripper.save()
-                            BadgeAssignment.objects.create(tripper=tripper, badge=api_key_badge)
-                            logs.append(f"Badge '{api_key_badge.name}' assigned to Tripper {tripper.name} for having an API key.")
+                        if not BadgeAssignment.objects.filter(tripper=tripper, badge=api_key_badge).exists():
+                           BadgeAssignment.objects.create(tripper=tripper, badge=api_key_badge) 
+                           logs.append(f"Badge '{api_key_badge.name}' assigned to Tripper {tripper.name} for having an API key.")
                     else:
                         logs.append(f"None found, no badge")
     else:
@@ -145,7 +143,7 @@ def assign_badges():
         for tripper in trippers:
             for multiple_trips_badge in multiple_trips_badges:
                 if tripper.trip_count >= multiple_trips_badge.threshold_value:
-                    if not tripper.badges.filter(pk=multiple_trips_badge.pk).exists():
+                    if not BadgeAssignment.objects.filter(tripper=tripper, badge=multiple_trips_badge).exists():
                         tripper.badges.add(multiple_trips_badge)
                         assignments.append(BadgeAssignment(tripper=tripper, badge=multiple_trips_badge))
                         logs.append(f"Badge '{multiple_trips_badge.name}' assigned to Tripper {tripper.name} for participating in {tripper.trip_count} trips.")

@@ -1,18 +1,11 @@
+{% extends "base_generic.html" %}
 {% load static %}
 {% load crispy_forms_tags %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Add Image</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
-</head>
-<body>
-<div class="card">
-<div class="container">
-    <h1>Add Image for: {{ dayprogram.tripdate }}</h1><br />
-    {{ dayprogram.description }}
+
+{% block content %}
+
+    <h1>Add Image</h1><br />
+    <b>{{ dayprogram.description }}&nbsp;{{ dayprogram.tripdate }}</b>
     <br /><br />
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
@@ -37,7 +30,4 @@
     </form>
     <br />
     <a href="{% url 'tripapp:dayprogram_detail' dayprogram.id %}">Back to Day Program</a>
-</div>
-</div>
-</body>
-</html>
+{% endblock %}

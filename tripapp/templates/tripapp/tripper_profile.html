@@ -16,17 +16,20 @@
 <hr>
 <p>&nbsp;</p>
 <h1>{{ tripper.name }}'s {% trans "Documents" %}</h1>
-
+  <table>
   {% for document in documents %}
-      <a href="{{ document.document.url }}"><img src="{{ document.document.url }}" height="60"></a>
-      <a href="{{ document.document.url }}">{{ document.description }}</a>
-      <form method="post" action="{% url 'tripapp:delete_tripper_document' document.id %}" style="display: inline;">
+      <tr>
+      <td><a href="{{ document.document.url }}"><img src="{{ document.document.url }}" height="60"></a></td>
+      <td><a href="{{ document.document.url }}">{{ document.description }}</a></td>
+      <td><form method="post" action="{% url 'tripapp:delete_tripper_document' document.id %}" style="display: inline;">
         {% csrf_token %}
         <button type="submit">{% trans "Delete" %}</button>
-      </form>
+      </form></td>
+      </tr>
   {% empty %}
-    {% trans "No documents uploaded yet" %}
+    <tr><td>{% trans "No documents uploaded yet" %}</td></tr>
   {% endfor %}
+  </table>
 
 <p>&nbsp;</p>
 <h3>Upload new document</h3>

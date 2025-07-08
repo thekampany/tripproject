@@ -2,7 +2,9 @@
 {% load crispy_forms_tags %}
 {% block content %}
 
-    <h1>Add Log Entry for {{ dayprogram.trip.name }} on {{ dayprogram.tripdate }}</h1>
+    <h1>Add Log Entry</h1><br />
+    <b>{{ dayprogram.description }}&nbsp;{{ dayprogram.tripdate }}</b>
+    <br /><br />
     <form method="post">
         {% csrf_token %}
         {{ form|crispy }}
