@@ -136,6 +136,55 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
             transition: background-color 0.2s;
             }
+            .fab3 {
+            position: fixed;
+            bottom: 20px;
+            right: 140px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.4);
+            color: white;
+            font-size: 24px;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            transition: background-color 0.2s;
+            }
+
+
+            .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-auto-rows: 40px;
+            }
+
+            .cell {
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            font-family: sans-serif;
+            color: #001f4d;
+            }
+
+            .cell-white {
+            background: rgba(255, 255, 255, 0.2);
+            justify-content: flex-start;
+            }
+
+            .cell-gradient {
+            background: radial-gradient(
+                ellipse farthest-side at right center,
+                #001f4d 0%,
+                rgba(255, 255, 255, 0.2) 100%
+            );
+            justify-content: flex-end;
+            color: white;
+            }
 
 </style>
 </head>
@@ -202,6 +251,31 @@
     <br />
     <h2>{% trans "Programme" %}</h2>
 
+
+    {% if view_mode == "grid" %}
+        
+    <div class="grid">
+    {% for day_program in dayprograms %}
+        <div class="cell cell-white">
+        <a href="{% url 'tripapp:dayprogram_detail' day_program.id %}" class="tripdetail">
+            {{ day_program.dayprogramnumber }} ({{ day_program.tripdate|date:"d M" }}) - <i>{{ day_program.description }}</i>
+        </a>
+        </div>
+
+        
+        <div class="cell cell-gradient">
+            {% if day_program.overnight_location %}
+            {{ day_program.overnight_location }} &#127769;
+            {% else %}
+            &nbsp;
+            {% endif %}
+        </div>
+        
+    {% endfor %}
+    </div>
+
+
+    {% else %}
         <ul id="dayprogram-list" class="dayprogram-list">
             {% for day_program in dayprograms %}
                 <li class="dayprogram-item 
@@ -221,10 +295,20 @@
                 </li>
             {% endfor %}
         </ul>
-        
-        {% if tripper.is_trip_admin %}
-            {% if trip.date_to|date:'Y-m-d' > today|date:'Y-m-d'  %}
-            <div align="right"><button id="save-order-btn" class="fab2">&#128190;</button></div>
+
+
+
+        {% endif %}  
+
+        {% if view_mode == "grid" %}
+            <a href="?view=list" class="fab2">&#127765;</a>
+        {% else %}
+            <a href="?view=grid" class="fab2">&#127769;</a>
+
+            {% if tripper.is_trip_admin %}
+                {% if trip.date_to|date:'Y-m-d' > today|date:'Y-m-d'  %}
+                <div align="right"><button id="save-order-btn" class="fab3">&#128190;</button></div>
+                {% endif %}
             {% endif %}
         {% endif %}
         

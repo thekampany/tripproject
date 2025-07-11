@@ -120,6 +120,7 @@ class DayProgram(models.Model):
     map_image = models.ImageField(upload_to='maps/', blank=True, null=True)  
     recorded_weather = models.JSONField(null=True, blank=True)
     recorded_weather_text = models.TextField(null=True, blank=True)
+    overnight_location = models.CharField(max_length=255, blank=True, null=True, help_text="Spend the night in (eg. camping, hotelname, city)")
 
     def __str__(self):
         return f"{self.trip.name} - {self.dayprogramnumber} - {self.description[:50]}"

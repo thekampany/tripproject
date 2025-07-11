@@ -113,7 +113,8 @@
     <div class="hero">
         <div class="hero-content">
             <span style="font-style: italic; font-size: 0.9rem;">{{ APP_NAME }} {{ VERSION }}</span>
-            <h1>{% trans "Welcome" %}{% if user.is_authenticated %}&nbsp;{{ user.username }}{% endif %} !</h1>
+            <h1>{% if user.is_authenticated %}{{ user.username }},<br>{% endif %}
+                {% trans "Welcome" %}!</h1>
             <p>
                 {% blocktrans %}
                 You and your friends go on a trip. Here you can share all the details of the trip with the people going on the trip (the Trippers),

@@ -165,16 +165,46 @@ class TribeCreationForm(forms.ModelForm):
 
 
 class DayProgramForm(forms.ModelForm):
+    overnight_point = forms.ModelChoiceField(
+        queryset=Point.objects.none(),
+        required=False,
+        label='Choose optional overnight location',
+        help_text='Select existing location (type "bed")',
+    )
+
     class Meta:
         model = DayProgram
-        fields = ['description', 'tripdate', 'dayprogramnumber', 'necessary_info','possible_activities']
+        fields = ['description', 'tripdate', 'dayprogramnumber', 'necessary_info',
+                  'possible_activities', 'overnight_point', 'overnight_location']
         widgets = {
             'tripdate': forms.DateInput(attrs={'type': 'date'}),
-            'description': forms.TextInput(attrs={'maxlength': 50}), 
+            'description': forms.TextInput(attrs={'maxlength': 50}),
+            'overnight_location': forms.TextInput(attrs={'placeholder': 'Or enter text'}),
         }
+
     def __init__(self, *args, **kwargs):
+        trip = kwargs.pop('trip', None)
         super().__init__(*args, **kwargs)
-        self.fields['description'].validators.append(MaxLengthValidator(50))  
+        self.fields['description'].validators.append(MaxLengthValidator(50))
+
+        if trip:
+            self.fields['overnight_point'].queryset = Point.objects.filter(trip=trip, marker_type='bed')
+
+        if self.instance.pk:
+            related_points = self.instance.points.filter(marker_type='bed')
+            if related_points.exists():
+                self.fields['overnight_point'].initial = related_points.first()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        point = cleaned_data.get('overnight_point')
+        location = cleaned_data.get('overnight_location')
+
+        if point and not location:
+            cleaned_data['overnight_location'] = point.name
+        return cleaned_data
+
+ 
     
 class QuestionForm(forms.ModelForm):
     class Meta:

@@ -160,6 +160,7 @@ def trip_detail(request, slug):
     tripper = None
     if request.user.is_authenticated:
         tripper = Tripper.objects.filter(user=request.user).first()
+    view_mode = request.GET.get("view", "list")
 
     return render(request, 'tripapp/trip_detail.html', {
         'trip': trip,
@@ -167,7 +168,8 @@ def trip_detail(request, slug):
         'checklist': checklist,
         'items': checklist_items,
         'today': today,
-        'tripper': tripper
+        'tripper': tripper,
+        'view_mode': view_mode
     })
 
 @login_required
@@ -820,13 +822,15 @@ def tripper_list(request, trip_id):
 @login_required
 def edit_dayprogram(request, dayprogram_id):
     dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
+    trip = dayprogram.trip
+
     if request.method == 'POST':
-        form = DayProgramForm(request.POST, instance=dayprogram)
+        form = DayProgramForm(request.POST, instance=dayprogram, trip=trip)
         if form.is_valid():
             form.save()
             return redirect('tripapp:trip_dayprograms', trip_id=dayprogram.trip.id)
     else:
-        form = DayProgramForm(instance=dayprogram)
+        form = DayProgramForm(instance=dayprogram, trip=trip)
     return render(request, 'tripapp/edit_dayprogram.html', {
         'form': form,
         'dayprogram': dayprogram,
