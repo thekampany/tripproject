@@ -1,12 +1,53 @@
 {% extends "base_generic.html" %}
-{% load crispy_forms_tags %}
+{% load static %}
 {% block content %}
 
-<h2>Add Expense for {{ trip.name }}</h2>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form|crispy }}
-    <button type="submit">Add Expense</button>
-</form>
-<br />
+<div class="mt-4">
+    <h2 class="mb-3">Add Expense</h2>
+    <b>for {{ trip.name }}</b>
+    <br><br>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-12 mb-3">
+                {{ form.description.label_tag }}
+                {{ form.description }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-4 mb-3">
+                {{ form.amount.label_tag }}
+                {{ form.amount }}
+            </div>
+
+            <div class="col-4 mb-3">
+                {{ form.currency.label_tag }}
+                {{ form.currency }}
+            </div>
+            <div class="col-4 mb-3">
+                {{ form.date.label_tag }}
+                {{ form.date }}
+            </div>
+        </div>
+
+        <div class="row">
+
+            <div class="col-md-6 mb-3">
+                {{ form.category.label_tag }}
+                {{ form.category }}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form.receipt.label_tag }}
+                {{ form.receipt }}
+            </div>
+        </div>
+
+
+        <button type="submit" class="btn">Add Expense</button>
+        <br><br>
+    </form>
+</div>
+
 {% endblock %}

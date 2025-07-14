@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block content %}
-    <h1>Points for Trip {{ trip.name }}</h1>
+    <h2>Points for Trip {{ trip.name }}</h2>
 
     <a href="{% url 'tripapp:add_point' trip.id %}" class="btn">Add Point</a>
     <br /><br />

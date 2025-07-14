@@ -10,21 +10,60 @@
             Add Scheduled Item
         {% endif %}
     </h2>
-    <p>Day: {{ dayprogram.tripdate }}</p>
+    <b>Day: {{ dayprogram.tripdate|date:'d-M' }}</b>
+    <br><br>
+    <div class="mt-4"
+        <form method="post">
+            {% csrf_token %}
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form|crispy }}
-        <button type="submit" class="btn">
-            {% if scheduled_item %}
-                Update
-            {% else %}
-                Add
-            {% endif %}
-        </button>
-        <br />
-        <a href="{% url 'tripapp:dayprogram_detail' dayprogram.id %}">Cancel</a>
-        <br /><br />
-    </form>
+            <!-- Start Time + End Time -->
+            <div class="row">
+                <div class="col-6 mb-3">
+                    {{ form.start_time.label_tag }}
+                    {{ form.start_time }}
+                </div>
+                <div class="col-6 mb-3">
+                    {{ form.end_time.label_tag }}
+                    {{ form.end_time }}
+                </div>
+            </div>
+
+            <!-- Start Address -->
+            <div class="row">
+                <div class="col-12 mb-3">
+                    {{ form.start_address.label_tag }}
+                    {{ form.start_address }}
+                </div>
+            </div>
+
+            <!-- End Address -->
+            <div class="row">
+                <div class="col-12 mb-3">
+                    {{ form.end_address.label_tag }}
+                    {{ form.end_address }}
+                </div>
+            </div>
+
+            <!-- Category + Transportation Type -->
+            <div class="row">
+                <div class="col-12 col-md-6 mb-3">
+                    {{ form.category.label_tag }}
+                    {{ form.category }}
+                </div>
+                <div class="col-12 col-md-6 mb-3">
+                    {{ form.transportation_type.label_tag }}
+                    {{ form.transportation_type }}
+                </div>
+            </div>
+
+            <button type="submit" class="btn">
+                {% if scheduled_item %}Update{% else %}Add{% endif %}
+            </button>
+            <br><br>
+            <a href="{% url 'tripapp:dayprogram_detail' dayprogram.id %}">&larr; {{ dayprogram.description }}&nbsp;{{ dayprogram.tripdate|date:'d-M' }}</a>
+            <br><br>
+        </form>
+    </div>
+
 </div>
 {% endblock %}

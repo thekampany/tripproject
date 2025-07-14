@@ -411,7 +411,7 @@ def fetch_and_store_yesterdays_weather():
             f"&daily=precipitation_sum,temperature_2m_max,temperature_2m_min,sunrise,sunset"
             f"&hourly=weather_code"
             f"{temp_param}"
-            f"&timezone=Europe%2FBerlin"
+            f"&&timezone=auto"
             f"&start_date={yesterday}&end_date={yesterday}"
         )
 

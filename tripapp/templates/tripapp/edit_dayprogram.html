@@ -1,10 +1,38 @@
 {% extends "base_generic.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
-    <h1>Edit DayProgram for {{ dayprogram.trip.name }} on {{ dayprogram.tripdate|date:'d-M' }}</h1>
+    <h2>Edit DayProgram</h2>
+    <b>for {{ dayprogram.trip.name }} on {{ dayprogram.tripdate|date:'d-M' }}</b>
+    <br><br>
     <form method="post">
         {% csrf_token %}
-        {{ form|crispy }}
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <div class="row">
+            <div class="col-6 mb-3">
+                {{ form.dayprogramnumber.label_tag }}
+                {{ form.dayprogramnumber }}
+                {% if form.dayprogramnumber.help_text %}
+                    <small class="form-text text-muted">{{ form.dayprogramnumber.help_text }}</small>
+                {% endif %}
+            </div>
+            <div class="col-6 mb-3">
+                {{ form.tripdate.label_tag }}
+                {{ form.tripdate }}
+                {% if form.tripdate.help_text %}
+                    <small class="form-text text-muted">{{ form.tripdate.help_text }}</small>
+                {% endif %}
+            </div>
+        </div>
+
+        {{ form.description|as_crispy_field }}
+        {{ form.necessary_info|as_crispy_field }}
+        {{ form.possible_activities|as_crispy_field }}
+        {{ form.overnight_point|as_crispy_field }}
+        {{ form.overnight_location|as_crispy_field }}
+
+        <button type="submit" class="btn">Submit</button>
+        <br><br>
     </form>
-{% endblock %}
+
+
+
+    {% endblock %}

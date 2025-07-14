@@ -1,7 +1,7 @@
 {% extends "base_generic.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
-  <h1>Edit Tripper: {{ tripper.name }}</h1>
+  <h2>Edit Tripper: {{ tripper.name }}</h2>
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form|crispy }}

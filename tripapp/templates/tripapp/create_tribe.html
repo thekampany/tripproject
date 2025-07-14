@@ -1,7 +1,7 @@
 {% extends "base_generic.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
-    <h1>Create a New Tribe</h1>
+    <h2>Create a New Tribe</h2>
     <form method="post">
         {% csrf_token %}
         {{ form|crispy }}

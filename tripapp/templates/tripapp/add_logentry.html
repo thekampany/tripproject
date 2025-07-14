@@ -2,8 +2,8 @@
 {% load crispy_forms_tags %}
 {% block content %}
 
-    <h2>Add Log Entry</h2><br />
-    <b>{{ dayprogram.description }}&nbsp;{{ dayprogram.tripdate }}</b>
+    <h2>Add Log Entry</h2>
+    <b>{{ dayprogram.description }}&nbsp;{{ dayprogram.tripdate|date:'d-M' }}</b>
     <br /><br />
     <form method="post">
         {% csrf_token %}
@@ -11,5 +11,6 @@
         <button type="submit" class="btn">Save Log Entry</button>
     </form>
     <br />
-    <a href="{% url 'tripapp:dayprogram_detail' dayprogram.id %}">Back to Day Program</a>
-{% endblock %}
+    <a href="{% url 'tripapp:dayprogram_detail' dayprogram.id %}">&larr; {{ dayprogram.description }}&nbsp;{{ dayprogram.tripdate|date:'d-M' }}</a>
+    <br /><br />
+    {% endblock %}

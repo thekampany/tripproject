@@ -96,6 +96,8 @@ class TripForm(forms.ModelForm):
         user = kwargs.pop('user', None)
         tribe = kwargs.pop('tribe', None)  
         super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.setdefault('class', 'form-control')
         if user:
             self.fields['tribe'].queryset = user.userprofile.tribes.all()
         if tribe:
@@ -320,6 +322,8 @@ class LinkForm(forms.ModelForm):
         if dayprogram:
             self.fields['scheduled_item'].queryset = ScheduledItem.objects.filter(dayprogram=dayprogram)
 
+
+
 class RouteForm(forms.ModelForm):
     class Meta:
         model = Route
@@ -336,26 +340,27 @@ class SuggestionForm(forms.Form):
 class TripExpenseForm(forms.ModelForm):
     class Meta:
         model = TripExpense
-        fields = ['description', 'amount',  'currency', 'date', 'receipt','category']
+        fields = ['description', 'amount', 'currency', 'date', 'receipt', 'category']
         widgets = {
-            'date': forms.DateInput(attrs={'type': 'date'}),  
+            'date': forms.DateInput(attrs={'type': 'date'}),
         }
 
     def __init__(self, *args, **kwargs):
         initial = kwargs.get('initial', {})
         if 'currency' not in initial:
             initial['currency'] = settings.APP_CURRENCY
-            kwargs['initial'] = initial
-        
-        super(TripExpenseForm, self).__init__(*args, **kwargs)
-        
+        kwargs['initial'] = initial
+
+        super().__init__(*args, **kwargs)
+
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
 
     def clean_currency(self):
         currency = self.cleaned_data.get('currency')
         if currency:
             return currency.upper()
         return currency
-
 
 class TripUpdateForm(forms.ModelForm):
     class Meta:
@@ -413,6 +418,10 @@ class ScheduledItemForm(forms.ModelForm):
             'transportation_type': forms.Select(attrs={'class': 'form-control'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.setdefault('class', 'form-control')
 
 class TripperDocumentForm(forms.ModelForm):
     class Meta:

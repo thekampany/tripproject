@@ -33,8 +33,8 @@
 <div class="tripappcard">
 <div class="container">
 
-<h1>{% trans "Balance" %}</h1>
-<span style="color:gray;">{{ trip.name }}</span>
+<h2>{% trans "Balance" %}</h2>
+<b>{{ trip.name }}</b>
 <br /><br /><br />
 
 
@@ -65,9 +65,8 @@
 
 
 <p>&nbsp;</p>
-<a href="{% url 'tripapp:trip_expenses_list' trip.id %}" >{% trans "See all Expenses" %}</a>
-<p>&nbsp;</p>
-<a href="{% url 'tripapp:trip_trippers' trip.id %}" >&larr;</a>
+<a href="{% url 'tripapp:trip_expenses_list' trip.id %}" >&rarr; {% trans "See all Expenses" %}</a>&nbsp;|&nbsp;
+<a href="{% url 'tripapp:trip_trippers' trip.id %}" >&rarr; Trippers</a>
 
 </div>
 </div>

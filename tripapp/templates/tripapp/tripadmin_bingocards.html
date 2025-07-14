@@ -1,7 +1,7 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-    <h1>BingoCards for Trip {{ trip.name }}</h1>
+    <h2>BingoCards for Trip {{ trip.name }}</h2>
     {% if user_is_tripper %}
         <a href="{% url 'tripapp:add_bingocard' trip.id %}" class="btn">Add BingoCard</a>
     {% endif %}
@@ -30,7 +30,7 @@
     </table>
     <p>&nbsp;</p>
     <p>
-    <a href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id %}">Back to Organize Trip</a>
+    <a href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id %}">&larr; to Organize Trip</a>
     </p>
 
 {% endblock %}

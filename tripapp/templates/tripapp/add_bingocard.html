@@ -1,7 +1,9 @@
 {% extends "base_generic.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
-    <h1>Add BingoCard for Trip {{ trip.name }}</h1>
+    <h2>Add BingoCard</h2>
+    <b>for Trip {{ trip.name }}</b>
+    <br><br>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form|crispy }}

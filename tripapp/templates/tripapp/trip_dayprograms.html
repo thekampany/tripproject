@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block content %}
-    <h1>Day Programs {{ trip.name }}</h1>
+    <h2>Day Programs {{ trip.name }}</h2>
     <table class="table">
         <thead>
             <tr>
@@ -46,7 +46,7 @@
     {% endif %}
     <p>&nbsp;</p>
     <p>
-    <a href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id %}">Back to Organize Trip</a>&nbsp;|&nbsp;
-    <a href="{% url 'tripapp:trip_detail' slug=trip.slug  %}">Go to Trip</a>
+    <a href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id %}">&larr; to Organize Trip</a>&nbsp;|&nbsp;
+    <a href="{% url 'tripapp:trip_detail' slug=trip.slug  %}">&rarr; to Trip</a>
     </p>
 {% endblock %}

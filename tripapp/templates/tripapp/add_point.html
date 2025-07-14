@@ -1,7 +1,9 @@
 {% extends "base_generic.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
-    <h1>Add Point for Trip {{ trip.name }}</h1>
+    <h2>Add Point</h2><br>
+    <b> for Trip {{ trip.name }}</b>
+    <br><br>
     <form method="post">
         {% csrf_token %}
         {{ form|crispy }}

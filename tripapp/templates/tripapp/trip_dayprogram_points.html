@@ -203,17 +203,24 @@
         photolocationsLayer.addTo(map);
         // Set the view to fit all the markers
         var allLayers = L.featureGroup([markers, locationsLayer, photolocationsLayer]);
-        map.fitBounds(allLayers.getBounds());
-
+        var bounds = allLayers.getBounds();
+        if (bounds.isValid()) {
+            map.fitBounds(bounds);
+        }
 
         var lineCoordinates = [];
         locations.forEach(function(location) {
             lineCoordinates.push(location.coords);
         });
+        var polyline;
         if (lineCoordinates.length > 0) {
-            var polyline = L.polyline(lineCoordinates, { color: 'blue', weight: 2 }).addTo(map);
-            map.fitBounds(polyline.getBounds());
+            polyline = L.polyline(lineCoordinates, { color: 'blue', weight: 2 }).addTo(map);
+            var lineBounds = polyline.getBounds();
+            if (lineBounds.isValid()) {
+                map.fitBounds(lineBounds);
+            }
         }
+
         var heatmapData = [];
         locations.forEach(function(location) {
             heatmapData.push([...location.coords, 0.7]); 

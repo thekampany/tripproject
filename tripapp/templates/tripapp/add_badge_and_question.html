@@ -1,7 +1,9 @@
 {% extends "base_generic.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
-    <h1>Add Badge and Question for {{ dayprogram.tripdate }}</h1>
+    <h2>Add Badge and Question</h2>
+    <b>for {{ dayprogram.tripdate }}</b>
+    <br><br>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <h2>Badge Information</h2>
@@ -10,4 +12,5 @@
         {{ question_form|crispy }}
         <button type="submit">Save</button>
     </form>
+    <br><br>
 {% endblock %}
