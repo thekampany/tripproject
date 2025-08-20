@@ -120,7 +120,7 @@
         </div>
     
         <div class="nav-item nav-date">
-            <h1>{{ dayprogram.tripdate|date:'l d M' }}</h1>
+            <h1>{{ dayprogram.tripdate|date:'l j M' }}</h1>
         </div>
     
         <div class="nav-item">
@@ -335,7 +335,7 @@
             <p>
                 <span class="dayprogramcard-title">Log</span>
                 {% for log_entry in log_entries %}
-                <span style="color:gray;">{{ log_entry.tripper.name }}:</span><br /> {{ log_entry.logentry_text }}<br />
+                <span style="color:gray;">{{ log_entry.tripper.name }}:</span><br /> {{ log_entry.logentry_text|linebreaks }}<br />
                 {% endfor %}
             </p>
         </div>

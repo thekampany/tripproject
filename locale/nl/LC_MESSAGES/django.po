@@ -233,8 +233,8 @@ msgid "#Answers"
 msgstr "#Antwoorden"
 
 #: tripapp/templates/tripapp/trip_bingocard.html:152
-msgid "See all answers"
-msgstr "Alle antwoorden"
+msgid "See answers for all trippers"
+msgstr "Bekijke antwoorden van alle trippers"
 
 #: tripapp/templates/tripapp/trip_bingocard.html:155
 msgid "No Bingo created for this trip"

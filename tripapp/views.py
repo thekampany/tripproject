@@ -50,7 +50,7 @@ import zipfile
 import base64
 from django.http import FileResponse
 from io import BytesIO
-from PIL import Image
+from PIL import Image as PILImage
 from collections import Counter
 from statistics import mean
 
@@ -59,6 +59,9 @@ from .serializers import TripSerializer, TripMapDataSerializer
 from django.contrib.auth.forms import AuthenticationForm
 
 from django.templatetags.static import static
+
+import numpy as np
+from rdp import rdp   
 
 
 def index(request):
@@ -367,16 +370,12 @@ def dayprogram_detail(request, id):
 def add_image(request, dayprogram_id):
     dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
     if request.method == 'POST':
-        form = ImageForm(request.POST, request.FILES)
-        if form.is_valid():
-            image = form.save(commit=False)
-            image.day_program = dayprogram
-            image.save()
-            return redirect('tripapp:dayprogram_detail', id=dayprogram_id)
-        else:
-            print(form.errors)
-    else:
-        form = ImageForm(initial={'day_program': dayprogram})
+        files = request.FILES.getlist('images')
+        for file in files:
+            Image.objects.create(day_program=dayprogram, image=file)
+        return redirect('tripapp:dayprogram_detail', id=dayprogram_id)
+
+    form = ImageForm(initial={'day_program': dayprogram})
     return render(request, 'tripapp/add_image.html', {'form': form, 'dayprogram': dayprogram})
 
 @login_required
@@ -503,31 +502,50 @@ def trip_map_view(request, trip_id):
     end_of_day = timezone.make_aware(datetime.combine(trip.date_to, datetime.max.time()))
     trippers = trip.trippers.all()
 
-    max_locations = 5000
     all_locations = Location.objects.filter(
         tripper__in=trippers,
         timestamp__range=(start_of_day, end_of_day)
-    ).order_by('timestamp')  
-    limited_locations = all_locations[:max_locations]
+    ).order_by('timestamp')
 
-    locations_truncated = all_locations.count() > max_locations
+    # Simplify
+    coords = np.array([[loc.latitude, loc.longitude] for loc in all_locations])
+    simplified_coords = coords
+    if len(coords) > 0:
+        if len(coords) > 10000:
+            step = len(coords) // 10000
+            coords = coords[::step]
+
+        if len(coords) > 150:
+            simplified_coords = rdp(coords, epsilon=0.001)  # 100 meter
+        else:
+            simplified_coords = coords
+
+    simplified_locations = []
+    latlon_set = {(float(lat), float(lon)) for lat, lon in simplified_coords}
+    for loc in all_locations:
+        key = (float(loc.latitude), float(loc.longitude))
+        if key in latlon_set:
+            simplified_locations.append(loc)
+            latlon_set.remove(key)  
 
     photolocations = ImmichPhotos.objects.filter(
         tripper__in=trippers,
         timestamp__range=(start_of_day, end_of_day)
     )
-    first_country_code = trip.get_first_country_code() 
+
+    first_country_code = trip.get_first_country_code()
     country_coords = get_country_coords(first_country_code) if first_country_code else get_country_coords('nl')
 
     return render(request, 'tripapp/trip_map.html', {
         'trip': trip,
         'points': points,
-        'locations': limited_locations,
+        'locations': simplified_locations,  
         'photolocations': photolocations,
-        'locations_truncated': locations_truncated,
-        'max_locations': max_locations,
+        'locations_truncated': len(all_locations) > len(simplified_locations),
+        'max_locations': min(len(all_locations), len(simplified_locations)),
         'country_coords': country_coords,
     })
+
 
 @login_required
 def tribe_map_view(request, tribe_id):
@@ -571,8 +589,8 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
     filter_date = dayprogram.tripdate
     start_of_day = timezone.make_aware(datetime.combine(filter_date, datetime.min.time()))
     end_of_day = start_of_day + timedelta(days=1)
-    locations = Location.objects.filter(tripper__in=trippers,timestamp__range=(start_of_day, end_of_day))
-    photolocations = ImmichPhotos.objects.filter(tripper__in=trippers,timestamp__range=(start_of_day, end_of_day))
+    locations = Location.objects.filter(tripper__in=trippers,timestamp__range=(start_of_day, end_of_day)).order_by("timestamp")
+    photolocations = ImmichPhotos.objects.filter(tripper__in=trippers,timestamp__range=(start_of_day, end_of_day)).order_by("timestamp")
     
     trip_name_no_spaces = trip.name.replace(" ", "")
     tribe_name_no_spaces = trip.tribe.name.replace(" ","")
@@ -580,6 +598,17 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
 
     first_country_code = trip.get_first_country_code() 
     country_coords = get_country_coords(first_country_code) if first_country_code else None
+
+    previous_dayprogram = DayProgram.objects.filter(
+        trip=dayprogram.trip,
+        dayprogramnumber__lt=dayprogram.dayprogramnumber
+    ).order_by('-dayprogramnumber').first()
+
+    next_dayprogram = DayProgram.objects.filter(
+        trip=dayprogram.trip, 
+        dayprogramnumber__gt=dayprogram.dayprogramnumber
+    ).order_by('dayprogramnumber').first()
+
 
     context = {
         'trip': trip,
@@ -591,6 +620,8 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
         'locations': locations,
         'photolocations': photolocations,
         'country_coords': country_coords,
+        'previous_dayprogram' : previous_dayprogram,
+        'next_dayprogram' : next_dayprogram,
     }
 
     return render(request, 'tripapp/trip_dayprogram_points.html', context) 
@@ -650,8 +681,13 @@ def upload_answerimage(request, bingocard_id):
     bingocard = get_object_or_404(BingoCard, pk=bingocard_id)
     tripper = get_object_or_404(Tripper, name=request.user)
 
+    answer, created = BingoAnswer.objects.get_or_create(
+        tripper=tripper,
+        bingocard=bingocard,
+    )
+
     if request.method == 'POST':
-        form = BingoAnswerForm(request.POST, request.FILES)
+        form = BingoAnswerForm(request.POST, request.FILES, instance=answer)
         if form.is_valid():
             answer = form.save(commit=False)
             answer.tripper = tripper
@@ -673,9 +709,9 @@ def upload_answerimage(request, bingocard_id):
 
             return redirect('tripapp:trip_tripper_bingocard',trip_id=bingocard.trip.id) 
     else:
-        form = BingoAnswerForm()
+        form = BingoAnswerForm(instance=answer)
 
-    return render(request, 'tripapp/upload_answerimage.html', {'form': form, 'bingocard': bingocard})
+    return render(request, 'tripapp/upload_answerimage.html',{'form': form, 'bingocard': bingocard, 'answer': answer, 'created': created})
 
 @user_owns_tripper
 def tripper_profile(request, tripper_id):
@@ -1532,7 +1568,7 @@ def encode_image_to_base64(image_path, max_size=(300, 300)):
         return None
 
     try:
-        with Image.open(full_path) as img:
+        with PILImage.open(full_path) as img:
             img.thumbnail(max_size)  
             buffer = BytesIO()
             img.save(buffer, format="PNG") 

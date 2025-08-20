@@ -46,7 +46,7 @@ class TripperAdminForm(forms.ModelForm):
 class ImageForm(forms.ModelForm):
     class Meta:
         model = Image
-        fields = ['image', 'description']
+        fields = ['image']
 
     day_program = forms.ModelChoiceField(queryset=DayProgram.objects.all(), widget=forms.HiddenInput())
 

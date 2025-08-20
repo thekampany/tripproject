@@ -108,13 +108,14 @@
                 <div class="bingo-bottom">
                     {% with user_answered=False %}
                         {% for answer in bingo_answers %}
-                            {% if answer.bingocard == card %}
-                                {% if answer.tripper.name == request.user.username %}
-                                    <div class="answer">
-                                        <img src="{{ answer.answerimage.url }}" alt="Answer Image" class="answer-image" />
+                            {% if answer.bingocard == card and answer.tripper.name == request.user.username %}
+                                <div class="answer relative inline-block">
+                                    {% if answer.answerimage %}
+                                        <img src="{{ answer.answerimage.url }}" alt="Answer Image" class="answer-image rounded shadow" />                                        
+                                        <span style="font-size:x-small"><a href="{% url 'tripapp:upload_answerimage' card.id %}">replace</a></span>
+                                    {% endif %}
                                     </div>
-                                    {% with user_answered=True %}{% endwith %}
-                                {% endif %}
+                               {% with user_answered=True %}{% endwith %}
                             {% endif %}
                         {% endfor %}
 
@@ -125,9 +126,6 @@
                         {% endif %}
                     {% endwith %}
                 </div>
-
-
-
 
             </div>
         </div>
@@ -149,13 +147,15 @@
         </tr>
         {% endfor %}
     </table>
-    <p><a href="{% url 'tripapp:trip_bingocards' trip.id %}">{% trans "See all answers" %}</a></p>
+    <p>&nbsp;</p>
+    <p><a href="{% url 'tripapp:trip_bingocards' trip.id %}">{% trans "See answers for all trippers" %}</a></p>
     <p>&nbsp;</p>
 {% else %}
     {% trans "No Bingo created for this trip" %}
     <p>&nbsp;</p>
 {% endif %}
 <p><a href="{% url 'tripapp:trip_detail' trip.slug %}">&larr;Trip</a></p>
+<p>&nbsp;</p>
 </div>
 </div>
 </body>

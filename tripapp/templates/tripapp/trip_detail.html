@@ -184,10 +184,49 @@
             justify-content: flex-end;
             color: white;
             }
+    .spinner-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
 
 </style>
 </head>
 <body>
+    <div id="loading-spinner" class="spinner-overlay" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const tripmapBtn = document.querySelector(".tripmap-btn");
+            if (tripmapBtn) {
+                tripmapBtn.addEventListener("click", function() {
+                    document.getElementById("loading-spinner").style.display = "flex";
+                });
+            }
+        });
+    </script>
     <div class="tripappcard">
     <div class="container">
     
@@ -219,7 +258,7 @@
    
 
     <div class="tripmenucontainer">
-        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_map_view' trip.id %}" class="btn"><img src="{% static 'icons/maps-iconreverse.png'  %}" width="56" height="50"></a></div>
+        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_map_view' trip.id %}" class="btn tripmap-btn"><img src="{% static 'icons/maps-iconreverse.png'  %}" width="56" height="50"></a></div>
         {% if tripper %}
         <div class="tripmenuitem"><a href="{% url 'tripapp:trip_tripper_bingocard' trip.id %}" class="btn"><img src="{% static 'icons/bingoicon-removebgreverse.png'  %}" width="56" height="50"></a></div>
         {% else %}

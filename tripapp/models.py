@@ -7,7 +7,8 @@ import uuid
 import requests
 from decimal import Decimal
 from django.conf import settings 
-from PIL import Image as PilImage
+from PIL import Image as PilImage, ImageOps
+
 from io import BytesIO
 from django.core.files.base import ContentFile
 
@@ -76,7 +77,15 @@ class Trip(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            base_slug = slugify(f"{self.name}-{self.tribe.name}")
+            new_slug = base_slug
+            counter = 1
+
+            while Trip.objects.filter(slug=new_slug).exists():
+                new_slug = f"{base_slug}-{counter}"
+                counter += 1
+
+            self.slug = new_slug
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -133,8 +142,11 @@ class Image(models.Model):
 
     def save(self, *args, **kwargs):
         img = PilImage.open(self.image)
+        img = ImageOps.exif_transpose(img)
         max_size = (600, 600)  
         img.thumbnail(max_size)
+        if img.mode in ("RGBA", "P"):
+            img = img.convert("RGB")
         buffer = BytesIO()
         img.save(buffer, format='JPEG', quality=75)
         buffer.seek(0)
@@ -207,10 +219,34 @@ class BingoCard(models.Model):
     def __str__(self):
         return f'BingoCard for {self.trip.name} - {self.description[:20]}'
 
+
 class BingoAnswer(models.Model):
     tripper = models.ForeignKey(Tripper, on_delete=models.CASCADE)
     bingocard = models.ForeignKey(BingoCard, on_delete=models.CASCADE)
     answerimage = models.ImageField(upload_to='bingoanswers/')
+
+    def save(self, *args, **kwargs):
+        if self.answerimage and hasattr(self.answerimage, "file"):
+            img = PilImage.open(self.answerimage)
+            img = ImageOps.exif_transpose(img)
+            max_size = (600, 600)  
+            img.thumbnail(max_size)
+
+            if img.mode in ("RGBA", "P"):
+                img = img.convert("RGB")
+
+            buffer = BytesIO()
+            img.save(buffer, format='JPEG', quality=75)
+            buffer.seek(0)
+
+            self.answerimage.save(
+                self.answerimage.name,
+                ContentFile(buffer.read()),
+                save=False
+            )
+
+        super().save(*args, **kwargs)
+
 
     def __str__(self):
         return f"{self.tripper.name} - {self.bingocard.description}"

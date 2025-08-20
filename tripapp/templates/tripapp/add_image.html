@@ -7,9 +7,12 @@
     <h2>Add Image</h2>
     <b>{{ dayprogram.description }}&nbsp;{{ dayprogram.tripdate|date:'d-M' }}</b>
     <br /><br />
+
+    
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ form|crispy }}
+        {{ form.day_program }}
+        <input type="file" name="images" multiple class="form-control mb-3">
         <button type="submit" class="btn">Upload</button>
     {% if form.errors %}
         <div class="errors">

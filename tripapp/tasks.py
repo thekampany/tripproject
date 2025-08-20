@@ -33,12 +33,12 @@ def assign_badges():
 
                 assignments = []
                 for tripper in trippers:
-                    tripper.badges.add(badge) 
-                    assignments.append(BadgeAssignment(tripper=tripper, badge=badge, trip=trip))
 
-                    logs.append(f"Badge {badge.name} assigned to Tripper {tripper.name} for Trip {trip.name}.")
-
-                BadgeAssignment.objects.bulk_create(assignments)
+                    if not BadgeAssignment.objects.filter(tripper=tripper, badge=badge).exists():
+                        tripper.badges.add(badge)
+                        tripper.save()
+                        BadgeAssignment.objects.create(tripper=tripper, badge=badge)
+                        logs.append(f"Badge '{badge.name}' assigned to Tripper {tripper.name} due to date.")
 
     else:
         logs.append("No Badges on this date to be assigned\n")
@@ -59,6 +59,7 @@ def assign_badges():
                 logs.append(f"Found {trippers.count()} trippers for trip: {trip.name}")
                 
                 for tripper in trippers:
+                    logs.append(f"Checking for Badge {badge.name} for {tripper.name}.")
                     answer_count = BingoAnswer.objects.filter(tripper=tripper).count()
                     
                     if answer_count >= badge.threshold_value:
@@ -82,12 +83,12 @@ def assign_badges():
     ).exclude(threshold_value__isnull=True)  
 
     if active_trips:
-        for badge in logentrybadges:
-            for trip in active_trips:
-                trippers = trip.trippers.all()
-                logs.append(f"Found {trippers.count()} trippers for trip: {trip.name}")
-                
+        for trip in active_trips:
+            trippers = trip.trippers.all()
+            logs.append(f"Found {trippers.count()} trippers for trip: {trip.name}")
+            for badge in logentrybadges:
                 for tripper in trippers:
+                    logs.append(f"Checking for Badge {badge.name} for {tripper.name}.")
                     logentry_count = LogEntry.objects.filter(tripper=tripper).count()
                     
                     if logentry_count >= badge.threshold_value:
@@ -117,14 +118,17 @@ def assign_badges():
                 logs.append(f"Checking API keys for {trippers.count()} trippers in trip: {trip.name}")
                 
                 for tripper in trippers:
+                    logs.append(f"Checking for {tripper.name} ")
                     if tripper.dawarich_api_key or tripper.immich_api_key:
                         if not BadgeAssignment.objects.filter(tripper=tripper, badge=api_key_badge).exists():
                            BadgeAssignment.objects.create(tripper=tripper, badge=api_key_badge) 
                            logs.append(f"Badge '{api_key_badge.name}' assigned to Tripper {tripper.name} for having an API key.")
+                        else:
+                           logs.append(f"Badge was already assigned earlier.")
                     else:
                         logs.append(f"None found, no badge")
     else:
-        logs.append(f"No badges for trippers with api keys")
+        logs.append(f"No active trip. No badges for trippers with api keys")
 
     # Assign badges for being in multiple trips
     logs.append("\nCheck assign Badges for Trippers that went on multiple trips")
@@ -433,8 +437,8 @@ def fetch_and_store_yesterdays_weather():
             max_code = max(weather_codes)
             mode_code = Counter(weather_codes).most_common(1)[0][0]
 
-            emoji_avg = WEATHER_CODE_TO_EMOJI.get(avg_code, "🌈")
-            emoji_mode = WEATHER_CODE_TO_EMOJI.get(mode_code, "🌈")
+            emoji_avg = WEATHER_CODE_TO_EMOJI.get(avg_code, "")
+            emoji_mode = WEATHER_CODE_TO_EMOJI.get(mode_code, "")
 
             t_max = daily["temperature_2m_max"][0]
             t_min = daily["temperature_2m_min"][0]
@@ -444,9 +448,9 @@ def fetch_and_store_yesterdays_weather():
 
             description = (
                 f"On {yesterday.strftime('%-d %B')} we had this weather:{emoji_avg}{emoji_mode} \n"
-                f"🌡️ Max: {t_max}{temp_symbol}, Min: {t_min}{temp_symbol}\n"
+                f"Max: {t_max}{temp_symbol}, Min: {t_min}{temp_symbol}\n"
                 f"💧 {rain} mm\n"
-                f"🌅 Sunrise: {sunrise} – 🌇 Sunset: {sunset}"
+                f"Sunrise: {sunrise} – Sunset: {sunset}"
             )
 
             dp.recorded_weather = data  

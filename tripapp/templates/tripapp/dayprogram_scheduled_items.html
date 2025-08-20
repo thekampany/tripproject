@@ -3,8 +3,9 @@
 
 
 {% block content %}
-<h1>Scheduled Items for {{ dayprogram.tripdate|date:"d-M" }}</h1>
-
+<h2>Scheduled Items</h2>
+<b>for {{ dayprogram.tripdate|date:"d-M" }}</b>
+<br><br>
 <div>
     <a href="{% url 'tripapp:add_scheduled_item' dayprogram.id %}" class="btn">Add Scheduled Item</a>
 </div>

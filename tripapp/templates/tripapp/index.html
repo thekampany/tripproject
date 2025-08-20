@@ -101,6 +101,15 @@
             font-weight: bold;
             cursor: pointer;
         }
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-group .btn {
+            flex: 1; 
+            text-align: center; 
+        }
     </style>
 </head>
 
@@ -130,12 +139,14 @@
                 {% endblocktrans %}
                 {% endif %}
             </p>
+            <div class="btn-group">
             {% if user.is_authenticated %}
-                <a href="{% url 'tripapp:trip_list' %}" class="btn btn-succes btn-cta">{% trans "My Trips" %}</a></p>
+                <a href="{% url 'tripapp:trip_list' %}" class="btn">{% trans "My Trips" %}</a></p>
             {% else %}
-                <a href="{% url 'tripapp:register' %}" class="btn btn-success btn-cta">{% trans "Register" %}</a>
-                <a href="javascript:void(0);" class="btn btn-primary btn-cta" onclick="openLogin()">{% trans "Login" %}</a>
+                <a href="{% url 'tripapp:register' %}" class="btn">{% trans "Register" %}</a>
+                <a href="javascript:void(0);" class="btn" onclick="openLogin()">{% trans "Login" %}</a>
             {% endif %}
+            </div>
         </div>
     </div>
 
