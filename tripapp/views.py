@@ -63,6 +63,9 @@ from django.templatetags.static import static
 import numpy as np
 from rdp import rdp   
 
+from django.db.models import F
+from django.db.models.functions import Coalesce
+
 
 def index(request):
     category = "roadtrip"
@@ -243,7 +246,7 @@ def upload_badge(request):
 @login_required
 def tripper_badgeassignments(request, tripper_id):
     tripper = get_object_or_404(Tripper, id=tripper_id)
-    badge_assignments = BadgeAssignment.objects.filter(tripper=tripper).select_related('badge')
+    badge_assignments = BadgeAssignment.objects.filter(tripper=tripper).select_related('badge', 'trip').order_by(F('trip__id').desc(nulls_last=True))
     badges = [assignment.badge for assignment in badge_assignments]
     count_tripper_badges = BadgeAssignment.objects.filter(tripper=tripper).count()
     return render(request, 'tripapp/tripper_badgeassignments.html', {'tripper': tripper, 'badges': badges, 'count_tripper_badges':count_tripper_badges})
@@ -821,8 +824,9 @@ def edit_tripper(request, tripper_id, trip_id):
         formset = BadgeAssignmentFormSet(
             request.POST,
             instance=tripper,
-            queryset=BadgeAssignment.objects.filter(trip=trip),
-            trip=trip
+            queryset=BadgeAssignment.objects.filter(trip=trip,tripper=tripper),
+            trip=trip,
+            tripper=tripper
         )
         if form.is_valid() and formset.is_valid():
             form.save()
@@ -836,8 +840,9 @@ def edit_tripper(request, tripper_id, trip_id):
         form = TripperAdminForm(instance=tripper)
         formset = BadgeAssignmentFormSet(
             instance=tripper,
-            queryset=BadgeAssignment.objects.filter(trip=trip),
-            trip=trip
+            queryset=BadgeAssignment.objects.filter(trip=trip,tripper=tripper),
+            trip=trip,
+            tripper=tripper
         )
 
     return render(request, 'tripapp/edit_tripper.html', {

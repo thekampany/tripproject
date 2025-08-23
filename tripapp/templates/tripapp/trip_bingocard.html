@@ -112,7 +112,7 @@
                                 <div class="answer relative inline-block">
                                     {% if answer.answerimage %}
                                         <img src="{{ answer.answerimage.url }}" alt="Answer Image" class="answer-image rounded shadow" />                                        
-                                        <span style="font-size:x-small"><a href="{% url 'tripapp:upload_answerimage' card.id %}">replace</a></span>
+                                        <span style="font-size:x-small;color:silver;"><a href="{% url 'tripapp:upload_answerimage' card.id %}">[replace]</a></span>
                                     {% endif %}
                                     </div>
                                {% with user_answered=True %}{% endwith %}

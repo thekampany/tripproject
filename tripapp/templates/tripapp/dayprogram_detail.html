@@ -104,6 +104,38 @@
     .fab:hover {
             background-color: rgba(255, 255, 255, 0.6);
             }
+
+
+    .photo-viewer {
+        max-width: 900px;
+        margin: -15px auto;
+    }
+
+    .photo-frame {
+        position: relative;
+        width: 100%;
+        height: 400px; 
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .photo-frame img {
+        position: absolute;
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+        object-position: center center;
+        display: none;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.6); 
+        border-radius: 6px; 
+    }
+
+    .photo-frame img.active {
+        display: block;
+    }
     </style>
 </head>
 <body>
@@ -289,10 +321,22 @@
     </div>
 
     <br />
-    {% for image in images %}
-            <div class="polaroid"><img src="{{ image.image.url }}" alt="{{ image.description }}"></div>
-            <div class="caption">{{ image.description }}</div><br />
-    {% endfor %}
+
+
+    {% if images %}
+    <div class="photo-viewer">
+        <div class="photo-frame" id="photoFrame">
+            {% for image in images %}
+            <img src="{{ image.image.url }}" 
+                alt="{{ image.description }}" 
+                class="photo {% if forloop.first %}active{% endif %}">
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+
+
     <p>
     {% if today >= dayprogram.tripdate %}
       {% if questions %}
@@ -373,5 +417,20 @@
 
 </body>
 <script src="{% static 'js/set_timezone.js' %}"></script>
+<script>
+const frame = document.getElementById("photoFrame");
+const photos = frame.querySelectorAll(".photo");
+let currentIndex = 0;
+
+function showPhoto(index) {
+    photos[currentIndex].classList.remove("active");
+    currentIndex = (index + photos.length) % photos.length;
+    photos[currentIndex].classList.add("active");
+}
+
+frame.addEventListener("click", () => {
+    showPhoto(currentIndex + 1);
+});
+</script>
 
 </html>

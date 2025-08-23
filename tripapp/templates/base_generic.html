@@ -43,6 +43,53 @@
         100% { transform: rotate(360deg); }
     }
 
+         .trip-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .trip-card img {
+            width: 25%;
+            height: auto;
+            max-height: 150px;
+            object-fit: cover;
+        }
+
+        .trip-card .card-body {
+            padding: 15px;
+        }
+
+        .trip-card .tripper-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .trip-card .badges-link {
+            font-size: 0.9em;
+            color: gray;
+        }
+
+
+        /* Dark Mode */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #121212;
+                color: #ffffff;
+            }
+
+            .trip-card {
+                background-color: #1e1e1e;
+                color: #ffffff;
+            }
+
+
+        }
+
     </style>
 </head>
 <body>

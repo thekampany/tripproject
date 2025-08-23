@@ -250,26 +250,38 @@ class PointForm(forms.ModelForm):
 class BadgeAssignmentForm(forms.ModelForm):
     class Meta:
         model = BadgeAssignment
-        fields = [ 'badge']
-    def __init__(self, *args, **kwargs):
-        trip = kwargs.pop('trip', None)
+        fields = ['badge']
+
+    def __init__(self, *args, trip=None, tripper=None, **kwargs):
         super().__init__(*args, **kwargs)
+        qs = Badge.objects.filter(level='tribal')
+        # trip level filtering kan nog niet want bestaat nog niet in model
         if trip:
-            tribe = trip.tribe
-            self.fields['badge'].queryset = Badge.objects.filter(
-                models.Q(level='global') |
-                models.Q(level='tribal', tribe=tribe)
-            )
+            qs = qs.filter(tribe=trip.tribe)
+
+        if tripper and trip:
+            already = BadgeAssignment.objects.filter(tripper=tripper, trip=trip).values_list('badge_id', flat=True)
+            if self.instance and self.instance.pk:
+                current_id = self.instance.badge_id
+                already = [b for b in already if b != current_id]
+            qs = qs.exclude(id__in=already)
+
+        self.fields['badge'].queryset = qs
 
 class BaseBadgeAssignmentFormSet(BaseInlineFormSet):
     def __init__(self, *args, **kwargs):
         self.trip = kwargs.pop('trip', None)
+        self.tripper = kwargs.pop('tripper', None)
         super().__init__(*args, **kwargs)
 
     def _construct_form(self, i, **kwargs):
         kwargs['trip'] = self.trip
+        kwargs['tripper'] = self.tripper
         return super()._construct_form(i, **kwargs)
-    
+
+
+from django.forms import inlineformset_factory
+
 BadgeAssignmentFormSet = inlineformset_factory(
     Tripper,
     BadgeAssignment,
@@ -278,8 +290,6 @@ BadgeAssignmentFormSet = inlineformset_factory(
     extra=1,
     can_delete=True
 )
-
-
 
 class LogEntryForm(forms.ModelForm):
     class Meta:

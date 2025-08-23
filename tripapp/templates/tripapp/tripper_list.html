@@ -5,15 +5,19 @@
     Make a tripper admin and/or assign a badge to a tripper<br /><br />
     {% for tripper in trippers %}
      
-        <p><a href="{% url 'tripapp:edit_tripper' tripper.id trip.id %}">
-          {% if tripper.photo %}
-            <img src="{{ tripper.photo.url }}" height="60">&nbsp;
-          {% else %}
-            <img src="{% static 'profile.png' %}" height="60">&nbsp;
-          {% endif %}
-        {{ tripper.name }}
-            </a></p>
-      
+     <div class="trip-card">
+          <a href="{% url 'tripapp:edit_tripper' tripper.id trip.id %}">
+          <img src="{% if tripper.photo %}{{ tripper.photo.url }}{% else %}{% static 'profile.png' %}{% endif %}" 
+               alt="Profile">
+
+          <div class="card-body">
+              <div class="tripper-name">
+                  {{ tripper.name }}
+              </div>
+          </div>
+          </a>
+      </div>
+        
     {% empty %}
       No trippers on this trip.
     {% endfor %}
