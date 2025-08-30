@@ -22,41 +22,6 @@
         #map {
             height: 600px;
         }
-        .leaflet-popup-content {
-            background-color: rgba(255, 255, 255, 0.8) !important; 
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-
-        .leaflet-popup-content-wrapper {
-            background: transparent !important;
-            box-shadow: none !important;
-            border: none !important;
-        }
-
-        .leaflet-popup-tip {
-            background: transparent !important;
-        }
-        .custom-popup {
-            font-family: sans-serif;
-            padding: 8px;
-            text-align: center;
-        }
-        .custom-popup h4 {
-            margin: 0 0 4px 0;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        .custom-popup img {
-            max-width: 120px;
-            border-radius: 6px;
-            margin-bottom: 6px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-        }
-        .custom-popup .timestamp {
-            font-size: 12px;
-            color: #666;
-        }
      </style>
 </head>
 <body>
@@ -265,11 +230,11 @@
 
         L.control.layers(null, validOverlays, { collapsed: true ,position: 'bottomright'}).addTo(map);
  
-
         // Function to handle double-clicks on the map
         function handleMapDoubleClick(map) {
             const mapElement = document.getElementById('map');
             const tripId = mapElement.dataset.tripId;
+            const dayprogramId = mapElement.dataset.dayprogramId;
             const csrfToken = mapElement.dataset.csrf;
             console.log("Trip Id", tripId);
             console.log("Attaching dblclick event listener to map...");
@@ -299,13 +264,12 @@
                     </div>`
                 ).openPopup();
 
- 
-                newMarker.on('popupopen', function(e) {
-                    const popupContent = e.popup.getElement();
+                setTimeout(() => {
+                    const popupContent = document.querySelector('.leaflet-popup-content');
 
                     const nameInput = popupContent.querySelector('.event-name');
                     const typeSelect = popupContent.querySelector('.event-type');
-                    const saveBtn   = popupContent.querySelector('.save-event');
+                    const saveBtn = popupContent.querySelector('.save-event');
                     const deleteBtn = popupContent.querySelector('.delete-event');
 
                     function handleSave() {
@@ -326,10 +290,10 @@
                                 'dayprogram': dayprogramId,
                                 'csrfmiddlewaretoken': csrfToken
                             },
-                            success: function() {
+                            success: function () {
                                 console.log('Event saved successfully!');
                             },
-                            error: function(xhr, status, error) {
+                            error: function (xhr, status, error) {
                                 console.error('Error saving event:', error);
                             }
                         });
@@ -344,8 +308,8 @@
 
                     function addTapSupport(el, handler) {
                         el.addEventListener('click', handler);
-                        el.addEventListener('touchend', function(e) {
-                            e.preventDefault();
+                        el.addEventListener('touchend', function (e) {
+                            e.preventDefault(); 
                             handler(e);
                         });
                         el.addEventListener('pointerup', handler);
@@ -353,8 +317,10 @@
 
                     addTapSupport(saveBtn, handleSave);
                     addTapSupport(deleteBtn, handleDelete);
-                });
-  
+
+                }, 0);
+
+
             });
         }
 

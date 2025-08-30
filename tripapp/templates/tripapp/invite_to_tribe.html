@@ -5,14 +5,26 @@
 <form method="post">
     {% csrf_token %}
     {{ form|crispy }}
-    <label for="email">Email:</label>
-    <input type="email" id="email" name="email" required>
     <label for="tribe">Tribe:</label>
     <select id="tribe" name="tribe_id">
         {% for tribe in tribes %}
             <option value="{{ tribe.id }}">{{ tribe.name }}</option>
         {% endfor %}
     </select>
-    <button type="submit" class="btn">Invite</button>
+
+    <hr>
+    <h3>Invite via Email</h3>
+    <input type="hidden" name="invite_type" value="email" id="invite_type_email">
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email">
+    <button type="submit" onclick="document.getElementById('invite_type_email').value='email'">
+        Send Email Invite
+    </button>
+
+    <hr>
+    <h3>Invite via Code</h3>
+    <button type="submit" onclick="document.getElementById('invite_type_email').value='code'">
+        Generate Invite Code / QR-code
+    </button>
 </form>
 {% endblock %}

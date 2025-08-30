@@ -421,8 +421,8 @@ a.btn-more-padding:hover {background: var(--color-background);}
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  height: 60px; /* Stel een vaste hoogte in voor de knoppen */
-  min-width: 70px; /* Minimale breedte van de knop */
+  height: 60px; 
+  min-width: 70px; 
   cursor: pointer;
 }
 
@@ -431,12 +431,75 @@ a.btn-more-padding:hover {background: var(--color-background);}
   text-decoration: none;
 }
 
+/* Filter form styles */
+#filter-form {
+  display: none;
+  transition: all 0.3s ease-in-out;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+}
+
+#filter-form.show {
+  display: flex; 
+  opacity: 1;
+  max-height: 200px; 
+}
+
+#filter-form .form-group {
+  display: flex; 
+  align-items: center;
+  margin-right: 10px; 
+}
+
+#filter-form label {
+  margin-right: 5px; 
+}
+
+/* leaflet */
+.leaflet-popup-content {
+    background-color: rgba(255, 255, 255, 0.8) !important; 
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.leaflet-popup-content-wrapper {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+.leaflet-popup-tip {
+    background: transparent !important;
+}
+.custom-popup {
+    font-family: sans-serif;
+    padding: 8px;
+    text-align: center;
+}
+.custom-popup h4 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: bold;
+}
+.custom-popup img {
+    max-width: 120px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+.custom-popup .timestamp {
+    font-size: 12px;
+    color: #666;
+}
+
+
 
 img.user-icon {
   content: url('/static/icons/usericonreverse.png');
 }
 
-/* Dark mode afbeelding */
+/* Dark mode images */
 @media (prefers-color-scheme: dark) {
   img.user-icon {
       content: url('/static/icons/usericon.png');

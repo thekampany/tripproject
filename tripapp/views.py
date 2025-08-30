@@ -5,7 +5,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import Trip, Tripper, Badge, DayProgram, Checklist, ChecklistItem, Image, Question, Point
 from .models import BingoCard, BingoAnswer, BadgeAssignment
 from .models import Tribe, UserProfile, LogEntry, Link, Route, TripExpense, Location, ImmichPhotos, ScheduledItem
-from .models import TripperDocument, LogEntryLike
+from .models import TripperDocument, LogEntryLike, InviteCode
 from .forms import BadgeForm, TripForm, ChecklistItemForm, ImageForm, BingoAnswerForm
 from .forms import CustomUserCreationForm
 from .forms import AnswerForm, AnswerImageForm, TripperForm, TripperAdminForm
@@ -68,6 +68,8 @@ from rdp import rdp
 from django.db.models import F
 from django.db.models.functions import Coalesce
 
+import qrcode
+
 
 def index(request):
     category = "roadtrip"
@@ -102,36 +104,68 @@ def tribe_trips(request):
 @login_required
 def invite_to_tribe(request):
     if request.method == 'POST':
-        email = request.POST['email']
+        invite_type = request.POST.get('invite_type')
         tribe_id = request.POST['tribe_id']
         tribe = get_object_or_404(Tribe, id=tribe_id)
-        current_site = request.get_host()
-        current_port = request.get_port() 
-        invite_url = request.build_absolute_uri(f'/register/invite/{urlsafe_base64_encode(force_bytes(tribe_id))}/')
-        app_url = settings.APP_URL
-        subject = 'Invitation to join a tribe'
-  
-        html_content = render_to_string('tripapp/invite_email.html', {
-            'user': request.user,
-            'tribe_id': tribe_id,
-            'tribe_name': tribe.name, 
-            'domain': current_site,
-            'port': current_port,
-            'uid': urlsafe_base64_encode(force_bytes(tribe_id)),
-            'protocol': 'https' if request.is_secure() else 'http',
-            'invite_url': invite_url,
-            'app_url': app_url
-        })
-        text_content = strip_tags(html_content)
 
-        email = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, [email])
-        email.attach_alternative(html_content, "text/html")
-        email.send()
+        if invite_type == "email":
+            email = request.POST['email']
+            current_site = request.get_host()
+            current_port = request.get_port()
+            invite_url = request.build_absolute_uri(
+                f'/register/invite/{urlsafe_base64_encode(force_bytes(tribe_id))}/'
+            )
+            app_url = settings.APP_URL
+            subject = 'Invitation to join a tribe'
+
+            html_content = render_to_string('tripapp/invite_email.html', {
+                'user': request.user,
+                'tribe_id': tribe_id,
+                'tribe_name': tribe.name,
+                'domain': current_site,
+                'port': current_port,
+                'uid': urlsafe_base64_encode(force_bytes(tribe_id)),
+                'protocol': 'https' if request.is_secure() else 'http',
+                'invite_url': invite_url,
+                'app_url': app_url
+            })
+            text_content = strip_tags(html_content)
+
+            email = EmailMultiAlternatives(
+                subject, text_content, settings.DEFAULT_FROM_EMAIL, [email]
+            )
+            email.attach_alternative(html_content, "text/html")
+            email.send()
+
+        elif invite_type == "code":
+            invite = InviteCode.create_code(tribe)
+            uid = urlsafe_base64_encode(force_bytes(tribe.id))
+
+            invite_url = request.build_absolute_uri(
+                reverse('tripapp:register_invite', kwargs={'uid': uid})
+            )
+
+            # QR
+            qr = qrcode.QRCode(box_size=10, border=4)
+            qr.add_data(invite_url)
+            qr.make(fit=True)
+            img = qr.make_image(fill_color="black", back_color="white")
+
+            buffer = BytesIO()
+            img.save(buffer)
+            qr_base64 = base64.b64encode(buffer.getvalue()).decode()
+
+            return render(request, "tripapp/invite_code_success.html", {
+                "tribe": tribe,
+                "invite_code": invite.code,
+                "invite_url": invite_url,
+                "qr_base64": qr_base64,
+            })
 
         return redirect('tripapp:trip_list')
+
     tribes = request.user.userprofile.tribes.all()
     return render(request, 'tripapp/invite_to_tribe.html', {'tribes': tribes})
-
 
 @login_required
 def trip_list(request):

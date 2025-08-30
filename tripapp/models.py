@@ -3,6 +3,7 @@ from django.utils.text import slugify
 from django.contrib.auth.models import User 
 from django.conf import settings
 from django.utils import timezone
+from django.utils.crypto import get_random_string
 import uuid
 import requests
 from decimal import Decimal
@@ -471,3 +472,16 @@ class TripperDocument(models.Model):
 
     def __str__(self):
         return f"Document for {self.tripper.name} - {self.category or 'No Category'}"
+
+
+
+class InviteCode(models.Model):
+    tribe = models.ForeignKey("Tribe", on_delete=models.CASCADE, related_name="invites")
+    code = models.CharField(max_length=20, unique=True)
+    used = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @classmethod
+    def create_code(cls, tribe):
+        code = get_random_string(8).upper()
+        return cls.objects.create(tribe=tribe, code=code)
