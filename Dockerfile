@@ -20,8 +20,6 @@ ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && apt-get install -y procps
 
-RUN python manage.py collectstatic --noinput
-
 EXPOSE 8000
 
 COPY entrypoint.sh /usr/src/app/entrypoint.sh

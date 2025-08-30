@@ -1,6 +1,6 @@
 # serializers.py
 from rest_framework import serializers
-from .models import Trip
+from .models import Trip, LogEntryLike
 
 class TripSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,3 +14,9 @@ class TripMapDataSerializer(serializers.Serializer):
     longitude = serializers.FloatField()
     photo_url = serializers.URLField()
     trip_url = serializers.URLField()
+
+class LogEntryLikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LogEntryLike
+        fields = ['id', 'logentry', 'tripper', 'emoji', 'created_at']
+        read_only_fields = ['created_at']

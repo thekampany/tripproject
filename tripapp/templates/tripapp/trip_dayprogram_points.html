@@ -43,6 +43,28 @@
         .leaflet-popup-tip {
             background: transparent !important;
         }
+
+
+        .custom-popup {
+            font-family: sans-serif;
+            padding: 8px;
+            text-align: center;
+        }
+        .custom-popup h4 {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .custom-popup img {
+            max-width: 120px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        }
+        .custom-popup .timestamp {
+            font-size: 12px;
+            color: #666;
+        }
         .navigation-bar {
             display: flex;
             justify-content: space-between; 
@@ -153,7 +175,7 @@
             shadowSize:   [50, 50], // size of the shadow
             iconAnchor:   [25, 50], // point of the icon which will correspond to marker's location
             shadowAnchor: [25, 50],  // the same for the shadow
-            popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+            popupAnchor:  [0, -60] // point from which the popup should open relative to the iconAnchor
         });
         var visitedLocationIcon = L.icon({
             iconUrl: "{% static 'icons/mapicons/mappin-visited.png' %}",
@@ -206,7 +228,7 @@
 
         // Add markers to the feature group
         points.forEach(function(point) {
-            var popupContent = `<b>${point.name}</b>`;
+            var popupContent = `<div class="custom-popup"><h4>${point.name}</h4></div>`;
             var marker;
             console.log('marker_type:', point.marker_type);
             console.log('coords:', point.coords);
@@ -227,14 +249,14 @@
         });
         // visited locations
         locations.forEach(function(location) {
-            var popupContent = `<b>${location.timestamp}</b>`;
+            var popupContent = `<div class="custom-popup"><h4>${location.timestamp}</h4></div>`;
             var marker;
             marker = L.marker(location.coords, {icon: visitedLocationIcon}).bindPopup(popupContent);
             locationsLayer.addLayer(marker);
         });
         // visited photolocations
          photolocations.forEach(function(photolocation) {
-            var popupContent = `<a href="${photolocation.immich_url}photos/${photolocation.immich_photo_id}"><img src="${photolocation.thumbnail}" alt="Thumbnail" style="max-width: 100px; max-height: 100px; display: block; margin: 0 auto;" /></a><br /> <b>${photolocation.timestamp}</b>`;
+            var popupContent = `<div class="custom-popup"><a href="${photolocation.immich_url}photos/${photolocation.immich_photo_id}"><img src="${photolocation.thumbnail}" alt="Thumbnail" /></a><div class="timestamp">${photolocation.timestamp}</div></div>`;
             var marker;
             marker = L.marker(photolocation.coords, {icon: visitedPhotoLocationIcon}).bindPopup(popupContent);
             photolocationsLayer.addLayer(marker);
@@ -356,8 +378,7 @@
                     const saveBtn = popupContent.querySelector('.save-event');
                     const deleteBtn = popupContent.querySelector('.delete-event');
 
-
-                    saveBtn.addEventListener('click', function () {
+                    function handleSave() {
                         const eventName = nameInput.value;
                         const eventType = typeSelect.value;
 
@@ -375,7 +396,7 @@
                                 'dayprogram': dayprogramId,
                                 'csrfmiddlewaretoken': csrfToken
                             },
-                            success: function (response) {
+                            success: function () {
                                 console.log('Event saved successfully!');
                             },
                             error: function (xhr, status, error) {
@@ -384,13 +405,28 @@
                         });
 
                         map.closePopup();
-                    });
+                    }
 
-                    deleteBtn.addEventListener('click', function () {
+                    function handleDelete() {
                         map.removeLayer(newMarker);
                         map.closePopup();
-                    });
-                }, 0);  
+                    }
+
+                    function addTapSupport(el, handler) {
+                        el.addEventListener('click', handler);
+                        el.addEventListener('touchend', function (e) {
+                            e.preventDefault(); 
+                            handler(e);
+                        });
+                        el.addEventListener('pointerup', handler);
+                    }
+
+                    addTapSupport(saveBtn, handleSave);
+                    addTapSupport(deleteBtn, handleDelete);
+
+                }, 0);
+
+
             });
         }
 

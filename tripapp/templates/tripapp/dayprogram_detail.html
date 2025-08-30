@@ -108,7 +108,7 @@
 
     .photo-viewer {
         max-width: 900px;
-        margin: -15px auto;
+        margin: -10px auto;
     }
 
     .photo-frame {
@@ -135,6 +135,37 @@
 
     .photo-frame img.active {
         display: block;
+    }
+
+    .log-likes {
+        margin-top: 5px;
+    }
+
+    .log-like-bubble {
+        display: inline-block;
+        background-color: #f0f0f0;
+        border-radius: 12px;
+        padding: 2px 8px;
+        margin-right: 5px;
+        font-size: 0.9em;
+        color: #333;
+    }
+
+    .like-buttons {
+        text-align: right; 
+    }
+
+    .like-btn {
+        border: none;          
+        background: none;      
+        cursor: pointer;       
+        font-size: 0.8em;      
+        margin-left: 5px;      
+        padding: 2px 5px;     
+    }
+
+    .like-btn:hover {
+        transform: scale(1.2); 
     }
     </style>
 </head>
@@ -379,9 +410,22 @@
             <p>
                 <span class="dayprogramcard-title">Log</span>
                 {% for log_entry in log_entries %}
-                <span style="color:gray;">{{ log_entry.tripper.name }}:</span><br /> {{ log_entry.logentry_text|linebreaks }}<br />
+                    <span style="color:gray;">{{ log_entry.tripper.name }}:</span><br /> {{ log_entry.logentry_text|linebreaks }}
+                    {% if log_entry.likes_display %}
+                        <div class="log-likes">
+                            {% for like_text in log_entry.likes_display %}
+                                <span class="log-like-bubble">{{ like_text }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="like-buttons">
+                    {% for emoji in emoji_options %}
+                        <button class="like-btn" data-logentry="{{ log_entry.id }}" data-emoji="{{ emoji }}">{{ emoji }}</button>
+                    {% endfor %}
+                    </div>
+
                 {% endfor %}
-            </p>
+           </p>
         </div>
         {% endif %}
     </div>
@@ -430,6 +474,49 @@ function showPhoto(index) {
 
 frame.addEventListener("click", () => {
     showPhoto(currentIndex + 1);
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const buttons = document.querySelectorAll(".like-btn");
+
+    buttons.forEach(btn => {
+        btn.addEventListener("click", function() {
+            const logentryId = this.dataset.logentry;
+            const emoji = this.dataset.emoji;
+
+            fetch(`/api/logentries/${logentryId}/like/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie('csrftoken')
+                },
+                body: JSON.stringify({ emoji: emoji })
+            })
+            .then(resp => {
+                if (resp.ok) {
+                    location.reload(); 
+                } else {
+                    alert("Kon like niet toevoegen");
+                }
+            });
+        });
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 });
 </script>
 

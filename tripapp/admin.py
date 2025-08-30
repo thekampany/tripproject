@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import Trip, DayProgram, Tripper, Badge, Checklist, ChecklistItem, Image, Question, Point, BingoCard, BingoAnswer, BadgeAssignment, LogEntry, Link, Route
 from django_q.tasks import async_task
-from .models import Tribe, UserProfile, TripExpense, Location, ImmichPhotos, ScheduledItem, TripperDocument
+from .models import Tribe, UserProfile, TripExpense, Location, ImmichPhotos, ScheduledItem, TripperDocument, LogEntryLike
 from django.core.management import call_command
 from django_q.models import Schedule 
 from rest_framework_api_key.models import APIKey
@@ -73,6 +73,7 @@ admin.site.register(Location)
 admin.site.register(ImmichPhotos,ImmichAdmin)
 admin.site.register(ScheduledItem)
 admin.site.register(TripperDocument)
+admin.site.register(LogEntryLike)
 
 try:
     admin.site.register(APIKey, APIKeyModelAdmin)

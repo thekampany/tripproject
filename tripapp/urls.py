@@ -9,6 +9,7 @@ app_name = 'tripapp'
 
 router = DefaultRouter()
 router.register(r'trips', views.TripViewSet)
+router.register(r'logentries', views.LogEntryViewSet)
 
 
 urlpatterns = [

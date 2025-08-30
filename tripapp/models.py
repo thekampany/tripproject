@@ -279,6 +279,29 @@ class LogEntry(models.Model):
     def __str__(self):
         return f"{self.tripper.name} - {self.logentry_text[:50]}"
 
+    def like_count(self):
+        return self.likes.count()
+
+
+class LogEntryLike(models.Model):
+    logentry = models.ForeignKey(
+        LogEntry,
+        related_name='likes',
+        on_delete=models.CASCADE
+    )
+    tripper = models.ForeignKey(
+        Tripper,
+        related_name='logentry_likes',
+        on_delete=models.CASCADE
+    )
+    emoji = models.CharField(max_length=10)  
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('logentry', 'tripper', 'emoji')
+
+    def __str__(self):
+        return f"{self.tripper.name} liked {self.logentry.id} with {self.emoji}"
 
 class Link(models.Model):
     CATEGORY_CHOICES = [

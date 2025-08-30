@@ -5,7 +5,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import Trip, Tripper, Badge, DayProgram, Checklist, ChecklistItem, Image, Question, Point
 from .models import BingoCard, BingoAnswer, BadgeAssignment
 from .models import Tribe, UserProfile, LogEntry, Link, Route, TripExpense, Location, ImmichPhotos, ScheduledItem
-from .models import TripperDocument
+from .models import TripperDocument, LogEntryLike
 from .forms import BadgeForm, TripForm, ChecklistItemForm, ImageForm, BingoAnswerForm
 from .forms import CustomUserCreationForm
 from .forms import AnswerForm, AnswerImageForm, TripperForm, TripperAdminForm
@@ -21,6 +21,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from .utils import get_random_unsplash_image
 from django.db.models import Count, Q
+from django.db.models import Prefetch
+
 from django.core.mail import send_mail
 from django.core.mail import EmailMultiAlternatives
 from django.urls import reverse
@@ -54,10 +56,10 @@ from PIL import Image as PILImage
 from collections import Counter
 from statistics import mean
 
-from rest_framework import viewsets
-from .serializers import TripSerializer, TripMapDataSerializer
+from rest_framework import viewsets, status
+from .serializers import TripSerializer, TripMapDataSerializer, LogEntryLikeSerializer
 from django.contrib.auth.forms import AuthenticationForm
-
+from rest_framework.decorators import action
 from django.templatetags.static import static
 
 import numpy as np
@@ -269,7 +271,24 @@ def dayprogram_detail(request, id):
     images = dayprogram.images.all()
     trippers_on_this_trip = dayprogram.trip.trippers.all()
     trippers_names = [tripper.name for tripper in trippers_on_this_trip]
+
     log_entries = dayprogram.logentries.all()
+    logentry_ids = [le.id for le in log_entries]
+    likes = LogEntryLike.objects.filter(logentry_id__in=logentry_ids).select_related('tripper')
+
+    likes_per_logentry = {}
+    for like in likes:
+        likes_per_logentry.setdefault(like.logentry_id, []).append(like)
+
+    for le in log_entries:
+        le.likes_list = likes_per_logentry.get(le.id, [])
+        le.likes_display = [f"{like.tripper.name} {like.emoji}" for like in le.likes_list]
+
+        counts = Counter([like.emoji for like in le.likes_list])
+        le.emoji_counts = dict(counts)
+
+    emoji_options = ["👍", "❤️", "🔥", "😂", "🎉"]
+
     logged_on_tripper = Tripper.objects.filter(name=request.user.username).first()
 
     previous_dayprogram = DayProgram.objects.filter(
@@ -359,6 +378,7 @@ def dayprogram_detail(request, id):
           'today': timezone.now().date(),
           'trippers_names': trippers_names,
           'log_entries': log_entries,
+          'emoji_options': emoji_options,
           'previous_dayprogram' : previous_dayprogram,
           'next_dayprogram' : next_dayprogram,
           'logged_on_tripper' : logged_on_tripper,
@@ -1354,15 +1374,23 @@ def trip_update(request, trip_id):
     return render(request, 'tripapp/trip_update.html', {'form': form, 'trip': trip})
 
  
+#def set_timezone(request):
+#    if request.method == "POST":
+#        data = json.loads(request.body)
+#        user_timezone = data.get("timezone")
+#        if user_timezone:
+#            timezone.activate(user_timezone)
+#            request.session['user_timezone'] = user_timezone  
+#            return JsonResponse({"status": "success"})
+#    return JsonResponse({"status": "error"}, status=400)
+
 def set_timezone(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        user_timezone = data.get("timezone")
-        if user_timezone:
-            timezone.activate(user_timezone)
-            request.session['user_timezone'] = user_timezone  
-            return JsonResponse({"status": "success"})
-    return JsonResponse({"status": "error"}, status=400)
+    tz = request.GET.get("timezone")  # gebruik GET ipv POST
+    if tz:
+        request.session["django_timezone"] = tz
+        timezone.activate(tz)  # optioneel, activeert voor deze request
+        return JsonResponse({"status": "ok", "timezone": tz})
+    return JsonResponse({"status": "error", "message": "No timezone provided"}, status=400)
 
 @login_required
 def update_profile(request):
@@ -1452,7 +1480,7 @@ def trip_documents_view(request, trip_id):
 @login_required
 def add_or_edit_scheduled_item(request, dayprogram_id, scheduled_item_id=None):
     dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
-
+ 
     if scheduled_item_id:
         scheduled_item = get_object_or_404(ScheduledItem, id=scheduled_item_id, dayprogram=dayprogram)
     else:
@@ -1851,3 +1879,61 @@ class TribeMapDataAPIView(APIView):
 
         serializer = TripMapDataSerializer(data, many=True)
         return Response(serializer.data)
+
+
+
+class LogEntryViewSet(viewsets.ModelViewSet):
+    queryset = LogEntry.objects.all()
+
+    @action(detail=True, methods=['post'], url_path='like')
+    def like(self, request, pk=None):
+        logentry = self.get_object()
+        tripper = Tripper.objects.get(user=request.user)
+        emoji = request.data.get('emoji')
+
+        if not tripper or not emoji:
+            return Response(
+                {"error": "Tripper en emoji zijn verplicht."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        like, created = LogEntryLike.objects.get_or_create(
+            logentry=logentry,
+            tripper=tripper,
+            emoji=emoji,
+        )
+        if not created:
+            return Response(
+                {"detail": "Je hebt dit log al met deze emoji geliket."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = LogEntryLikeSerializer(like)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'], url_path='unlike')
+    def unlike(self, request, pk=None):
+        logentry = self.get_object()
+        tripper_id = request.data.get('tripper')
+        emoji = request.data.get('emoji')
+
+        if not tripper_id or not emoji:
+            return Response(
+                {"error": "Tripper en emoji zijn verplicht."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        like = LogEntryLike.objects.filter(
+            logentry=logentry,
+            tripper_id=tripper_id,
+            emoji=emoji
+        ).first()
+
+        if not like:
+            return Response(
+                {"detail": "Er is geen like met deze emoji om te verwijderen."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        like.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -12,10 +12,15 @@
     </h2>
     <b>Day: {{ dayprogram.tripdate|date:'d-M' }}</b>
     <br><br>
-    <div class="mt-4"
-        <form method="post">
-            {% csrf_token %}
+    <div class="mt-4">
+        <form method="post" 
+              action="{% if scheduled_item %}
+                         {% url 'tripapp:edit_scheduled_item' dayprogram.id scheduled_item.id %}
+                      {% else %}
+                         {% url 'tripapp:add_scheduled_item' dayprogram.id %}
+                      {% endif %}"> 
 
+            {% csrf_token %}
             <!-- Start Time + End Time -->
             <div class="row">
                 <div class="col-6 mb-3">
