@@ -156,7 +156,11 @@ After creating the .env and docker-compose.yml file do:
 ![Screenshot](/screenshots/trippanion-screenshot-4-tripdaymap.png )
 ![Screenshot](/screenshots/trippanion-screenshot-5-trippers.png )
 
- 
+Could look like this on your mobile   
+![Screenshot](/screenshots/trippanion-screenshot-mobile-itinerary.jpg )   
+![Screenshot](/screenshots/trippanion-screenshot-mobile-tripday.jpg )   
+    
+    
 # Credits
 Flags from https://flagpedia.net  
 Weather from https://api.open-meteo.com  
