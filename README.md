@@ -31,6 +31,8 @@ The application provides the option to export the details of trip to a zipped ht
 
 # Installation
 
+Installation can be done via cloning the repository or via Docker Compose.   
+
 ## By cloning the repository
 
 `git clone https://github.com/thekampany/tripproject.git`  

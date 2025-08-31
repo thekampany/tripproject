@@ -1,10 +1,24 @@
 {% extends "base_generic.html" %}
 {% load crispy_forms_tags %}
+{% load i18n %}
 {% block content %}
-<h3>Invite Code Generated</h3>
-<p>Share this link: <a href="{{ invite_url }}">{{ invite_url }}</a></p>
+<h3>{% trans "Invite Code Generated" %}</h3>
+<p>{% trans "Share this link" %}:</p>
+<p>
+    <input id="invite-url" type="text" value="{{ invite_url }}" readonly class="border p-1 w-96">
+    <button onclick="copyInviteUrl()" class="ml-2">Copy</button>
+    <script>
+    function copyInviteUrl() {
+        var copyText = document.getElementById("invite-url");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); 
+        navigator.clipboard.writeText(copyText.value);
+        alert("copied URL");
+    }
+    </script>
+</p>
 <h3>QR Code</h3>
-<p>Have it scanned by the person you want to invite</p>
+<p>{% trans "Have it scanned by the person you want to invite to the tribe." %}</p>
 <img src="data:image/png;base64,{{ qr_base64 }}" alt="Invite QR">
 
 {% endblock %}

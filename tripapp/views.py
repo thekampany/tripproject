@@ -146,7 +146,7 @@ def invite_to_tribe(request):
             )
 
             # QR
-            qr = qrcode.QRCode(box_size=10, border=4)
+            qr = qrcode.QRCode(box_size=6, border=4)
             qr.add_data(invite_url)
             qr.make(fit=True)
             img = qr.make_image(fill_color="black", back_color="white")
@@ -1761,6 +1761,7 @@ def generate_html_with_images(trip):
     trippers_on_this_trip = trip.trippers.annotate(
         answer_count=Count('bingoanswer', filter=Q(bingoanswer__bingocard__trip=trip))
     ).order_by('-answer_count')
+    html_content += f""" <div class="card">"""
     html_content += f"""<table>"""
     for tripper in trippers_on_this_trip:
         html_content += f"""
@@ -1769,11 +1770,11 @@ def generate_html_with_images(trip):
             <td style="text-align:right;">{ tripper.answer_count }</td>
         </tr>"""
     html_content += f"""</table>"""
-
-    html_content += "<table border='0'>"
-
+    html_content += "</div><br />"
     bingocards = trip.bingocards.all()
     for bingocard in bingocards:
+        html_content += f""" <div class="card">"""
+        html_content += "<table border='0'>"
         html_content += f'<tr><td style="vertical-align: top;">{bingocard.description}</td><td>'
         
         bingo_answers = BingoAnswer.objects.filter(bingocard=bingocard).select_related('tripper')
@@ -1789,9 +1790,8 @@ def generate_html_with_images(trip):
             html_content += "No Answers"
 
         html_content += "</td></tr>"
-
-    html_content += "</table>"
-
+        html_content += "</table>"
+        html_content += "</div>"
 
 
     html_content += """
