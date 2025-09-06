@@ -1,5 +1,6 @@
                                              
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -43,7 +44,7 @@
     
 
        <h2>Check / Pack / Wishlist</h2>
-       <b>{{ trip.name }}</b>
+       <b>{% trans "to trip" %}{{ trip.name }}</b>
        <br /><br /><br />
        <ul class="no-bullets">
            {% for item in items %}
@@ -57,7 +58,7 @@
             {% endfor %}
         </ul>
         <br /><br />
-        <a href="{% url 'tripapp:add_checklist_item' trip.id %}" class="btn">Add Checklist Item</a>
+        <a href="{% url 'tripapp:add_checklist_item' trip.id %}" class="btn">{% trans "Add Checklist Item" %}</a>
         <br /><br /><br />
    
         <p>&nbsp;</p>
@@ -65,8 +66,6 @@
 
     </div>
     </div>
-
-
     
 </body>
 

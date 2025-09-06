@@ -125,18 +125,13 @@
             <h1>{% if user.is_authenticated %}{{ user.username }},<br>{% endif %}
                 {% trans "Welcome" %}!</h1>
             <p>
-                {% blocktrans %}
-                You and your friends go on a trip. Here you can share all the details of the trip with the people going on the trip (the Trippers),
-                and share it with family and friends elsewhere (the Tribe).
-                {% endblocktrans %}
+                {% trans "You and your friends go on a trip. Here you can share all the details of the trip with the people going on the trip (the Trippers), and share it with family and friends elsewhere (the Tribe)." %}
             </p>
             <p>
                 {% if user.is_authenticated %}
-                Click My Trips to see and organize your trips
+                {% trans "Click My Trips to see and organize your trips" %}
                 {% else %}
-                {% blocktrans %}
-                Click Register to join, or click Login to start a Tribe, invite people and lay out the trip.
-                {% endblocktrans %}
+                {% trans "Click Register to join, or click Login to start a Tribe, invite people and lay out the trip." %}
                 {% endif %}
             </p>
             <div class="btn-group">

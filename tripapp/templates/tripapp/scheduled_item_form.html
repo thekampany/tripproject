@@ -1,16 +1,17 @@
 {% extends "base_generic.html" %}
+{% load i18n %}
 {% load crispy_forms_tags %}
 
 {% block content %}
 <div class="container">
     <h2>
         {% if scheduled_item %}
-            Edit Scheduled Item
+            {% trans "Edit Scheduled Item" %}
         {% else %}
-            Add Scheduled Item
+            {% trans "Add Scheduled Item" %}
         {% endif %}
     </h2>
-    <b>Day: {{ dayprogram.tripdate|date:'d-M' }}</b>
+    <b>{% trans "For Day:" %} {{ dayprogram.tripdate|date:'d-M' }}</b>
     <br><br>
     <div class="mt-4">
         <form method="post" 
@@ -62,7 +63,7 @@
             </div>
 
             <button type="submit" class="btn">
-                {% if scheduled_item %}Update{% else %}Add{% endif %}
+                {% if scheduled_item %}{% trans "Update" %}{% else %}{% trans "Add" %}{% endif %}
             </button>
             <br><br>
             <a href="{% url 'tripapp:dayprogram_detail' dayprogram.id %}">&larr; {{ dayprogram.description }}&nbsp;{{ dayprogram.tripdate|date:'d-M' }}</a>

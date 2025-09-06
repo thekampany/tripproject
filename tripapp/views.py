@@ -69,6 +69,7 @@ from django.db.models import F
 from django.db.models.functions import Coalesce
 
 import qrcode
+import random
 
 
 def index(request):
@@ -738,12 +739,15 @@ def upload_answerimage(request, bingocard_id):
     bingocard = get_object_or_404(BingoCard, pk=bingocard_id)
     tripper = get_object_or_404(Tripper, name=request.user)
 
-    answer, created = BingoAnswer.objects.get_or_create(
-        tripper=tripper,
-        bingocard=bingocard,
-    )
+    answer = BingoAnswer.objects.filter(tripper=tripper, bingocard=bingocard).first()
 
     if request.method == 'POST':
+        if answer is None:
+            answer = BingoAnswer(tripper=tripper, bingocard=bingocard)
+            created = True
+        else:
+            created = False
+
         form = BingoAnswerForm(request.POST, request.FILES, instance=answer)
         if form.is_valid():
             answer = form.save(commit=False)
@@ -767,7 +771,7 @@ def upload_answerimage(request, bingocard_id):
             return redirect('tripapp:trip_tripper_bingocard',trip_id=bingocard.trip.id) 
     else:
         form = BingoAnswerForm(instance=answer)
-
+        created = False
     return render(request, 'tripapp/upload_answerimage.html',{'form': form, 'bingocard': bingocard, 'answer': answer, 'created': created})
 
 @user_owns_tripper
@@ -1705,17 +1709,27 @@ def generate_html_with_images(trip):
 
         for image in day.images.all():
             img_base64 = encode_image_to_base64(image.image.name)  
+            angle = random.randint(-3, 3)
 
             if img_base64:
-                html_content += f'<img src="{img_base64}" >'
+                html_content += f"""
+                <div style="display:inline-block; background:#fff; padding:10px 10px 30px 10px;
+                            margin:10px; box-shadow:2px 2px 8px rgba(0,0,0,0.3);
+                            border:1px solid #ccc; transform:rotate({angle}deg);">
+                <img src="{img_base64}" style="max-width:200px; display:block; margin:0 auto;">
+                </div>
+                """
             else:
                 html_content += "<p>⚠️ No Image File</p>"
 
         if day.logentries.exists():
-            html_content += "<h4>📝 Log Entries</h4><ul>"
+            html_content += "<h4>📝 Log Entries</h4>"
             for log in day.logentries.all():
-                html_content += f"<strong>{log.tripper.name}:</strong> {log.logentry_text}"
-            html_content += "</ul>"
+                likes_str = ""
+                if log.likes.exists():
+                    likes_list = [f"{like.tripper.name} {like.emoji}" for like in log.likes.select_related("tripper")]
+                    likes_str = " [" + ", ".join(likes_list) + "]"
+                html_content += f"<p><strong>{log.tripper.name}:</strong> {log.logentry_text}{likes_str}</p>"
 
         if day.map_image:
             img_base64 = encode_image_to_base64(day.map_image.name)  
@@ -1774,9 +1788,18 @@ def generate_html_with_images(trip):
     bingocards = trip.bingocards.all()
     for bingocard in bingocards:
         html_content += f""" <div class="card">"""
-        html_content += "<table border='0'>"
-        html_content += f'<tr><td style="vertical-align: top;">{bingocard.description}</td><td>'
-        
+        html_content += "<table border='0' style='width:100%; border-collapse:collapse;'>"
+        html_content += f'''
+        <tr>
+        <td style="vertical-align: top; padding: 8px;">
+            <p style="font-variant-caps: all-small-caps;font-weight: bold;">{bingocard.description}</p>
+        </td>
+        </tr>
+        <tr>
+        <td style="vertical-align: top; padding: 8px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+        '''
+
         bingo_answers = BingoAnswer.objects.filter(bingocard=bingocard).select_related('tripper')
         
         if bingo_answers.exists():
@@ -1784,15 +1807,18 @@ def generate_html_with_images(trip):
                 if answer.answerimage:
                     img_base64 = encode_image_to_base64(answer.answerimage.name)
                     if img_base64:
-                        html_content += f'{answer.tripper.name}<br>'
-                        html_content += f'<img src="{img_base64}" width="200px"  height="200px"><br>'
+                        html_content += f'''
+                        <div style="text-align: center; border: 1px solid #ccc; padding: 6px; border-radius: 8px;">
+                        <strong>{answer.tripper.name}</strong><br>
+                        <img src="{img_base64}" style="max-width:200px; max-height:200px;">
+                        </div>
+                        '''
         else:
             html_content += "No Answers"
 
-        html_content += "</td></tr>"
-        html_content += "</table>"
-        html_content += "</div>"
+        html_content += "</div></td></tr></table>"
 
+        html_content += "</div>"
 
     html_content += """
         </div>

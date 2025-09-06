@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-31 16:00+0200\n"
+"POT-Creation-Date: 2025-09-03 22:04+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,12 +18,35 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: tripapp/templates/tripapp/add_checklist_item.html:16
+#: tripapp/templates/tripapp/trip_checklist.html:61
+msgid "Add Checklist Item"
+msgstr "Voeg Checklist Item toe"
+
+#: tripapp/templates/tripapp/add_checklist_item.html:17
+#: tripapp/templates/tripapp/trip_checklist.html:47
+msgid "to trip"
+msgstr "aan trip"
+
+#: tripapp/templates/tripapp/add_checklist_item.html:22
+msgid "Add Item"
+msgstr "Item Toevoegen"
+
+#: tripapp/templates/tripapp/add_logentry.html:5
+msgid "Add Log Entry"
+msgstr "Log Toevoegen"
+
+#: tripapp/templates/tripapp/add_logentry.html:11
+msgid "Save Log Entry"
+msgstr "Log Opslaan"
+
 #: tripapp/templates/tripapp/dayprogram_detail.html:201
 #: tripapp/templates/tripapp/trip_detail.html:290
 msgid "Itinerary"
 msgstr "Reisschema"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:207
+#: tripapp/templates/tripapp/scheduled_item_form.html:66
 #: tripapp/templates/tripapp/trip_dayprograms.html:11
 msgid "Add"
 msgstr "Invoegen"
@@ -96,45 +119,28 @@ msgid "Welcome"
 msgstr "Welkom"
 
 #: tripapp/templates/tripapp/index.html:128
-#, fuzzy
-#| msgid ""
-#| "\n"
-#| "    You and your friends go on a trip. Here you can share all the details "
-#| "of the trip with the people going on the trip (the Trippers)\n"
-#| "    and you can share it with family and friends elsewhere (the Tribe).\n"
-#| "    "
 msgid ""
-"\n"
-"                You and your friends go on a trip. Here you can share all "
-"the details of the trip with the people going on the trip (the Trippers),\n"
-"                and share it with family and friends elsewhere (the Tribe).\n"
-"                "
+"You and your friends go on a trip. Here you can share all the details of the "
+"trip with the people going on the trip (the Trippers), and share it with "
+"family and friends elsewhere (the Tribe)."
 msgstr ""
-"\n"
-"Jij en je vrienden gaan op een trip. Hier kun je al de details van de trip "
+"Jij en je vrienden gaan op een trip. Hier kun je alle details van de trip "
 "delen met de mensen die meegaan (de Trippers) en met andere familie en "
-"vrienden (de Tribe).\n"
-"    "
+"vrienden (de Tribe)."
 
-#: tripapp/templates/tripapp/index.html:137
-#, fuzzy
-#| msgid ""
-#| "\n"
-#| "    Click Register to join and click My Trips to start a Tribe, invite "
-#| "people and lay out the trip for the trippers.\n"
-#| "    "
+#: tripapp/templates/tripapp/index.html:132
+msgid "Click My Trips to see and organize your trips"
+msgstr "Bekijk en organiseer je reisschema's via Mijn Trips"
+
+#: tripapp/templates/tripapp/index.html:134
 msgid ""
-"\n"
-"                Click Register to join, or click Login to start a Tribe, "
-"invite people and lay out the trip.\n"
-"                "
+"Click Register to join, or click Login to start a Tribe, invite people and "
+"lay out the trip."
 msgstr ""
-"\n"
 "Klik Registreren om je aan te melden. Klik Mijn Trips om een Tribe te "
 "starten mensen uit te nodigen en je Trip te organiseren.\n"
-"   "
 
-#: tripapp/templates/tripapp/index.html:144
+#: tripapp/templates/tripapp/index.html:139
 #: tripapp/templates/tripapp/tribe_map.html:68
 #: tripapp/templates/tripapp/tribe_trip_organize.html:53
 #: tripapp/templates/tripapp/tribe_trips.html:213
@@ -143,13 +149,13 @@ msgstr ""
 msgid "My Trips"
 msgstr "Mijn Trips"
 
-#: tripapp/templates/tripapp/index.html:146
+#: tripapp/templates/tripapp/index.html:141
 msgid "Register"
 msgstr "Registreren"
 
-#: tripapp/templates/tripapp/index.html:147
+#: tripapp/templates/tripapp/index.html:142
 msgid "Login"
-msgstr ""
+msgstr "Inloggen"
 
 #: tripapp/templates/tripapp/invite_code_success.html:5
 msgid "Invite Code Generated"
@@ -162,6 +168,22 @@ msgstr "Deel deze link"
 #: tripapp/templates/tripapp/invite_code_success.html:21
 msgid "Have it scanned by the person you want to invite to the tribe."
 msgstr "Laat scannen door persoon die je wil toevoegen aan de tribe"
+
+#: tripapp/templates/tripapp/scheduled_item_form.html:9
+msgid "Edit Scheduled Item"
+msgstr "Bewerk Gepland Item"
+
+#: tripapp/templates/tripapp/scheduled_item_form.html:11
+msgid "Add Scheduled Item"
+msgstr "Voeg Gepland Item Toe"
+
+#: tripapp/templates/tripapp/scheduled_item_form.html:14
+msgid "For Day:"
+msgstr "Voor dag"
+
+#: tripapp/templates/tripapp/scheduled_item_form.html:66
+msgid "Update"
+msgstr "Bijwerken"
 
 #: tripapp/templates/tripapp/tribe_map.html:66
 #: tripapp/templates/tripapp/trip_detail.html:245
