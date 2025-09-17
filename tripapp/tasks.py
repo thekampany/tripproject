@@ -102,6 +102,34 @@ def assign_badges():
     else:
         logs.append(f"No Badges for logentries")
 
+
+    #assign badges for log likes
+    logs.append(f"\n")
+    logs.append(f"Check assign Badges for Log Likes")
+    logentrybadges = Badge.objects.filter(
+        level='global', 
+        achievement_method='threshold',
+        threshold_type='log_likes'
+    ).exclude(threshold_value__isnull=True)  
+
+    if active_trips:
+        for trip in active_trips:
+            logentries = trip.dayprograms.logentries.all()
+            for logentry in logentries:
+                if logentry.like_count() >= badge.threshold_value:
+                    tripper = logentry.tripper 
+                    if not BadgeAssignment.objects.filter(tripper=tripper, badge=badge).exists():
+                        tripper.badges.add(badge)
+                        tripper.save()
+                        BadgeAssignment.objects.create(tripper=tripper, badge=badge)
+                        logs.append(f"Badge '{badge.name}' assigned to Tripper {tripper.name} due to getting {loglike_count} log likes.")
+                else:
+                    logs.append(f"Not enough likes yet")
+    else:
+        logs.append(f"No Badges for loglikes")
+
+
+
     # Assign badges for having an API key 
     # to be replaced by for having locations or photos
     logs.append(f"\n")

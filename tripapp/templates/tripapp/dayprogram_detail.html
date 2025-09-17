@@ -167,7 +167,108 @@
     .like-btn:hover {
         transform: scale(1.2); 
     }
+    .emoji-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .emoji-toggle-btn {
+        position: relative;
+        z-index: 2; 
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 4px;
+        color:grey;
+     }
+
+    .emoji-menu {
+        position: absolute;
+        top: 0;
+        right: 100%;
+        z-index: 1; 
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 4px;
+        display: flex;
+        gap: 4px;
+        opacity: 0;
+        transform: scaleX(0);
+        transform-origin: right center; 
+        transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+        pointer-events: none; 
+    }
+
+    .emoji-menu.show {
+        opacity: 1;
+        transform: scaleX(1);
+        pointer-events: auto;
+    }    
+
+    .hidden {
+        display: none;
+    }
+
+    #badge-overlay {
+        position: fixed;       
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transform: scale(0.95);
+        pointer-events: none;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        z-index: 9999; 
+    }
+    #badge-overlay.show {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+    }
+
+    /* Inhoud box */
+    #badge-overlay .overlay-content {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+    }
+
+    #badge-overlay .overlay-content h2 {
+      margin-bottom: 1rem;
+    }
+
+    #badge-overlay .overlay-content button {
+      margin-top: 1rem;
+      padding: 0.5rem 1.25rem;
+      background: #2563eb; 
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #badge-overlay .overlay-content button:hover {
+      background: #1e40af; 
+    }
+    #badge-overlay .overlay-content img {
+    max-width: 100%;     
+    max-height: 200px;   
+    height: auto;        
+    width: auto;         
+    object-fit: contain; 
+    }
     </style>
+
 </head>
 <body>
 <div class="card">
@@ -385,7 +486,7 @@
              {% if tripper_badge_info.tripper.name == user.username %}
 
               {% if tripper_badge_info.has_badge %}
-                <p>"{{ question_with_info.question.correct_answer }}"{% trans "You have the badge for this question!" %}</p>
+                <p>"{{ question_with_info.question.correct_answer }}"<br>{% trans "You have the badge for this question!" %}</p>
               {% else %}
                 <form id="questionForm" method="post" action="{% url 'tripapp:check_answer' dayprogram.id question_with_info.question.id %}">
                   {% csrf_token %}
@@ -419,9 +520,29 @@
                         </div>
                     {% endif %}
                     <div class="like-buttons">
-                    {% for emoji in emoji_options %}
-                        <button class="like-btn" data-logentry="{{ log_entry.id }}" data-emoji="{{ emoji }}">{{ emoji }}</button>
-                    {% endfor %}
+                        <div class="emoji-container">
+                            <!-- Toggle button -->
+                            <button class="emoji-toggle-btn" onclick="toggleEmojiMenu({{ log_entry.id }})">+1</button>
+
+                            <!-- Hidden menu -->
+                            <div id="emoji-menu-{{ log_entry.id }}" class="emoji-menu">
+                                {% for emoji in emoji_options %}
+                                    <button class="like-btn"
+                                            data-logentry="{{ log_entry.id }}"
+                                            data-emoji="{{ emoji }}">
+                                        {{ emoji }}
+                                    </button>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <script>
+                        function toggleEmojiMenu(id) {
+                            const menu = document.getElementById(`emoji-menu-${id}`);
+                            menu.classList.toggle("show");
+                        }
+                        </script>
+
                     </div>
 
                 {% endfor %}
@@ -433,48 +554,68 @@
 </div>
 </div>
 
+<div id="badge-overlay" class="{% if badge_overlay %}show{% endif %}">
+  <div class="overlay-content">
+    <h2>{% trans "Badge Claimed!" %}</h2>
+    
+    {% if badge_overlay.image %}
+      <img src="{{ badge_overlay.image.url }}" 
+           alt="{{ badge_overlay.name }}" 
+           class="mx-auto mb-4 w-32 h-32 rounded-lg shadow">
+    {% endif %}
+    
+    <p>{{ badge_overlay.name }}</p>
+    <button onclick="hideBadgeOverlay()">{% trans "Close" %}</button>
+  </div>
+</div>
 
-    <!-- Suggestion Modal -->
-    <div class="modal fade" id="suggestionModal" tabindex="-1" role="dialog" aria-labelledby="suggestionModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="suggestionModalLabel">{% trans "Your Suggestion for this Day:" %}</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="suggestionForm" method="post" action="{% url 'tripapp:add_suggestion' dayprogram.id %}">
-                        {% csrf_token %}
-                        {{ suggestionform.as_p }}
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                    </form>
-                </div>
+
+
+
+<!-- Suggestion Modal -->
+<div class="modal fade" id="suggestionModal" tabindex="-1" role="dialog" aria-labelledby="suggestionModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="suggestionModalLabel">{% trans "Your Suggestion for this Day:" %}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="suggestionForm" method="post" action="{% url 'tripapp:add_suggestion' dayprogram.id %}">
+                    {% csrf_token %}
+                    {{ suggestionform.as_p }}
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
             </div>
         </div>
     </div>
-    {% if user.username in trippers_names %}
-       <a href="{% url 'tripapp:edit_dayprogram' dayprogram.id %}" class="fab" title="Organize">&#128221;</a>
-    {% endif %}
-    <br /><br />
+</div>
+{% if user.username in trippers_names %}
+    <a href="{% url 'tripapp:edit_dayprogram' dayprogram.id %}" class="fab" title="Organize">&#128221;</a>
+{% endif %}
+<br /><br />
 
 </body>
 <script src="{% static 'js/set_timezone.js' %}"></script>
 <script>
 const frame = document.getElementById("photoFrame");
-const photos = frame.querySelectorAll(".photo");
-let currentIndex = 0;
+if (frame) {
+    const photos = frame.querySelectorAll(".photo");
+    let currentIndex = 0;
 
-function showPhoto(index) {
-    photos[currentIndex].classList.remove("active");
-    currentIndex = (index + photos.length) % photos.length;
-    photos[currentIndex].classList.add("active");
+    function showPhoto(index) {
+        if (photos.length === 0) return; 
+        photos[currentIndex].classList.remove("active");
+        currentIndex = (index + photos.length) % photos.length;
+        photos[currentIndex].classList.add("active");
+    }
+
+    frame.addEventListener("click", () => {
+        showPhoto(currentIndex + 1);
+    });
 }
-
-frame.addEventListener("click", () => {
-    showPhoto(currentIndex + 1);
-});
 </script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
@@ -519,5 +660,11 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 </script>
+<script>
 
+function hideBadgeOverlay() {
+  const overlay = document.getElementById("badge-overlay");
+  overlay.classList.remove("show");
+}
+</script>
 </html>

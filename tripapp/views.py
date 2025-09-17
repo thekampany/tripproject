@@ -71,6 +71,7 @@ from django.db.models.functions import Coalesce
 import qrcode
 import random
 
+from django.utils.translation import gettext as _
 
 def index(request):
     category = "roadtrip"
@@ -322,7 +323,7 @@ def dayprogram_detail(request, id):
         counts = Counter([like.emoji for like in le.likes_list])
         le.emoji_counts = dict(counts)
 
-    emoji_options = ["👍", "❤️", "🔥", "😂", "🎉"]
+    emoji_options = ["👍", "❤️", "🔥", "😂", "🎉","💪","🤩","😱"]
 
     logged_on_tripper = Tripper.objects.filter(name=request.user.username).first()
 
@@ -352,6 +353,12 @@ def dayprogram_detail(request, id):
                 'has_badge': has_badge
             })
         questions_with_badge_info.append(question_info)
+
+    badge_id = request.GET.get('badge')
+    badge = None
+    if badge_id:
+        badge = Badge.objects.filter(pk=badge_id).first()
+
     links_without_scheduled_item = dayprogram.links.filter(scheduled_item__isnull=True)
     links_with_scheduled_item = dayprogram.links.filter(scheduled_item__isnull=False)
     scheduled_items = dayprogram.scheduled_items.all().order_by('start_time')
@@ -421,6 +428,7 @@ def dayprogram_detail(request, id):
           'links_with_scheduled_item' : links_with_scheduled_item,
           'scheduled_items' : scheduled_items,
           'weather_forecast_data' : weather_forecast_data,
+          'badge_overlay': badge,
          })
 
 
@@ -507,7 +515,8 @@ def check_answer(request, id, questionid):
                 tripper.badges.add(question.badge)
                 BadgeAssignment.objects.create(tripper=tripper, badge=question.badge, trip=dayprogram.trip)
 
-                return redirect('tripapp:badge_claimed', badge_id=question.badge.id)
+                url = reverse('tripapp:dayprogram_detail', args=[dayprogram.id])
+                return redirect(f"{url}?badge={question.badge.id}")
             else:
                 return redirect('tripapp:dayprogram_detail', id=dayprogram.id)
 
@@ -1412,23 +1421,16 @@ def trip_update(request, trip_id):
     return render(request, 'tripapp/trip_update.html', {'form': form, 'trip': trip})
 
  
-#def set_timezone(request):
-#    if request.method == "POST":
-#        data = json.loads(request.body)
-#        user_timezone = data.get("timezone")
-#        if user_timezone:
-#            timezone.activate(user_timezone)
-#            request.session['user_timezone'] = user_timezone  
-#            return JsonResponse({"status": "success"})
-#    return JsonResponse({"status": "error"}, status=400)
-
 def set_timezone(request):
-    tz = request.GET.get("timezone")  # gebruik GET ipv POST
-    if tz:
-        request.session["django_timezone"] = tz
-        timezone.activate(tz)  # optioneel, activeert voor deze request
-        return JsonResponse({"status": "ok", "timezone": tz})
-    return JsonResponse({"status": "error", "message": "No timezone provided"}, status=400)
+    if request.method == "POST":
+        data = json.loads(request.body)
+        user_timezone = data.get("timezone")
+        if user_timezone:
+            timezone.activate(user_timezone)
+            request.session['user_timezone'] = user_timezone  
+            return JsonResponse({"status": "success"})
+    return JsonResponse({"status": "error"}, status=400)
+
 
 @login_required
 def update_profile(request):
@@ -1953,7 +1955,7 @@ class LogEntryViewSet(viewsets.ModelViewSet):
 
         if not tripper or not emoji:
             return Response(
-                {"error": "Tripper en emoji zijn verplicht."},
+                {"error": _("Tripper and emoji mandatory.")},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -1964,7 +1966,7 @@ class LogEntryViewSet(viewsets.ModelViewSet):
         )
         if not created:
             return Response(
-                {"detail": "Je hebt dit log al met deze emoji geliket."},
+                {"detail": _("You already liked this log with this emoji.")},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -1979,7 +1981,7 @@ class LogEntryViewSet(viewsets.ModelViewSet):
 
         if not tripper_id or not emoji:
             return Response(
-                {"error": "Tripper en emoji zijn verplicht."},
+                {"error": _("Tripper and emoji are mandatory.")},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -1991,7 +1993,7 @@ class LogEntryViewSet(viewsets.ModelViewSet):
 
         if not like:
             return Response(
-                {"detail": "Er is geen like met deze emoji om te verwijderen."},
+                {"detail": _("There is no like with this emoji that can be removed.")},
                 status=status.HTTP_404_NOT_FOUND
             )
 

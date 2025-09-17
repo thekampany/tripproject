@@ -1,14 +1,14 @@
-# SOME DESCRIPTIVE TITLE.
+# TRIPPANION TRANSLATIONA.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Marc de Kam.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-03 22:04+0200\n"
+"POT-Creation-Date: 2025-09-17 21:05+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: tripapp/forms.py:139
+msgid "Your answer here..."
+msgstr "Typ hier je antwoord..."
 
 #: tripapp/templates/tripapp/add_checklist_item.html:16
 #: tripapp/templates/tripapp/trip_checklist.html:61
@@ -40,77 +44,85 @@ msgstr "Log Toevoegen"
 msgid "Save Log Entry"
 msgstr "Log Opslaan"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:201
+#: tripapp/templates/tripapp/dayprogram_detail.html:244
 #: tripapp/templates/tripapp/trip_detail.html:290
 msgid "Itinerary"
 msgstr "Reisschema"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:207
+#: tripapp/templates/tripapp/dayprogram_detail.html:250
 #: tripapp/templates/tripapp/scheduled_item_form.html:66
 #: tripapp/templates/tripapp/trip_dayprograms.html:11
 msgid "Add"
 msgstr "Invoegen"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:214
+#: tripapp/templates/tripapp/dayprogram_detail.html:257
 msgid "Expense"
 msgstr "Uitgave"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:217
+#: tripapp/templates/tripapp/dayprogram_detail.html:260
 msgid "Suggestion"
 msgstr "Suggestie"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:220
-#: tripapp/templates/tripapp/dayprogram_detail.html:379
+#: tripapp/templates/tripapp/dayprogram_detail.html:263
+#: tripapp/templates/tripapp/dayprogram_detail.html:422
 msgid "Question"
 msgstr "Vraag"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:221
+#: tripapp/templates/tripapp/dayprogram_detail.html:264
 msgid "Scheduled Item"
 msgstr "Gepland Item"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:222
+#: tripapp/templates/tripapp/dayprogram_detail.html:265
 msgid "Link"
 msgstr "Koppeling"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:248
+#: tripapp/templates/tripapp/dayprogram_detail.html:291
 msgid "Information for Today"
 msgstr "Belangrijke Informatie"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:256
+#: tripapp/templates/tripapp/dayprogram_detail.html:299
 msgid "Ideas for Today"
 msgstr "Ideeen voor vandaag"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:264
+#: tripapp/templates/tripapp/dayprogram_detail.html:307
 msgid "Scheduled Items for Today"
 msgstr "Geplande Items"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:306
-#: tripapp/templates/tripapp/dayprogram_detail.html:340
+#: tripapp/templates/tripapp/dayprogram_detail.html:349
+#: tripapp/templates/tripapp/dayprogram_detail.html:383
 msgid "Link to travel document"
 msgstr "Koppeling naar document"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:333
+#: tripapp/templates/tripapp/dayprogram_detail.html:376
 #: tripapp/templates/tripapp/trip_documents.html:25
 msgid "Documents and Links"
 msgstr "Documenten en Koppelingen"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:344
+#: tripapp/templates/tripapp/dayprogram_detail.html:387
 msgid "Download Document"
 msgstr "Download Document"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:388
+#: tripapp/templates/tripapp/dayprogram_detail.html:431
 msgid "You have the badge for this question!"
 msgstr "Je hebt de badge voor deze vraag!"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:393
+#: tripapp/templates/tripapp/dayprogram_detail.html:436
 msgid "Check Answer"
 msgstr "Controleer"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:401
+#: tripapp/templates/tripapp/dayprogram_detail.html:444
 msgid "to see and answer the question(s)."
 msgstr "om vraag te zien en te beantwoorden"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:442
+#: tripapp/templates/tripapp/dayprogram_detail.html:503
+msgid "Badge Claimed!"
+msgstr "Badge Behaald!"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:513
+msgid "Close"
+msgstr "Sluit"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:523
 msgid "Your Suggestion for this Day:"
 msgstr "Jouw suggestie voor deze dag:"
 
@@ -138,7 +150,7 @@ msgid ""
 "lay out the trip."
 msgstr ""
 "Klik Registreren om je aan te melden. Klik Mijn Trips om een Tribe te "
-"starten mensen uit te nodigen en je Trip te organiseren.\n"
+"starten mensen uit te nodigen en je Trip te organiseren."
 
 #: tripapp/templates/tripapp/index.html:139
 #: tripapp/templates/tripapp/tribe_map.html:68

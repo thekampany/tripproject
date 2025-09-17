@@ -27,6 +27,8 @@ from django.core.validators import MaxLengthValidator
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.translation import gettext_lazy as _
+
 
 class TripperForm(forms.ModelForm):
     class Meta:
@@ -129,7 +131,15 @@ class ChecklistItemForm(forms.ModelForm):
         fields = ['text', 'is_completed']
 
 class AnswerForm(forms.Form):
-    answer = forms.CharField(max_length=255)
+    answer = forms.CharField(
+        max_length=255,
+        label="",  
+        widget=forms.TextInput(
+            attrs={
+                'placeholder': _('Your answer here...')  
+            }
+        )
+    )
 
 class AnswerImageForm(forms.Form):
     answerimage = forms.ImageField()
@@ -212,7 +222,6 @@ class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
         fields = ['question_text', 'correct_answer', 'badge']
-
     def __init__(self, *args, **kwargs):
         dayprogram = kwargs.pop('dayprogram', None)
         super().__init__(*args, **kwargs)
