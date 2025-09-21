@@ -1337,7 +1337,10 @@ def add_suggestion(request, dayprogram_id):
         form = SuggestionForm(request.POST)
         if form.is_valid():
             suggestion = form.cleaned_data['suggestion']
-            user_suggestion = f"Suggestion by {request.user.username}: {suggestion}"
+            user_suggestion = _("Suggestion by %(username)s: %(suggestion)s") % {
+                "username": request.user.username,
+                "suggestion": suggestion,
+                }
             if dayprogram.possible_activities:
                 dayprogram.possible_activities += f"\n{user_suggestion}"
             else:
@@ -1981,7 +1984,7 @@ class LogEntryViewSet(viewsets.ModelViewSet):
 
         if not tripper_id or not emoji:
             return Response(
-                {"error": _("Tripper and emoji are mandatory.")},
+                {"error": _("Tripper and emoji mandatory.")},
                 status=status.HTTP_400_BAD_REQUEST
             )
 

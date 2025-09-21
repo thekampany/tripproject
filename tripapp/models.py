@@ -47,7 +47,8 @@ class Badge(models.Model):
         ('image_uploads', 'Image Uploads'),
         ('tripper_has_api_key','User has api integrations configured'),
         ('log_entries','Log Entries'),
-        ('trip_count','Trip Count')
+        ('trip_count','Trip Count'),
+        ('log_likes', 'Log Likes')
     ]
 
     name = models.CharField(max_length=100)

@@ -1,5 +1,6 @@
 {% extends "base_generic.html" %}
 {% load crispy_forms_tags %}
+{% load i18n %}
 {% block content %}
 
     <h2>{% trans "Add Log Entry" %}</h2>
@@ -13,4 +14,4 @@
     <br />
     <a href="{% url 'tripapp:dayprogram_detail' dayprogram.id %}">&larr; {{ dayprogram.description }}&nbsp;{{ dayprogram.tripdate|date:'d-M' }}</a>
     <br /><br />
-    {% endblock %}
+{% endblock %}

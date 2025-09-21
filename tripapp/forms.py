@@ -354,7 +354,7 @@ class RouteForm(forms.ModelForm):
             self.fields['dayprogram'].queryset = DayProgram.objects.filter(trip=trip)
 
 class SuggestionForm(forms.Form):
-    suggestion = forms.CharField(widget=forms.Textarea, label='Type your suggestion for possible activities for today')
+    suggestion = forms.CharField(widget=forms.Textarea, label='')
 
 class TripExpenseForm(forms.ModelForm):
     class Meta:

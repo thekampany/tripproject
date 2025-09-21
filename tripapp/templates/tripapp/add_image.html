@@ -1,10 +1,10 @@
 {% extends "base_generic.html" %}
 {% load static %}
 {% load crispy_forms_tags %}
-
+{% load i18n %}
 {% block content %}
 
-    <h2>Add Image</h2>
+    <h2>{% trans "Add Image" %}</h2>
     <b>{{ dayprogram.description }}&nbsp;{{ dayprogram.tripdate|date:'d-M' }}</b>
     <br /><br />
 
@@ -34,4 +34,4 @@
     <br />
     <a href="{% url 'tripapp:dayprogram_detail' dayprogram.id %}">&larr; {{ dayprogram.description }}&nbsp;{{ dayprogram.tripdate|date:'d-M' }}</a>
     <br /><br />
-    {% endblock %}
+{% endblock %}

@@ -17,6 +17,8 @@ class Command(BaseCommand):
             {"name": "Ten Tripper", "image": "badges/tentripper.png", "threshold_value":"10", "threshold_type":"trip_count"},
             {"name": "Twenty Tripper", "image": "badges/twentytripper.png", "threshold_value":"20", "threshold_type":"trip_count"},
             {"name": "Track the Tripper", "image": "badges/trackthetripper.png", "threshold_value":"1", "threshold_type":"tripper_has_api_key"},
+            {"name": "My Log got 3 likes", "image": "badges/like3.png", "threshold_value":"3", "threshold_type":"log_likes"},
+            {"name": "My Log got 10 likes", "image": "badges/like10.png", "threshold_value":"10", "threshold_type":"log_likes"},
         ]
 
         for badge_data in global_badges:

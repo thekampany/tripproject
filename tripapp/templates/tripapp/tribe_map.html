@@ -133,7 +133,7 @@
     });
 
     oms.addListener('click', function(marker) {
-        var popupContent = `<strong>${marker.tripname}</strong><br><a href="${marker.trip_url}">see trip</a>`;
+        var popupContent = `<div class="custom-popup"><a href="${marker.trip_url}"><h4>${marker.tripname}</h4></a></div>`;
         marker.bindPopup(popupContent).openPopup();
     });
 

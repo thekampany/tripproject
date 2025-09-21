@@ -114,7 +114,7 @@ def assign_badges():
 
     if active_trips:
         for trip in active_trips:
-            logentries = trip.dayprograms.logentries.all()
+            logentries = LogEntry.objects.filter(dayprogram__trip=trip)
             for logentry in logentries:
                 if logentry.like_count() >= badge.threshold_value:
                     tripper = logentry.tripper 
