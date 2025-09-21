@@ -106,7 +106,7 @@ def assign_badges():
     #assign badges for log likes
     logs.append(f"\n")
     logs.append(f"Check assign Badges for Log Likes")
-    logentrybadges = Badge.objects.filter(
+    loglikebadges = Badge.objects.filter(
         level='global', 
         achievement_method='threshold',
         threshold_type='log_likes'
@@ -114,17 +114,23 @@ def assign_badges():
 
     if active_trips:
         for trip in active_trips:
+            logs.append(f"Checking for trip: {trip.name}")
             logentries = LogEntry.objects.filter(dayprogram__trip=trip)
             for logentry in logentries:
-                if logentry.like_count() >= badge.threshold_value:
-                    tripper = logentry.tripper 
-                    if not BadgeAssignment.objects.filter(tripper=tripper, badge=badge).exists():
-                        tripper.badges.add(badge)
-                        tripper.save()
-                        BadgeAssignment.objects.create(tripper=tripper, badge=badge)
-                        logs.append(f"Badge '{badge.name}' assigned to Tripper {tripper.name} due to getting {loglike_count} log likes.")
-                else:
-                    logs.append(f"Not enough likes yet")
+                logs.append(f"..for {logentry.dayprogram.tripdate} with {logentry.like_count()} likes")
+                for badge in loglikebadges:
+                    logs.append(f"..for Badge {badge.name} with threshold {badge.threshold_value}")
+                    if logentry.like_count() >= badge.threshold_value:
+                        tripper = logentry.tripper 
+                        if not BadgeAssignment.objects.filter(tripper=tripper, badge=badge).exists():
+                            tripper.badges.add(badge)
+                            tripper.save()
+                            BadgeAssignment.objects.create(tripper=tripper, badge=badge)
+                            logs.append(f"Badge '{badge.name}' assigned to Tripper {tripper.name} due to getting {logentry.like_count()} log likes.")
+                        else:
+                            logs.append(f"already has it")
+                    else:
+                        logs.append(f"not enough likes yet")
     else:
         logs.append(f"No Badges for loglikes")
 
