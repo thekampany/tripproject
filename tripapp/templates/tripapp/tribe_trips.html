@@ -48,6 +48,7 @@
             text-align: center;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-decoration:none;
         }
 
         .trip-card:hover {
@@ -88,11 +89,12 @@
 
         .new-trip-card {
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             border: 1px dashed #ccc;
             border-radius: 8px;
-            background: #f9f9f9;
+            background: #e9e9e9;
             text-align: center;
             text-decoration: none;
             cursor: pointer;
@@ -100,43 +102,72 @@
         }
 
         .new-trip-card:hover {
-            background: #e9e9e9;
             transform: scale(1.02);
         }
 
         .new-trip-card a {
             text-decoration: none;
-            color: inherit;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            color: #444;
+            font-size: 1.0em;
+            margin: 0.5em 0;
             width: 100%;
-            height: 100%;
+        }
+
+        .new-trip-card a:hover {
+            transform: scale(1.08); 
         }
 
         .new-trip-card span {
-            font-size: 2em;
-            color: #888;
+            color: white;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+            font-size: 1.2em;
+            font-weight: bold;
         }
 
-/* Dark mode stijlen */
+
+        .other-trip-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background: #e9e9e9;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .other-trip-card:hover {
+            transform: scale(1.02);
+        }
+
+        .other-trip-card a {
+            text-decoration: none;
+            color: #444;
+            font-size: 1.0em;
+            margin: 0.5em 0;
+            width: 100%;
+        }
+
+        .other-trip-card a:hover {
+            transform: scale(1.08); 
+        }
+
+        .other-trip-card span {
+            color: white;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+
+/* Dark mode */
 @media (prefers-color-scheme: dark) {
     body {
         background-color: #121212;
         color: #e0e0e0;
-    }
-
-    .new-trip-card {
-        border: 1px dashed #555;
-        background: #1e1e1e;
-    }
-
-    .new-trip-card:hover {
-        background: #333;
-    }
-
-    .new-trip-card span {
-        color: #aaa;
     }
 
     .trip-card {
@@ -185,7 +216,17 @@
             font-weight: bold;
         }
 
+    .new-trip-card {
+        border: 1px dashed #555;
+        background: #1e1e1e;
+        text-align: center;
+    }
       
+    .other-trip-card {
+        border: 1px solid #555;
+        background: #1e1e1e;
+        text-align: center;
+    }
       
       }
 
@@ -198,7 +239,7 @@
 
       <div class="topcontainer">
         <div class="titlecontainer">
-            <h1>{% trans "Organize" %}</h1>
+            <h2>{% trans "Organize" %}</h2>
         </div>
         <div class="menucontainer">
             <div class="dropdown">
@@ -221,21 +262,19 @@
         </div>
     </div>
     <p>&nbsp;</p>
-
-
-    
-    
-    <a href="{% url 'tripapp:create_tribe' %}" class="btn-fixed-width">{% trans "Create a New Tribe" %}</a>&nbsp;
-    {% if tribes %}<a href="{% url 'tripapp:invite_to_tribe' %}" class="btn-fixed-width">{% trans "Invite People to the Tribe" %}</a>{% endif %}
-    <br /><br />
+        
     {% for tribe in tribes %}
-        <span style="color:gray;">Trips in Tribe: {{ tribe.name }}</span>
-        <div class="trip-container">
-          <a href="{% url 'tripapp:create_trip' tribe.id %}" class="new-trip-card">
-            <span style="text-decoration: none;">+</span>
-        </a>
+    <span style="color:gray;">{{ tribe.name }}</span><br>
+    <div class="trip-container">
+
+        <div class="new-trip-card">
+            <a href="{% url 'tripapp:create_trip' tribe.id %}">
+                <span>+&nbsp;{% trans "New Trip" %}</span>
+            </a>
+        </div>
+
         {% for trip in trips %}
-                <div class="trip-card">
+            <div class="trip-card">
                     <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" style="text-decoration:none;">
                     <div class="trip-name" style="
                     background-image: 
@@ -276,16 +315,29 @@
                         </a>
                         {% endif %}
                     </div>
-                </div>
-            {% endfor %}
-        </div>
+            </div>
+        {% endfor %}
+    </div>
     {% endfor %}
 
-
-    <br />
-    <h1>Badges</h1>
-    <a href="{% url 'tripapp:mytribes_badges_view' %}" class="btn-fixed-width">{% trans "View Badges" %}</a>&nbsp;
-    <a href="{% url 'tripapp:upload_badge' %}" class="btn-fixed-width">{% trans "Upload Badge" %}</a>
+    <p>&nbsp;</p>
+    <div class="trip-container">
+        <div class="other-trip-card">
+            <a href="{% url 'tripapp:itineraryidea-list' %}" >
+                <span>{% trans "Itinerary Ideas" %}</span>
+            </a>
+        </div>
+        <div class="other-trip-card">
+            <a href="{% url 'tripapp:create_tribe' %}">
+                <span>{% trans "Create a New Tribe" %}</span>
+            </a>
+            {% if tribes %}
+            <a href="{% url 'tripapp:invite_to_tribe' %}">
+                <span>{% trans "Invite People to the Tribe" %}</span>
+            </a>
+            {% endif %}
+        </div>
+    </div>
     <br /><br /><br />
     </div>
     </div>

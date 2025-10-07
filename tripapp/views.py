@@ -6,6 +6,7 @@ from .models import Trip, Tripper, Badge, DayProgram, Checklist, ChecklistItem, 
 from .models import BingoCard, BingoAnswer, BadgeAssignment
 from .models import Tribe, UserProfile, LogEntry, Link, Route, TripExpense, Location, ImmichPhotos, ScheduledItem
 from .models import TripperDocument, LogEntryLike, InviteCode
+from .models import TripOutline, TripOutlineItem
 from .forms import BadgeForm, TripForm, ChecklistItemForm, ImageForm, BingoAnswerForm
 from .forms import CustomUserCreationForm
 from .forms import AnswerForm, AnswerImageForm, TripperForm, TripperAdminForm
@@ -15,7 +16,11 @@ from .forms import BadgeAssignmentFormSet, LogEntryForm
 from .forms import BadgeplusQForm, QuestionplusBForm
 from .forms import LinkForm, RouteForm, SuggestionForm, TripExpenseForm, TripUpdateForm, UserUpdateForm, ScheduledItemForm
 from .forms import TripperDocumentForm
-from django.contrib.auth import login, authenticate
+from .serializers import TripOutlineSerializer
+from .serializers import TripSerializer, TripMapDataSerializer, LogEntryLikeSerializer
+
+
+from django.contrib.auth import login, authenticate,get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -56,8 +61,7 @@ from PIL import Image as PILImage
 from collections import Counter
 from statistics import mean
 
-from rest_framework import viewsets, status
-from .serializers import TripSerializer, TripMapDataSerializer, LogEntryLikeSerializer
+from rest_framework import viewsets, status, generics
 from django.contrib.auth.forms import AuthenticationForm
 from rest_framework.decorators import action
 from django.templatetags.static import static
@@ -84,7 +88,15 @@ def tribe_trips(request):
     user = request.user
     user_profile = request.user.userprofile
     tribes = user_profile.tribes.all()
-    trips = Trip.objects.filter(tribe__in=tribes).order_by('-date_from', '-id')
+    today = timezone.now().date()
+    trips = (
+        Trip.objects.filter(
+            tribe__in=tribes,
+            date_to__gte=today  
+        )
+        .order_by('-date_from', '-id')
+    )
+
     category = "roadtrip"
     background_image_url = get_random_unsplash_image(category)
     for trip in trips:
@@ -1872,7 +1884,7 @@ def reorder_dayprograms(request, trip_id):
 
     try:
         data = json.loads(request.body)
-        order = data['order']  # lijst van dicts: [{'id': 12, 'new_order': 1}, ...]
+        order = data['order']
 
         programs = {dp.id: dp for dp in DayProgram.objects.filter(trip=trip)}
 
@@ -2002,3 +2014,446 @@ class LogEntryViewSet(viewsets.ModelViewSet):
 
         like.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+@login_required
+def badge_creator(request):
+    return render(request, "tripapp/badge_creator.html")
+
+@login_required
+def save_badge(request):
+    if request.method == "POST":
+        data_url = request.POST.get("badge_image")
+        badge_name = request.POST.get("badge_name")
+
+        if not badge_name or not data_url:
+            return JsonResponse({"status": "error", "message": "Naam en afbeelding zijn verplicht"}, status=400)
+
+        format, imgstr = data_url.split(";base64,")
+        ext = format.split("/")[-1]
+        badge = Badge(user=request.user, name=badge_name)
+        badge.image.save(f"{badge_name}.{ext}", ContentFile(base64.b64decode(imgstr)))
+        badge.save()
+        return JsonResponse({"status": "ok"})
+    return JsonResponse({"status": "error"}, status=400)
+
+####tripoutline
+
+class TripOutlineCreateView(generics.CreateAPIView):
+    queryset = TripOutline.objects.all()
+    serializer_class = TripOutlineSerializer
+
+@login_required
+def create_itineraryidea_overnightlocations(request):
+    return render(request, 'tripapp/create_tripoutline.html')
+
+@login_required
+def create_itineraryidea_daylocations(request):
+    return render(request, 'tripapp/create_itineraryidea_daylocations.html')
+
+
+@csrf_exempt
+def save_tripoutline(request):
+    if request.method == "POST":
+        try:
+            payload = json.loads(request.body)
+
+            idea = ItineraryIdea.objects.create(
+                name=payload.get("name") or f"Itinerary {timezone.now().strftime('%Y-%m-%d %H:%M')}",
+                created_by=request.user,
+            )
+
+            items_data = payload.get("items", [])
+            day_counter = 1
+            days_saved = 0
+
+            for item in items_data:
+                nights = int(item.get("nights", 1))  # default 1 night
+                description = item.get("description", "")
+
+                for n in range(nights):
+                    day = ItineraryIdeaDay.objects.create(
+                        itineraryidea=idea,
+                        day_sequence=day_counter,
+                        day_description=description,
+                        day_possible_date=None,  
+                    )
+
+                    OvernightLocation.objects.create(
+                        day=day,
+                        latitude=item.get("latitude"),
+                        longitude=item.get("longitude"),
+                        radius=item.get("radius", 100),
+                        description=description,
+                    )
+
+                    day_counter += 1
+                    days_saved += 1
+
+            return JsonResponse({
+                "status": "ok",
+                "itinerary_id": idea.id,
+                "days_saved": days_saved,
+            })
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def save_tripoutline_daylocations(request):
+    if request.method == "POST":
+        try:
+            name = request.POST.get("name") or f"Itinerary {timezone.now().strftime('%Y-%m-%d %H:%M')}"
+            idea = ItineraryIdea.objects.create(
+                name=name,
+                created_by=request.user,
+            )
+
+            items_data = json.loads(request.POST.get("items_json", "[]"))
+
+            day_counter = 1
+            for item in items_data:
+                description = item.get("description", "")
+                day = ItineraryIdeaDay.objects.create(
+                    itineraryidea=idea,
+                    day_sequence=day_counter,
+                    day_description=description,
+                )
+
+                DayLocation.objects.create(
+                    day=day,
+                    sequence=item.get("sequence"),
+                    latitude=item.get("latitude"),
+                    longitude=item.get("longitude"),
+                    radius=item.get("radius", 100),
+                    description=description,
+                )
+
+                day_counter += 1
+
+            return redirect('tripapp:itinerary_daylocations_dragdrop', pk=idea.id)
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+def tripoutline_list(request):
+    outlines = TripOutline.objects.prefetch_related("items").all().order_by("-created_at")
+    return render(request, "tripapp/tripoutline_list.html", {"outlines": outlines})
+
+
+
+from .forms import TripOutlineForm, TripOutlineItemFormSet
+
+def tripoutline_detail(request, pk):
+    outline = get_object_or_404(TripOutline, pk=pk)
+
+    if request.method == "POST":
+        form = TripOutlineForm(request.POST, instance=outline)
+        formset = TripOutlineItemFormSet(request.POST, instance=outline)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            return redirect("tripapp:tripoutline-list")
+    else:
+        form = TripOutlineForm(instance=outline)
+        formset = TripOutlineItemFormSet(instance=outline)
+
+    return render(request, "tripapp/tripoutline_detail.html", {
+        "form": form,
+        "formset": formset,
+        "outline": outline
+    })
+
+from django.views.decorators.http import require_POST
+
+@require_POST
+def tripoutline_delete(request, pk):
+    outline = get_object_or_404(TripOutline, pk=pk)
+    outline.delete()
+    return redirect("tripapp:tripoutline-list")
+
+@csrf_exempt
+def update_tripoutline(request, pk):
+    outline = get_object_or_404(TripOutline, pk=pk)
+
+    if request.method == "POST":
+        try:
+            payload = json.loads(request.body)
+
+            outline.name = payload.get("name") or outline.name
+            outline.save()
+
+            outline.items.all().delete()
+            for item in payload.get("items", []):
+                TripOutlineItem.objects.create(
+                    outline=outline,
+                    sequence=item.get("sequence"),
+                    description=item.get("description"),
+                    overnightlocation=item.get("overnightlocation"),
+                    latitude=item.get("latitude"),
+                    longitude=item.get("longitude"),
+                    radius=item.get("radius", 0),
+                )
+
+            return JsonResponse({"status": "ok", "outline_id": outline.id})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return render(request, "tripapp/update_tripoutline.html", {
+        "outline": outline,
+        "items_json": json.dumps([
+            {
+                "id": item.id,
+                "sequence": item.sequence,
+                "latitude": float(item.latitude),
+                "longitude": float(item.longitude),
+                "radius": item.radius,
+                "description": item.description or "",
+                "overnightlocation": item.overnightlocation or "",
+            }
+            for item in outline.items.all().order_by("sequence")
+        ]),
+    })
+
+### itinerary ideas
+
+from .models import ItineraryIdea, ItineraryIdeaDay, DayLocation, OvernightLocation
+
+@login_required
+def pastecreate_itineraryidea(request):
+    return render(request, "tripapp/import_itinerary.html")
+
+
+def import_itineraryidea(request):
+    import_status = None
+
+    if request.method == "POST":
+        json_input = request.POST.get("json_input")
+        if not json_input:
+            import_status = "No JSON provided"
+        else:
+            try:
+                data = json.loads(json_input)
+
+                user = request.user if request.user.is_authenticated else None
+                if not user:
+                    import_status = "You must be logged in or provide a user_id in JSON"
+                    return render(request, "tripapp/import_itinerary.html", {"import_status": import_status})
+
+                # create itinerary
+                itinerary = ItineraryIdea.objects.create(
+                    name=data.get("name", f"Itinerary {timezone.now().strftime('%Y-%m-%d %H:%M')}"),
+                    created_by=user
+                )
+
+                for day_data in data.get("days", []):
+                    day = ItineraryIdeaDay.objects.create(
+                        itineraryidea=itinerary,
+                        day_sequence=day_data.get("day_sequence"),
+                        day_description=day_data.get("day_description", ""),
+                        day_possible_date=day_data.get("day_possible_date")
+                    )
+
+                    for loc in day_data.get("day_locations", []):
+                        DayLocation.objects.create(
+                            day=day,
+                            sequence=loc.get("sequence"),
+                            latitude=loc.get("lat"),
+                            longitude=loc.get("long"),
+                            radius=loc.get("radius", 100),
+                            description=loc.get("description", "")
+                        )
+
+                    overnight_data = day_data.get("overnightlocation")
+                    if overnight_data:
+                        OvernightLocation.objects.create(
+                            day=day,
+                            latitude=overnight_data.get("lat"),
+                            longitude=overnight_data.get("long"),
+                            radius=overnight_data.get("radius", 100),
+                            description=overnight_data.get("description", "")
+                        )
+
+                import_status = f"Success! Itinerary '{itinerary.name}' imported with {len(data.get('days', []))} days."
+                return redirect("tripapp:itineraryidea-list")
+
+            except json.JSONDecodeError:
+                import_status = "Invalid JSON"
+            except Exception as e:
+                import_status = f"Error: {str(e)}"
+
+    return render(request, "tripapp/import_itinerary.html", {"import_status": import_status})
+
+
+
+def itineraryidea_list(request):
+    itineraryideas = ItineraryIdea.objects.prefetch_related("itineraryidea_days").all().order_by("-created_at")
+    return render(request, "tripapp/itineraryidea_list.html", {"itineraryideas": itineraryideas})
+
+
+# show an itineraryidea on a map in order to have it edited
+def itineraryidea_edit(request, pk):
+    idea = get_object_or_404(ItineraryIdea, pk=pk)
+
+    days = []
+    for day in idea.itineraryidea_days.all().order_by("day_sequence"):
+        day_locations = list(day.day_locations.all().order_by("sequence"))
+        overnight = getattr(day, 'overnightlocation', None)
+
+        days.append({
+            'day_id': day.id,
+            'day_sequence': day.day_sequence,
+            'day_description': day.day_description,
+            'day_locations': day_locations,
+            'overnightlocation': overnight,
+        })
+
+    return render(request, 'tripapp/itineraryidea_update.html', {
+        'idea': idea,
+        'days': days
+    })
+
+# update the itineraryidea after user has edited on a map
+@login_required
+def update_itineraryidea(request, pk):
+    print("User:", request.user, "authenticated:", request.user.is_authenticated)
+    idea = get_object_or_404(ItineraryIdea, pk=pk)
+
+    if request.method == "POST":
+        try:
+            payload = json.loads(request.body)
+            items = payload.get("items", [])
+
+            # Update name
+            idea.name = payload.get("name", idea.name)
+            idea.updated_by = request.user
+            idea.save()
+
+            # remove existing
+            for day in idea.itineraryidea_days.all():
+                day.day_locations.all().delete()
+                if hasattr(day, "overnightlocation"):
+                    day.overnightlocation.delete()
+            idea.itineraryidea_days.all().delete()
+
+            # create new
+            day_counter = 1
+            for item in items:
+                is_overnight = item.get("overnight", False)
+                day_sequence = item.get("day_sequence", day_counter)
+                description = item.get("description", "")
+
+                day = ItineraryIdeaDay.objects.create(
+                    itineraryidea=idea,
+                    day_sequence=day_sequence,
+                    day_description=description
+                )
+
+                if is_overnight:
+                    OvernightLocation.objects.create(
+                        day=day,
+                        latitude=item["latitude"],
+                        longitude=item["longitude"],
+                        radius=item.get("radius", 100),
+                        description=description
+                    )
+                else:
+                    DayLocation.objects.create(
+                        day=day,
+                        sequence=item.get("sequence", 1),
+                        latitude=item["latitude"],
+                        longitude=item["longitude"],
+                        radius=item.get("radius", 100),
+                        description=description
+                    )
+
+                day_counter += 1
+
+            return JsonResponse({"status": "ok", "itinerary_id": idea.id})
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+@login_required
+@require_POST
+def itineraryidea_delete(request, pk):
+    idea = get_object_or_404(ItineraryIdea, pk=pk)
+    idea.delete()
+    return redirect("tripapp:itineraryidea-list")
+
+
+from tripapp.schemas import ITINERARY_JSON_SCHEMA
+
+def itinerary_schema_view(request):
+    schema_json = json.dumps(ITINERARY_JSON_SCHEMA, indent=2)
+    return render(request, "tripapp/itinerary_schema.html", {"schema": schema_json})
+
+
+
+from .forms import CreateTripFromItineraryForm
+from .utils import create_trip_from_itinerary
+
+@login_required
+def itineraryidea_to_trip(request, pk):
+    itinerary = get_object_or_404(ItineraryIdea, pk=pk)
+
+    if request.method == "POST":
+        form = CreateTripFromItineraryForm(request.POST, user=request.user)
+        if form.is_valid():
+            tribe = form.cleaned_data["tribe"]
+            start_date = form.cleaned_data["start_date"]
+
+            trip = create_trip_from_itinerary(itinerary, tribe, start_date, user=request.user)
+
+            return redirect("tripapp:trip_list")
+    else:
+        form = CreateTripFromItineraryForm(user=request.user)
+
+    return render(request, "tripapp/itineraryidea_to_trip.html", {
+        "form": form,
+        "itinerary": itinerary,
+    })
+
+
+@login_required
+def itinerary_daylocations_dragdrop(request, pk):
+    itinerary = get_object_or_404(ItineraryIdea, id=pk)
+    all_daylocations = DayLocation.objects.filter(day__itineraryidea=itinerary)
+    unassigned_daylocations = all_daylocations.filter(day__isnull=True)
+    itinerary_days = ItineraryIdeaDay.objects.filter(itineraryidea=itinerary).prefetch_related('day_locations')
+
+    context = {
+        'itinerary_idea': itinerary,
+        'unassigned_daylocations': unassigned_daylocations,
+        'itinerary_days': itinerary_days,
+    }
+
+    return render(request, 'tripapp/itinerary_dragdrop.html', context)
+
+@csrf_exempt
+def save_daylocation_assignments(request):
+    data = json.loads(request.body)
+    assignments = data.get("assignments", [])
+
+    for a in assignments:
+        loc_id = a.get("location_id")
+        day_id = a.get("day_id")
+        seq = a.get("sequence")
+        try:
+            loc = DayLocation.objects.get(id=loc_id)
+            loc.day_id = day_id
+            loc.sequence = seq if seq else None
+            loc.save()
+        except DayLocation.DoesNotExist:
+            continue
+
+    return JsonResponse({"status": "ok"})
+

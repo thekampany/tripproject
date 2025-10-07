@@ -1,0 +1,21 @@
+{% extends "base_generic.html" %}
+{% load i18n %}
+{% block content %}
+<h2>{% trans "Convert Itinerary to Trip" %}</h2>
+<strong>{% trans "Itinerary Idea:" %}{{ itinerary.name }}</strong>
+<p>&nbsp;</p>
+<form method="post">
+    {% csrf_token %}
+    <div>
+        <label for="id_tribe">{% trans "Select Tribe:" %}</label>
+        {{ form.tribe }}
+    </div>
+    <div>
+        <label for="id_start_date">{% trans "Startdate:" %}</label>
+        {{ form.start_date }}
+    </div>
+    <p>&nbsp;</p>
+    <button type="submit">{% trans "Create Trip" %}</button>
+    <p>&nbsp;</p>
+</form>
+{% endblock %}

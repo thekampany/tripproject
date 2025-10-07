@@ -449,3 +449,49 @@ class TripperDocumentForm(forms.ModelForm):
         widgets = {
             'description': forms.TextInput(attrs={'placeholder': 'documentdescription...'}),
         }
+
+
+from .models import TripOutline, TripOutlineItem
+
+class TripOutlineForm(forms.ModelForm):
+    class Meta:
+        model = TripOutline
+        fields = ["name"]
+
+class TripOutlineItemForm(forms.ModelForm):
+    class Meta:
+        model = TripOutlineItem
+        fields = ["sequence", "description", "overnightlocation", "latitude", "longitude", "radius"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["sequence"].required = False
+        self.fields["radius"].required = False
+        # Default values
+        if self.instance.pk is None:  
+            self.fields["sequence"].initial = 1
+            self.fields["radius"].initial = 100
+            self.fields["latitude"].initial = 0
+            self.fields["longitude"].initial = 0
+
+TripOutlineItemFormSet = inlineformset_factory(
+    TripOutline,
+    TripOutlineItem,
+    form=TripOutlineItemForm,
+    fields=["sequence", "description", "overnightlocation", "latitude", "longitude", "radius"],
+    extra=0,
+    can_delete=True
+)
+
+
+
+class CreateTripFromItineraryForm(forms.Form):
+    tribe = forms.ModelChoiceField(queryset=Tribe.objects.none())
+    start_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+
+        if user:
+            self.fields["tribe"].queryset = Tribe.objects.filter(members__user=user)

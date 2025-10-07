@@ -486,3 +486,106 @@ class InviteCode(models.Model):
     def create_code(cls, tribe):
         code = get_random_string(8).upper()
         return cls.objects.create(tribe=tribe, code=code)
+
+
+class TripOutline(models.Model):
+    name = models.CharField(max_length=200, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name="trip_outlines"
+    )
+    def __str__(self):
+        return self.name or f"Outline {self.id}"
+
+
+class TripOutlineItem(models.Model):
+    outline = models.ForeignKey(TripOutline, on_delete=models.CASCADE, related_name="items")
+    sequence = models.PositiveIntegerField()
+    description = models.TextField(blank=True, null=True)
+    overnightlocation = models.TextField(blank=True, null=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    radius = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["sequence"]
+
+    def __str__(self):
+        return f"{self.sequence}: {self.description or 'No description'}"
+
+
+
+
+class ItineraryIdea(models.Model):
+    name = models.CharField(max_length=200)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="itinerary_ideas"
+    )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="updated_itinerary_ideas"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+
+class ItineraryIdeaDay(models.Model):
+    itineraryidea = models.ForeignKey(
+        ItineraryIdea,
+        on_delete=models.CASCADE,
+        related_name="itineraryidea_days"
+    )
+    day_sequence = models.PositiveIntegerField()
+    day_description = models.TextField(blank=True, null=True)
+    day_possible_date = models.DateField(blank=True, null=True)
+
+    class Meta:
+        ordering = ["day_sequence"]
+
+    def __str__(self):
+        return f"Day {self.day_sequence} - {self.day_description or ''}"
+
+
+class DayLocation(models.Model):
+    day = models.ForeignKey(
+        ItineraryIdeaDay,
+        on_delete=models.CASCADE,
+        related_name="day_locations"
+    )
+    sequence = models.PositiveIntegerField()
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    radius = models.PositiveIntegerField(default=100)
+    description = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ["sequence"]
+
+    def __str__(self):
+        return f"Loc {self.sequence} ({self.latitude}, {self.longitude})"
+
+
+class OvernightLocation(models.Model):
+    day = models.OneToOneField(
+        ItineraryIdeaDay,
+        on_delete=models.CASCADE,
+        related_name="overnightlocation"
+    )
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    radius = models.PositiveIntegerField(default=100)
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Overnight ({self.latitude}, {self.longitude})"

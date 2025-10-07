@@ -1,0 +1,43 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Trip Outlines</h1>
+<p>&nbsp;</p>
+<a href="{% url 'tripapp:create_tripoutline' %}">
+   <button type="button">Create New</button>
+</a>
+<p>&nbsp;</p>
+{% for outline in outlines %}
+  <div class="outline" style="border-bottom:1px solid #ccc; padding:8px 0;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-weight:bold;">{{ outline.name|default:"(no name)" }}</span>
+      <span style="font-size:0.9em; color:#666;">
+        {{ outline.created_by }}
+        {% if outline.updated_at %}
+           Last update: {{ outline.updated_at|date:"Y-m-d H:i" }}
+        {% else %}
+           Created: {{ outline.created_at|date:"Y-m-d H:i" }}
+        {% endif %}
+      </span>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; gap:5px; margin-top:5px;">
+      <a href="{% url 'tripapp:tripoutline-detail' outline.pk %}">
+        <button type="button">Edit as itinerary list</button>
+      </a>
+
+      <a href="{% url 'tripapp:tripoutline-update' outline.pk %}">
+        <button type="button">Edit on map</button>
+      </a>
+
+      <form method="post" action="{% url 'tripapp:tripoutline-delete' outline.pk %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" onclick="return confirm('Are you sure?')">Delete</button>
+      </form>
+    </div>
+  </div>
+{% empty %}
+  <p>No trip outlines created yet.</p>
+{% endfor %}
+
+{% endblock %}

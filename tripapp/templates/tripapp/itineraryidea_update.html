@@ -1,0 +1,278 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Itinerary Idea</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <style>
+    #map { height: 400px; }
+    body { font-family: sans-serif; }
+    .coords-box { margin-top: 10px; }
+    .coords-box input { margin: 2px; }
+    .coords-row { margin-bottom: 5px; }
+    .coords-row input[type="number"] { width: 60px; }
+    .coords-row input[type="text"] { width: 120px; }
+    .export { margin-top: 10px; }
+    textarea { width: 100%; height: 150px; }
+  </style>
+</head>
+<body>
+
+<h1>{% trans "Edit Itinerary Idea:" %} {{ idea.name }}</h1>
+
+<div id="map" style="height: 600px;"></div>
+<p>&nbsp;</p>
+<div id="coords-box" style="margin-bottom: 20px;"></div>
+<button id="saveBtn">{% trans "Save" %}</button>
+<p>&nbsp;</p>
+<div><a href="{% url 'tripapp:itineraryidea-list' %}">&larr;{% trans "Itinerary Ideas" %}</a></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+<script>
+var map = L.map('map');
+var bounds = [];
+var circles = [];
+var lines = [];
+var defaultRadius = 5000;
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+var geocoder = L.Control.geocoder({
+defaultMarkGeocode: false
+})
+.on('markgeocode', function(e) {
+var latlng = e.geocode.center;
+var marker = L.marker(latlng).addTo(map);
+marker.on('click', function() {
+    createCircle(latlng);
+    drawLines();
+});
+
+map.setView(latlng, 12);
+})
+.addTo(map);
+
+
+function drawLines() {
+    lines.forEach(l => map.removeLayer(l));
+    lines = [];
+    var sorted = circles.slice().sort((a,b) => a.day_sequence - b.day_sequence || a.sequence - b.sequence);
+    for (var i = 0; i < sorted.length - 1; i++) {
+        var line = L.polyline([sorted[i].circle.getLatLng(), sorted[i+1].circle.getLatLng()], { color: 'green' }).addTo(map);
+        lines.push(line);
+    }
+}
+
+function createCircle(latlng, day_sequence, sequence, radius, description, overnightDesc, isNight) {
+    var ll;
+    if (Array.isArray(latlng)) {
+        ll = L.latLng(latlng[0], latlng[1]);
+    } else if (latlng && typeof latlng.lat !== 'undefined') {
+        ll = L.latLng(latlng.lat, latlng.lng);
+    } else {
+        // fallback: Nederland-ish
+        ll = L.latLng(52.1, 5.1);
+    }
+
+    var color = isNight ? 'orange' : 'blue';
+    var circle = L.circle(ll, {
+        radius: radius || defaultRadius,
+        color: color,
+        fillColor: color,
+        fillOpacity: 0.5
+    }).addTo(map);
+
+    circle.bindTooltip(String(sequence || day_sequence), {permanent: true, direction: 'center'}).openTooltip();
+
+    var coordsBox = document.getElementById('coords-box');
+    var row = document.createElement('div');
+    row.className = 'coords-row';
+    row.innerHTML = `
+        Night: <input type="number" class="day-seq" value="${day_sequence}" style="width:50px;">
+        <input type="hidden" class="seq-input" value="${sequence}" style="width:50px;">
+        Radius: <input type="number" class="radius-input" value="${radius}" style="width:60px;">
+        <input type="hidden" class="desc-input" value="${description || ''}" style="width:150px;">
+        Overnight Location: <input type="text" class="overnight-input" value="${overnightDesc || ''}" style="width:150px;">
+        <input type="hidden" class="lat-input" value="${ll.lat}">
+        <input type="hidden" class="lng-input" value="${ll.lng}">
+        <button type="button" class="row-delete-btn">X</button>
+    `;
+    coordsBox.appendChild(row);
+
+    var daySeqInput = row.querySelector('.day-seq');
+    var seqInput = row.querySelector('.seq-input');
+    var radiusInput = row.querySelector('.radius-input');
+    var descInput = row.querySelector('.desc-input');
+    var overnightInput = row.querySelector('.overnight-input');
+    var latInput = row.querySelector('.lat-input');
+    var lngInput = row.querySelector('.lng-input');
+    var deleteBtn = row.querySelector('.row-delete-btn');
+
+    var dragMarker = L.marker(ll, { draggable: true, opacity: 0 }).addTo(map);
+
+    var c = {
+        circle: circle,
+        dragMarker: dragMarker,
+        latlng: ll,
+        day_sequence: parseInt(day_sequence) || 1,
+        sequence: parseInt(sequence) || 0,
+        radius: parseFloat(radius) || defaultRadius,
+        description: description || "",
+        overnightDesc: overnightDesc || "",
+        isNight: !!isNight,
+        row: row,
+        latInput: latInput,
+        lngInput: lngInput
+    };
+
+    daySeqInput.addEventListener('input', function() {
+        c.day_sequence = parseInt(this.value) || 1;
+        drawLines();
+    });
+    seqInput.addEventListener('input', function() {
+        c.sequence = parseInt(this.value) || 0;
+        circle.unbindTooltip();
+        circle.bindTooltip(String(c.sequence), {permanent:true, direction:'center'}).openTooltip();
+        drawLines();
+    });
+    radiusInput.addEventListener('input', function() {
+        c.radius = parseFloat(this.value) || defaultRadius;
+        circle.setRadius(c.radius);
+    });
+    descInput.addEventListener('input', function() {
+        c.description = this.value;
+    });
+    overnightInput.addEventListener('input', function() {
+        c.overnightDesc = this.value;
+    });
+
+    dragMarker.on('drag', function(e) {
+        var newLL = e.target.getLatLng();
+        circle.setLatLng(newLL);
+        c.latlng = newLL;
+        c.latInput.value = newLL.lat;
+        c.lngInput.value = newLL.lng;
+        drawLines();
+    });
+
+    deleteBtn.addEventListener('click', function() {
+        map.removeLayer(circle);
+        map.removeLayer(dragMarker);
+        row.parentNode.removeChild(row);
+        circles = circles.filter(x => x !== c);
+        drawLines();
+    });
+
+    circles.push(c);
+    bounds.push(ll);
+}
+
+// add daylocations and overnightlocations
+{% for day_entry in days %}
+    {% for loc in day_entry.day_locations %}
+        createCircle(
+            [{{ loc.latitude }}, {{ loc.longitude }}],
+            {{ day_entry.day_sequence }},
+            {{ loc.sequence }},
+            {{ loc.radius }},
+            "{{ loc.description|escapejs }}",
+            "",
+            false
+        );
+    {% endfor %}
+    {% if day_entry.overnightlocation %}
+        createCircle(
+            [{{ day_entry.overnightlocation.latitude }}, {{ day_entry.overnightlocation.longitude }}],
+            {{ day_entry.day_sequence }},
+            0,
+            {{ day_entry.overnightlocation.radius }},
+            "",
+            "{{ day_entry.overnightlocation.description|escapejs }}",
+            true
+        );
+    {% endif %}
+{% endfor %}
+
+
+if(bounds.length>0){
+    map.fitBounds(bounds, {padding:[50,50]});
+} else {
+    map.setView([52.1,5.1],6);
+}
+
+map.on('click', function(e) {
+    var latlng = e.latlng;
+    var nextDay = circles.length > 0 
+        ? Math.max(...circles.map(c => c.day_sequence)) + 1 
+        : 1;
+
+    createCircle(
+        latlng,
+        nextDay,   
+        0,         
+        defaultRadius,
+        "",        
+        "Overnight stay", 
+        true       
+    );
+
+    drawLines();
+});
+
+
+
+drawLines();
+</script>
+
+
+<script>
+document.getElementById('saveBtn').addEventListener('click', function() {
+    var items = circles.map(c => ({
+        day_sequence: parseInt(c.day_sequence) || 1,
+        sequence: parseInt(c.sequence) || 0,
+        latitude: parseFloat(parseFloat(c.latInput.value).toFixed(6)),
+        longitude: parseFloat(parseFloat(c.lngInput.value).toFixed(6)),
+        radius: parseFloat(c.radius) || defaultRadius,
+        description: c.isNight ? (c.overnightDesc || c.description) : (c.description || ""),
+        overnight: !!c.isNight
+    }));
+
+    console.log("Items about to send:", items);
+    console.log("Fetch body:", JSON.stringify({ name: "{{ idea.name|escapejs }}", items: items }));
+
+    fetch("{% url 'tripapp:update_itineraryidea' idea.id %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        credentials: "same-origin",
+        body: JSON.stringify({
+            name: "{{ idea.name|escapejs }}",
+            items: items
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.status === "ok"){
+           console.log("Update success:", data);
+        } else {
+            console.error("Error:", data);
+        }
+    })
+    .catch(err => {
+        console.error("Fetch error:", err);
+    });
+});
+
+</script>
+
+</body>
+</html>

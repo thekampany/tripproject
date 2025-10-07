@@ -8,6 +8,14 @@ import numpy as np
 from rdp import rdp
 import gpxpy
 
+import datetime
+from django.utils.text import slugify
+from geopy.geocoders import Nominatim
+from tripapp.models import Trip, DayProgram, Point
+from django.db import models
+
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -120,3 +128,83 @@ def generate_static_map(dayprogram):
         filename = f"map_dayprogram_{dayprogram.id}.png"
         dayprogram.map_image.save(filename, ContentFile(response.content))
         dayprogram.save()
+
+
+
+
+def create_trip_from_itinerary(itinerary, tribe, start_date,user):
+    geolocator = Nominatim(user_agent="my_trip_app")
+
+    all_locations = []
+    for day in itinerary.itineraryidea_days.all():
+        for loc in day.day_locations.all():
+            all_locations.append((loc.latitude, loc.longitude))
+        if getattr(day, "overnightlocation", None):
+            o = day.overnightlocation
+            all_locations.append((o.latitude, o.longitude))
+
+    countries = set()
+    for lat, lon in all_locations:
+        try:
+            location = geolocator.reverse((lat, lon), exactly_one=True, language="en")
+            if location and "country_code" in location.raw["address"]:
+                countries.add(location.raw["address"]["country_code"].upper())
+        except Exception as e:
+            print(f"Error geocoding {lat},{lon}: {e}")
+
+    country_codes = ",".join(sorted(countries))
+
+    max_day = itinerary.itineraryidea_days.all().aggregate(models.Max("day_sequence"))["day_sequence__max"] or 1
+    date_to = start_date + datetime.timedelta(days=max_day - 1)
+
+    trip = Trip.objects.create(
+        tribe=tribe,
+        name=itinerary.name,
+        description=itinerary.name,
+        slug=slugify(itinerary.name),
+        date_from=start_date,
+        date_to=date_to,
+        country_codes=country_codes,
+    )
+
+    # Ensure the logged-in user is also a Tripper for this trip
+    tripper, created = Tripper.objects.get_or_create(user=user, defaults={'name': user.username})
+    tripper.trips.add(trip)
+    tripper.is_trip_admin = True
+    tripper.save()
+
+
+    for day in itinerary.itineraryidea_days.all().order_by("day_sequence"):
+        tripdate = start_date + datetime.timedelta(days=day.day_sequence - 1)
+
+        dayprogram = DayProgram.objects.create(
+            trip=trip,
+            description=day.day_description or f"Day {day.day_sequence}",
+            tripdate=tripdate,
+            dayprogramnumber=day.day_sequence,
+            overnight_location=getattr(day.overnightlocation, "description", None)
+            if getattr(day, "overnightlocation", None)
+            else None,
+        )
+
+        for loc in day.day_locations.all().order_by("sequence"):
+            point = Point.objects.create(
+                name=loc.description or f"Point {loc.sequence}",
+                latitude=loc.latitude,
+                longitude=loc.longitude,
+                trip=trip,
+            )
+            point.dayprograms.add(dayprogram)
+
+        if getattr(day, "overnightlocation", None):
+            o = day.overnightlocation
+            point = Point.objects.create(
+                name=o.description or "Overnight location",
+                latitude=o.latitude,
+                longitude=o.longitude,
+                trip=trip,
+                marker_type="bed",
+            )
+            point.dayprograms.add(dayprogram)
+
+    return trip

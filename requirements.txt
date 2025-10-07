@@ -18,3 +18,4 @@ gpxpy
 djangorestframework
 djangorestframework-api-key==3.*
 qrcode
+geopy

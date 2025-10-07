@@ -1,0 +1,52 @@
+{% extends "base_generic.html" %}
+{% load i18n %}
+{% block content %}
+<h2>{% trans "Itinerary Ideas" %}</h2>
+<a href="{% url 'tripapp:create_itineraryidea_overnightlocations' %}">
+   <button type="button">{% trans "Create New on Map via OvernightLocations" %}</button>
+</a>
+<a href="{% url 'tripapp:create_itineraryidea_daylocations' %}">
+   <button type="button">{% trans "Create New on Map via DayLocations" %}</button>
+</a>
+
+<a href="{% url 'tripapp:pastecreate_itineraryidea' %}">
+   <button type="button">{% trans "Create New via Import" %}</button>
+</a>
+<p>&nbsp;</p>
+
+{% for idea in itineraryideas %}
+  <div class="itinerary-idea" style="border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+    <strong>{{ idea.name }}</strong>
+    <span style="float:right; color:gray; font-style:italic;">
+      {% if idea.updated_at %}
+        {{ idea.created_by.username }} - Last update: {{ idea.updated_by.username }}&nbsp;{{ idea.updated_at|date:"Y-m-d H:i" }}
+      {% else %}
+        {{ idea.created_by.username }} - Created: {{ idea.created_at|date:"Y-m-d H:i" }}
+      {% endif %}
+    </span>
+    <br><br>
+
+    <div style="float:left;">
+      <a href="{% url 'tripapp:itineraryidea-edit' idea.pk %}">
+        <button type="button">{% trans "Edit on Map" %}</button>
+      </a>
+      <a href="{% url 'tripapp:itineraryidea-to-trip' idea.pk %}">
+        <button type="button">{% trans "Convert to Trip" %}</button>
+      </a>
+    </div>
+
+    <div style="float:right;">
+      <form method="post" action="{% url 'tripapp:itineraryidea-delete' idea.pk %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Delete" %}</button>
+      </form>
+    </div>
+
+    <div style="clear:both;"></div>
+  </div>
+{% empty %}
+  <p>{% trans "No itinerary ideas yet." %}</p>
+{% endfor %}
+<p>&nbsp;</p>
+<a href="{% url 'tripapp:tribe_trips' %}">&larr;{% trans "Organize" %}</a>
+{% endblock %}

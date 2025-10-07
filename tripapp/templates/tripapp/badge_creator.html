@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Create your badge</title>
+  <style>
+    #canvas { border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="400" height="400"></canvas><br>
+  <input type="text" id="badgeText" placeholder="Tekst op badge"><br>
+  <input type="text" id="badgeName" placeholder="Badge naam"><br>
+  <button id="saveBtn">Save</button>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+    img.src = "/static/badge_template.png"; 
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+
+    document.getElementById("badgeText").addEventListener("input", function() {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      ctx.font = "30px Arial";
+      ctx.fillStyle = "black";
+      ctx.textAlign = "center";
+      ctx.fillText(this.value, canvas.width / 2, canvas.height - 50);
+    });
+
+    document.getElementById("saveBtn").addEventListener("click", function() {
+      const dataURL = canvas.toDataURL("image/png");
+      const badgeName = document.getElementById("badgeName").value;
+
+      fetch("{% url 'tripapp:save_badge' %}", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": "{{ csrf_token }}",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: "badge_image=" + encodeURIComponent(dataURL) +
+              "&badge_name=" + encodeURIComponent(badgeName)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "ok") {
+          alert("Badge opgeslagen!");
+        } else {
+          alert("Fout: " + data.message);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Itinerary daylocations – {{ itinerary_idea.name }}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .draggable {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: .5rem;
+      padding: .5rem .75rem;
+      margin-bottom: .5rem;
+      cursor: grab;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .dropzone {
+      min-height: 60px;
+      padding: .75rem;
+      border: 2px dashed #ccc;
+      border-radius: .5rem;
+      background-color: #fafafa;
+      transition: background-color .2s;
+    }
+    .dropzone.dragover {
+      background-color: #e7f3ff;
+      border-color: #007bff;
+    }
+    .day-card {
+      margin-bottom: 1rem;
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: .5rem;
+      padding: 1rem;
+    }
+  </style>
+</head>
+<body class="p-3">
+  <div class="container-fluid">
+    <h2 class="mb-4">Itinerary: {{ itinerary_idea.name }}</h2>
+
+    <div class="row">
+      <!-- Left panel: unassigned -->
+      <div class="col-md-4">
+        <div class="card shadow-sm mb-3">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">Ongekoppelde locaties</h5>
+          </div>
+          <div class="card-body">
+            <div id="unassigned" class="dropzone">
+              {% for loc in unassigned_daylocations %}
+                <div class="draggable" draggable="true" data-id="{{ loc.id }}">
+                  <strong>{{ loc.description|default:"(geen beschrijving)" }}</strong><br>
+                  <small>Lat: {{ loc.latitude }}, Lng: {{ loc.longitude }}</small>
+                </div>
+              {% empty %}
+                <p class="text-muted small">Geen losse locaties.</p>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right panel: itinerary days -->
+      <div class="col-md-8">
+        <div class="row">
+          {% for day in itinerary_days %}
+            <div class="col-md-6">
+              <div class="day-card dropzone" data-day-id="{{ day.id }}">
+                <h5>Dag {{ day.day_sequence }}</h5>
+                <p class="text-muted mb-2">{{ day.day_description|default:"(geen beschrijving)" }}</p>
+                <div class="day-locations">
+                  {% for loc in day.day_locations.all %}
+                    <div class="draggable" draggable="true" data-id="{{ loc.id }}">
+                      <strong>{{ loc.description|default:"(geen beschrijving)" }}</strong><br>
+                      <small>Lat: {{ loc.latitude }}, Lng: {{ loc.longitude }}</small>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <p class="text-muted">Er zijn nog geen dagen voor dit itinerary.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4 text-end">
+      <button id="saveBtn" class="btn btn-primary">Opslaan</button>
+    </div>
+  </div>
+
+  <script>
+    // --- Drag & Drop logic ---
+    let dragged = null;
+
+    function setupDraggables() {
+      document.querySelectorAll('.draggable').forEach(d => {
+        d.addEventListener('dragstart', e => {
+          dragged = d;
+          e.dataTransfer.effectAllowed = 'move';
+        });
+        d.addEventListener('dragend', () => dragged = null);
+      });
+    }
+
+    function setupDropzones() {
+      document.querySelectorAll('.dropzone').forEach(zone => {
+        zone.addEventListener('dragover', e => {
+          e.preventDefault();
+          zone.classList.add('dragover');
+        });
+        zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+        zone.addEventListener('drop', e => {
+          e.preventDefault();
+          zone.classList.remove('dragover');
+          if (dragged) {
+            zone.appendChild(dragged);
+          }
+        });
+      });
+    }
+
+    setupDraggables();
+    setupDropzones();
+
+    // --- Save logic ---
+    document.getElementById('saveBtn').addEventListener('click', function() {
+      const assignments = [];
+
+      document.querySelectorAll('.day-card').forEach(dayCard => {
+        const dayId = dayCard.dataset.dayId;
+        const locs = dayCard.querySelectorAll('.draggable');
+        locs.forEach((loc, index) => {
+          assignments.push({
+            location_id: loc.dataset.id,
+            day_id: dayId,
+            sequence: index + 1
+          });
+        });
+      });
+
+      // unassigned
+      document.querySelectorAll('#unassigned .draggable').forEach(loc => {
+        assignments.push({
+          location_id: loc.dataset.id,
+          day_id: null,
+          sequence: null
+        });
+      });
+
+      const payload = {
+        itinerary_id: {{ itinerary_idea.id }},
+        assignments: assignments
+      };
+
+      fetch("{% url 'tripapp:save_daylocation_assignments' %}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(resp => resp.json())
+      .then(result => {
+        alert("Opslaan voltooid!");
+        console.log(result);
+      })
+      .catch(err => {
+        console.error("Fout bij opslaan:", err);
+        alert("Er is iets misgegaan bij het opslaan.");
+      });
+    });
+  </script>
+</body>
+</html>

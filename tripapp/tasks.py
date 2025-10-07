@@ -305,62 +305,68 @@ def fetch_and_store_immich_photos():
     active_trips = Trip.objects.filter(date_from__lte=today, date_to__gte=today)
 
     if not active_trips:
-       logs.append(f"No active trips")
+        logs.append("No active trips")
 
     for trip in active_trips:
-        logs.append(f"Trip:{trip.name}")
+        logs.append(f"Trip: {trip.name}")
         for tripper in trip.trippers.all():
             last_photolocation = ImmichPhotos.objects.filter(tripper=tripper).order_by('-timestamp').first()
-            start_date = last_photolocation.timestamp if last_photolocation else timezone.make_aware(datetime.combine(today, datetime.min.time()))
-            # start_date from photolocation is in local datetime from last photo. 
-            # add 1 milisecond?
+            start_date = (
+                last_photolocation.timestamp
+                if last_photolocation
+                else timezone.make_aware(datetime.combine(today, datetime.min.time()))
+            )
             immich_start_date = start_date + timedelta(milliseconds=1)
             logs.append(f"Start date for {tripper.name}: {immich_start_date.isoformat()}")
 
             if tripper.immich_url:
-                url = f"{tripper.immich_url}api/search/metadata"
+                url = f"{tripper.immich_url.rstrip('/')}/api/search/metadata"
                 headers = {"x-api-key": tripper.immich_api_key}
                 payload = {
                     "takenAfter": immich_start_date.isoformat(),
                     "withExif": True,
-                    "type": "IMAGE"
+                    "type": "IMAGE",
                 }
-                response = requests.post(url, headers=headers, json=payload)
 
-                if response.status_code != 200:
-                    logs.append(f"Failed to fetch data from Immich API for tripper {tripper.name}")
+                try:
+                    response = requests.post(url, headers=headers, json=payload, timeout=10)
+                    response.raise_for_status()
+                except Exception as e:
+                    logs.append(f"Failed to fetch data for {tripper.name}: {e}")
                     continue
 
-                data = response.json()
-                assets = data.get("assets", {}).get("items", [])
+                try:
+                    data = response.json()
+                except Exception as e:
+                    logs.append(f"Invalid JSON for {tripper.name}: {e}")
+                    continue
 
+                assets = data.get("assets", {}).get("items", [])
                 for item in assets:
                     exif_info = item.get("exifInfo", {})
-                    logs.append(str(item.get("id", "Unknown ID")))
-                    logs.append(str(exif_info.get("latitude", "No Latitude")))
+                    logs.append(f"Photo {item.get('id', 'Unknown ID')} lat={exif_info.get('latitude')}")
 
                     try:
-                        lat = float(exif_info["latitude"]) if exif_info.get("latitude") is not None else None
-                        long = float(exif_info["longitude"]) if exif_info.get("longitude") is not None else None
+                        lat = float(exif_info["latitude"]) if exif_info.get("latitude") else None
+                        long = float(exif_info["longitude"]) if exif_info.get("longitude") else None
                     except (TypeError, ValueError) as e:
-                        logs.append(f"Invalid latitude/longitude for {item['id']}: {e}")
+                        logs.append(f"Invalid coordinates for {item.get('id')}: {e}")
                         continue
 
                     if lat is None or long is None:
-                        logs.append(f"Skipping photo ID {item['id']} due to missing or invalid coordinates.")
+                        logs.append(f"Skipping {item.get('id')} (missing coords)")
                         continue
 
-                    thumbnail_url = f"{tripper.immich_url}/api/assets/{item['id']}/thumbnail"
-                    headers = {
-                        'x-api-key': f"{tripper.immich_api_key}",
-                        'Accept': 'application/octet-stream',
+                    thumbnail_url = f"{tripper.immich_url.rstrip('/')}/api/assets/{item['id']}/thumbnail"
+                    thumb_headers = {
+                        "x-api-key": tripper.immich_api_key,
+                        "Accept": "application/octet-stream",
                     }
 
                     try:
-                        thumbnail_response = requests.get(thumbnail_url, headers=headers)
-                        thumbnail_response.raise_for_status()
-
-                        if thumbnail_response.content:
+                        thumb_resp = requests.get(thumbnail_url, headers=thumb_headers, timeout=10)
+                        thumb_resp.raise_for_status()
+                        if thumb_resp.content:
                             file_name = f"{item['id']}_thumbnail.jpg"
                             local_datetime = datetime.fromisoformat(item['localDateTime'].replace("Z", "+00:00"))
                             ImmichPhotos.objects.create(
@@ -370,18 +376,20 @@ def fetch_and_store_immich_photos():
                                 longitude=long,
                                 city=exif_info.get("city"),
                                 timestamp=local_datetime,
-                                thumbnail=ContentFile(thumbnail_response.content, file_name),
+                                thumbnail=ContentFile(thumb_resp.content, file_name),
                             )
-                            logs.append(f"Saving photo ID: {item['id']}, Latitude: {lat}, Longitude: {long} in localdatetime {local_datetime.isoformat()}")
+                            logs.append(
+                                f"Saved {item['id']} ({lat}, {long}) at {local_datetime.isoformat()}"
+                            )
                         else:
                             logs.append(f"No thumbnail content for {item['id']}")
-
                     except Exception as e:
                         logs.append(f"Error retrieving thumbnail for {item['id']}: {e}")
 
-    logs.append(f"Task end")
-
+    logs.append("Task end")
     return "\n".join(logs)
+
+
 
 
 

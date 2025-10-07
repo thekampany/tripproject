@@ -1,0 +1,232 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{% trans "Create Tripoutline" %}</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <style>
+    #map { height: 400px; }
+    body { font-family: sans-serif; }
+    .coords-box { margin-top: 10px; }
+    .coords-box input { margin: 2px; }
+    .coords-row { margin-bottom: 5px; }
+    .coords-row input[type="number"] { width: 60px; }
+    .coords-row input[type="text"] { width: 120px; }
+    .export { margin-top: 10px; }
+    textarea { width: 100%; height: 150px; }
+  </style>
+</head>
+<body>
+<strong>{% trans "Create a Itinerary Idea by indicating OVERNIGHT locations / areas on this map" %}</strong>
+<div id="map"></div>
+
+<div class="coords-box" id="coords-box">
+  <strong>{% trans "Overnight Locations:" %}</strong>
+</div>
+<div class="export">
+  <input type="text" id="outlineName" placeholder="{% trans 'Name of this Overnight Itinerary Idea' %}">
+  <button id="sendBtn">{% trans "Save Overnight Outline" %}</button>
+  <input type="hidden" id="exportOutput" />
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+<script>
+  var map = L.map('map').setView([52.1, 5.1], 7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(map);
+
+  var geocoder = L.Control.geocoder({
+    defaultMarkGeocode: false
+  })
+  .on('markgeocode', function(e) {
+    var latlng = e.geocode.center;
+    var marker = L.marker(latlng).addTo(map);
+    marker.on('click', function() {
+      createCircle(latlng);
+      drawLines();
+    });
+
+  map.setView(latlng, 12);
+  })
+  .addTo(map);
+
+  var circles = []; 
+  var lines = [];   
+  var nextNumber = 1;
+  var defaultRadius = 5000;
+
+  map.on('click', function(e) {
+    if (e.originalEvent.target.tagName === 'DIV' || e.originalEvent.target.tagName === 'CANVAS') {
+      createCircle(e.latlng);
+      drawLines();
+    }
+  });
+
+
+  function createCircle(latlng) {
+    var number = nextNumber++;
+
+    var circle = L.circle(latlng, {
+      radius: defaultRadius,
+      color: 'blue',
+      fillColor: 'blue',
+      fillOpacity: 0.5
+    }).addTo(map);
+
+    circle.bindTooltip(number.toString(), {permanent: true, direction: 'center'}).openTooltip();
+
+    var dragMarker = L.marker(latlng, { draggable: true, opacity: 0 }).addTo(map);
+    dragMarker.on('drag', function(e) {
+      var newLatLng = e.target.getLatLng();
+      circle.setLatLng(newLatLng);
+      updateCircleLatLng(circle, newLatLng);
+      drawLines();
+    });
+
+    var coordsBox = document.getElementById('coords-box');
+    var row = document.createElement('div');
+    row.className = 'coords-row';
+    row.innerHTML = `
+      Nr: <input type="number" value="${number}" min="1">
+      Radius: <input type="number" value="${defaultRadius}" min="1">
+      Desc: <input type="text" value="">
+      Nights: <input type="number" value="1" min="1">
+      <button type="button">X</button>
+    `;
+    coordsBox.appendChild(row);
+
+    var numberInput = row.querySelectorAll('input[type="number"]')[0];
+    var radiusInput = row.querySelectorAll('input[type="number"]')[1];
+    var descInput = row.querySelector('input[type="text"]');
+    var nightsInput = row.querySelectorAll('input[type="number"]')[2];
+    var deleteButton = row.querySelector('button');
+
+    numberInput.addEventListener('input', function() {
+      var newNumber = parseInt(this.value);
+      if (!isNaN(newNumber)) {
+        circle.unbindTooltip();
+        circle.bindTooltip(newNumber.toString(), {permanent: true, direction: 'center'}).openTooltip();
+        circles.find(c => c.circle === circle).number = newNumber;
+        drawLines();
+      }
+    });
+
+    radiusInput.addEventListener('input', function() {
+      var newRadius = parseFloat(this.value);
+      if (!isNaN(newRadius) && newRadius > 0) {
+        circle.setRadius(newRadius);
+      }
+    });
+
+    deleteButton.addEventListener('click', function() {
+      removeCircle(circle, row, dragMarker);
+      drawLines();
+    });
+
+    circles.push({
+      circle: circle, 
+      dragMarker: dragMarker, 
+      latlng: latlng, 
+      number: number, 
+      row: row, 
+      descInput: descInput, 
+      radiusInput: radiusInput,
+      nightsInput: nightsInput
+    });
+  }
+
+  function updateCircleLatLng(circle, newLatLng) {
+    var c = circles.find(c => c.circle === circle);
+    if (c) {
+      c.latlng = newLatLng;
+    }
+  }
+
+  function removeCircle(circle, row, dragMarker) {
+    map.removeLayer(circle);
+    map.removeLayer(dragMarker);
+    row.parentNode.removeChild(row);
+    circles = circles.filter(c => c.circle !== circle);
+  }
+
+  function drawLines() {
+    lines.forEach(line => map.removeLayer(line));
+    lines = [];
+
+    var sorted = circles.slice().sort((a,b) => a.number - b.number);
+
+    for (var i = 0; i < sorted.length - 1; i++) {
+      var latlngs = [sorted[i].circle.getLatLng(), sorted[i+1].circle.getLatLng()];
+      var line = L.polyline(latlngs, { color: 'green' }).addTo(map);
+      lines.push(line);
+    }
+  }
+
+
+  // save
+  document.getElementById('sendBtn').addEventListener('click', function() {
+  var sorted = circles.slice().sort((a,b) => a.number - b.number);
+  var outlineName = document.getElementById('outlineName').value || null;
+
+  var seqCounter = 1;
+  var items = [];
+
+  sorted.forEach(c => {
+    var latlng = c.circle.getLatLng();
+    var nights = parseInt(c.nightsInput.value) || 1;
+
+    for (var i = 0; i < nights; i++) {
+      let obj = {
+        sequence: seqCounter++,
+        latitude: Number(latlng.lat.toFixed(6)),
+        longitude: Number(latlng.lng.toFixed(6)),
+        radius: parseFloat(c.radiusInput.value),
+        description: c.descInput.value,
+        overnightlocation: c.descInput.value
+      };
+
+      if (i === 0) {
+        obj.nr_of_nights = nights; 
+      }
+
+      items.push(obj);
+    }
+  });
+
+  var payload = { 
+    name: outlineName, 
+    items: items 
+  };
+
+  var json = JSON.stringify(payload, null, 2);
+  document.getElementById('exportOutput').value = json;
+
+  fetch("{% url 'tripapp:save_tripoutline' %}", {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: json
+  })
+  .then(resp => resp.json())
+  .then(result => {
+    console.log("Save success:", result);
+  })
+  .catch(err => {
+    console.error("Save error:", err);
+  });
+});
+
+</script>
+<p>&nbsp;</p>
+<div>
+<a href="{% url 'tripapp:itineraryidea-list' %}" style="text-decoration: none;">&larr; Itinerary Ideas</a>
+</div>
+
+
+</body>
+</html>

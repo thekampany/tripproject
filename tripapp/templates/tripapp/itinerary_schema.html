@@ -1,0 +1,24 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Itinerary JSON Schema</h1>
+
+<p>Dit is het JSON-schema dat gebruikt wordt bij het importeren van een Itinerary Idea.</p>
+
+<pre>
+{{ schema|safe }}
+</pre>
+
+<p><strong>Toelichting:</strong></p>
+<ul>
+  <li><code>name</code>: Naam van de itinerary (string, verplicht)</li>
+  <li><code>days</code>: Array van dagen, elk met:</li>
+  <ul>
+    <li><code>day_sequence</code>: volgorde van de dag (integer, verplicht)</li>
+    <li><code>day_description</code>: beschrijving van de dag (string, optioneel)</li>
+    <li><code>day_possible_date</code>: mogelijke datum (YYYY-MM-DD, optioneel)</li>
+    <li><code>day_locations</code>: array van locaties met <code>sequence, lat, long, radius, description</code></li>
+    <li><code>overnightlocation</code>: object met <code>lat, long, radius, description</code></li>
+  </ul>
+</ul>
+{% endblock %}

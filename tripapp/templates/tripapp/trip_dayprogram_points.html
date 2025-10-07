@@ -207,7 +207,7 @@
             } else if (point.marker_type === 'restaurant') {
                 marker = L.marker(point.coords, {icon: restaurantIcon}).bindPopup(popupContent);
             } else {
-                marker = L.marker(point.coords).bindPopup(point.name);
+                marker = L.marker(point.coords).bindPopup(popupContent);
             }            
             markers.addLayer(marker);
         });

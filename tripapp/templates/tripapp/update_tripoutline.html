@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Tripoutline</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+
+  <style>
+    #map { height: 400px; }
+    body { font-family: sans-serif; }
+    .coords-box { margin-top: 10px; }
+    .coords-row { margin-bottom: 5px; }
+    .coords-row input[type="number"] { width: 60px; }
+    .coords-row input[type="text"] { width: 120px; }
+  </style>
+</head>
+<body>
+
+<h1>Edit Tripoutline: {{ outline.name }}</h1>
+
+<div id="map"></div>
+
+<div class="coords-box" id="coords-box">
+  <strong>Locations:</strong>
+</div>
+
+<div class="export">
+  <input type="text" id="outlineName" value="{{ outline.name }}" placeholder="Name of this Tripidea">
+  <button id="sendBtn">Update Tripoutline</button>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+<script>
+  var map = L.map('map').setView([52.1, 5.1], 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(map);
+
+  new L.Control.Geocoder().addTo(map);
+
+  var circles = [];
+  var lines = [];
+  var defaultRadius = 5000;
+  var nextNumber = 1;
+
+  var items = {{ items_json|safe }};
+
+  items.forEach(function(item) {
+    var latlng = [item.latitude, item.longitude];
+    createCircle(latlng, item.sequence, item.radius, item.description, item.overnightlocation);
+  });
+
+  drawLines();
+
+  function createCircle(latlng, sequence, radius, description, overnightlocation) {
+    var number = sequence || nextNumber++;
+    var desc = description || "";
+    var overnight = overnightlocation || "";
+    var circle = L.circle(latlng, {
+      radius: radius || defaultRadius,
+      color: 'blue',
+      fillColor: 'blue',
+      fillOpacity: 0.5
+    }).addTo(map);
+
+    circle.bindTooltip(number.toString(), {permanent: true, direction: 'center'}).openTooltip();
+
+    var dragMarker = L.marker(latlng, { draggable: true, opacity: 0 }).addTo(map);
+    dragMarker.on('drag', function(e) {
+      var newLatLng = e.target.getLatLng();
+      circle.setLatLng(newLatLng);
+      updateCircleLatLng(circle, newLatLng);
+      drawLines();
+    });
+
+    var coordsBox = document.getElementById('coords-box');
+    var row = document.createElement('div');
+    row.className = 'coords-row';
+    row.innerHTML = `
+      Nr: <input type="number" class="seq-input" value="${number}" min="1">
+      Radius: <input type="number" class="radius-input" value="${radius}" min="1">
+      Desc: <input type="text" class="desc-input" value="${description}" >
+      Overnight: <input type="text" class="overnightlocation-input" value="${overnightlocation}">
+      <button type="button" class="row-delete-btn">X</button>
+    `;
+    coordsBox.appendChild(row);
+
+    var numberInput = row.querySelector('.seq-input');
+    var radiusInput = row.querySelector('.radius-input');
+    var descInput = row.querySelector('.desc-input');
+    var overnightlocationInput = row.querySelector('.overnightlocation-input');
+    var deleteButton = row.querySelector('.row-delete-btn');
+
+    numberInput.addEventListener('input', function() {
+      var newNumber = parseInt(this.value);
+      if (!isNaN(newNumber)) {
+        circle.unbindTooltip();
+        circle.bindTooltip(newNumber.toString(), {permanent: true, direction: 'center'}).openTooltip();
+        circles.find(c => c.circle === circle).number = newNumber;
+        drawLines();
+      }
+    });
+
+    radiusInput.addEventListener('input', function() {
+      var newRadius = parseFloat(this.value);
+      if (!isNaN(newRadius) && newRadius > 0) {
+        circle.setRadius(newRadius);
+      }
+    });
+
+    deleteButton.addEventListener('click', function() {
+      removeCircle(circle, row, dragMarker);
+      drawLines();
+    });
+
+    circles.push({
+      circle: circle,
+      dragMarker: dragMarker,
+      latlng: latlng,
+      number: number,
+      row: row,
+      descInput: descInput,
+      overnightlocationInput: overnightlocationInput,
+      radiusInput: radiusInput
+    });
+  }
+
+  function updateCircleLatLng(circle, newLatLng) {
+    var c = circles.find(c => c.circle === circle);
+    if (c) c.latlng = newLatLng;
+  }
+
+  function removeCircle(circle, row, dragMarker) {
+    map.removeLayer(circle);
+    map.removeLayer(dragMarker);
+    row.parentNode.removeChild(row);
+    circles = circles.filter(c => c.circle !== circle);
+  }
+
+  function drawLines() {
+    lines.forEach(line => map.removeLayer(line));
+    lines = [];
+    var sorted = circles.slice().sort((a,b) => a.number - b.number);
+    for (var i = 0; i < sorted.length - 1; i++) {
+      var latlngs = [sorted[i].circle.getLatLng(), sorted[i+1].circle.getLatLng()];
+      var line = L.polyline(latlngs, { color: 'green' }).addTo(map);
+      lines.push(line);
+    }
+  }
+
+  document.getElementById('sendBtn').addEventListener('click', function() {
+    var sorted = circles.slice().sort((a,b) => a.number - b.number);
+    var outlineName = document.getElementById('outlineName').value || null;
+
+    var items = sorted.map(c => ({
+      sequence: c.number,
+      latitude: c.circle.getLatLng().lat,
+      longitude: c.circle.getLatLng().lng,
+      radius: parseFloat(c.radiusInput.value),
+      description: c.descInput.value,
+      overnightlocation: c.overnightlocationInput.value
+    }));
+
+    var payload = { name: outlineName, items: items };
+
+    fetch("/tripoutline/{{ outline.id }}/update/", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(resp => resp.json())
+    .then(result => {
+      console.log("Update success:", result);
+    })
+    .catch(err => {
+      console.error("Update error:", err);
+    });
+  });
+</script>
+
+<div> 
+<a href="{% url 'tripapp:tripoutline-list' %}">&larr; Tripoutlines</a>
+</div>
+
+</body>
+</html>
