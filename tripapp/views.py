@@ -23,6 +23,11 @@ from .serializers import TripSerializer, TripMapDataSerializer, LogEntryLikeSeri
 from django.contrib.auth import login, authenticate,get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
+
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+from .decorators import tripper_required, user_owns_tripper
+
 from django.contrib.auth.models import User
 from .utils import get_random_unsplash_image
 from django.db.models import Count, Q
@@ -40,10 +45,8 @@ from django.utils.html import strip_tags
 from django.utils import timezone
 from datetime import timedelta, date, datetime
 import uuid
-from .decorators import tripper_required, user_owns_tripper
 from django.http import JsonResponse
 from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
 import json
 import requests
 #from weasyprint import HTML
@@ -588,14 +591,19 @@ def trip_map_view(request, trip_id):
 
     # Simplify
     coords = np.array([[loc.latitude, loc.longitude] for loc in all_locations])
+    cleaned = [coords[0]]
+    for c in coords[1:]:
+        if abs(c[0] - cleaned[-1][0]) > 1e-5 or abs(c[1] - cleaned[-1][1]) > 1e-5:
+            cleaned.append(c)
+    coords = cleaned
     simplified_coords = coords
     if len(coords) > 0:
-        if len(coords) > 10000:
-            step = len(coords) // 10000
+        if len(coords) > 5000:
+            step = len(coords) // 5000
             coords = coords[::step]
 
         if len(coords) > 150:
-            simplified_coords = rdp(coords, epsilon=0.001)  # 100 meter
+            simplified_coords = rdp(coords, epsilon=0.005)  # 500 meter
         else:
             simplified_coords = coords
 
@@ -1600,53 +1608,6 @@ def delete_tripper_document(request, document_id):
 
 
 
-def export_trip_markdown_zip(request, trip_id):
-    trip = get_object_or_404(Trip, pk=trip_id)
-    
-    # Markdown-content
-    md_content = f"# {trip.name}\n\n**Datum:** {trip.date_from} - {trip.date_to}\n\n{trip.description}\n\n## Programma\n"
-    
-    image_files = []  
-
-    for day in trip.dayprograms.all().order_by('dayprogramnumber'):
-        md_content += f"\n### {day.tripdate}: {day.description}\n{day.necessary_info}\n{day.possible_activities}\n"
-
-        for image in day.images.all():
-            image_filename = os.path.basename(image.image.name)  
-            md_content += f"\n![{image.description}]({image_filename})\n"
-            image_files.append((image_filename, image.image.path))  
-
-
-    md_content += "\n## Trippers\n"
-    for tripper in trip.trippers.all():
-        md_content += f"- {tripper.name}\n"
-        if tripper.photo:
-            photo_filename = os.path.basename(tripper.photo.name)
-            md_content += f"  ![{tripper.name}]({photo_filename})\n"
-            image_files.append((photo_filename, tripper.photo.path))
-
-    md_content += "\n## Bingocards\n"
-    bingocards = trip.bingocards.all()
-    if not bingocards:
-        md_content += "_Not on this trip._\n"
-
-    # ZIP
-    zip_buffer = BytesIO()
-    with zipfile.ZipFile(zip_buffer, "w") as zip_file:
-        zip_file.writestr(f"{trip.slug}.md", md_content)  
-        
-        for filename, filepath in image_files:
-            if os.path.exists(filepath):  
-                zip_file.write(filepath, filename)
-
-    zip_buffer.seek(0)  
-    
-    # ZIP as download
-    response = HttpResponse(zip_buffer.getvalue(), content_type="application/zip")
-    response["Content-Disposition"] = f'attachment; filename="{trip.slug}.zip"'
-    return response
-
-
 
 def encode_image_to_base64(image_path, max_size=(300, 300)):  
     full_path = os.path.join(settings.MEDIA_ROOT, image_path)
@@ -1859,6 +1820,72 @@ def create_zip_with_html(request, trip_id):
         zip_file.writestr(html_filename, html_content)
     
     return FileResponse(open(zip_path, "rb"), as_attachment=True, filename=zip_filename)
+
+
+def generate_html_trip_outline(trip):
+
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="nl">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{trip.name}</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; }}
+            h1, h2, h3 {{ color: #2c3e50; }}
+            img {{ max-width: 100%; height: auto; margin-top: 10px; }}
+            .container {{ max-width: 800px; margin: auto; }}
+            .card {{ background: #f8f9fa; padding: 15px; border-radius: 8px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>{trip.name}</h1>
+            <p>{trip.description}</p>
+
+    """
+
+    html_content += "<h2>Itinerary</h2>"
+
+    for day in trip.dayprograms.all().order_by('dayprogramnumber'):
+        
+        html_content += f"""
+        <div class="card">
+            <div style="text-align:left;">
+                {day.dayprogramnumber} - {day.description}
+            </div>
+            <div style="text-align:right; font-style:italic;">
+                {day.overnight_location}
+            </div>
+       </div>"""
+
+    html_content += """
+        </div>
+    </body>
+    </html>
+    """
+
+    return html_content
+
+from tempfile import NamedTemporaryFile
+
+
+def create_tripoutline_html(request, trip_id):
+    trip = get_object_or_404(Trip, pk=trip_id)    
+
+    html_content = generate_html_trip_outline(trip)
+    html_filename = f"{trip.slug}_trip_outline.html"
+    
+    with NamedTemporaryFile(suffix=".html", delete=False) as tmp_file:
+        tmp_file.write(html_content.encode("utf-8"))
+        tmp_file.flush()
+
+        with open(tmp_file.name, "rb") as f:
+            response = HttpResponse(f.read(), content_type="text/html")
+            response["Content-Disposition"] = f'attachment; filename="{html_filename}"'
+            return response
+
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -2142,84 +2169,6 @@ def save_tripoutline_daylocations(request):
     return JsonResponse({"error": "Method not allowed"}, status=405)
 
 
-def tripoutline_list(request):
-    outlines = TripOutline.objects.prefetch_related("items").all().order_by("-created_at")
-    return render(request, "tripapp/tripoutline_list.html", {"outlines": outlines})
-
-
-
-from .forms import TripOutlineForm, TripOutlineItemFormSet
-
-def tripoutline_detail(request, pk):
-    outline = get_object_or_404(TripOutline, pk=pk)
-
-    if request.method == "POST":
-        form = TripOutlineForm(request.POST, instance=outline)
-        formset = TripOutlineItemFormSet(request.POST, instance=outline)
-        if form.is_valid() and formset.is_valid():
-            form.save()
-            formset.save()
-            return redirect("tripapp:tripoutline-list")
-    else:
-        form = TripOutlineForm(instance=outline)
-        formset = TripOutlineItemFormSet(instance=outline)
-
-    return render(request, "tripapp/tripoutline_detail.html", {
-        "form": form,
-        "formset": formset,
-        "outline": outline
-    })
-
-from django.views.decorators.http import require_POST
-
-@require_POST
-def tripoutline_delete(request, pk):
-    outline = get_object_or_404(TripOutline, pk=pk)
-    outline.delete()
-    return redirect("tripapp:tripoutline-list")
-
-@csrf_exempt
-def update_tripoutline(request, pk):
-    outline = get_object_or_404(TripOutline, pk=pk)
-
-    if request.method == "POST":
-        try:
-            payload = json.loads(request.body)
-
-            outline.name = payload.get("name") or outline.name
-            outline.save()
-
-            outline.items.all().delete()
-            for item in payload.get("items", []):
-                TripOutlineItem.objects.create(
-                    outline=outline,
-                    sequence=item.get("sequence"),
-                    description=item.get("description"),
-                    overnightlocation=item.get("overnightlocation"),
-                    latitude=item.get("latitude"),
-                    longitude=item.get("longitude"),
-                    radius=item.get("radius", 0),
-                )
-
-            return JsonResponse({"status": "ok", "outline_id": outline.id})
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
-
-    return render(request, "tripapp/update_tripoutline.html", {
-        "outline": outline,
-        "items_json": json.dumps([
-            {
-                "id": item.id,
-                "sequence": item.sequence,
-                "latitude": float(item.latitude),
-                "longitude": float(item.longitude),
-                "radius": item.radius,
-                "description": item.description or "",
-                "overnightlocation": item.overnightlocation or "",
-            }
-            for item in outline.items.all().order_by("sequence")
-        ]),
-    })
 
 ### itinerary ideas
 
@@ -2319,49 +2268,51 @@ def itineraryidea_edit(request, pk):
         'days': days
     })
 
-# update the itineraryidea after user has edited on a map
+from collections import defaultdict
+
 @login_required
 def update_itineraryidea(request, pk):
-    print("User:", request.user, "authenticated:", request.user.is_authenticated)
     idea = get_object_or_404(ItineraryIdea, pk=pk)
 
-    if request.method == "POST":
-        try:
-            payload = json.loads(request.body)
-            items = payload.get("items", [])
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
 
-            # Update name
-            idea.name = payload.get("name", idea.name)
-            idea.updated_by = request.user
-            idea.save()
+    try:
+        payload = json.loads(request.body)
+        items = payload.get("items", [])
 
-            # remove existing
-            for day in idea.itineraryidea_days.all():
-                day.day_locations.all().delete()
-                if hasattr(day, "overnightlocation"):
-                    day.overnightlocation.delete()
-            idea.itineraryidea_days.all().delete()
+        # Update name
+        idea.name = payload.get("name", idea.name)
+        idea.updated_by = request.user
+        idea.save()
 
-            # create new
-            day_counter = 1
-            for item in items:
-                is_overnight = item.get("overnight", False)
-                day_sequence = item.get("day_sequence", day_counter)
-                description = item.get("description", "")
+        # Delete existing days and locations
+        for day in idea.itineraryidea_days.all():
+            day.day_locations.all().delete()
+            if hasattr(day, "overnightlocation"):
+                day.overnightlocation.delete()
+        idea.itineraryidea_days.all().delete()
 
-                day = ItineraryIdeaDay.objects.create(
-                    itineraryidea=idea,
-                    day_sequence=day_sequence,
-                    day_description=description
-                )
+        day_items = defaultdict(list)
+        for item in items:
+            day_seq = item.get("day_sequence", 1)
+            day_items[day_seq].append(item)
 
-                if is_overnight:
+        for day_seq in sorted(day_items.keys()):
+            day = ItineraryIdeaDay.objects.create(
+                itineraryidea=idea,
+                day_sequence=day_seq,
+                day_description=""  
+            )
+
+            for item in day_items[day_seq]:
+                if item.get("overnight", False):
                     OvernightLocation.objects.create(
                         day=day,
                         latitude=item["latitude"],
                         longitude=item["longitude"],
                         radius=item.get("radius", 100),
-                        description=description
+                        description=item.get("description", "")
                     )
                 else:
                     DayLocation.objects.create(
@@ -2370,17 +2321,13 @@ def update_itineraryidea(request, pk):
                         latitude=item["latitude"],
                         longitude=item["longitude"],
                         radius=item.get("radius", 100),
-                        description=description
+                        description=item.get("description", "")
                     )
 
-                day_counter += 1
+        return JsonResponse({"status": "ok", "itinerary_id": idea.id})
 
-            return JsonResponse({"status": "ok", "itinerary_id": idea.id})
-
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
-
-    return JsonResponse({"error": "Method not allowed"}, status=405)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 @login_required
 @require_POST
@@ -2426,34 +2373,93 @@ def itineraryidea_to_trip(request, pk):
 @login_required
 def itinerary_daylocations_dragdrop(request, pk):
     itinerary = get_object_or_404(ItineraryIdea, id=pk)
-    all_daylocations = DayLocation.objects.filter(day__itineraryidea=itinerary)
-    unassigned_daylocations = all_daylocations.filter(day__isnull=True)
+    unclustered_daylocations = DayLocation.objects.filter(day__itineraryidea=itinerary)
     itinerary_days = ItineraryIdeaDay.objects.filter(itineraryidea=itinerary).prefetch_related('day_locations')
 
     context = {
         'itinerary_idea': itinerary,
-        'unassigned_daylocations': unassigned_daylocations,
+        'unclustered_daylocations': unclustered_daylocations,
         'itinerary_days': itinerary_days,
     }
 
     return render(request, 'tripapp/itinerary_dragdrop.html', context)
 
+
 @csrf_exempt
 def save_daylocation_assignments(request):
-    data = json.loads(request.body)
-    assignments = data.get("assignments", [])
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
 
-    for a in assignments:
-        loc_id = a.get("location_id")
-        day_id = a.get("day_id")
-        seq = a.get("sequence")
-        try:
-            loc = DayLocation.objects.get(id=loc_id)
-            loc.day_id = day_id
-            loc.sequence = seq if seq else None
-            loc.save()
-        except DayLocation.DoesNotExist:
-            continue
+    try:
+        payload = json.loads(request.body)
+        itinerary_id = payload.get("itinerary_id")
+        assignments = payload.get("assignments", [])
+        overnight_data = payload.get("overnightlocations", [])
 
-    return JsonResponse({"status": "ok"})
+        itinerary = get_object_or_404(ItineraryIdea, id=itinerary_id)
 
+        day_id_map = {}
+
+        for item in assignments:
+            day_id = item.get("day_id")
+            day_sequence = item.get("day_sequence")
+
+            if day_id is not None and int(day_id) < 0:
+                new_day = ItineraryIdeaDay.objects.create(
+                    itineraryidea=itinerary,
+                    day_sequence=day_sequence,
+                    day_description=f"Auto-generated Day {day_sequence}",
+                    day_possible_date=None,
+                )
+                day_id_map[int(day_id)] = new_day.id
+
+        for item in assignments:
+            activity_id = item.get("activity_id")
+            raw_day_id = item.get("day_id")
+            day_sequence = item.get("day_sequence")
+            sequence = item.get("sequence")
+
+            try:
+                act = DayLocation.objects.get(id=activity_id)
+            except DayLocation.DoesNotExist:
+                continue
+
+            if raw_day_id is None:
+                act.day = None
+                act.sequence = None
+            else:
+                real_day_id = day_id_map.get(int(raw_day_id), raw_day_id)
+                day = ItineraryIdeaDay.objects.get(id=real_day_id)
+                act.day = day
+                act.sequence = sequence
+                day.day_sequence = day_sequence
+                day.save(update_fields=["day_sequence"])
+
+            act.save(update_fields=["day", "sequence"])
+
+        for o in overnight_data:
+            day_id = o.get("day_id")
+            description = o.get("description", "").strip()
+            lat = o.get("latitude")
+            lng = o.get("longitude")
+
+            if not day_id or lat is None or lng is None:
+                continue
+
+            real_day_id = day_id_map.get(int(day_id), day_id)
+            day = ItineraryIdeaDay.objects.get(id=real_day_id)
+
+            OvernightLocation.objects.update_or_create(
+                day=day,
+                defaults={
+                    "latitude": lat,
+                    "longitude": lng,
+                    "description": description,
+                    "radius": 100
+                }
+            )
+
+        return JsonResponse({"status": "ok", "saved": len(assignments)})
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

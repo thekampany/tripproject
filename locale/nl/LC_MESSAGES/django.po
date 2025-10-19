@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-05 12:52+0200\n"
+"POT-Creation-Date: 2025-10-19 21:35+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -47,28 +47,51 @@ msgstr "Log Toevoegen"
 msgid "Save Log Entry"
 msgstr "Log Opslaan"
 
-#: tripapp/templates/tripapp/create_itinerary_daylocations.html:5
+#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:5
+#, fuzzy
+#| msgid ""
+#| "Create a Itinerary Idea by indicating Day locations / areas on this map"
+msgid "Create Itinerary Idea - by Day Locations"
+msgstr "Maak Reisschema door Dag activiteiten op de kaart te zetten"
+
+#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:24
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:54
+#, fuzzy
+#| msgid ""
+#| "Create a Itinerary Idea by indicating Day locations / areas on this map"
+msgid "Create a Itinerary Idea by indicating day locations"
+msgstr "Maak Reisschema door Dag activiteiten op de kaart te zetten"
+
+#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:25
+msgid "Step 1 - Put markers on locations or areas that you want to visit"
+msgstr "Stap 1 - Zet markers op lokaties of gebieden die je wil bezoeken"
+
+#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:29
+msgid "Day Locations:"
+msgstr "Dag Activiteiten"
+
+#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:34
+#, fuzzy
+#| msgid "Name of this Overnight Itinerary Idea"
+msgid "Name of this Itinerary Idea"
+msgstr "Naam van dit Overnachtings Reisschema"
+
+#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:36
+#, fuzzy
+#| msgid "Itinerary"
+msgid "Save Itinerary Idea"
+msgstr "Bewaar Reisschema Idee"
+
+#: tripapp/templates/tripapp/create_trip.html:29
+msgid ""
+"Tip: Consider plotting an itinerary on a map and turn your idea into a trip. "
+msgstr "Tip: Je kan ook eerst een reisschema op de kaart zetten en dat dan omzetten naar een trip."
+
 #: tripapp/templates/tripapp/create_tripoutline.html:5
 #, fuzzy
 #| msgid "Create Trip"
 msgid "Create Tripoutline"
-msgstr "Maak Trip aan"
-
-#: tripapp/templates/tripapp/create_itinerary_daylocations.html:23
-msgid "Create a Itinerary Idea by indicating Day locations / areas on this map"
-msgstr "Maak Reisschema Idee door Dag activiteiten op de kaart te zetten"
-
-#: tripapp/templates/tripapp/create_itinerary_daylocations.html:27
-msgid "Day Locations:"
-msgstr "Dag Activiteiten"
-
-#: tripapp/templates/tripapp/create_itinerary_daylocations.html:30
-msgid "Name of this Tripidea"
-msgstr "Naam van dit Reisschema"
-
-#: tripapp/templates/tripapp/create_itinerary_daylocations.html:31
-msgid "Save Tripoutline"
-msgstr "Bewaar Reisschema"
+msgstr "Maak Reisschema aan"
 
 #: tripapp/templates/tripapp/create_tripoutline.html:23
 msgid ""
@@ -181,8 +204,10 @@ msgstr "Vraag aan je favoriete AI om een reisschema op te stellen."
 
 #: tripapp/templates/tripapp/import_itinerary.html:6
 msgid ""
-"Include in the prompt that the idea needs to be presented exactly following the schema at:"
-msgstr "Zet in de prompt dat het idee precies het schema moet volgen dat staat op:"
+"Include in the prompt that the idea needs to be presented exactly following "
+"the schema at:"
+msgstr ""
+"Zet in de prompt dat het idee precies het schema moet volgen dat staat op:"
 
 #: tripapp/templates/tripapp/index.html:126
 msgid "Welcome"
@@ -239,50 +264,93 @@ msgstr "Deel deze link"
 msgid "Have it scanned by the person you want to invite to the tribe."
 msgstr "Laat scannen door persoon die je wil toevoegen aan de tribe"
 
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:55
+msgid "Step 2 - Cluster the activities into days"
+msgstr "Stap 2 - Groepeer de activiteiten tot dagen"
+
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:64
+msgid "List of Activities / Locations"
+msgstr "Lijst activiteiten / Lokaties"
+
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:77
+msgid "No unassigned daylocations"
+msgstr "Geen niet-gegroepeerde daglocaties"
+
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:86
+#, fuzzy
+#| msgid "Create Trip"
+msgid "Projected Tripdays"
+msgstr "Verwachte Tripdagen"
+
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:87
+#, fuzzy
+#| msgid "Add Image"
+msgid "Add Day"
+msgstr "Dag Toevoegen"
+
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:112
+#, fuzzy
+#| msgid "No documents uploaded yet"
+msgid "No days added yet."
+msgstr "Geen documenten ge-upload"
+
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:119
+#: tripapp/templates/tripapp/itineraryidea_update.html:56
+#: tripapp/templates/tripapp/tripper_profile.html:14
+msgid "Save"
+msgstr "Bewaar"
+
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:124
 #: tripapp/templates/tripapp/itineraryidea_list.html:4
-#: tripapp/templates/tripapp/itineraryidea_update.html:31
+#: tripapp/templates/tripapp/itineraryidea_update.html:58
 #: tripapp/templates/tripapp/tribe_trips.html:327
 #, fuzzy
 #| msgid "Itinerary"
 msgid "Itinerary Ideas"
 msgstr "Reisschema"
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:6
+#: tripapp/templates/tripapp/itineraryidea_list.html:50
 #, fuzzy
 #| msgid "Create a New Tribe"
-msgid "Create New on Map"
-msgstr "Maak Tribe aan"
+msgid "Create New"
+msgstr "Maak nieuw "
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:10
+#: tripapp/templates/tripapp/itineraryidea_list.html:52
 #, fuzzy
-#| msgid "Create a New Tribe"
-msgid "Create New via Import"
-msgstr "Maak Tribe aan"
+#| msgid "Overnight Locations:"
+msgid "on Map via OvernightLocations"
+msgstr "via Overnachtings Locaties op de kaart"
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:28
+#: tripapp/templates/tripapp/itineraryidea_list.html:53
+#, fuzzy
+#| msgid "Day Locations:"
+msgid "on Map via DayLocations"
+msgstr "via Dag Activiteiten op de kaart"
+
+#: tripapp/templates/tripapp/itineraryidea_list.html:90
 msgid "Edit on Map"
 msgstr "Edit op de Kaart"
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:31
+#: tripapp/templates/tripapp/itineraryidea_list.html:93
 #, fuzzy
 #| msgid "Export Trip"
 msgid "Convert to Trip"
 msgstr "Exporteer Trip"
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:38
+#: tripapp/templates/tripapp/itineraryidea_list.html:100
 msgid "Are you sure?"
 msgstr "Weet je het zeker?"
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:38
+#: tripapp/templates/tripapp/itineraryidea_list.html:100
 #: tripapp/templates/tripapp/tripper_profile.html:26
 msgid "Delete"
 msgstr "Verwijder"
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:45
+#: tripapp/templates/tripapp/itineraryidea_list.html:107
 msgid "No itinerary ideas yet."
 msgstr "Nog geen Reisschema ideeen."
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:48
+#: tripapp/templates/tripapp/itineraryidea_list.html:110
 #: tripapp/templates/tripapp/tribe_map.html:69
 #: tripapp/templates/tripapp/tribe_trip_organize.html:8
 #: tripapp/templates/tripapp/tribe_trip_organize.html:41
@@ -316,16 +384,11 @@ msgstr "Startdatum:"
 msgid "Create Trip"
 msgstr "Maak Trip aan"
 
-#: tripapp/templates/tripapp/itineraryidea_update.html:24
+#: tripapp/templates/tripapp/itineraryidea_update.html:25
 #, fuzzy
 #| msgid "Itinerary"
 msgid "Edit Itinerary Idea:"
 msgstr "Bewerk Reisschema Idee:"
-
-#: tripapp/templates/tripapp/itineraryidea_update.html:29
-#: tripapp/templates/tripapp/tripper_profile.html:14
-msgid "Save"
-msgstr "Bewaar"
 
 #: tripapp/templates/tripapp/scheduled_item_form.html:9
 msgid "Edit Scheduled Item"
@@ -431,7 +494,7 @@ msgstr "Trip"
 
 #: tripapp/templates/tripapp/trip_dayprograms.html:9
 msgid "Day"
-msgstr ""
+msgstr "Dag"
 
 #: tripapp/templates/tripapp/trip_dayprograms.html:9
 #: tripapp/templates/tripapp/trip_expenses_list.html:80
@@ -518,22 +581,33 @@ msgstr "Trippers krijgen van / betalen aan trippers"
 msgid "No documents uploaded yet"
 msgstr "Geen documenten ge-upload"
 
-#: tripapp/views.py:1352
+#: tripapp/views.py:1360
 #, python-format
 msgid "Suggestion by %(username)s: %(suggestion)s"
 msgstr "Voorstel van %(username)s: %(suggestion)s"
 
-#: tripapp/views.py:1973 tripapp/views.py:1999
+#: tripapp/views.py:2000 tripapp/views.py:2026
 msgid "Tripper and emoji mandatory."
 msgstr "Tripper en emoji verplicht"
 
-#: tripapp/views.py:1984
+#: tripapp/views.py:2011
 msgid "You already liked this log with this emoji."
 msgstr "Je hebt deze log al een emoji gegeven."
 
-#: tripapp/views.py:2011
+#: tripapp/views.py:2038
 msgid "There is no like with this emoji that can be removed."
 msgstr "Er is geen like met deze emoji om te verwijderen"
+
+#~ msgid "Name of this Tripidea"
+#~ msgstr "Naam van dit Reisschema"
+
+#~ msgid "Save Tripoutline"
+#~ msgstr "Bewaar Reisschema"
+
+#, fuzzy
+#~| msgid "Create a New Tribe"
+#~ msgid "Create New via Import"
+#~ msgstr "Maak Tribe aan"
 
 #~ msgid "Programme"
 #~ msgstr "Programma"

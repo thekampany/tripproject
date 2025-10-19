@@ -11,7 +11,7 @@ import gpxpy
 import datetime
 from django.utils.text import slugify
 from geopy.geocoders import Nominatim
-from tripapp.models import Trip, DayProgram, Point
+from tripapp.models import Trip, DayProgram, Point, Tripper
 from django.db import models
 
 

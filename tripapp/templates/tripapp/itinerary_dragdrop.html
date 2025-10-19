@@ -1,14 +1,13 @@
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="nl">
 <head>
   <meta charset="UTF-8">
-  <title>Itinerary daylocations – {{ itinerary_idea.name }}</title>
+  <title>Itinerary clustering – {{ itinerary_idea.name }}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body {
-      background-color: #f8f9fa;
-    }
+    body { background-color: #f8f9fa; }
     .draggable {
       background: #fff;
       border: 1px solid #ddd;
@@ -19,7 +18,7 @@
       box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
     .dropzone {
-      min-height: 60px;
+      min-height: 80px;
       padding: .75rem;
       border: 2px dashed #ccc;
       border-radius: .5rem;
@@ -31,152 +30,330 @@
       border-color: #007bff;
     }
     .day-card {
-      margin-bottom: 1rem;
       background-color: white;
       border: 1px solid #ddd;
       border-radius: .5rem;
       padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .day-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .overnight-wrapper {
+      background: #fff;
+      border: 1px dashed #bbb;
+      border-radius: .5rem;
+      padding: .75rem 1rem;
+      margin-bottom: 1rem;
     }
   </style>
 </head>
 <body class="p-3">
+  <strong>{% trans "Create a Itinerary Idea by indicating day locations" %}</strong><br>
+  {% trans "Step 2 - Cluster the activities into days" %}
+
   <div class="container-fluid">
-    <h2 class="mb-4">Itinerary: {{ itinerary_idea.name }}</h2>
+    <h4 class="mb-4">Itinerary: {{ itinerary_idea.name }}</h4>
 
     <div class="row">
-      <!-- Left panel: unassigned -->
       <div class="col-md-4">
         <div class="card shadow-sm mb-3">
           <div class="card-header bg-light">
-            <h5 class="mb-0">Ongekoppelde locaties</h5>
+            <h5 class="mb-0">{% trans "List of Activities / Locations" %}</h5>
           </div>
           <div class="card-body">
             <div id="unassigned" class="dropzone">
-              {% for loc in unassigned_daylocations %}
-                <div class="draggable" draggable="true" data-id="{{ loc.id }}">
-                  <strong>{{ loc.description|default:"(geen beschrijving)" }}</strong><br>
-                  <small>Lat: {{ loc.latitude }}, Lng: {{ loc.longitude }}</small>
+              {% for dayloc in unclustered_daylocations %}
+                <div class="draggable" draggable="true"
+                     data-id="{{ dayloc.id }}"
+                     data-lat="{{ dayloc.latitude }}"
+                     data-lng="{{ dayloc.longitude }}">
+                  <strong>{{ dayloc.description|default:"(no description)" }}</strong><br>
+                  <small>{{ dayloc.sequence }}</small>
                 </div>
               {% empty %}
-                <p class="text-muted small">Geen losse locaties.</p>
+                <p class="text-muted small">{% trans "No unassigned daylocations" %}</p>
               {% endfor %}
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Right panel: itinerary days -->
       <div class="col-md-8">
-        <div class="row">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="mb-0">{% trans "Projected Tripdays" %}</h5>
+          <button id="addDayBtn" class="btn btn-sm btn-success">+ {% trans "Add Day" %}</button>
+        </div>
+
+        <div id="daysContainer" class="row flex-column">
           {% for day in itinerary_days %}
-            <div class="col-md-6">
+            <div class="col-12 day-wrapper mb-3">
               <div class="day-card dropzone" data-day-id="{{ day.id }}">
-                <h5>Dag {{ day.day_sequence }}</h5>
-                <p class="text-muted mb-2">{{ day.day_description|default:"(geen beschrijving)" }}</p>
-                <div class="day-locations">
-                  {% for loc in day.day_locations.all %}
-                    <div class="draggable" draggable="true" data-id="{{ loc.id }}">
-                      <strong>{{ loc.description|default:"(geen beschrijving)" }}</strong><br>
-                      <small>Lat: {{ loc.latitude }}, Lng: {{ loc.longitude }}</small>
+                <div class="day-header">
+                  <h6>Day {{ day.day_sequence }}</h6>
+                  <button type="button" class="btn btn-sm btn-outline-danger remove-day-btn">X</button>
+                </div>
+                <div class="day-activities mt-2">
+                  {% for act in day.day_activities.all %}
+                    <div class="draggable" draggable="true"
+                         data-id="{{ act.id }}"
+                         data-lat="{{ act.latitude }}"
+                         data-lng="{{ act.longitude }}">
+                      <strong>{{ act.description|default:"(no description)" }}</strong><br>
+                      <small>{{ act.sequence }}</small>
                     </div>
                   {% endfor %}
                 </div>
               </div>
             </div>
           {% empty %}
-            <p class="text-muted">Er zijn nog geen dagen voor dit itinerary.</p>
+            <p class="text-muted">{% trans "No days added yet." %}</p>
           {% endfor %}
         </div>
       </div>
     </div>
 
     <div class="mt-4 text-end">
-      <button id="saveBtn" class="btn btn-primary">Opslaan</button>
+      <button id="saveBtn" class="btn btn-primary">{% trans "Save" %}</button>
     </div>
   </div>
 
-  <script>
-    // --- Drag & Drop logic ---
-    let dragged = null;
+  <p>&nbsp;</p>
+  <div><a href="{% url 'tripapp:itineraryidea-list' %}" style="text-decoration: none;">&larr;{% trans "Itinerary Ideas" %}</a></div>
 
-    function setupDraggables() {
-      document.querySelectorAll('.draggable').forEach(d => {
-        d.addEventListener('dragstart', e => {
-          dragged = d;
-          e.dataTransfer.effectAllowed = 'move';
-        });
-        d.addEventListener('dragend', () => dragged = null);
-      });
-    }
+<script>
+let dragged = null;
+let nextDayId = -1;
 
-    function setupDropzones() {
-      document.querySelectorAll('.dropzone').forEach(zone => {
-        zone.addEventListener('dragover', e => {
-          e.preventDefault();
-          zone.classList.add('dragover');
-        });
-        zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-        zone.addEventListener('drop', e => {
-          e.preventDefault();
-          zone.classList.remove('dragover');
-          if (dragged) {
-            zone.appendChild(dragged);
-          }
-        });
-      });
-    }
-
-    setupDraggables();
-    setupDropzones();
-
-    // --- Save logic ---
-    document.getElementById('saveBtn').addEventListener('click', function() {
-      const assignments = [];
-
-      document.querySelectorAll('.day-card').forEach(dayCard => {
-        const dayId = dayCard.dataset.dayId;
-        const locs = dayCard.querySelectorAll('.draggable');
-        locs.forEach((loc, index) => {
-          assignments.push({
-            location_id: loc.dataset.id,
-            day_id: dayId,
-            sequence: index + 1
-          });
-        });
-      });
-
-      // unassigned
-      document.querySelectorAll('#unassigned .draggable').forEach(loc => {
-        assignments.push({
-          location_id: loc.dataset.id,
-          day_id: null,
-          sequence: null
-        });
-      });
-
-      const payload = {
-        itinerary_id: {{ itinerary_idea.id }},
-        assignments: assignments
-      };
-
-      fetch("{% url 'tripapp:save_daylocation_assignments' %}", {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': '{{ csrf_token }}'
-        },
-        body: JSON.stringify(payload)
-      })
-      .then(resp => resp.json())
-      .then(result => {
-        alert("Opslaan voltooid!");
-        console.log(result);
-      })
-      .catch(err => {
-        console.error("Fout bij opslaan:", err);
-        alert("Er is iets misgegaan bij het opslaan.");
-      });
+// --- Drag & Drop ---
+function setupDraggables() {
+  document.querySelectorAll('.draggable').forEach(d => {
+    d.addEventListener('dragstart', e => {
+      dragged = d;
+      e.dataTransfer.effectAllowed = 'move';
     });
-  </script>
+    d.addEventListener('dragend', () => dragged = null);
+  });
+}
+
+function setupDropzones() {
+  document.querySelectorAll('.dropzone').forEach(zone => {
+    zone.addEventListener('dragover', e => {
+      e.preventDefault();
+      zone.classList.add('dragover');
+    });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      zone.classList.remove('dragover');
+      if (dragged) {
+        zone.querySelector('.day-activities')?.appendChild(dragged) || zone.appendChild(dragged);
+        setupDraggables();
+      }
+    });
+  });
+}
+
+// --- Day renumbering + overnight insert ---
+function renumberDays() {
+  const days = document.querySelectorAll('.day-card');
+  days.forEach((dayCard, idx) => {
+    const header = dayCard.querySelector('.day-header h6');
+    header.textContent = `Day ${idx + 1}`;
+  });
+
+  // remove old overnights
+  document.querySelectorAll('.overnight-wrapper').forEach(el => el.remove());
+
+  // add new overnights 
+  days.forEach((dayCard, idx) => {
+    const nextDay = days[idx + 1];
+    if (nextDay) {
+      const overnight = document.createElement('div');
+      overnight.classList.add('overnight-wrapper');
+      overnight.innerHTML = `
+        <label class="form-label fw-bold mb-1">Overnight location after Day ${idx + 1}</label>
+        <div class="d-flex gap-2">
+          <input type="text" class="form-control overnight-input"
+                 data-prev-day-id="${dayCard.dataset.dayId}"
+                 value="${dayCard.querySelector('.draggable strong')?.textContent || ''}"
+                 placeholder="Enter overnight location name">
+          <button type="button" class="btn btn-outline-danger btn-sm remove-overnight-btn">X</button>
+        </div>
+      `;
+      nextDay.parentNode.insertBefore(overnight, nextDay);
+    }
+  });
+
+  setupRemoveOvernightButtons();
+}
+
+// --- Add Day ---
+document.getElementById('addDayBtn').addEventListener('click', () => {
+  const container = document.getElementById('daysContainer');
+  const newDayNum = document.querySelectorAll('.day-card').length + 1;
+
+  const newDay = document.createElement('div');
+  newDay.classList.add('col-12', 'day-wrapper', 'mb-3');
+  newDay.innerHTML = `
+    <div class="day-card dropzone" data-day-id="${nextDayId--}">
+      <div class="day-header">
+        <h6>Day ${newDayNum}</h6>
+        <button type="button" class="btn btn-sm btn-outline-danger remove-day-btn">X</button>
+      </div>
+      <div class="day-activities mt-2"></div>
+    </div>`;
+  container.appendChild(newDay);
+  setupDropzones();
+  setupRemoveButtons();
+  renumberDays();
+});
+
+// --- Remove Day ---
+function setupRemoveButtons() {
+  document.querySelectorAll('.remove-day-btn').forEach(btn => {
+    btn.onclick = () => {
+      const dayWrapper = btn.closest('.day-wrapper');
+      const dayId = dayWrapper.querySelector('.day-card').dataset.dayId;
+      const unassigned = document.getElementById('unassigned');
+
+      // verplaats activiteiten
+      dayWrapper.querySelectorAll('.draggable').forEach(act => unassigned.appendChild(act));
+
+      // verwijder eventuele overnight box erna
+      document.querySelectorAll(`.overnight-input[data-prev-day-id="${dayId}"]`)
+        .forEach(input => input.closest('.overnight-wrapper').remove());
+
+      dayWrapper.remove();
+      renumberDays();
+    };
+  });
+}
+
+// --- Remove Overnight ---
+function setupRemoveOvernightButtons() {
+  document.querySelectorAll('.remove-overnight-btn').forEach(btn => {
+    btn.onclick = () => {
+      btn.closest('.overnight-wrapper').remove();
+    };
+  });
+}
+
+// --- Helper: gemiddelde lat/lon ---
+function calculateAverageLatLon(dayCard) {
+  const acts = dayCard.querySelectorAll('.day-activities .draggable');
+  let sumLat = 0, sumLng = 0, count = 0;
+  acts.forEach(act => {
+    const lat = parseFloat(act.dataset.lat);
+    const lng = parseFloat(act.dataset.lng);
+    if (!isNaN(lat) && !isNaN(lng)) {
+      sumLat += lat;
+      sumLng += lng;
+      count++;
+    }
+  });
+  if (count === 0) return { lat: null, lng: null };
+  return { lat: sumLat / count, lng: sumLng / count };
+}
+
+// --- Save ---
+document.getElementById('saveBtn').addEventListener('click', function() {
+  console.log("💾 Save button clicked");
+
+  const assignments = [];
+  const overnightlocations = [];
+
+  // Day assignments
+  console.log("📅 Collecting day assignments...");
+  document.querySelectorAll('.day-card').forEach((dayCard, dayIndex) => {
+    const dayId = dayCard.dataset.dayId;
+    console.log(`➡️ Processing day ${dayIndex + 1} (day_id=${dayId})`);
+    const acts = dayCard.querySelectorAll('.day-activities .draggable');
+    acts.forEach((act, seqIndex) => {
+      const obj = {
+        activity_id: act.dataset.id,
+        day_id: dayId,
+        day_sequence: dayIndex + 1,
+        sequence: seqIndex + 1
+      };
+      assignments.push(obj);
+      console.log(`   🧩 Added assignment`, obj);
+    });
+  });
+
+  // Unassigned activiteiten
+  console.log("📦 Collecting unassigned activities...");
+  document.querySelectorAll('#unassigned .draggable').forEach(act => {
+    const obj = {
+      activity_id: act.dataset.id,
+      day_id: null,
+      day_sequence: null,
+      sequence: null
+    };
+    assignments.push(obj);
+    console.log(`   💤 Unassigned activity`, obj);
+  });
+
+  // Overnight locations
+  console.log("🌙 Collecting overnight locations...");
+  document.querySelectorAll('.overnight-input').forEach(input => {
+    const description = input.value.trim();
+    const dayId = input.dataset.prevDayId;
+    if (description) {
+      const dayCard = document.querySelector(`.day-card[data-day-id="${dayId}"]`);
+      const avg = calculateAverageLatLon(dayCard);
+      const obj = {
+        day_id: dayId,
+        description: description,
+        latitude: avg.lat,
+        longitude: avg.lng
+      };
+      overnightlocations.push(obj);
+      console.log(`   🏨 Added overnight location`, obj);
+    } else {
+      console.log(`   ⚠️ Skipped overnight for day_id=${dayId} (empty description)`);
+    }
+  });
+
+  const payload = {
+    itinerary_id: {{ itinerary_idea.id }},
+    assignments: assignments,
+    overnightlocations: overnightlocations
+  };
+
+  console.log("📦 Final payload to send:", JSON.stringify(payload, null, 2));
+
+  console.log("🚀 Sending fetch request...");
+  fetch("{% url 'tripapp:save_daylocation_assignments' %}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': '{{ csrf_token }}'
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(resp => {
+    console.log("📥 Response received:", resp);
+    return resp.json();
+  })
+  .then(result => {
+    console.log("✅ Save result:", result);
+    alert("Opgeslagen!");
+  })
+  .catch(err => {
+    console.error("❌ Fout bij opslaan:", err);
+    alert("Fout bij opslaan.");
+  });
+});
+
+
+
+setupDraggables();
+setupDropzones();
+setupRemoveButtons();
+renumberDays();
+</script>
 </body>
 </html>

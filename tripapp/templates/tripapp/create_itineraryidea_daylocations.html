@@ -5,7 +5,7 @@
   <title>{% trans "Create Itinerary Idea - by Day Locations" %}</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!--<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">-->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
   <style>
@@ -21,7 +21,8 @@
   </style>
 </head>
 <body>
-<strong>{% trans "Create a Itinerary Idea by indicating day locations / areas on this map" %}</strong>
+<strong>{% trans "Create a Itinerary Idea by indicating day locations" %}</strong><br>
+{% trans "Step 1 - Put markers on locations or areas that you want to visit" %}
 <div id="map"></div>
 
 <div class="coords-box" id="coords-box">
@@ -30,17 +31,11 @@
 <form id="daylocationForm" method="POST" action="{% url 'tripapp:save_tripoutline_daylocations' %}" novalidate onsubmit="return prepareAndValidateForm()">
   {% csrf_token %}
   
-  <div class="mb-3">
-    <label for="outlineName" class="form-label">Naam van itinerary</label>
-    <input type="text" id="outlineName" name="name" class="form-control" placeholder="{% trans 'Name of this Itinerary Idea' %}">
-  </div>
-
+  <input type="text" id="outlineName" name="name" class="form-control" placeholder="{% trans 'Name of this Itinerary Idea' %}">
   <input type="hidden" id="items_json" name="items_json">
-
   <button type="submit" id="sendBtn" class="btn btn-primary">{% trans "Save Itinerary Idea" %}</button>
+
 </form>
-
-
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
@@ -59,7 +54,7 @@
     var marker = L.marker(latlng).addTo(map);
     marker.on('click', function() {
       createCircle(latlng);
-      drawLines();
+      //drawLines();
     });
 
   map.setView(latlng, 12);
@@ -74,7 +69,7 @@
   map.on('click', function(e) {
     if (e.originalEvent.target.tagName === 'DIV' || e.originalEvent.target.tagName === 'CANVAS') {
       createCircle(e.latlng);
-      drawLines();
+      //drawLines();
     }
   });
 
@@ -96,7 +91,7 @@
       var newLatLng = e.target.getLatLng();
       circle.setLatLng(newLatLng);
       updateCircleLatLng(circle, newLatLng);
-      drawLines();
+      //drawLines();
     });
 
     var coordsBox = document.getElementById('coords-box');
@@ -104,8 +99,8 @@
     row.className = 'coords-row';
     row.innerHTML = `
       Nr: <input type="number" value="${number}" min="1">
+      Name: <input type="text" value="">
       Radius: <input type="number" value="${defaultRadius}" min="1">
-      Desc: <input type="text" value="">
       <button type="button">X</button>
     `;
     coordsBox.appendChild(row);
@@ -121,7 +116,7 @@
         circle.unbindTooltip();
         circle.bindTooltip(newNumber.toString(), {permanent: true, direction: 'center'}).openTooltip();
         circles.find(c => c.circle === circle).number = newNumber;
-        drawLines();
+        //drawLines();
       }
     });
 
@@ -134,7 +129,7 @@
 
     deleteButton.addEventListener('click', function() {
       removeCircle(circle, row, dragMarker);
-      drawLines();
+      //drawLines();
     });
 
     circles.push({
@@ -177,7 +172,7 @@
 
 function prepareAndValidateForm() {
   if (circles.length === 0) {
-    alert("Je moet minstens één day location toevoegen voordat je kunt opslaan.");
+    alert("At least one daylocation is necessary to continue");
     return false;
   }
 
@@ -193,7 +188,7 @@ function prepareAndValidateForm() {
   });
 
   document.getElementById('items_json').value = JSON.stringify(circlesData);
-  return true; // laat het formulier nu doorgaan
+  return true;
 }
 
     document.getElementById('daylocationForm').addEventListener('submit', function(e) {
@@ -214,7 +209,7 @@ function prepareAndValidateForm() {
 
 <p>&nbsp;</p>
 <div>
-<a href="{% url 'tripapp:itineraryidea-list' %}">&larr; Itinerary Ideas</a>
+<a href="{% url 'tripapp:itineraryidea-list' %}" style="text-decoration: none;">&larr; Itinerary Ideas</a>
 </div>
 
 

@@ -93,18 +93,18 @@
     var row = document.createElement('div');
     row.className = 'coords-row';
     row.innerHTML = `
-      Nr: <input type="number" value="${number}" min="1">
+      Nr: <input type="number" value="${number}" min="1" style="width:40px;">
+      Name: <input type="text" value="">
+      Nights: <input type="number" value="1" min="1" style="width:40px;">
       Radius: <input type="number" value="${defaultRadius}" min="1">
-      Desc: <input type="text" value="">
-      Nights: <input type="number" value="1" min="1">
       <button type="button">X</button>
     `;
     coordsBox.appendChild(row);
 
     var numberInput = row.querySelectorAll('input[type="number"]')[0];
-    var radiusInput = row.querySelectorAll('input[type="number"]')[1];
     var descInput = row.querySelector('input[type="text"]');
-    var nightsInput = row.querySelectorAll('input[type="number"]')[2];
+    var nightsInput = row.querySelectorAll('input[type="number"]')[1];
+    var radiusInput = row.querySelectorAll('input[type="number"]')[2];
     var deleteButton = row.querySelector('button');
 
     numberInput.addEventListener('input', function() {

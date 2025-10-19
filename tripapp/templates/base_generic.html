@@ -101,8 +101,10 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             document.querySelectorAll(".btn").forEach(button => {
-                button.addEventListener("click", function() {
-                    document.getElementById("loading-spinner").style.display = "flex";
+                button.addEventListener("click", function(e) {
+                    if (!button.classList.contains("dropdown-toggle")) {
+                        document.getElementById("loading-spinner").style.display = "flex";
+                    }
                 });
             });
         });

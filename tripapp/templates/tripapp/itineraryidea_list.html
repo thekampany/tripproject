@@ -2,16 +2,75 @@
 {% load i18n %}
 {% block content %}
 <h2>{% trans "Itinerary Ideas" %}</h2>
-<a href="{% url 'tripapp:create_itineraryidea_overnightlocations' %}">
-   <button type="button">{% trans "Create New on Map via OvernightLocations" %}</button>
-</a>
-<a href="{% url 'tripapp:create_itineraryidea_daylocations' %}">
-   <button type="button">{% trans "Create New on Map via DayLocations" %}</button>
-</a>
 
-<a href="{% url 'tripapp:pastecreate_itineraryidea' %}">
-   <button type="button">{% trans "Create New via Import" %}</button>
-</a>
+<style>
+.dropdown {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+.dropdown-button {
+  background-color: silver;
+  color: black;
+  padding: 10px 16px;
+  width: 100%;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  text-align: left;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  width: 100%;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+  z-index: 1;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 10px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content a:hover {
+  background-color: #f1f1f1;
+}
+
+</style>
+
+<div class="dropdown">
+  <button class="dropdown-button">{% trans "Create New" %}</button>
+  <div class="dropdown-content">
+    <a href="/itineraryidea/overnightlocations/">{% trans "on Map via OvernightLocations" %}</a>
+    <a href="/itineraryidea/daylocations/">{% trans "on Map via DayLocations" %}</a>
+    <a href="/itineraryidea/">via Import</a>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const dropdownBtn = document.querySelector(".dropdown-button");
+  const dropdownContent = document.querySelector(".dropdown-content");
+
+  dropdownBtn.addEventListener("click", function(e) {
+    e.stopPropagation();
+    dropdownContent.style.display = dropdownContent.style.display === "block" ? "none" : "block";
+  });
+
+  document.addEventListener("click", function() {
+    dropdownContent.style.display = "none";
+  });
+});
+</script>
+
 <p>&nbsp;</p>
 
 {% for idea in itineraryideas %}

@@ -554,8 +554,8 @@ class ItineraryIdeaDay(models.Model):
         ordering = ["day_sequence"]
 
     def __str__(self):
-        return f"Day {self.day_sequence} - {self.day_description or ''}"
-
+        description = f" - {self.day_description}" if self.day_description else ""
+        return f"{self.itineraryidea.name}, {self.day_sequence}{description}"
 
 class DayLocation(models.Model):
     day = models.ForeignKey(
@@ -573,7 +573,7 @@ class DayLocation(models.Model):
         ordering = ["sequence"]
 
     def __str__(self):
-        return f"Loc {self.sequence} ({self.latitude}, {self.longitude})"
+        return f"{self.day.day_sequence}, Day {self.sequence} ({self.description})"
 
 
 class OvernightLocation(models.Model):
@@ -588,4 +588,4 @@ class OvernightLocation(models.Model):
     description = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f"Overnight ({self.latitude}, {self.longitude})"
+        return f"{self.day.day_sequence}, Overnight ({self.description})"
