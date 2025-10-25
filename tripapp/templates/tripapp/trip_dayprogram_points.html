@@ -88,7 +88,7 @@
     data-csrf="{{ csrf_token }}">
   </div>
   <script>
-  {% if country_coords and not points and not locations and not photolocations %}
+    {% if country_coords and not points and not locations and not photolocations %}
         var map = L.map('map').setView([{{ country_coords.0 }},{{ country_coords.1 }}], 7);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -102,9 +102,7 @@
 
         new L.Control.Geocoder().addTo(map);
 
-        {% endif %}   
-
-  {% if points or locations or photolocations and not country_coords %}
+    {% else %}   
 
         // Initialize the map
         var map = L.map('map');
@@ -295,10 +293,9 @@
 
         L.control.layers(null, validOverlays, { collapsed: true,position: 'bottomright' }).addTo(map);
 
-    {% endif %}   
+    {% endif %}
 
     {% if points or locations or photolocations or country_coords %}
-
 
         // Function to handle double-clicks on the map
         function handleMapDoubleClick(map) {

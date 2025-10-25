@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-19 21:35+0200\n"
+"POT-Creation-Date: 2025-10-25 16:39+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -82,10 +82,12 @@ msgstr "Naam van dit Overnachtings Reisschema"
 msgid "Save Itinerary Idea"
 msgstr "Bewaar Reisschema Idee"
 
-#: tripapp/templates/tripapp/create_trip.html:29
+#: tripapp/templates/tripapp/create_trip.html:33
 msgid ""
 "Tip: Consider plotting an itinerary on a map and turn your idea into a trip. "
-msgstr "Tip: Je kan ook eerst een reisschema op de kaart zetten en dat dan omzetten naar een trip."
+msgstr ""
+"Tip: Je kan ook eerst een reisschema op de kaart zetten en dat dan omzetten "
+"naar een trip."
 
 #: tripapp/templates/tripapp/create_tripoutline.html:5
 #, fuzzy
@@ -441,14 +443,16 @@ msgid "View Badges"
 msgstr "Badges Bekijken"
 
 #: tripapp/templates/tripapp/tribe_trip_organize.html:87
+msgid "Create Badge"
+msgstr "Maak nieuwe Badge "
+
+#: tripapp/templates/tripapp/tribe_trip_organize.html:88
 msgid "Upload Badge"
 msgstr "Badge Uploaden"
 
 #: tripapp/templates/tripapp/tribe_trips.html:272
-#, fuzzy
-#| msgid "Trip"
 msgid "New Trip"
-msgstr "Trip"
+msgstr "Nieuwe Trip"
 
 #: tripapp/templates/tripapp/tribe_trips.html:332
 msgid "Create a New Tribe"
@@ -581,20 +585,24 @@ msgstr "Trippers krijgen van / betalen aan trippers"
 msgid "No documents uploaded yet"
 msgstr "Geen documenten ge-upload"
 
-#: tripapp/views.py:1360
+#: tripapp/views.py:1372
 #, python-format
 msgid "Suggestion by %(username)s: %(suggestion)s"
 msgstr "Voorstel van %(username)s: %(suggestion)s"
 
-#: tripapp/views.py:2000 tripapp/views.py:2026
+#: tripapp/views.py:1807
+msgid "No Answers"
+msgstr "Geen Antwoorden"
+
+#: tripapp/views.py:2012 tripapp/views.py:2038
 msgid "Tripper and emoji mandatory."
 msgstr "Tripper en emoji verplicht"
 
-#: tripapp/views.py:2011
+#: tripapp/views.py:2023
 msgid "You already liked this log with this emoji."
 msgstr "Je hebt deze log al een emoji gegeven."
 
-#: tripapp/views.py:2038
+#: tripapp/views.py:2050
 msgid "There is no like with this emoji that can be removed."
 msgstr "Er is geen like met deze emoji om te verwijderen"
 

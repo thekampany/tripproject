@@ -562,19 +562,7 @@ def mytribes_badges_view(request):
         'tribal_badges': tribal_badges,
     })
 
-
-
-def get_country_coords(country_code):
-    url = f"https://nominatim.openstreetmap.org/search?country={country_code}&format=json&limit=1"
-    response = requests.get(url, headers={'User-Agent': 'trip-planner-app'})
-    
-    if response.status_code == 200:
-        data = response.json()
-        if data:
-            return float(data[0]['lat']), float(data[0]['lon'])
-    
-    return None  
-
+from .utils import get_country_coords
 
 @login_required
 def trip_map_view(request, trip_id):
@@ -696,7 +684,7 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
     first_point = points.first() if points.exists() else None
 
     first_country_code = trip.get_first_country_code() 
-    country_coords = get_country_coords(first_country_code) if first_country_code else None
+    country_coords = get_country_coords(first_country_code) if first_country_code else get_country_coords('nl')
 
     previous_dayprogram = DayProgram.objects.filter(
         trip=dayprogram.trip,
@@ -1732,7 +1720,7 @@ def generate_html_with_images(trip):
                 if trip.date_to > timezone.now().date():
                     html_content += f"not yet disclosed"
                 else:
-                    html_content += f"Answer we were looking for: {question.correct_answer}"
+                    html_content += f"{_('Answer we were looking for')}: {question.correct_answer}"
             html_content += "</ul>"
 
         html_content += f"""</div>"""
@@ -1804,7 +1792,7 @@ def generate_html_with_images(trip):
                         </div>
                         '''
         else:
-            html_content += "No Answers"
+            html_content += _("No Answers")
 
         html_content += "</div></td></tr></table>"
 

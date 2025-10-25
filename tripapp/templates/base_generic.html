@@ -1,5 +1,4 @@
 {% load static %}
-{% load i18n %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -18,98 +17,81 @@
     <script src="{% static 'js/set_timezone.js' %}"></script>
 
     <style>
-    .spinner-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
+    .trip-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        overflow: hidden;
+        text-align: center;
     }
 
-    .spinner {
-        width: 50px;
-        height: 50px;
-        border: 5px solid #f3f3f3;
-        border-top: 5px solid #007bff;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
+    .trip-card img {
+        width: 25%;
+        height: auto;
+        max-height: 150px;
+        object-fit: cover;
     }
 
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+    .trip-card .card-body {
+        padding: 15px;
     }
 
-         .trip-card {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            overflow: hidden;
-            text-align: center;
+    .trip-card .tripper-name {
+        font-size: 1.2em;
+        font-weight: bold;
+        margin-top: 10px;
+    }
+
+    .trip-card .badges-link {
+        font-size: 0.9em;
+        color: gray;
+    }
+
+
+    /* Dark Mode */
+    @media (prefers-color-scheme: dark) {
+        body {
+            background-color: #121212;
+            color: #ffffff;
         }
 
-        .trip-card img {
-            width: 25%;
-            height: auto;
-            max-height: 150px;
-            object-fit: cover;
-        }
-
-        .trip-card .card-body {
-            padding: 15px;
-        }
-
-        .trip-card .tripper-name {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        .trip-card .badges-link {
-            font-size: 0.9em;
-            color: gray;
+        .trip-card {
+            background-color: #1e1e1e;
+            color: #ffffff;
         }
 
 
-        /* Dark Mode */
-        @media (prefers-color-scheme: dark) {
-            body {
-                background-color: #121212;
-                color: #ffffff;
-            }
-
-            .trip-card {
-                background-color: #1e1e1e;
-                color: #ffffff;
-            }
-
-
-        }
+    }
 
     </style>
 </head>
 <body>
-    <div id="loading-spinner" class="spinner-overlay" style="display: none;">
+    <div id="loading-spinner" class="spinner-overlay">
         <div class="spinner"></div>
     </div>
+
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            document.querySelectorAll(".btn").forEach(button => {
-                button.addEventListener("click", function(e) {
-                    if (!button.classList.contains("dropdown-toggle")) {
-                        document.getElementById("loading-spinner").style.display = "flex";
-                    }
-                });
+    document.addEventListener("DOMContentLoaded", function() {
+        const spinner = document.getElementById("loading-spinner");
+
+        spinner.classList.remove("active");
+
+        document.querySelectorAll(".btn").forEach(button => {
+            button.addEventListener("click", function(e) {
+                if (!button.classList.contains("dropdown-toggle")) {
+                    spinner.classList.add("active");
+                }
             });
         });
+    });
+
+    window.addEventListener("pageshow", function(event) {
+        const spinner = document.getElementById("loading-spinner");
+        spinner.classList.remove("active");
+    });
     </script>
-      
+    
     <div class="card">
     <div class="container">
         {% block content %}

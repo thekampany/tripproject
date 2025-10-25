@@ -112,11 +112,11 @@
             border: none;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
             transition: background-color 0.2s;
-            }
+        }
         .fab:hover {
             background-color: rgba(255, 255, 255, 0.6);
-            }
-            .fab2 {
+        }
+        .fab2 {
             position: fixed;
             bottom: 20px;
             right: 80px;
@@ -134,8 +134,8 @@
             border: none;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
             transition: background-color 0.2s;
-            }
-            .fab3 {
+        }
+        .fab3 {
             position: fixed;
             bottom: 20px;
             right: 140px;
@@ -153,29 +153,29 @@
             border: none;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
             transition: background-color 0.2s;
-            }
+        }
 
 
-            .grid {
+        .grid {
             display: grid;
             grid-template-columns: 1fr;
             grid-auto-rows: 40px;
-            }
+        }
 
-            .cell {
+        .cell {
             display: flex;
             align-items: center;
             padding: 0 10px;
             font-family: sans-serif;
             color: #001f4d;
-            }
+        }
 
-            .cell-white {
+        .cell-white {
             background: rgba(255, 255, 255, 0.2);
             justify-content: flex-start;
-            }
+        }
 
-            .cell-gradient {
+        .cell-gradient {
             background: radial-gradient(
                 ellipse farthest-side at right center,
                 #001f4d 0%,
@@ -183,49 +183,40 @@
             );
             justify-content: flex-end;
             color: white;
-            }
-    .spinner-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-    }
-
-    .spinner {
-        width: 50px;
-        height: 50px;
-        border: 5px solid #f3f3f3;
-        border-top: 5px solid #007bff;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
+        }
 
 </style>
 </head>
 <body>
-    <div id="loading-spinner" class="spinner-overlay" style="display: none;">
+    <div id="loading-spinner" class="spinner-overlay">
         <div class="spinner"></div>
     </div>
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const tripmapBtn = document.querySelector(".tripmap-btn");
-            if (tripmapBtn) {
-                tripmapBtn.addEventListener("click", function() {
-                    document.getElementById("loading-spinner").style.display = "flex";
-                });
-            }
-        });
+    document.addEventListener("DOMContentLoaded", function() {
+        const spinner = document.getElementById("loading-spinner");
+        spinner.classList.remove("active");
+
+        const tripmapBtn = document.querySelector(".tripmap-btn");
+
+        if (tripmapBtn) {
+            tripmapBtn.addEventListener("click", function(e) {
+                spinner.classList.add("active");
+                setTimeout(() => {
+                    if (tripmapBtn.tagName === "A" && tripmapBtn.href) {
+                        window.location.href = tripmapBtn.href;
+                    } else {
+                        tripmapBtn.submit?.();
+                    }
+                }, 10);
+
+                e.preventDefault();
+            });
+        }
+    });
+
+    window.addEventListener("pageshow", function() {
+        document.getElementById("loading-spinner").classList.remove("active");
+    });
     </script>
     <div class="tripappcard">
     <div class="container">

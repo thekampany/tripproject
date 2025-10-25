@@ -14,29 +14,43 @@ from geopy.geocoders import Nominatim
 from tripapp.models import Trip, DayProgram, Point, Tripper
 from django.db import models
 
+from requests.exceptions import RequestException
+from django.core.cache import cache
 
 
 logger = logging.getLogger(__name__)
 
 
 UNSPLASH_ACCESS_KEY = settings.UNSPLASH_ACCESS_KEY
+UNSPLASH_CACHE_KEY = "unsplash_random_roadtrip"
+UNSPLASH_CACHE_TIMEOUT = 3600  
 
 
 def get_random_unsplash_image(category):
+
+    cached_url = cache.get(UNSPLASH_CACHE_KEY)
+    if cached_url:
+        return cached_url
+
     url = 'https://api.unsplash.com/photos/random'
     params = {
         'client_id': UNSPLASH_ACCESS_KEY,
         'query': category,
         'orientation': 'landscape',
     }
-    response = requests.get(url, params=params)
 
-    if response.status_code == 200:
+    try:
+        response = requests.get(url, params=params, timeout=5)
+        response.raise_for_status()
         data = response.json()
-        return data['urls']['regular']
-    else:
-        return None
+        photo_url = data.get("urls", {}).get("regular")
+        if photo_url:
+            cache.set(UNSPLASH_CACHE_KEY, photo_url, UNSPLASH_CACHE_TIMEOUT)
+            return photo_url
+    except RequestException:
+        pass
 
+    return "/static/default_roadtrip.jpg"
 
 
 def simplify_locations(locations, epsilon=0.0005):
@@ -208,3 +222,22 @@ def create_trip_from_itinerary(itinerary, tribe, start_date,user):
             point.dayprograms.add(dayprogram)
 
     return trip
+
+
+def get_country_coords(country_code):
+    cache_key = f"country_coords_{country_code}"
+    coords = cache.get(cache_key)
+    if coords:
+        return coords
+
+    url = f"https://nominatim.openstreetmap.org/search?country={country_code}&format=json&limit=1"
+    response = requests.get(url, headers={'User-Agent': 'trip-planner-app'})
+
+    if response.status_code == 200:
+        data = response.json()
+        if data:
+            coords = float(data[0]['lat']), float(data[0]['lon'])
+            cache.set(cache_key, coords, timeout=86400)
+            return coords
+
+    return None
