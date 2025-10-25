@@ -78,6 +78,7 @@ from django.db.models.functions import Coalesce
 import qrcode
 import random
 
+from django.db.models import Min
 from django.utils.translation import gettext as _
 
 def index(request):
@@ -580,6 +581,13 @@ def trip_map_view(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     points = trip.points.prefetch_related('dayprograms')
 
+    projected_itinerary_points = (
+        trip.points
+        .prefetch_related('dayprograms')
+        .annotate(first_tripdate=Min('dayprograms__tripdate'))
+        .order_by('first_tripdate')
+    )
+
     start_of_day = timezone.make_aware(datetime.combine(trip.date_from, datetime.min.time()))
     end_of_day = timezone.make_aware(datetime.combine(trip.date_to, datetime.max.time()))
     trippers = trip.trippers.all()
@@ -591,13 +599,16 @@ def trip_map_view(request, trip_id):
 
     # Simplify
     coords = np.array([[loc.latitude, loc.longitude] for loc in all_locations])
-    cleaned = [coords[0]]
-    for c in coords[1:]:
-        if abs(c[0] - cleaned[-1][0]) > 1e-5 or abs(c[1] - cleaned[-1][1]) > 1e-5:
-            cleaned.append(c)
-    coords = cleaned
     simplified_coords = coords
     if len(coords) > 0:
+
+        cleaned = [coords[0]]
+        for c in coords[1:]:
+            if abs(c[0] - cleaned[-1][0]) > 1e-5 or abs(c[1] - cleaned[-1][1]) > 1e-5:
+                cleaned.append(c)
+        coords = cleaned
+
+
         if len(coords) > 5000:
             step = len(coords) // 5000
             coords = coords[::step]
@@ -626,6 +637,7 @@ def trip_map_view(request, trip_id):
     return render(request, 'tripapp/trip_map.html', {
         'trip': trip,
         'points': points,
+        'projected_itinerary_points': projected_itinerary_points,
         'locations': simplified_locations,  
         'photolocations': photolocations,
         'locations_truncated': len(all_locations) > len(simplified_locations),
@@ -2046,24 +2058,66 @@ class LogEntryViewSet(viewsets.ModelViewSet):
 
 @login_required
 def badge_creator(request):
-    return render(request, "tripapp/badge_creator.html")
+    user = request.user
+    user_profile = request.user.userprofile
+    tribes = user_profile.tribes.all()
+    selected_tribe = tribes[0] if tribes.count() == 1 else None
+    achievement_methods = ['admin_assigned', 'question_correct']
+    today = timezone.now().date()
+    dayprograms = DayProgram.objects.filter(
+        trip__tribe__in=tribes,
+        tripdate__gte=today
+    ).order_by('tripdate')
+    return render(request, "tripapp/badge_creator.html",
+                   {"tribes": tribes, 
+                    "selected_tribe": selected_tribe, 
+                    "achievement_methods":achievement_methods,
+                    "dayprograms": dayprograms
+                    })
+
+
+from django.core.files.base import ContentFile
+from django.utils.text import slugify
 
 @login_required
 def save_badge(request):
     if request.method == "POST":
-        data_url = request.POST.get("badge_image")
         badge_name = request.POST.get("badge_name")
+        tribe_id = request.POST.get("tribe")
+        method = request.POST.get("achievement_method")
+        dayprogram_id = request.POST.get("dayprogram")
+        question = request.POST.get("question")
+        correct_answer = request.POST.get("correct_answer")
+        image_data = request.POST.get("badge_image")
 
-        if not badge_name or not data_url:
-            return JsonResponse({"status": "error", "message": "Naam en afbeelding zijn verplicht"}, status=400)
+        format, imgstr = image_data.split(';base64,')
+        ext = format.split('/')[-1]
+        image_file = ContentFile(base64.b64decode(imgstr), name=f"{slugify(badge_name)}.{ext}")
 
-        format, imgstr = data_url.split(";base64,")
-        ext = format.split("/")[-1]
-        badge = Badge(user=request.user, name=badge_name)
-        badge.image.save(f"{badge_name}.{ext}", ContentFile(base64.b64decode(imgstr)))
-        badge.save()
-        return JsonResponse({"status": "ok"})
-    return JsonResponse({"status": "error"}, status=400)
+        tribe = Tribe.objects.get(id=tribe_id)
+
+        badge = Badge.objects.create(
+            name=badge_name,
+            tribe=tribe,
+            achievement_method=method,
+            image=image_file
+        )
+        if method == "question_correct" and question and correct_answer and dayprogram_id:
+            dayprogram = DayProgram.objects.get(id=dayprogram_id)
+            Question.objects.create(
+                dayprogram=dayprogram,
+                question_text=question,
+                correct_answer=correct_answer,
+                badge=badge
+            )
+
+        if method == "question_correct":
+           return redirect('tripapp:dayprogram_questions', dayprogram_id=dayprogram_id)
+        else:
+           return redirect('tripapp:tribe_trips')
+            
+    return redirect('tripapp:badge_creator')
+
 
 ####tripoutline
 

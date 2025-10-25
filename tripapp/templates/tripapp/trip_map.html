@@ -113,6 +113,17 @@
   
             {% endfor %}
         ];
+        var projected_itinerary_points = [
+            {% for point in projected_itinerary_points %}
+                {
+                    "name": "{{ point.name }}",
+                    "coords": [{{ point.latitude }}, {{ point.longitude }}],
+                    "days": "{% for dayprogram in point.dayprograms.all %}{{ dayprogram.tripdate|date:'j F' }}{% if not forloop.last %}, {% endif %}{% endfor %}".trim(),
+                    "marker_type": "{{ point.marker_type }}"
+                },
+  
+            {% endfor %}
+        ];
         var locations = [
             {% for location in locations %}
                 {
@@ -151,7 +162,7 @@
 
             if (!point.coords || !Array.isArray(point.coords) || point.coords.length !== 2 || 
                 typeof point.coords[0] !== 'number' || typeof point.coords[1] !== 'number') {
-                console.warn('Ongeldige coördinaten voor punt:', point);
+                console.warn('Invalid coordinates for point:', point);
                 return; 
             }
 
@@ -181,8 +192,10 @@
 
         // Add the feature group to the map
         markers.addTo(map);
+
+
         //locationsLayer.addTo(map); //initially off
-        photolocationsLayer.addTo(map);
+        //photolocationsLayer.addTo(map); //initially off
 
         // Set the view to fit all the markers
         var allLayers = L.featureGroup([markers, locationsLayer, photolocationsLayer]);
@@ -203,6 +216,27 @@
                 map.fitBounds(lineBounds);
             }
         }
+
+        // add lines for projected trip
+        // not only for projected trip, not everyone is keeping track of his location
+        var PointCoords = [];
+
+        projected_itinerary_points.forEach(function(point) {
+            if (Array.isArray(point.coords) && point.coords.length === 2) {
+                PointCoords.push(point.coords);
+            }
+        });
+        var projected_itinerary_line;
+        if (PointCoords.length > 1) {
+            projected_itinerary_line = L.polyline(PointCoords, {
+                color: 'green',
+                weight: 2,
+                opacity: 0.7
+            }).addTo(map);
+
+            map.fitBounds(projected_itinerary_line.getBounds());
+        }
+
         var heatmapData = [];
         locations.forEach(function(location) {
             heatmapData.push([...location.coords, 0.7]); 
@@ -219,7 +253,8 @@
             "Tracked Locations": locationsLayer,
             "Photolocations": photolocationsLayer,
             "Lines": polyline,
-            "Heatmap": heatmapLayer
+            "Heatmap": heatmapLayer,
+            "Projected Itn": projected_itinerary_line
         };
         const validOverlays = {};
         for (const [key, layer] of Object.entries(overlays)) {

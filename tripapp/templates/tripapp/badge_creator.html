@@ -1,56 +1,158 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Create your badge</title>
-  <style>
-    #canvas { border: 1px solid #ccc; }
-  </style>
-</head>
-<body>
-  <canvas id="canvas" width="400" height="400"></canvas><br>
-  <input type="text" id="badgeText" placeholder="Tekst op badge"><br>
-  <input type="text" id="badgeName" placeholder="Badge naam"><br>
-  <button id="saveBtn">Save</button>
+{% extends "base_generic.html" %}
+{% load i18n %}
 
-  <script>
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-    const img = new Image();
-    img.src = "/static/badge_template.png"; 
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    };
+{% block content %}
 
-    document.getElementById("badgeText").addEventListener("input", function() {
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      ctx.font = "30px Arial";
-      ctx.fillStyle = "black";
-      ctx.textAlign = "center";
-      ctx.fillText(this.value, canvas.width / 2, canvas.height - 50);
-    });
+<canvas id="canvas" width="400" height="400" style="border: 1px solid #ccc;"></canvas><br>
 
-    document.getElementById("saveBtn").addEventListener("click", function() {
-      const dataURL = canvas.toDataURL("image/png");
-      const badgeName = document.getElementById("badgeName").value;
+<form id="badgeForm" method="post" action="{% url 'tripapp:save_badge' %}">
+  {% csrf_token %}
 
-      fetch("{% url 'tripapp:save_badge' %}", {
-        method: "POST",
-        headers: {
-          "X-CSRFToken": "{{ csrf_token }}",
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: "badge_image=" + encodeURIComponent(dataURL) +
-              "&badge_name=" + encodeURIComponent(badgeName)
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === "ok") {
-          alert("Badge opgeslagen!");
-        } else {
-          alert("Fout: " + data.message);
-        }
-      });
-    });
-  </script>
-</body>
-</html>
+  <input type="hidden" id="badgeImage" name="badge_image">
+
+  <div class="mb-3">
+    <label for="badgeText" class="form-label">Text on badge:</label>
+    <textarea id="badgeText" name="badge_text" class="form-control" rows="3"></textarea>
+  </div>
+
+  <div class="mb-3">
+    <label for="badgeName" class="form-label">Badge name:</label>
+    <input type="text" id="badgeName" name="badge_name" class="form-control">
+  </div>
+
+  {% if selected_tribe %}
+    <input type="hidden" name="tribe" value="{{ selected_tribe.id }}">
+  {% else %}
+    <div class="mb-3">
+      <label for="tribe" class="form-label">Tribe:</label>
+      <select name="tribe" id="tribe" class="form-select">
+        {% for tribe in tribes %}
+          <option value="{{ tribe.id }}" {% if selected_tribe and tribe.id == selected_tribe.id %}selected{% endif %}>
+            {{ tribe.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  {% endif %}
+
+  <div class="mb-3">
+    <label for="achievement_method" class="form-label">Achievement method:</label>
+    <select name="achievement_method" id="achievement_method" class="form-select">
+      {% for method in achievement_methods %}
+        <option value="{{ method }}">{{ method|capfirst }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div id="question_fields" style="display:none;">
+    <div class="mb-3">
+      <label for="dayprogram" class="form-label">Question for Day:</label>
+      <select name="dayprogram" id="dayprogram" class="form-select">
+        {% for dp in dayprograms %}
+          <option value="{{ dp.id }}">{{ dp.dayprogramnumber }} ({{ dp.tripdate|date:'d-M' }}) {{ dp.description }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="question" class="form-label">Question:</label>
+      <input type="text" name="question" id="question" class="form-control">
+    </div>
+
+    <div class="mb-3">
+      <label for="correct_answer" class="form-label">Correct answer:</label>
+      <input type="text" name="correct_answer" id="correct_answer" class="form-control">
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-primary">Create badge</button>
+
+</form>
+
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const img = new Image();
+img.src = "/static/badge_template.png";
+
+let text = document.getElementById("badgeText").value;
+let xPos = canvas.width / 2;
+let yPos = canvas.height -100;
+
+let dragging = false;
+let offsetX = 0;
+let offsetY = 0;
+
+img.onload = () => {
+  drawBadge();
+};
+
+function drawBadge() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+  ctx.font = "30px Arial";
+  ctx.fillStyle = "black";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  const lines = text.split("\n");
+  const lineHeight = 35;
+  const startY = yPos - (lines.length - 1) / 2 * lineHeight;
+
+  lines.forEach((line, i) => {
+    ctx.fillText(line, xPos, startY + i * lineHeight);
+  });
+}
+
+document.getElementById("badgeText").addEventListener("input", function() {
+  text = this.value;
+  drawBadge();
+});
+
+canvas.addEventListener("mousedown", function(e) {
+  const rect = canvas.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
+
+  const lines = text.split("\n");
+  const lineHeight = 35;
+  const blockHeight = lines.length * lineHeight;
+
+  if (Math.abs(mouseX - xPos) < 50 && Math.abs(mouseY - yPos) < blockHeight / 2) {
+    dragging = true;
+    offsetX = mouseX - xPos;
+    offsetY = mouseY - yPos;
+  }
+});
+
+canvas.addEventListener("mousemove", function(e) {
+  if (dragging) {
+    const rect = canvas.getBoundingClientRect();
+    xPos = e.clientX - rect.left - offsetX;
+    yPos = e.clientY - rect.top - offsetY;
+    drawBadge();
+  }
+});
+
+canvas.addEventListener("mouseup", () => dragging = false);
+canvas.addEventListener("mouseleave", () => dragging = false);
+
+// Toggle question fields
+const methodSelect = document.getElementById('achievement_method');
+const questionFields = document.getElementById('question_fields');
+function toggleQuestionFields() {
+  questionFields.style.display = methodSelect.value === 'question_correct' ? 'block' : 'none';
+}
+methodSelect.addEventListener('change', toggleQuestionFields);
+document.addEventListener('DOMContentLoaded', toggleQuestionFields);
+
+//image
+document.getElementById("badgeForm").addEventListener("submit", function() {
+  const dataURL = canvas.toDataURL("image/png");
+  document.getElementById("badgeImage").value = dataURL;
+});
+</script>
+
+{% endblock %}
