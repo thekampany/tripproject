@@ -1,57 +1,57 @@
-# TRIPPANION TRANSLATION.
+# SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# Marc de Kam.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-06 17:32+0100\n"
+"POT-Creation-Date: 2025-12-07 17:43+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"Language-Team: German <LL@li.org>\n"
+"Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: tripapp/forms.py:140
+#: tripapp/forms.py:142
 msgid "Your answer here..."
-msgstr "Typ hier je antwoord..."
+msgstr "Ihre Antwort hier..."
 
 #: tripapp/templates/tripapp/add_checklist_item.html:16
 #: tripapp/templates/tripapp/trip_checklist.html:61
 msgid "Add Checklist Item"
-msgstr "Voeg Checklist Item toe"
+msgstr "Checkliste hinzufügen"
 
 #: tripapp/templates/tripapp/add_checklist_item.html:17
 msgid "to trip"
-msgstr "aan trip"
+msgstr "zur Reise"
 
 #: tripapp/templates/tripapp/add_checklist_item.html:22
 msgid "Add Item"
-msgstr "Item Toevoegen"
+msgstr "Element hinzufügen"
 
 #: tripapp/templates/tripapp/add_image.html:7
 msgid "Add Image"
-msgstr "Foto Invoegen"
+msgstr "Bild hinzufügen"
 
 #: tripapp/templates/tripapp/add_logentry.html:6
 msgid "Add Log Entry"
-msgstr "Log Toevoegen"
+msgstr "Log hinzufügen"
 
 #: tripapp/templates/tripapp/add_logentry.html:12
 msgid "Save Log Entry"
-msgstr "Log Opslaan"
+msgstr "Log speichern"
 
 #: tripapp/templates/tripapp/budget_analysis.html:4
 #: tripapp/templates/tripapp/budget_analysis.html:42
 #: tripapp/templates/tripapp/trip_expenses_list.html:129
 msgid "Budget Analysis"
-msgstr "Budget Analyse"
+msgstr "Budgetanalyse"
 
 #: tripapp/templates/tripapp/budget_analysis.html:46
 #: tripapp/templates/tripapp/tribe_trip_organize.html:128
@@ -63,212 +63,205 @@ msgstr "Budget"
 #: tripapp/templates/tripapp/trip_detail.html:269
 #: tripapp/templates/tripapp/trip_expenses_list.html:40
 msgid "Expenses"
-msgstr "Uitgaven"
+msgstr "Ausgaben"
 
 #: tripapp/templates/tripapp/budget_analysis.html:46
 msgid "Remaining"
-msgstr "Resterend"
+msgstr "Verbleibend"
 
 #: tripapp/templates/tripapp/budget_analysis.html:51
 msgid "Budget Overview"
-msgstr "Budget Overzicht"
+msgstr "Budgetübersicht"
 
 #: tripapp/templates/tripapp/budget_analysis.html:56
 msgid "Budget vs Expenses per Category"
-msgstr "Budget vs Uitgaven per Categorie"
+msgstr "Budget vs. Ausgaben pro Kategorie"
 
 #: tripapp/templates/tripapp/budget_list.html:8
 #, fuzzy
 #| msgid "Add Item"
 msgid "Add Budget Item"
-msgstr "Budget Item Toevoegen"
+msgstr "Budgeteintrag hinzufügen"
 
 #: tripapp/templates/tripapp/budget_list.html:12
 msgid "Category"
-msgstr "Categorie"
+msgstr "Kategorie"
 
 #: tripapp/templates/tripapp/budget_list.html:13
 #: tripapp/templates/tripapp/trip_expenses_list.html:81
 msgid "Amount"
-msgstr "Bedrag"
+msgstr "Betrag"
 
 #: tripapp/templates/tripapp/budget_list.html:26
 msgid "No budget items yet."
-msgstr "Nog geen Buget Items."
+msgstr "Es gibt noch keine Budgetposten."
 
 #: tripapp/templates/tripapp/budget_list.html:30
 #: tripapp/templates/tripapp/trip_expenses_list.html:116
 #: tripapp/templates/tripapp/trip_trippers.html:115
 msgid "Total"
-msgstr "Totaal"
+msgstr "Gesamt"
+
+#: tripapp/templates/tripapp/budget_list.html:33
+msgid "to Organize Trip"
+msgstr "Reise organisieren"
 
 #: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:5
-#, fuzzy
-#| msgid ""
-#| "Create a Itinerary Idea by indicating Day locations / areas on this map"
 msgid "Create Itinerary Idea - by Day Locations"
-msgstr "Maak Reisschema door Dag activiteiten op de kaart te zetten"
+msgstr "Reiseidee erstellen – nach Tagesorten"
 
 #: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:24
 #: tripapp/templates/tripapp/itinerary_dragdrop.html:54
-#, fuzzy
-#| msgid ""
-#| "Create a Itinerary Idea by indicating Day locations / areas on this map"
 msgid "Create a Itinerary Idea by indicating day locations"
-msgstr "Maak Reisschema door Dag activiteiten op de kaart te zetten"
+msgstr "Erstellen Sie eine Reiseidee, indem Sie Tagesorte markieren"
 
 #: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:25
 msgid "Step 1 - Put markers on locations or areas that you want to visit"
-msgstr "Stap 1 - Zet markers op lokaties of gebieden die je wil bezoeken"
+msgstr "Schritt 1 – Markieren Sie Orte oder Bereiche, die Sie besuchen möchten"
 
 #: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:29
 msgid "Day Locations:"
-msgstr "Dag Activiteiten"
+msgstr "Tagesorte:"
 
 #: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:34
-#, fuzzy
-#| msgid "Name of this Overnight Itinerary Idea"
 msgid "Name of this Itinerary Idea"
-msgstr "Naam van dit Overnachtings Reisschema"
+msgstr "Name dieser Reiseidee"
 
 #: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:36
-#, fuzzy
-#| msgid "Itinerary"
 msgid "Save Itinerary Idea"
-msgstr "Bewaar Reisschema Idee"
+msgstr "Reiseidee speichern"
 
 #: tripapp/templates/tripapp/create_trip.html:33
 msgid ""
 "Tip: Consider plotting an itinerary on a map and turn your idea into a trip. "
 msgstr ""
-"Tip: Je kan ook eerst een reisschema op de kaart zetten en dat dan omzetten "
-"naar een trip."
+"Tipp: Erwägen Sie, eine Reiseroute auf einer Karte zu planen und Ihre Idee "
+"in eine Reise umzuwandeln."
 
 #: tripapp/templates/tripapp/create_tripoutline.html:5
-#, fuzzy
-#| msgid "Create Trip"
 msgid "Create Tripoutline"
-msgstr "Maak Reisschema aan"
+msgstr "Reiseübersicht erstellen"
 
 #: tripapp/templates/tripapp/create_tripoutline.html:23
 msgid ""
 "Create a Itinerary Idea by indicating OVERNIGHT locations / areas on this map"
-msgstr "Maak Reisschema Idee door Overnachtingslocaties op de kaart te zetten"
+msgstr ""
+"Erstellen Sie eine Reiseidee, indem Sie Übernachtungsorte/-bereiche auf "
+"dieser Karte markieren"
 
 #: tripapp/templates/tripapp/create_tripoutline.html:27
 msgid "Overnight Locations:"
-msgstr "Overnachtings Locaties:"
+msgstr "Übernachtungsorte:"
 
 #: tripapp/templates/tripapp/create_tripoutline.html:30
 msgid "Name of this Overnight Itinerary Idea"
-msgstr "Naam van dit Overnachtings Reisschema"
+msgstr "Name dieser Übernachtungs-Reiseidee"
 
 #: tripapp/templates/tripapp/create_tripoutline.html:31
 msgid "Save Overnight Outline"
-msgstr "Bewaar Overnachtings Reisschema"
+msgstr "Übernachtungsplan speichern"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:302
 #: tripapp/templates/tripapp/trip_detail.html:281
 msgid "Itinerary"
-msgstr "Reisschema"
+msgstr "Reiseplan"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:308
 #: tripapp/templates/tripapp/scheduled_item_form.html:66
 #: tripapp/templates/tripapp/trip_dayprograms.html:11
 msgid "Add"
-msgstr "Invoegen"
+msgstr "Hinzufügen"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:315
 msgid "Expense"
-msgstr "Uitgave"
+msgstr "Ausgabe"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:318
 msgid "Suggestion"
-msgstr "Suggestie"
+msgstr "Vorschlag"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:321
 #: tripapp/templates/tripapp/dayprogram_detail.html:480
 msgid "Question"
-msgstr "Vraag"
+msgstr "Frage"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:322
 msgid "Scheduled Item"
-msgstr "Gepland Item"
+msgstr "Geplanter Punkt"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:323
 msgid "Link"
-msgstr "Koppeling"
+msgstr "Link"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:349
 msgid "Information for Today"
-msgstr "Belangrijke Informatie"
+msgstr "Informationen für heute"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:357
 msgid "Ideas for Today"
-msgstr "Ideeen voor vandaag"
+msgstr "Ideen für heute"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:365
 msgid "Scheduled Items for Today"
-msgstr "Geplande Items"
+msgstr "Geplante Punkte für heute"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:407
 #: tripapp/templates/tripapp/dayprogram_detail.html:441
 msgid "Link to travel document"
-msgstr "Koppeling naar document"
+msgstr "Link zum Reisedokument"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:434
 #: tripapp/templates/tripapp/trip_documents.html:25
 msgid "Documents and Links"
-msgstr "Documenten en Koppelingen"
+msgstr "Dokumente und Links"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:445
 msgid "Download Document"
-msgstr "Download Document"
+msgstr "Dokument herunterladen"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:489
 msgid "You have the badge for this question!"
-msgstr "Je hebt de badge voor deze vraag!"
+msgstr "Sie haben das Abzeichen für diese Frage!"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:494
 msgid "Check Answer"
-msgstr "Controleer"
+msgstr "Antwort prüfen"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:502
 msgid "to see and answer the question(s)."
-msgstr "om vraag te zien en te beantwoorden"
+msgstr "um die Frage(n) zu sehen und zu beantworten."
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:559
 msgid "Badge Claimed!"
-msgstr "Badge Behaald!"
+msgstr "Badge beansprucht!"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:568
 msgid "Close"
-msgstr "Sluit"
+msgstr "Schließen"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:580
 msgid "Your Suggestion for this Day:"
-msgstr "Jouw suggestie voor deze dag:"
+msgstr "Ihr Vorschlag für diesen Tag:"
 
 #: tripapp/templates/tripapp/import_itinerary.html:4
-#, fuzzy
-#| msgid "Itinerary"
 msgid "Import Itinerary JSON"
-msgstr "Importeer JSON Reisschema"
+msgstr "Reiseplan JSON importieren"
 
 #: tripapp/templates/tripapp/import_itinerary.html:5
 msgid "Ask your favourite AI to create an itinerary idea."
-msgstr "Vraag aan je favoriete AI om een reisschema op te stellen."
+msgstr "Bitten Sie Ihre bevorzugte KI, eine Reiseidee zu erstellen."
 
 #: tripapp/templates/tripapp/import_itinerary.html:6
 msgid ""
 "Include in the prompt that the idea needs to be presented exactly following "
 "the schema at:"
 msgstr ""
-"Zet in de prompt dat het idee precies het schema moet volgen dat staat op:"
+"Geben Sie im Prompt an, dass die Idee genau nach dem Schema präsentiert "
+"werden muss unter:"
 
 #: tripapp/templates/tripapp/index.html:126
 msgid "Welcome"
-msgstr "Welkom"
+msgstr "Willkommen"
 
 #: tripapp/templates/tripapp/index.html:128
 msgid ""
@@ -276,21 +269,22 @@ msgid ""
 "trip with the people going on the trip (the Trippers), and share it with "
 "family and friends elsewhere (the Tribe)."
 msgstr ""
-"Jij en je vrienden gaan op een trip. Hier kun je alle details van de trip "
-"delen met de mensen die meegaan (de Trippers) en met andere familie en "
-"vrienden (de Tribe)."
+"Sie und Ihre Freunde machen eine Reise. Hier können Sie alle Details der "
+"Reise mit den Mitreisenden (den Trippers) teilen und auch mit Familie und "
+"Freunden anderswo (dem Stamm)."
 
 #: tripapp/templates/tripapp/index.html:132
 msgid "Click My Trips to see and organize your trips"
-msgstr "Bekijk en organiseer je reisschema's via Mijn Trips"
+msgstr ""
+"Klicken Sie auf 'Meine Reisen', um Ihre Reisen anzusehen und zu organisieren"
 
 #: tripapp/templates/tripapp/index.html:134
 msgid ""
 "Click Register to join, or click Login to start a Tribe, invite people and "
 "lay out the trip."
 msgstr ""
-"Klik Registreren om je aan te melden. Klik Mijn Trips om een Tribe te "
-"starten mensen uit te nodigen en je Trip te organiseren."
+"Klicken Sie auf 'Registrieren', um beizutreten, oder auf 'Login', um einen "
+"Stamm zu starten, Leute einzuladen und die Reise zu planen"
 
 #: tripapp/templates/tripapp/index.html:139
 #: tripapp/templates/tripapp/tribe_map.html:68
@@ -299,113 +293,98 @@ msgstr ""
 #: tripapp/templates/tripapp/trip_detail.html:238
 #: tripapp/templates/tripapp/trip_list.html:197
 msgid "My Trips"
-msgstr "Mijn Trips"
+msgstr "Meine Reisen"
 
 #: tripapp/templates/tripapp/index.html:141
 msgid "Register"
-msgstr "Registreren"
+msgstr "Registrieren"
 
 #: tripapp/templates/tripapp/index.html:142
 msgid "Login"
-msgstr "Inloggen"
+msgstr "Anmelden"
 
 #: tripapp/templates/tripapp/invite_code_success.html:5
 msgid "Invite Code Generated"
-msgstr "Invite Code Gegenereerd"
+msgstr "Einladungscode generiert"
 
 #: tripapp/templates/tripapp/invite_code_success.html:6
 msgid "Share this link"
-msgstr "Deel deze link"
+msgstr "Diesen Link teilen"
 
 #: tripapp/templates/tripapp/invite_code_success.html:21
 msgid "Have it scanned by the person you want to invite to the tribe."
-msgstr "Laat scannen door persoon die je wil toevoegen aan de tribe"
+msgstr ""
+"Lassen Sie es von der Person scannen, die Sie zum Stamm einladen möchten."
 
 #: tripapp/templates/tripapp/itinerary_dragdrop.html:55
 msgid "Step 2 - Cluster the activities into days"
-msgstr "Stap 2 - Groepeer de activiteiten tot dagen"
+msgstr "Schritt 2 – Aktivitäten in Tage gruppieren"
 
 #: tripapp/templates/tripapp/itinerary_dragdrop.html:64
 msgid "List of Activities / Locations"
-msgstr "Lijst activiteiten / Lokaties"
+msgstr "Liste der Aktivitäten / Orte"
 
 #: tripapp/templates/tripapp/itinerary_dragdrop.html:77
 msgid "No unassigned daylocations"
-msgstr "Geen niet-gegroepeerde daglocaties"
+msgstr "Keine nicht zugewiesenen Tagesorte"
 
 #: tripapp/templates/tripapp/itinerary_dragdrop.html:86
-#, fuzzy
-#| msgid "Create Trip"
 msgid "Projected Tripdays"
-msgstr "Verwachte Tripdagen"
+msgstr "Geplante Reisetage"
 
 #: tripapp/templates/tripapp/itinerary_dragdrop.html:87
-#, fuzzy
-#| msgid "Add Image"
 msgid "Add Day"
-msgstr "Dag Toevoegen"
+msgstr "Tag hinzufügen"
 
 #: tripapp/templates/tripapp/itinerary_dragdrop.html:112
-#, fuzzy
-#| msgid "No documents uploaded yet"
 msgid "No days added yet."
-msgstr "Geen documenten ge-upload"
+msgstr "Noch keine Tage hinzugefügt."
 
 #: tripapp/templates/tripapp/itinerary_dragdrop.html:119
 #: tripapp/templates/tripapp/itineraryidea_update.html:56
 #: tripapp/templates/tripapp/tripper_profile.html:14
 msgid "Save"
-msgstr "Bewaar"
+msgstr "Speichern"
 
 #: tripapp/templates/tripapp/itinerary_dragdrop.html:124
 #: tripapp/templates/tripapp/itineraryidea_list.html:4
 #: tripapp/templates/tripapp/itineraryidea_update.html:58
 #: tripapp/templates/tripapp/tribe_trips.html:327
-#, fuzzy
-#| msgid "Itinerary"
 msgid "Itinerary Ideas"
-msgstr "Reisschema"
+msgstr "Reiseideen"
 
 #: tripapp/templates/tripapp/itineraryidea_list.html:50
-#, fuzzy
-#| msgid "Create a New Tribe"
 msgid "Create New"
-msgstr "Maak nieuw "
+msgstr "Neu erstellen"
 
 #: tripapp/templates/tripapp/itineraryidea_list.html:52
-#, fuzzy
-#| msgid "Overnight Locations:"
 msgid "on Map via OvernightLocations"
-msgstr "via Overnachtings Locaties op de kaart"
+msgstr "Auf Karte über Übernachtungsorte"
 
 #: tripapp/templates/tripapp/itineraryidea_list.html:53
-#, fuzzy
-#| msgid "Day Locations:"
 msgid "on Map via DayLocations"
-msgstr "via Dag Activiteiten op de kaart"
+msgstr "Auf Karte über Tagesorte"
 
 #: tripapp/templates/tripapp/itineraryidea_list.html:90
 msgid "Edit on Map"
-msgstr "Edit op de Kaart"
+msgstr "Auf Karte bearbeiten"
 
 #: tripapp/templates/tripapp/itineraryidea_list.html:93
-#, fuzzy
-#| msgid "Export Trip"
 msgid "Convert to Trip"
-msgstr "Exporteer Trip"
+msgstr "In Reise umwandeln"
 
 #: tripapp/templates/tripapp/itineraryidea_list.html:100
 msgid "Are you sure?"
-msgstr "Weet je het zeker?"
+msgstr "Sind Sie sicher?"
 
 #: tripapp/templates/tripapp/itineraryidea_list.html:100
 #: tripapp/templates/tripapp/tripper_profile.html:26
 msgid "Delete"
-msgstr "Verwijder"
+msgstr "Löschen"
 
 #: tripapp/templates/tripapp/itineraryidea_list.html:107
 msgid "No itinerary ideas yet."
-msgstr "Nog geen Reisschema ideeen."
+msgstr "Noch keine Reiseideen vorhanden."
 
 #: tripapp/templates/tripapp/itineraryidea_list.html:110
 #: tripapp/templates/tripapp/tribe_map.html:69
@@ -416,21 +395,19 @@ msgstr "Nog geen Reisschema ideeen."
 #: tripapp/templates/tripapp/tribe_trips.html:255
 #: tripapp/templates/tripapp/trip_list.html:198
 msgid "Organize"
-msgstr "Organiseer"
+msgstr "Organisieren"
 
 #: tripapp/templates/tripapp/itineraryidea_to_trip.html:4
 msgid "Convert Itinerary to Trip"
-msgstr "Maak Trip van dit idee"
+msgstr "Reiseplan in Reise umwandeln"
 
 #: tripapp/templates/tripapp/itineraryidea_to_trip.html:5
-#, fuzzy
-#| msgid "Itinerary"
 msgid "Itinerary Idea:"
-msgstr "Reisschema"
+msgstr "Reiseidee:"
 
 #: tripapp/templates/tripapp/itineraryidea_to_trip.html:10
 msgid "Select Tribe:"
-msgstr "Selecteer Tribe:"
+msgstr "Stamm auswählen:"
 
 #: tripapp/templates/tripapp/itineraryidea_to_trip.html:14
 msgid "Startdate:"
@@ -439,138 +416,136 @@ msgstr "Startdatum:"
 #: tripapp/templates/tripapp/itineraryidea_to_trip.html:18
 #: tripapp/templates/tripapp/trip_list.html:255
 msgid "Create Trip"
-msgstr "Maak Trip aan"
+msgstr "Reise erstellen"
 
 #: tripapp/templates/tripapp/itineraryidea_update.html:25
-#, fuzzy
-#| msgid "Itinerary"
 msgid "Edit Itinerary Idea:"
-msgstr "Bewerk Reisschema Idee:"
+msgstr "Reiseidee bearbeiten:"
 
 #: tripapp/templates/tripapp/scheduled_item_form.html:9
 msgid "Edit Scheduled Item"
-msgstr "Bewerk Gepland Item"
+msgstr "Geplanten Eintrag bearbeiten"
 
 #: tripapp/templates/tripapp/scheduled_item_form.html:11
 msgid "Add Scheduled Item"
-msgstr "Voeg Gepland Item Toe"
+msgstr "Geplanten Eintrag hinzufügen"
 
 #: tripapp/templates/tripapp/scheduled_item_form.html:14
 msgid "For Day:"
-msgstr "Voor dag"
+msgstr "Für Tag:"
 
 #: tripapp/templates/tripapp/scheduled_item_form.html:66
 msgid "Update"
-msgstr "Bijwerken"
+msgstr "Aktualisieren"
 
 #: tripapp/templates/tripapp/tribe_map.html:66
 #: tripapp/templates/tripapp/trip_detail.html:236
 #: tripapp/templates/tripapp/trip_list.html:195
 msgid "Settings"
-msgstr "Instellingen"
+msgstr "Einstellungen"
 
 #: tripapp/templates/tripapp/tribe_trip_organize.html:126
 #: tripapp/templates/tripapp/tribe_trip_organize.html:153
 msgid "Edit Trip Settings"
-msgstr "Instellingen"
+msgstr "Reiseeinstellungen bearbeiten"
 
 #: tripapp/templates/tripapp/tribe_trip_organize.html:127
 #: tripapp/templates/tripapp/tribe_trip_organize.html:154
 msgid "Add or Remove Trippers"
-msgstr "Trippers toevoegen of verwijderen"
+msgstr "Tripper hinzufügen oder entfernen"
 
 #: tripapp/templates/tripapp/tribe_trip_organize.html:131
 #: tripapp/templates/tripapp/tribe_trip_organize.html:164
 msgid "Edit Dayprograms"
-msgstr "Dagprogramma's Bewerken"
+msgstr "Tagesprogramme bearbeiten"
 
 #: tripapp/templates/tripapp/tribe_trip_organize.html:132
 #: tripapp/templates/tripapp/tribe_trip_organize.html:165
 msgid "Add Points and Routes"
-msgstr "Punten en Routes toevoegen"
+msgstr "Punkte und Routen hinzufügen"
 
 #: tripapp/templates/tripapp/tribe_trip_organize.html:133
 #: tripapp/templates/tripapp/tribe_trip_organize.html:166
 msgid "Organize Tripbingo"
-msgstr "Organiseer Tripbingo"
+msgstr "Reisebingo organisieren"
 
 #: tripapp/templates/tripapp/tribe_trip_organize.html:136
 #: tripapp/templates/tripapp/tribe_trip_organize.html:178
 msgid "Assign Badges"
-msgstr "Badges Toekennen"
+msgstr "Badges zuweisen"
 
 #: tripapp/templates/tripapp/tribe_trip_organize.html:142
 #: tripapp/templates/tripapp/tribe_trip_organize.html:174
 msgid "View Badges"
-msgstr "Badges Bekijken"
+msgstr "Badges anzeigen"
 
 #: tripapp/templates/tripapp/tribe_trip_organize.html:143
 #: tripapp/templates/tripapp/tribe_trip_organize.html:175
 msgid "Create Badge"
-msgstr "Maak nieuwe Badge "
+msgstr "Badge erstellen"
 
 #: tripapp/templates/tripapp/tribe_trip_organize.html:144
 #: tripapp/templates/tripapp/tribe_trip_organize.html:176
 msgid "Upload Badge"
-msgstr "Badge Uploaden"
+msgstr "Badge hochladen"
 
 #: tripapp/templates/tripapp/tribe_trip_organize.html:151
+#, fuzzy
+#| msgid "Edit Trip Settings"
 msgid "Trip Admin Settings"
-msgstr "Instellingen"
+msgstr "Reiseeinstellungen bearbeiten"
 
 #: tripapp/templates/tripapp/tribe_trip_organize.html:162
 msgid "For and by Trippers"
-msgstr "Voor en door Trippers"
+msgstr ""
 
 #: tripapp/templates/tripapp/tribe_trips.html:272
 msgid "New Trip"
-msgstr "Nieuwe Trip"
+msgstr "Neue Reise"
 
 #: tripapp/templates/tripapp/tribe_trips.html:332
 msgid "Create a New Tribe"
-msgstr "Maak Tribe aan"
+msgstr "Neuen Stamm erstellen"
 
 #: tripapp/templates/tripapp/tribe_trips.html:336
 msgid "Invite People to the Tribe"
-msgstr "Uitnodigen voor de Tribe"
+msgstr "Personen zum Stamm einladen"
 
 #: tripapp/templates/tripapp/trip_balance.html:7
 msgid "Balance for Trip"
-msgstr "Tripbalans"
+msgstr "Bilanz der Reise"
 
 #: tripapp/templates/tripapp/trip_balance.html:36
-#, fuzzy
-#| msgid "See Balance"
 msgid "Balance"
-msgstr "Bekijk Balans"
+msgstr "Bilanz"
 
 #: tripapp/templates/tripapp/trip_balance.html:63
 msgid "All balances are settled. No outstanding amounts."
-msgstr "Geen onderlinge openstaande rekeningen."
+msgstr "Alle Bilanzen sind ausgeglichen. Keine offenen Beträge."
 
 #: tripapp/templates/tripapp/trip_balance.html:68
 msgid "See all Expenses"
-msgstr "Bekijk alle Uitgaven"
+msgstr "Alle Ausgaben anzeigen"
 
 #: tripapp/templates/tripapp/trip_bingocard.html:141
 msgid "#Answers"
-msgstr "#Antwoorden"
+msgstr "#Antworten"
 
 #: tripapp/templates/tripapp/trip_bingocard.html:151
 msgid "See answers for all trippers"
-msgstr "Bekijke antwoorden van alle trippers"
+msgstr "Antworten aller Tripper ansehen"
 
 #: tripapp/templates/tripapp/trip_bingocard.html:154
 msgid "No Bingo created for this trip"
-msgstr "Geen Bingo aangemaakt op deze trip"
+msgstr "Für diese Reise wurde kein Bingo erstellt"
 
 #: tripapp/templates/tripapp/trip_checklist.html:47
 msgid "Trip"
-msgstr "Trip"
+msgstr "Reise"
 
 #: tripapp/templates/tripapp/trip_dayprograms.html:9
 msgid "Day"
-msgstr "Dag"
+msgstr "Tag"
 
 #: tripapp/templates/tripapp/trip_dayprograms.html:9
 #: tripapp/templates/tripapp/trip_expenses_list.html:82
@@ -580,144 +555,119 @@ msgstr "Datum"
 #: tripapp/templates/tripapp/trip_dayprograms.html:10
 #: tripapp/templates/tripapp/trip_expenses_list.html:80
 msgid "Description"
-msgstr "Omschrijving"
+msgstr "Beschreibung"
 
 #: tripapp/templates/tripapp/trip_detail.html:239
 msgid "Organize this Trip"
-msgstr "Organiseer deze Trip"
+msgstr "Diese Reise organisieren"
 
 #: tripapp/templates/tripapp/trip_detail.html:263
 msgid "More"
-msgstr "Meer"
+msgstr "Mehr"
 
 #: tripapp/templates/tripapp/trip_detail.html:271
 #: tripapp/templates/tripapp/tripper_profile.html:18
 msgid "Documents"
-msgstr "Documenten"
+msgstr "Dokumente"
 
 #: tripapp/templates/tripapp/trip_detail.html:274
-#, fuzzy
-#| msgid "Export Trip"
 msgid "Export"
-msgstr "Exporteer Trip"
+msgstr ""
 
 #: tripapp/templates/tripapp/trip_expenses_list.html:8
 msgid "Expenses for Trip"
-msgstr "Uitgaven op Trip"
+msgstr "Ausgaben für die Reise"
 
 #: tripapp/templates/tripapp/trip_expenses_list.html:44
 msgid "Add New Expense"
-msgstr "Uitgave toevoegen"
+msgstr "Neue Ausgabe hinzufügen"
 
 #: tripapp/templates/tripapp/trip_expenses_list.html:79
 msgid "By"
-msgstr "Door"
+msgstr "Von"
 
 #: tripapp/templates/tripapp/trip_expenses_list.html:83
 msgid "Receipt"
-msgstr "Bonnetje"
+msgstr "Beleg"
 
 #: tripapp/templates/tripapp/trip_expenses_list.html:123
 msgid "No expenses recorded for this trip"
-msgstr "Geen uitgaven vastgelegd op deze trip"
+msgstr "Für diese Reise wurden keine Ausgaben erfasst"
 
 #: tripapp/templates/tripapp/trip_expenses_list.html:127
 msgid "See Balance"
-msgstr "Bekijk Balans"
+msgstr "Bilanz anzeigen"
 
-#: tripapp/templates/tripapp/trip_export.html:96
+#: tripapp/templates/tripapp/trip_export.html:94
+#, fuzzy
+#| msgid "Download Document"
 msgid "Download Complete Trip"
-msgstr "Download Complete Trip"
+msgstr "Dokument herunterladen"
 
-#: tripapp/templates/tripapp/trip_export.html:97
+#: tripapp/templates/tripapp/trip_export.html:95
 msgid "A zip with everything of the trip."
-msgstr "Een zip met alles van de trip"
+msgstr ""
 
-#: tripapp/templates/tripapp/trip_export.html:104
+#: tripapp/templates/tripapp/trip_export.html:102
 msgid "Download Trip Outline"
-msgstr "Download Reisschema"
+msgstr "Reiseplan herunterladen"
 
-#: tripapp/templates/tripapp/trip_export.html:105
+#: tripapp/templates/tripapp/trip_export.html:103
 msgid "De-personalized, no photos, no logs. Just share your itinerary."
-msgstr "Zonder persoonlijke informatie. Deel je reisschema."
+msgstr ""
 
-#: tripapp/templates/tripapp/trip_export.html:112
+#: tripapp/templates/tripapp/trip_export.html:110
+#, fuzzy
+#| msgid "Download Trip Outline"
 msgid "Download Trip Outline JSON"
-msgstr "Download Trip Outline JSON"
+msgstr "Reiseplan herunterladen"
 
-#: tripapp/templates/tripapp/trip_export.html:113
+#: tripapp/templates/tripapp/trip_export.html:111
 msgid ""
-"Export as JSON. Other Trippanion user can import your trip as startingpoint for his own trip."
-msgstr "Exporteer als JSON. Een andere Trippanion user kan dit als starpunt gebruiken."
+"Export as JSON. Other Trippanion user can import your trip as startingpoint "
+"for his own trip."
+msgstr ""
 
 #: tripapp/templates/tripapp/trip_list.html:265
 msgid "Show only trips on which I am a tripper"
-msgstr "Toon alleen trips waar ik tripper ben"
+msgstr "Nur Reisen anzeigen, bei denen ich Tripper bin"
 
 #: tripapp/templates/tripapp/trip_points.html:12
 msgid "Point description"
-msgstr "Omschrijving"
+msgstr "Punktbeschreibung"
 
 #: tripapp/templates/tripapp/trip_trippers.html:111
 msgid "Badges this trip"
-msgstr "Badges deze trip"
+msgstr "Badges dieser Reise"
 
 #: tripapp/templates/tripapp/trip_trippers.html:126
 msgid "Trippers owe Trippers"
-msgstr "Trippers krijgen van / betalen aan trippers"
+msgstr "Tripper schulden Trippern"
 
 #: tripapp/templates/tripapp/tripper_profile.html:30
 msgid "No documents uploaded yet"
-msgstr "Geen documenten ge-upload"
+msgstr "Noch keine Dokumente hochgeladen"
 
-#: tripapp/views.py:1362
+#: tripapp/views.py:1370
 #, python-format
 msgid "Suggestion by %(username)s: %(suggestion)s"
-msgstr "Voorstel van %(username)s: %(suggestion)s"
+msgstr "Vorschlag von %(username)s: %(suggestion)s"
 
-#: tripapp/views.py:1922
+#: tripapp/views.py:1931
 msgid "No Answers"
-msgstr "Geen Antwoorden"
+msgstr "Keine Antworten"
 
-#: tripapp/views.py:2140 tripapp/views.py:2166
+#: tripapp/views.py:2149 tripapp/views.py:2175
 msgid "Tripper and emoji mandatory."
-msgstr "Tripper en emoji verplicht"
+msgstr "Tripper und Emoji sind Pflicht."
 
-#: tripapp/views.py:2151
+#: tripapp/views.py:2160
 msgid "You already liked this log with this emoji."
-msgstr "Je hebt deze log al een emoji gegeven."
+msgstr "Sie haben diesen Eintrag bereits mit diesem Emoji geliked."
 
-#: tripapp/views.py:2178
+#: tripapp/views.py:2187
 msgid "There is no like with this emoji that can be removed."
-msgstr "Er is geen like met deze emoji om te verwijderen"
+msgstr "Es gibt kein Like mit diesem Emoji, das entfernt werden kann."
 
-#~ msgid "Name of this Tripidea"
-#~ msgstr "Naam van dit Reisschema"
-
-#, fuzzy
-#~| msgid "Create a New Tribe"
-#~ msgid "Create New via Import"
-#~ msgstr "Maak Tribe aan"
-
-#~ msgid "Programme"
-#~ msgstr "Programma"
-
-#~ msgid "New"
-#~ msgstr "Nieuw"
-
-#~ msgid "Already joined"
-#~ msgstr "Al geregistreerd"
-
-#, fuzzy
-#~| msgid "My Trips"
-#~ msgid "My Trips List"
-#~ msgstr "Mijn Trips"
-
-#~ msgid "Save Reordering"
-#~ msgstr "Bewaar nieuwe dagvolgorde"
-
-#~ msgid "My Trips Map"
-#~ msgstr "Mijn Trips op de kaart"
-
-#~ msgid "Displaying planned and visited locations"
-#~ msgstr "Toon geplande en bezochte locaties"
+#~ msgid "Export Trip PDF"
+#~ msgstr "Reise-PDF exportieren"

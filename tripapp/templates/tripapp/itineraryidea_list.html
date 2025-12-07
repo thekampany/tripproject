@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", function() {
 <p>&nbsp;</p>
 
 {% for idea in itineraryideas %}
-  <div class="itinerary-idea" style="border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+  <div class="itinerary-idea" style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:4px;">
     <strong>{{ idea.name }}</strong>
     <span style="float:right; color:gray; font-style:italic;">
       {% if idea.updated_at %}

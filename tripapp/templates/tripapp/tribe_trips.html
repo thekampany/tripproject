@@ -254,7 +254,7 @@
                 <li><a class="dropdown-item" href="{% url 'tripapp:trip_list' %}">{% trans "My Trips" %}</a></li>
                 <li><a class="dropdown-item" href="{% url 'tripapp:tribe_trips' %}">{% trans "Organize" %}</a></li>
                 <li><hr class="dropdown-divider"></li>
-                {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>{% endif %}
+                {% if user.is_staff  and enable_admin %}<li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>{% endif %}
                 {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'tripapp:task_manager' %}">Background Tasks</a></li>{% endif %}
                 {% if user.is_authenticated %} <li><a class="dropdown-item" href="{% url 'tripapp:logout' %}">Logout</a></li>{% endif %}
                 </ul>

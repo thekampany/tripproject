@@ -49,6 +49,7 @@ try:
 except FileNotFoundError:
     pass
 
+ENABLE_ADMIN = os.getenv('ENABLE_ADMIN', 'False').lower() == 'true'
 
 # Application definition
 

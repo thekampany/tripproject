@@ -1,0 +1,36 @@
+{% extends "base_generic.html" %}
+{% load i18n %}
+{% block content %}
+<h2>Budget</h2>
+for <b>{{ trip.name }}</b>
+<br /><br />
+<p>
+<a href="{% url 'tripapp:budget_add' trip.id %}" class="btn">{% trans "Add Budget Item" %}</a>
+<br /><br />
+<table>
+    <tr>
+        <th>{% trans "Category" %}</th>
+        <th>{% trans "Amount" %}</th>
+        <th></th>
+    </tr>
+
+    {% for item in budgets %}
+    <tr>
+        <td style="text-align:left;vertical-align: top; padding-right: 10px;">{{ item.category|default:"No Category" }}</td>
+        <td style="text-align:right;vertical-align: top; padding-right: 10px;">{{ item.amount }} {{ item.currency }}</td>
+        <td style="text-align:right;vertical-align: top; padding-right: 10px;">
+            <a href="{% url 'tripapp:budget_update' trip.id item.id %}">[Edit]</a>
+        </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="3">{% trans "No budget items yet." %}</td></tr>
+    {% endfor %}
+</table>
+<br /><br />
+<h3>{% trans "Total" %}: {{ total }}</h3>
+<p>&nbsp;</p>
+<p>
+    <a href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id %}">&larr;{% trans "to Organize Trip" %}</a>
+</p>
+
+{% endblock %}

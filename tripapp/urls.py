@@ -4,6 +4,7 @@ from django.contrib.auth.views import LoginView,LogoutView
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from rest_framework.routers import DefaultRouter
+from django.conf import settings
 
 app_name = 'tripapp'
 
@@ -48,11 +49,17 @@ urlpatterns = [
     path('trip/<int:trip_id>/tripper/<int:tripper_id>/add_expense/', views.add_expense, name='add_expense'),
     path('trip/<int:trip_id>/balance/', views.trip_balance, name='trip_balance'),
     path('trip/<int:trip_id>/expenses/', views.trip_expenses_list, name='trip_expenses_list'),
+    path('trip/<int:trip_id>/budget/add/', views.budget_add, name='budget_add'),
+    path('trip/<int:trip_id>/budget/list/', views.budget_list, name='budget_list'),
+    path('trip/<int:trip_id>/budget/<int:budget_id>/edit/', views.budget_update, name='budget_update'),
+    path('trip/<int:trip_id>/budget-analysis/', views.trip_budget_analysis, name='trip_budget_analysis'),
     path('trip/<int:trip_id>/update/', views.trip_update, name='trip_update'),
     path('trip/<int:trip_id>/reorder_dayprograms/', views.reorder_dayprograms, name='reorder_dayprograms'),
     path('trip/<slug:slug>/checklist/', views.trip_checklist, name='trip_checklist'),
-    path("trips/<int:trip_id>/archive/", views.create_zip_with_html, name="export_trip_html_zip"),
-    path("trips/<int:trip_id>/export/tripoutline/", views.create_tripoutline_html, name="create_tripoutline_html"),
+    path('trip/<int:trip_id>/export/', views.export_trip, name="export_trip"),
+    path('trip/<int:trip_id>/archive/', views.create_zip_with_html, name="export_trip_html_zip"),
+    path('trip/<int:trip_id>/export/tripoutline/', views.create_trip_outline_html, name="create_trip_outline_html"),
+    path('trip/<int:trip_id>/export/tripoutline-json/', views.export_trip_outline_json, name='export_trip_outline_json'),
     path('tripper/<int:tripper_id>/profile/', views.tripper_profile, name='tripper_profile'),
     path('tripper/<int:tripper_id>/badgeassignments/', views.tripper_badgeassignments, name='tripper_badgeassignments'),
     path('tripper/<int:tripper_id>/trip/<int:trip_id>/edit/', views.edit_tripper, name='edit_tripper'),
@@ -85,7 +92,6 @@ urlpatterns = [
     path('accounts/login/', LoginView.as_view(), name='login'),
     path('accounts/logout/', LogoutView.as_view(), name='logout'),
     path('register/', views.register, name='register'),
-    path('admin/', admin.site.urls),
     path('bingocard/<int:pk>/', views.bingocard_detail, name='bingocard_detail'),
     path('bingocard/<int:bingocard_id>/upload/', views.upload_answerimage, name='upload_answerimage'),
     #path('tribe/<uuid:tribe_id>/trips/', views.tribe_trips, name='tribe_trips'),
@@ -120,3 +126,8 @@ urlpatterns = [
     path('itineraryidea/<int:pk>/update/', views.update_itineraryidea, name='update_itineraryidea'),
     path("itineraryidea/<int:pk>/to_trip/", views.itineraryidea_to_trip, name="itineraryidea-to-trip"),
  ]
+
+if settings.ENABLE_ADMIN:
+    urlpatterns += [
+        path('admin/', admin.site.urls),
+    ]

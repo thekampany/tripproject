@@ -18,8 +18,9 @@
     <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <style>
-      body, html {
+    body, html {
            {% if trip.image %}
              background: url('{{ trip.image.url }}') no-repeat center center fixed; 
              -webkit-background-size: cover;
@@ -27,7 +28,61 @@
              -o-background-size: cover;
              background-size: cover;
             {% endif %}
-      }
+    }
+    .block-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 20px;
+    }
+
+    .info-block {
+        border: 1px solid #e2e2e2;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .block-title {
+        margin-top: 0;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #eee;
+        font-size: 1.2rem;
+    }
+
+    .block-links {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .block-links li {
+        margin: 8px 0;
+    }
+
+    .block-links a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: 0.2s ease-in-out;
+    }
+
+    .block-links a i {
+        font-size: 1.1rem;
+        transition: inherit;
+    }
+
+    /* Hover: reverse color mode */
+    .block-links a:hover {
+        background: #333;
+        color: white;
+    }
+
+    .block-links a:hover i {
+        color: white;
+    }
 
     </style>
 
@@ -53,7 +108,7 @@
                 <li><a class="dropdown-item" href="{% url 'tripapp:trip_list' %}">{% trans "My Trips" %}</a></li>
                 <li><a class="dropdown-item" href="{% url 'tripapp:trip_detail' slug=trip.slug %}">Trip {{ trip.name }}</a></li>
                 <li><hr class="dropdown-divider"></li>
-                {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>{% endif %}
+                {% if user.is_staff and enable_admin %}<li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>{% endif %}
                 {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'tripapp:task_manager' %}">Background Tasks</a></li>{% endif %}
                 {% if user.is_authenticated %} <li><a class="dropdown-item" href="{% url 'tripapp:logout' %}">Logout</a></li>{% endif %}
                 </ul>
@@ -65,11 +120,12 @@
 
     
     <span style="color:gray;">Tribe: {{ tribe.name }}</span>
-          <p>&nbsp;</p>
+    <!--      <p>&nbsp;</p>
           
            {% if trip in admin_trips %}
            <p><a href="{% url 'tripapp:trip_update' trip.id %}" class="btn-less-padding"><img src="{% static 'icons/iconedittrip.png'  %}" width="40" height="40" ></a>&nbsp;{% trans "Edit Trip Settings" %}</p>
            <p><a href="{% url 'tripapp:add_trippers' trip.id tribe.id %}" class="btn-less-padding"><img src="{% static 'icons/iconedittripper.png'  %}" width="40" height="40" ></a>&nbsp;{% trans "Add or Remove Trippers" %}</p>
+           <p><a href="{% url 'tripapp:budget_list' trip.id %}" class="btn-less-padding"><img src="{% static 'icons/iconedittripper.png'  %}" width="40" height="40" ></a>&nbsp;{% trans "Budget" %}</p>
            {% endif %}
            {% if tripper %}
            <p><a href="{% url 'tripapp:trip_dayprograms' trip.id  %}" class="btn-less-padding"><img src="{% static 'icons/iconeditdayprogram.png'  %}" width="40" height="40" ></a>&nbsp;{% trans "Edit Dayprograms" %}</p>
@@ -86,9 +142,49 @@
     <a href="{% url 'tripapp:mytribes_badges_view' %}" class="btn-fixed-width">{% trans "View Badges" %}</a>
     <a href="{% url 'tripapp:badge_creator' %}" class="btn-fixed-width">{% trans "Create Badge" %}</a>
     <a href="{% url 'tripapp:upload_badge' %}" class="btn-fixed-width">{% trans "Upload Badge" %}</a>
+
+    -->
+
+    <div class="block-container">
+        {% if trip in admin_trips %}
+        <div class="info-block">
+            <h2 class="block-title">{% trans "Trip Admin Settings" %}</h2>
+            <ul class="block-links">
+                <li><a href="{% url 'tripapp:trip_update' trip.id %}"><i class="bi bi-file-richtext"></i>{% trans "Edit Trip Settings" %}</a></li>
+                <li><a href="{% url 'tripapp:add_trippers' trip.id tribe.id %}"><i class="bi bi-person-add"></i> {% trans "Add or Remove Trippers" %}</a></li>
+                <li><a href="{% url 'tripapp:budget_list' trip.id %}"><i class="bi bi-wallet2"></i> {% trans "Budget" %}</a></li>
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if tripper %}
+        <div class="info-block">
+            <h2 class="block-title">{% trans "For and by Trippers" %}</h2>
+            <ul class="block-links">
+                <li><a href="{% url 'tripapp:trip_dayprograms' trip.id  %}"><i class="bi bi-card-heading"></i> {% trans "Edit Dayprograms" %}</a></li>
+                <li><a href="{% url 'tripapp:trip_points' trip.id  %}"><i class="bi bi-geo-alt"></i> {% trans "Add Points and Routes" %}</a></li>
+                <li><a href="{% url 'tripapp:tripadmin_bingocards' trip.id  %}"><i class="bi bi-grid-3x3"></i> {% trans "Organize Tripbingo" %}</a></li>
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="info-block">
+            <h2 class="block-title">Badges</h2>
+            <ul class="block-links">
+                <li><a href="{% url 'tripapp:mytribes_badges_view' %}"><i class="bi bi-patch-check"></i> {% trans "View Badges" %}</a></li>
+                <li><a href="{% url 'tripapp:badge_creator' %}"><i class="bi bi-pencil-square"></i> {% trans "Create Badge" %}</a></li>
+                <li><a href="{% url 'tripapp:upload_badge' %}"><i class="bi bi-file-arrow-up"></i> {% trans "Upload Badge" %}</a></li>
+                {% if trip in admin_trips %}
+                <li><a href="{% url 'tripapp:tripper_list' trip.id %}"><i class="bi bi-patch-plus"></i> {% trans "Assign Badges" %}</a></li>
+                {% endif %}
+            </ul>
+        </div>
+
+    </div>
     <p>&nbsp;</p>
     <a href="{% url 'tripapp:trip_detail' trip.slug %}" style="text-decoration:none" >&larr;Trip</a>
     <p>&nbsp;</p>
+
     </div>
     </div>
 </body>

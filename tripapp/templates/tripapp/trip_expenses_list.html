@@ -40,9 +40,11 @@
 <h2>{% trans "Expenses" %}</h2>
 <b>{{ trip.name }}</b>
 <br /><br />
-<p>
-    <a href="#" id="toggle-filter" style="color: gray; cursor: pointer;">Filter</a>
-</p>
+<!--add expense-->
+<a href="{% url 'tripapp:add_expense' trip.id tripper.id %}?next=balance" class="btn">{% trans "Add New Expense" %}</a>
+&nbsp;
+<br>
+<p><a href="#" id="toggle-filter" style="color: gray; cursor: pointer;">Filter</a></p>
 
 <form method="get" class="form-inline mb-4" id="filter-form">
     <div class="form-group mr-2">
@@ -68,7 +70,7 @@ document.getElementById("toggle-filter").addEventListener("click", function (e) 
     filterForm.classList.toggle("show");
 });
 </script>
-<br />
+
 
 {% if expenses %}
 <table>
@@ -121,10 +123,10 @@ document.getElementById("toggle-filter").addEventListener("click", function (e) 
     <p>{% trans "No expenses recorded for this trip" %}.</p>
 {% endif %}
 <p>&nbsp;</p>
-<!--add expense-->
-<a href="{% url 'tripapp:add_expense' trip.id tripper.id %}?next=balance" class="btn">{% trans "Add New Expense" %}</a>
-&nbsp;
+
 <a href="{% url 'tripapp:trip_balance' trip.id %}" class="btn">{% trans "See Balance" %}</a>
+&nbsp;
+<a href="{% url 'tripapp:trip_budget_analysis' trip.id %}" class="btn">{% trans "Budget Analysis" %}</a>
 <p>&nbsp;</p>
 <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" >&larr;Trip</a>
 <p>&nbsp;</p>

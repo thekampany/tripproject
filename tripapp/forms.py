@@ -15,6 +15,7 @@ from .models import LogEntry
 from .models import Link
 from .models import Route
 from .models import TripExpense
+from .models import TripBudget
 from .models import ScheduledItem
 from .models import TripperDocument
 from django.contrib.auth.models import User
@@ -28,16 +29,18 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
+from django.conf import settings
 
 class TripperForm(forms.ModelForm):
     class Meta:
         model = Tripper
-        fields = ['photo', 'dawarich_url', 'dawarich_api_key', 'immich_url', 'immich_api_key']
+        fields = ['photo', 'dawarich_url', 'dawarich_api_key', 'immich_url', 'immich_api_key','currency']
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['dawarich_url'].initial = 'https://your-dawarich-url.com/api/v1/points'
         self.fields['immich_url'].initial = 'https://your-immich-server.com' 
+        if not self.instance.pk or not self.instance.currency:
+            self.fields['currency'].initial = settings.APP_CURRENCY        
 
 class TripperAdminForm(forms.ModelForm):
     class Meta:
@@ -495,3 +498,10 @@ class CreateTripFromItineraryForm(forms.Form):
 
         if user:
             self.fields["tribe"].queryset = Tribe.objects.filter(members__user=user)
+
+
+
+class TripBudgetForm(forms.ModelForm):
+    class Meta:
+        model = TripBudget
+        fields = ['amount', 'category', 'currency']

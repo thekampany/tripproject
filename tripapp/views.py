@@ -5,7 +5,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import Trip, Tripper, Badge, DayProgram, Checklist, ChecklistItem, Image, Question, Point
 from .models import BingoCard, BingoAnswer, BadgeAssignment
 from .models import Tribe, UserProfile, LogEntry, Link, Route, TripExpense, Location, ImmichPhotos, ScheduledItem
-from .models import TripperDocument, LogEntryLike, InviteCode
+from .models import TripperDocument, LogEntryLike, InviteCode, TripBudget
 from .models import TripOutline, TripOutlineItem
 from .forms import BadgeForm, TripForm, ChecklistItemForm, ImageForm, BingoAnswerForm
 from .forms import CustomUserCreationForm
@@ -15,7 +15,7 @@ from .forms import QuestionForm, PointForm, BingoCardForm
 from .forms import BadgeAssignmentFormSet, LogEntryForm
 from .forms import BadgeplusQForm, QuestionplusBForm
 from .forms import LinkForm, RouteForm, SuggestionForm, TripExpenseForm, TripUpdateForm, UserUpdateForm, ScheduledItemForm
-from .forms import TripperDocumentForm
+from .forms import TripperDocumentForm, TripBudgetForm
 from .serializers import TripOutlineSerializer
 from .serializers import TripSerializer, TripMapDataSerializer, LogEntryLikeSerializer
 
@@ -30,6 +30,7 @@ from .decorators import tripper_required, user_owns_tripper
 
 from django.contrib.auth.models import User
 from .utils import get_random_unsplash_image
+from .utils import generate_static_map_for_trip
 from django.db.models import Count, Q
 from django.db.models import Prefetch
 
@@ -70,10 +71,11 @@ from rest_framework.decorators import action
 from django.templatetags.static import static
 
 import numpy as np
-from rdp import rdp   
+from rdp import rdp
 
 from django.db.models import F
 from django.db.models.functions import Coalesce
+from django.db.models import Sum
 
 import qrcode
 import random
@@ -109,13 +111,16 @@ def tribe_trips(request):
     tripper = None
     if request.user.is_authenticated:
         tripper = Tripper.objects.filter(user=request.user).first()
- 
+
+    enable_admin = settings.ENABLE_ADMIN
+
     return render(request, 'tripapp/tribe_trips.html', 
         {'tribes': tribes,
          'trips': trips, 
          'background_image_url': background_image_url,
          'admin_trips': admin_trips,
-         'tripper' : tripper
+         'tripper' : tripper,
+         'enable_admin': enable_admin
         })
 
 
@@ -206,8 +211,9 @@ def trip_list(request):
 
     for trip in trips:
         trip.country_codes_list = trip.country_codes.split(',') if trip.country_codes else []
+    enable_admin = settings.ENABLE_ADMIN
 
-    return render(request, 'tripapp/trip_list.html', {'tribes': tribes, 'trips': trips, 'background_image_url': background_image_url, 'tripper':tripper,"only_mine": only_mine})
+    return render(request, 'tripapp/trip_list.html', {'tribes': tribes, 'trips': trips, 'background_image_url': background_image_url, 'tripper':tripper,"only_mine": only_mine, "enable_admin": enable_admin})
 
 @login_required
 def trip_detail(request, slug):
@@ -221,6 +227,7 @@ def trip_detail(request, slug):
     if request.user.is_authenticated:
         tripper = Tripper.objects.filter(user=request.user).first()
     view_mode = request.GET.get("view", "list")
+    enable_admin = settings.ENABLE_ADMIN
 
     return render(request, 'tripapp/trip_detail.html', {
         'trip': trip,
@@ -229,7 +236,8 @@ def trip_detail(request, slug):
         'items': checklist_items,
         'today': today,
         'tripper': tripper,
-        'view_mode': view_mode
+        'view_mode': view_mode,
+        'enable_admin': enable_admin
     })
 
 @login_required
@@ -1223,12 +1231,14 @@ def tribe_trip_organize(request,tribe_id,trip_id):
     tripper = None
     if request.user.is_authenticated:
         tripper = Tripper.objects.filter(user=request.user).first()
+    enable_admin = settings.ENABLE_ADMIN
 
     return render(request, 'tripapp/tribe_trip_organize.html', 
         {'tribe': tribe,
          'trip': trip,
          'admin_trips' : admin_trips,
-         'tripper':tripper
+         'tripper':tripper,
+         'enable_admin':enable_admin
         })
 
 @login_required
@@ -1400,6 +1410,132 @@ def add_expense(request, trip_id, tripper_id):
         last_currency = last_expense.currency if last_expense else settings.APP_CURRENCY
         form = TripExpenseForm(initial={'currency': last_currency})
     return render(request, 'tripapp/add_expense.html', {'form': form, 'trip': trip, 'tripper':tripper})
+
+@login_required
+def budget_add(request, trip_id):
+    trip = get_object_or_404(Trip, pk=trip_id)
+    tripper = get_object_or_404(Tripper, name=request.user)
+
+    if request.method == "POST":
+        form = TripBudgetForm(request.POST)
+        if form.is_valid():
+            budget = form.save(commit=False)
+            budget.trip = trip
+            budget.save()
+            return redirect('tripapp:budget_list', trip_id=trip_id)
+    else:
+        form = TripBudgetForm(initial={'currency': tripper.currency})
+
+    return render(request, 'tripapp/budget_form.html', {
+        'form': form,
+        'trip': trip,
+        'action': "Create",
+    })
+
+
+@login_required
+def budget_list(request, trip_id):
+    trip = get_object_or_404(Trip, pk=trip_id)
+    budgets = trip.budget.all()
+
+    total = sum(b.amount for b in budgets)
+
+    return render(request, 'tripapp/budget_list.html', {
+        'trip': trip,
+        'budgets': budgets,
+        'total': total,
+    })
+
+@login_required
+def budget_update(request, trip_id, budget_id):
+    trip = get_object_or_404(Trip, pk=trip_id)
+    budget = get_object_or_404(TripBudget, id=budget_id, trip=trip)
+
+    if request.method == "POST":
+        form = TripBudgetForm(request.POST, instance=budget)
+        if form.is_valid():
+            form.save()
+            return redirect('tripapp:budget_list', trip_id=trip.id)
+    else:
+        form = TripBudgetForm(instance=budget)
+
+    return render(request, 'tripapp/budget_form.html', {
+        'form': form,
+        'trip': trip,
+        'action': "Update",
+    })
+
+
+@login_required
+def trip_budget_analysis(request, trip_id):
+    trip = get_object_or_404(Trip, pk=trip_id)
+    
+    budgets = TripBudget.objects.filter(trip=trip)
+    
+    expenses_by_category = TripExpense.objects.filter(
+        trip=trip
+    ).values('category').annotate(
+        total=Sum('converted_amount')
+    )
+    
+    expenses_dict = {}
+    for item in expenses_by_category:
+        if item['total'] is not None:
+            expenses_dict[item['category']] = float(item['total'])
+    
+    budgets_dict = {budget.category: float(budget.amount) for budget in budgets}
+    
+    all_categories = set(budgets_dict.keys()) | set(expenses_dict.keys())
+    
+    categories = []
+    budget_amounts = []
+    expense_amounts = []
+    remaining_amounts = []
+    category_details = []
+    
+    total_budget = 0
+    total_expenses = 0
+    
+    for category_name in sorted(all_categories):
+        budget_amount = budgets_dict.get(category_name, 0)
+        expense_amount = expenses_dict.get(category_name, 0)
+        remaining = budget_amount - expense_amount
+        percentage_used = round((expense_amount / budget_amount * 100) if budget_amount > 0 else 0, 1)
+        
+        categories.append(category_name)
+        budget_amounts.append(budget_amount)
+        expense_amounts.append(expense_amount)
+        remaining_amounts.append(max(0, remaining))
+        
+        category_details.append({
+            'name': category_name,
+            'budget': budget_amount,
+            'expenses': expense_amount,
+            'remaining': max(0, remaining),
+            'percentage': percentage_used
+        })
+        
+        total_budget += budget_amount
+        total_expenses += expense_amount
+    
+    total_remaining = total_budget - total_expenses
+    app_currency = settings.APP_CURRENCY
+
+    context = {
+        'trip': trip,
+        'app_currency': app_currency,
+        'categories': categories,
+        'budget_amounts': budget_amounts,
+        'expense_amounts': expense_amounts,
+        'remaining_amounts': remaining_amounts,
+        'category_details': category_details,
+        'total_budget': total_budget,
+        'total_expenses': total_expenses,
+        'total_remaining': max(0, total_remaining),
+        'budget_percentage': round((total_expenses / total_budget * 100) if total_budget > 0 else 0, 1),
+    }
+    
+    return render(request, 'tripapp/budget_analysis.html', context)
 
 @tripper_required
 def trip_balance(request, trip_id):
@@ -1822,7 +1958,15 @@ def create_zip_with_html(request, trip_id):
     return FileResponse(open(zip_path, "rb"), as_attachment=True, filename=zip_filename)
 
 
-def generate_html_trip_outline(trip):
+def generate_html_trip_outline(trip,map_path=None):
+    map_html = ""
+    if map_path:
+        img_base64 = encode_image_to_base64(map_path, (800, 600))
+
+        if img_base64:
+            map_html = f'<img src="{img_base64}" >'
+
+
 
     html_content = f"""
     <!DOCTYPE html>
@@ -1843,6 +1987,7 @@ def generate_html_trip_outline(trip):
         <div class="container">
             <h1>{trip.name}</h1>
             <p>{trip.description}</p>
+            {map_html}
 
     """
 
@@ -1871,10 +2016,14 @@ def generate_html_trip_outline(trip):
 from tempfile import NamedTemporaryFile
 
 
-def create_tripoutline_html(request, trip_id):
+def create_trip_outline_html(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)    
 
-    html_content = generate_html_trip_outline(trip)
+    map_path = None
+    if settings.STATICMAPS_URL:
+        map_path = generate_static_map_for_trip(trip)
+
+    html_content = generate_html_trip_outline(trip, map_path=map_path)
     html_filename = f"{trip.slug}_trip_outline.html"
     
     with NamedTemporaryFile(suffix=".html", delete=False) as tmp_file:
@@ -2505,3 +2654,75 @@ def save_daylocation_assignments(request):
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+
+
+
+def export_trip_outline(trip_id):
+    trip = get_object_or_404(Trip, id=trip_id)
+
+    result = {
+        "name": trip.name,
+        "days": []
+    }
+
+    dayprograms = trip.dayprograms.order_by('dayprogramnumber')
+
+    for dp in dayprograms:
+        day_data = {
+            "day_sequence": dp.dayprogramnumber,
+        }
+
+        if dp.description:
+            day_data["day_description"] = dp.description
+
+
+        points = dp.points.all().order_by('id')  
+        day_locations = []
+        for idx, p in enumerate(points, start=1):
+            day_locations.append({
+                "sequence": idx,
+                "lat": p.latitude,
+                "long": p.longitude,
+                "radius": 50,  
+                "description": p.name,
+            })
+        if day_locations:
+            day_data["day_locations"] = day_locations
+
+        # Overnight location
+        bed_points = dp.points.filter(marker_type='bed')
+        if bed_points.exists():
+            b = bed_points.first()
+            day_data["overnightlocation"] = {
+                "lat": b.latitude,
+                "long": b.longitude,
+                "radius": 150,
+                "description": b.name,
+            }
+
+        result["days"].append(day_data)
+
+    return result
+
+
+def export_trip_outline_json(request, trip_id):
+    trip = get_object_or_404(Trip, id=trip_id)
+    
+    data = export_trip_outline(trip_id)
+
+    response = HttpResponse(
+        json.dumps(data, ensure_ascii=False, indent=2),
+        content_type='application/json'
+    )
+    filename = f"{trip.slug or trip.name.replace(' ', '_')}_outline.json"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+@login_required
+def export_trip(request, trip_id):
+
+    trip = get_object_or_404(Trip, id=trip_id)
+    return render(request, 'tripapp/trip_export.html', {'trip': trip})
+

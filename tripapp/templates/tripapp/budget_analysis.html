@@ -1,0 +1,179 @@
+{% extends "base_generic.html" %}
+{% load static %}
+{% load i18n %}
+{% block title %}{% trans "Budget Analysis" %} - {{ trip.name }}{% endblock %}
+
+{% block content %}
+<style>
+    .chart-container {
+        position: relative;
+        margin: 2rem auto;
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .doughnut-container {
+        max-width: 300px;
+        height: 300px;
+        margin: 0 auto;
+    }
+    
+    .bar-container {
+        max-width: 800px;
+        margin: 10 auto;
+    }
+       
+    
+    .budget-used { color: #e74c3c; }
+    .budget-total { color: #3498db; }
+    .budget-remaining { color: #2ecc71; }
+
+    .budget-table {
+        border-collapse: collapse;
+    }
+    .budget-table td {
+        padding: 10px;
+    }
+
+</style>
+
+<div class="container">
+    <h2>{% trans "Budget Analysis" %}</h2>
+    <b>{{ trip.name }}</b>
+    <br><br>
+    <table class="budget-table">
+        <tr><td>{% trans "Budget" %}</td><td>{% trans "Expenses" %}</td><td></td><td>{% trans "Remaining" %}</td></tr>
+        <tr><td>{{ total_budget|floatformat:2 }} {{ app_currency }}</td><td>{{ total_expenses|floatformat:2 }} {{ app_currency }}</td><td>{{ budget_percentage }}% used</td><td>{{ total_remaining|floatformat:2 }}&nbsp;{{ app_currency }}</td></tr>
+    </table>
+    
+    <div class="chart-container doughnut-container">
+        <h2 style="text-align: center; margin-bottom: 1rem;">{% trans "Budget Overview" %}</h2>
+        <canvas id="budgetDoughnutChart"></canvas>
+    </div>
+    
+    <div class="chart-container bar-container">
+        <h2 style="text-align: center; margin-bottom: 1rem;">{% trans "Budget vs Expenses per Category" %}</h2>
+        <canvas id="categoryBarChart"></canvas>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const categories = {{ categories|safe }};
+const budgetAmounts = {{ budget_amounts|safe }};
+const expenseAmounts = {{ expense_amounts|safe }};
+const remainingAmounts = {{ remaining_amounts|safe }};
+const totalExpenses = {{ total_expenses }};
+const totalRemaining = {{ total_remaining }};
+
+const doughnutCtx = document.getElementById('budgetDoughnutChart').getContext('2d');
+new Chart(doughnutCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Spent', 'Remaining'],
+        datasets: [{
+            data: [totalExpenses, totalRemaining],
+            backgroundColor: [
+                'rgba(231, 76, 60, 0.8)',
+                'rgba(46, 204, 113, 0.8)'
+            ],
+            borderColor: [
+                'rgba(231, 76, 60, 1)',
+                'rgba(46, 204, 113, 1)'
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    font: {
+                        size: 14
+                    },
+                    padding: 20
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const label = context.label || '';
+                        const value = context.parsed || 0;
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = ((value / total) * 100).toFixed(1);
+                        return `${label}: €${value.toFixed(2)} (${percentage}%)`;
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Bar Chart - Budget vs Expenses per category
+const barCtx = document.getElementById('categoryBarChart').getContext('2d');
+const currency = "{{ app_currency }}";
+new Chart(barCtx, {
+    type: 'bar',
+    data: {
+        labels: categories,
+        datasets: [
+            {
+                label: 'Budget',
+                data: budgetAmounts,
+                backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                borderColor: 'rgba(52, 152, 219, 1)',
+                borderWidth: 2
+            },
+            {
+                label: 'Spent',
+                data: expenseAmounts,
+                backgroundColor: 'rgba(231, 76, 60, 0.7)',
+                borderColor: 'rgba(231, 76, 60, 1)',
+                borderWidth: 2
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return currency + value.toFixed(2);
+                    }
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: {
+                    font: {
+                        size: 14
+                    },
+                    padding: 15
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const label = context.dataset.label || '';
+                        const value = context.parsed.y || 0;
+                        return `${label}: €${value.toFixed(2)}`;
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+<p>&nbsp;</p>
+<a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" >&larr;Trip</a>
+<p>&nbsp;</p>
+{% endblock %}

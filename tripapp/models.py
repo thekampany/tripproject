@@ -167,6 +167,7 @@ class Tripper(models.Model):
     dawarich_api_key = models.CharField(max_length=100,help_text="dawarich-api-key", null=True, blank=True)  
     immich_url = models.URLField(help_text="Enter immich-url in order to see locations where you took a picture plotted on the trip map", null=True, blank=True) 
     immich_api_key = models.CharField(max_length=100, help_text="immich-api-key", null=True, blank=True)
+    currency = models.CharField(max_length=10, null=True, blank=True)
     #def count_badges(self):
     #    return self.badges.count()
 
@@ -403,6 +404,25 @@ class TripExpense(models.Model):
                 return Decimal(self.amount) * Decimal(conversion_rate)
 
         return self.amount
+
+class TripBudget(models.Model):
+    CATEGORY_CHOICES = [
+        ('', 'No Category'),
+        ('Transportation', 'Transportation'),
+        ('Lodging', 'Lodging'),
+        ('Food and Drinks','Food and Drinks'),
+        ('Activity', 'Activity'),
+        ('Other', 'Other'),
+    ]
+    trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name='budget')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    converted_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    currency = models.CharField(max_length=10)
+    category = models.CharField(max_length=20,choices=CATEGORY_CHOICES,blank=True,default='')
+
+    def __str__(self):
+        return f'{self.amount} for {self.category} on {self.trip.name}'
+
 
 class Location(models.Model):
     tripper = models.ForeignKey(Tripper, on_delete=models.CASCADE)
