@@ -91,7 +91,7 @@ class BadgeForm(forms.ModelForm):
 class TripForm(forms.ModelForm):
     class Meta:
         model = Trip
-        fields = ['tribe', 'name', 'description', 'date_from', 'date_to', 'image', 'country_codes' ]
+        fields = ['tribe', 'name', 'description', 'date_from', 'date_to', 'image', 'country_codes', 'use_expenses' ]
         widgets = {
             'date_from': forms.DateInput(attrs={'type': 'date'}),
             'date_to': forms.DateInput(attrs={'type': 'date'}),
@@ -504,4 +504,4 @@ class CreateTripFromItineraryForm(forms.Form):
 class TripBudgetForm(forms.ModelForm):
     class Meta:
         model = TripBudget
-        fields = ['amount', 'category', 'currency']
+        fields = ['category', 'amount',  'currency']

@@ -18,7 +18,8 @@
     <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
-    <style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+     <style>
       body, html {
       background: url('{{ background_image_url }}') no-repeat center center fixed;
       -webkit-background-size: cover;
@@ -92,13 +93,13 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border: 1px dashed #ccc;
+            border: 1px dashed #333;
             border-radius: 8px;
-            background: #e9e9e9;
             text-align: center;
             text-decoration: none;
             cursor: pointer;
             transition: background 0.2s ease, transform 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
         .new-trip-card:hover {
@@ -108,21 +109,11 @@
         .new-trip-card a {
             text-decoration: none;
             color: #444;
-            font-size: 1.0em;
+            font-size: 1.2rem;
             margin: 0.5em 0;
             width: 100%;
         }
 
-        .new-trip-card a:hover {
-            transform: scale(1.08); 
-        }
-
-        .new-trip-card span {
-            color: white;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
-            font-size: 1.2em;
-            font-weight: bold;
-        }
 
 
         .other-trip-card {
@@ -130,13 +121,13 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border: 1px solid #ccc;
+            border: 1px solid #333;
             border-radius: 8px;
-            background: #e9e9e9;
             text-align: center;
             text-decoration: none;
             cursor: pointer;
             transition: background 0.2s ease, transform 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
         .other-trip-card:hover {
@@ -146,21 +137,11 @@
         .other-trip-card a {
             text-decoration: none;
             color: #444;
-            font-size: 1.0em;
+            font-size: 1.2rem;
             margin: 0.5em 0;
             width: 100%;
         }
 
-        .other-trip-card a:hover {
-            transform: scale(1.08); 
-        }
-
-        .other-trip-card span {
-            color: white;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
-            font-size: 1.2em;
-            font-weight: bold;
-        }
 
 
 /* Dark mode */
@@ -172,12 +153,12 @@
 
     .trip-card {
         background: #1e1e1e;
-        border: 1px solid #333;
+        border: 1px solid #ccc;
         color: #e0e0e0;
     }
 
     .trip-card:hover {
-        background: #333;
+        background: #ccc;
         box-shadow: 0 4px 10px rgba(255, 255, 255, 0.15);
     }
 
@@ -217,18 +198,29 @@
         }
 
     .new-trip-card {
-        border: 1px dashed #555;
-        background: #1e1e1e;
+        border: 1px dashed #ccc;
         text-align: center;
+    }
+    .new-trip-card a {
+        text-decoration: none;
+        color: white;
+        font-size: 1.2rem;
+        margin: 0.5em 0;
+        width: 100%;
     }
       
     .other-trip-card {
-        border: 1px solid #555;
-        background: #1e1e1e;
+        border: 1px solid #ccc;
         text-align: center;
     }
-      
-      }
+    .other-trip-card a {
+        text-decoration: none;
+        color: white;
+        font-size: 1.2rem;
+        margin: 0.5em 0;
+        width: 100%;
+    }
+
 
 </style>
 
@@ -262,82 +254,102 @@
         </div>
     </div>
     <p>&nbsp;</p>
-        
-    {% for tribe in tribes %}
-    <span style="color:gray;">{{ tribe.name }}</span><br>
-    <div class="trip-container">
+    
+    
+    {% if tribes %}
+        {% for tribe in tribes %}
+        <span style="color:gray;">{{ tribe.name }}</span><br>
+        <div class="trip-container">
 
+            {% for trip in trips %}
+                <div class="trip-card">
+                        <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" style="text-decoration:none;">
+                        <div class="trip-name" style="
+                        background-image: 
+                            {% if trip.image %}
+                                url('{{ trip.image.url }}'); 
+                            {% elif trip.country_codes_list %}
+                                url('https://flagcdn.com/w320/{{ trip.country_codes_list|first|lower }}.png'); 
+                                filter: grayscale(5%); 
+                                opacity: 0.9; 
+                            {% else %}
+                                url('{% static "default-trip.png" %}'); 
+                            {% endif %}">
+                            <span>{{ trip.name }}</span>
+                        </div>
+                        </a>
+
+                        <div class="trip-icons">
+                            {% if trip in admin_trips %}
+                                <a href="{% url 'tripapp:trip_update' trip.id %}">
+                                    <i class="bi bi-file-richtext"></i>
+                                    <!--<img src="{% static 'icons/iconedittrip.png'  %}" alt="Edit Trip">-->
+                                </a>&nbsp;&nbsp;
+                                <a href="{% url 'tripapp:add_trippers' trip.id tribe.id %}">
+                                    <i class="bi bi-person-add"></i>
+                                    <!--<img src="{% static 'icons/iconedittripper.png' %}" alt="Edit Trippers">-->
+                                </a>&nbsp;&nbsp;
+                                <a href="{% url 'tripapp:tripper_list' trip.id %}">
+                                    <i class="bi bi-patch-plus"></i>
+                                    <!--<img src="{% static 'icons/iconeditbadge.png' %}" alt="Edit Badges">-->
+                                </a>&nbsp;&nbsp;
+                            {% endif %}
+                            {% if tripper %}
+                            <a href="{% url 'tripapp:trip_dayprograms' trip.id %}">
+                                <i class="bi bi-card-heading"></i>
+                                <!--<img src="{% static 'icons/iconeditdayprogram.png' %}" alt="Edit Day Programs">-->
+                            </a>&nbsp;&nbsp;
+                            <a href="{% url 'tripapp:trip_points' trip.id %}">
+                                <i class="bi bi-geo-alt"></i>
+                                <!--<img src="{% static 'icons/iconeditmap.png' %}" alt="Edit Map">-->
+                            </a>&nbsp;&nbsp;
+                            <a href="{% url 'tripapp:tripadmin_bingocards' trip.id %}">
+                                <i class="bi bi-grid-3x3"></i>
+                                <!--<img src="{% static 'icons/iconeditbingo.png' %}" alt="Edit Bingo">-->
+                            </a>
+                            {% endif %}
+                        </div>
+                </div>
+            {% endfor %}
+        
         <div class="new-trip-card">
             <a href="{% url 'tripapp:create_trip' tribe.id %}">
                 <span>+&nbsp;{% trans "New Trip" %}</span>
             </a>
         </div>
-
-        {% for trip in trips %}
-            <div class="trip-card">
-                    <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" style="text-decoration:none;">
-                    <div class="trip-name" style="
-                    background-image: 
-                        {% if trip.image %}
-                            url('{{ trip.image.url }}'); 
-                        {% elif trip.country_codes_list %}
-                            url('https://flagcdn.com/w320/{{ trip.country_codes_list|first|lower }}.png'); 
-                            filter: grayscale(5%); 
-                            opacity: 0.9; 
-                        {% else %}
-                            url('{% static "default-trip.png" %}'); 
-                        {% endif %}">
-                        <span>{{ trip.name }}</span>
-                    </div>
-                    </a>
-
-                    <div class="trip-icons">
-                        {% if trip in admin_trips %}
-                            <a href="{% url 'tripapp:trip_update' trip.id %}">
-                                <img src="{% static 'icons/iconedittrip.png'  %}" alt="Edit Trip">
-                            </a>
-                            <a href="{% url 'tripapp:add_trippers' trip.id tribe.id %}">
-                                <img src="{% static 'icons/iconedittripper.png' %}" alt="Edit Trippers">
-                            </a>
-                            <a href="{% url 'tripapp:tripper_list' trip.id %}">
-                                <img src="{% static 'icons/iconeditbadge.png' %}" alt="Edit Badges">
-                            </a>
-                        {% endif %}
-                        {% if tripper %}
-                        <a href="{% url 'tripapp:trip_dayprograms' trip.id %}">
-                            <img src="{% static 'icons/iconeditdayprogram.png' %}" alt="Edit Day Programs">
-                        </a>
-                        <a href="{% url 'tripapp:trip_points' trip.id %}">
-                            <img src="{% static 'icons/iconeditmap.png' %}" alt="Edit Map">
-                        </a>
-                        <a href="{% url 'tripapp:tripadmin_bingocards' trip.id %}">
-                            <img src="{% static 'icons/iconeditbingo.png' %}" alt="Edit Bingo">
-                        </a>
-                        {% endif %}
-                    </div>
-            </div>
-        {% endfor %}
-    </div>
-    {% endfor %}
-
-    <p>&nbsp;</p>
-    <div class="trip-container">
-        <div class="other-trip-card">
-            <a href="{% url 'tripapp:itineraryidea-list' %}" >
-                <span>{% trans "Itinerary Ideas" %}</span>
-            </a>
         </div>
-        <div class="other-trip-card">
-            <a href="{% url 'tripapp:create_tribe' %}">
-                <span>{% trans "Create a New Tribe" %}</span>
-            </a>
-            {% if tribes %}
-            <a href="{% url 'tripapp:invite_to_tribe' %}">
-                <span>{% trans "Invite People to the Tribe" %}</span>
-            </a>
+        {% endfor %}
+
+        <p>&nbsp;</p>
+        <div class="trip-container">
+            <div class="other-trip-card">
+                <a href="{% url 'tripapp:itineraryidea-list' %}" >
+                    <span>{% trans "Itinerary Ideas" %}</span>
+                </a>
+            </div>
+            <div class="other-trip-card">
+                <a href="{% url 'tripapp:create_tribe' %}">
+                    <span>{% trans "Create a New Tribe" %}</span>
+                </a>
+            </div>
+           {% if tribes %}
+           <div class="other-trip-card">
+                <a href="{% url 'tripapp:invite_to_tribe' %}">
+                    <span>{% trans "Invite People to the Tribe" %}</span>
+                </a>
+            </div>
             {% endif %}
         </div>
-    </div>
+
+    {% else %}
+        <div class="trip-container">
+            <div class="other-trip-card">
+                <a href="{% url 'tripapp:create_tribe' %}">
+                    <span>{% trans "First Create a New Tribe" %}</span>
+                </a>
+            </div>
+
+    {% endif %}
     <br /><br /><br />
     </div>
     </div>
