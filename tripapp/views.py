@@ -1,6 +1,3 @@
-
-
-# Create your views here.
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Trip, Tripper, Badge, DayProgram, Checklist, ChecklistItem, Image, Question, Point
 from .models import BingoCard, BingoAnswer, BadgeAssignment
@@ -19,14 +16,13 @@ from .forms import TripperDocumentForm, TripBudgetForm
 from .serializers import TripOutlineSerializer
 from .serializers import TripSerializer, TripMapDataSerializer, LogEntryLikeSerializer
 
-
-from django.contrib.auth import login, authenticate,get_user_model
+from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.decorators import login_required
-
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
-from .decorators import tripper_required, user_owns_tripper
+
+from django.contrib.auth.decorators import login_required
+from .decorators import tripper_required, user_owns_tripper, is_in_tribe, is_tripper_in_same_trip, is_tripper_in_same_tribe
 
 from django.contrib.auth.models import User
 from .utils import get_random_unsplash_image
@@ -215,12 +211,12 @@ def trip_list(request):
 
     return render(request, 'tripapp/trip_list.html', {'tribes': tribes, 'trips': trips, 'background_image_url': background_image_url, 'tripper':tripper,"only_mine": only_mine, "enable_admin": enable_admin})
 
-@login_required
+@is_in_tribe
 def trip_detail(request, slug):
     trip = get_object_or_404(Trip, slug=slug)
     dayprograms = DayProgram.objects.filter(trip=trip).order_by('tripdate')
     checklist = Checklist.objects.get_or_create(trip=trip)[0]
-    checklist_items = ChecklistItem.objects.filter(checklist=checklist).order_by('is_completed', 'id')  # Sorteer op is_completed en vervolgens op id
+    checklist_items = ChecklistItem.objects.filter(checklist=checklist).order_by('is_completed', 'id')
     items = checklist.items.all()
     today = date.today()
     tripper = None
@@ -271,9 +267,9 @@ def create_trip(request, tribe_id):
         form = TripForm(user=request.user, tribe=tribe)
     return render(request, 'tripapp/create_trip.html', {'form': form})
 
-@login_required
-def trip_trippers(request, id):
-    trip = get_object_or_404(Trip, pk=id)
+@is_in_tribe
+def trip_trippers(request, trip_id):
+    trip = get_object_or_404(Trip, pk=trip_id)
     trippers = trip.trippers.annotate(
         badge_count=Count('badge_assignments', filter=Q(badge_assignments__trip=trip)),
         total_badge_count=Count('badge_assignments') 
@@ -305,7 +301,7 @@ def upload_badge(request):
     return render(request, 'tripapp/upload_badge.html', {'form': form})
 
 
-@login_required
+@is_tripper_in_same_tribe
 def tripper_badgeassignments(request, tripper_id):
     tripper = get_object_or_404(Tripper, id=tripper_id)
     badge_assignments = BadgeAssignment.objects.filter(tripper=tripper).select_related('badge', 'trip').order_by(F('trip__id').desc(nulls_last=True))
@@ -314,7 +310,7 @@ def tripper_badgeassignments(request, tripper_id):
     return render(request, 'tripapp/tripper_badgeassignments.html', {'tripper': tripper, 'badges': badges, 'count_tripper_badges':count_tripper_badges})
 
 
-@login_required
+@is_tripper_in_same_trip
 def trip_tripper_badgeassignments(request, trip_id, tripper_id):
     trip = get_object_or_404(Trip, id=trip_id)
     tripper = get_object_or_404(Tripper, id=tripper_id)
@@ -322,9 +318,9 @@ def trip_tripper_badgeassignments(request, trip_id, tripper_id):
     badges = [assignment.badge for assignment in badge_assignments]
     return render(request, 'tripapp/trip_tripper_badgeassignments.html', {'trip': trip, 'tripper': tripper, 'badges': badges})
 
-@login_required
-def dayprogram_detail(request, id):
-    dayprogram = get_object_or_404(DayProgram, id=id)
+@is_in_tribe
+def dayprogram_detail(request, dayprogram_id):
+    dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
     questions = Question.objects.filter(dayprogram=dayprogram).all()
     form = AnswerForm() if request.user.is_authenticated else None
     suggestionform = SuggestionForm() if request.user.is_authenticated else None
@@ -456,7 +452,7 @@ def dayprogram_detail(request, id):
          })
 
 
-@login_required
+@is_in_tribe
 def add_image(request, dayprogram_id):
     dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
     if request.method == 'POST':
@@ -468,10 +464,10 @@ def add_image(request, dayprogram_id):
     form = ImageForm(initial={'day_program': dayprogram})
     return render(request, 'tripapp/add_image.html', {'form': form, 'dayprogram': dayprogram})
 
-@login_required
-def add_or_edit_trip(request, id=None):
-    if id:
-        trip = get_object_or_404(Trip, id=id)
+@is_in_tribe
+def add_or_edit_trip(request, trip_id=None):
+    if trip_id:
+        trip = get_object_or_404(Trip, trip_id=id)
     else:
         trip = None
 
@@ -485,7 +481,7 @@ def add_or_edit_trip(request, id=None):
 
     return render(request, 'tripapp/add_or_edit_trip.html', {'form': form})
 
-@login_required
+@is_in_tribe
 def add_checklist_item(request, trip_id):
     trip = get_object_or_404(Trip, id=trip_id)
     checklist = Checklist.objects.get_or_create(trip=trip)[0]
@@ -521,9 +517,9 @@ def register(request):
         form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
 
-@login_required
-def check_answer(request, id, questionid):
-    dayprogram = get_object_or_404(DayProgram, id=id)
+@is_in_tribe
+def check_answer(request, dayprogram_id, questionid):
+    dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
     question = get_object_or_404(Question, id=questionid)
 
     if question is None:
@@ -542,9 +538,9 @@ def check_answer(request, id, questionid):
                 url = reverse('tripapp:dayprogram_detail', args=[dayprogram.id])
                 return redirect(f"{url}?badge={question.badge.id}")
             else:
-                return redirect('tripapp:dayprogram_detail', id=dayprogram.id)
+                return redirect('tripapp:dayprogram_detail', dayprogram_id=dayprogram.id)
 
-    return redirect('tripapp:dayprogram_detail', id=dayprogram.id)
+    return redirect('tripapp:dayprogram_detail', dayprogram_id=dayprogram.id)
 
 @login_required
 def badge_claimed(request, badge_id):
@@ -572,60 +568,61 @@ def mytribes_badges_view(request):
 
 from .utils import get_country_coords
 
-@login_required
+@is_in_tribe
 def trip_map_view(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
-    points = trip.points.prefetch_related('dayprograms')
+    if trip.date_from and trip.date_to: 
+        points = trip.points.prefetch_related('dayprograms')
 
-    projected_itinerary_points = (
-        trip.points
-        .prefetch_related('dayprograms')
-        .annotate(first_tripdate=Min('dayprograms__tripdate'))
-        .order_by('first_tripdate')
-    )
+        projected_itinerary_points = (
+            trip.points
+            .prefetch_related('dayprograms')
+            .annotate(first_tripdate=Min('dayprograms__tripdate'))
+            .order_by('first_tripdate')
+        )
 
-    start_of_day = timezone.make_aware(datetime.combine(trip.date_from, datetime.min.time()))
-    end_of_day = timezone.make_aware(datetime.combine(trip.date_to, datetime.max.time()))
-    trippers = trip.trippers.all()
+        start_of_day = timezone.make_aware(datetime.combine(trip.date_from, datetime.min.time()))
+        end_of_day = timezone.make_aware(datetime.combine(trip.date_to, datetime.max.time()))
+        trippers = trip.trippers.all()
 
-    all_locations = Location.objects.filter(
-        tripper__in=trippers,
-        timestamp__range=(start_of_day, end_of_day)
-    ).order_by('timestamp')
+        all_locations = Location.objects.filter(
+            tripper__in=trippers,
+            timestamp__range=(start_of_day, end_of_day)
+        ).order_by('timestamp')
 
-    # Simplify
-    coords = np.array([[loc.latitude, loc.longitude] for loc in all_locations])
-    simplified_coords = coords
-    if len(coords) > 0:
+        # Simplify
+        coords = np.array([[loc.latitude, loc.longitude] for loc in all_locations])
+        simplified_coords = coords
+        if len(coords) > 0:
 
-        cleaned = [coords[0]]
-        for c in coords[1:]:
-            if abs(c[0] - cleaned[-1][0]) > 1e-5 or abs(c[1] - cleaned[-1][1]) > 1e-5:
-                cleaned.append(c)
-        coords = cleaned
+            cleaned = [coords[0]]
+            for c in coords[1:]:
+                if abs(c[0] - cleaned[-1][0]) > 1e-5 or abs(c[1] - cleaned[-1][1]) > 1e-5:
+                    cleaned.append(c)
+            coords = cleaned
 
 
-        if len(coords) > 5000:
-            step = len(coords) // 5000
-            coords = coords[::step]
+            if len(coords) > 5000:
+                step = len(coords) // 5000
+                coords = coords[::step]
 
-        if len(coords) > 150:
-            simplified_coords = rdp(coords, epsilon=0.005)  # 500 meter
-        else:
-            simplified_coords = coords
+            if len(coords) > 150:
+                simplified_coords = rdp(coords, epsilon=0.005)  # 500 meter
+            else:
+                simplified_coords = coords
 
-    simplified_locations = []
-    latlon_set = {(float(lat), float(lon)) for lat, lon in simplified_coords}
-    for loc in all_locations:
-        key = (float(loc.latitude), float(loc.longitude))
-        if key in latlon_set:
-            simplified_locations.append(loc)
-            latlon_set.remove(key)  
+        simplified_locations = []
+        latlon_set = {(float(lat), float(lon)) for lat, lon in simplified_coords}
+        for loc in all_locations:
+            key = (float(loc.latitude), float(loc.longitude))
+            if key in latlon_set:
+                simplified_locations.append(loc)
+                latlon_set.remove(key)  
 
-    photolocations = ImmichPhotos.objects.filter(
-        tripper__in=trippers,
-        timestamp__range=(start_of_day, end_of_day)
-    )
+        photolocations = ImmichPhotos.objects.filter(
+            tripper__in=trippers,
+            timestamp__range=(start_of_day, end_of_day)
+        )
 
     first_country_code = trip.get_first_country_code()
     country_coords = get_country_coords(first_country_code) if first_country_code else get_country_coords('nl')
@@ -642,7 +639,7 @@ def trip_map_view(request, trip_id):
     })
 
 
-@login_required
+@is_in_tribe
 def tribe_map_view(request, tribe_id):
     tribe = get_object_or_404(Tribe, id=tribe_id)
     trips = Trip.objects.filter(tribe=tribe)
@@ -672,7 +669,7 @@ def convert_to_float(value):
         raise ValidationError(f"No valid float: {value}")
 
 
-@login_required
+@is_in_tribe
 def trip_dayprogram_points(request, trip_id, dayprogram_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     trippers = trip.trippers.all()
@@ -745,7 +742,7 @@ def trip_tripper_bingocard(request, trip_id):
         'trippers_on_this_trip': trippers_on_this_trip,  
          })
 
-@login_required
+@is_in_tribe
 def trip_bingocards(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     bingocards = trip.bingocards.all()
@@ -882,7 +879,7 @@ def create_tribe(request):
     tribes = request.user.userprofile.tribes.all()
     return render(request, 'tripapp/create_tribe.html', {'form': form, 'tribes': tribes})
 
-@login_required
+@is_in_tribe
 def add_trippers(request, trip_id, tribe_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     tribe = get_object_or_404(Tribe, pk=str(tribe_id))
@@ -909,7 +906,7 @@ def add_trippers(request, trip_id, tribe_id):
     })
 
 
-@login_required
+@is_in_tribe
 def edit_tripper(request, tripper_id, trip_id):
     tripper = get_object_or_404(Tripper, id=tripper_id)
     trip = get_object_or_404(Trip, id=trip_id)
@@ -947,15 +944,14 @@ def edit_tripper(request, tripper_id, trip_id):
         'trip': trip
     })
 
-@login_required
+@is_in_tribe
 def tripper_list(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     trippers = trip.trippers.all()
     return render(request, 'tripapp/tripper_list.html', {'trip': trip, 'trippers': trippers})
 
 
-
-@login_required
+@is_in_tribe
 def edit_dayprogram(request, dayprogram_id):
     dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
     trip = dayprogram.trip
@@ -972,7 +968,7 @@ def edit_dayprogram(request, dayprogram_id):
         'dayprogram': dayprogram,
     })
 
-@login_required
+@is_in_tribe
 def trip_dayprograms(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     dayprograms = trip.dayprograms.all().order_by('dayprogramnumber')
@@ -987,7 +983,7 @@ def trip_dayprograms(request, trip_id):
     })
 
 
-@login_required
+@is_in_tribe
 def add_question(request, dayprogram_id):
     dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
 
@@ -1023,7 +1019,7 @@ def edit_question(request, question_id):
         'dayprogram': question.dayprogram,
     })
 
-@login_required
+@is_in_tribe
 def dayprogram_questions(request, dayprogram_id):
     dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
     questions = dayprogram.question_set.all()
@@ -1085,7 +1081,7 @@ def delete_point(request, trip_id, point_id):
        return redirect('tripapp:trip_points', trip_id=trip.id)
 
 
-@login_required
+@is_in_tribe
 def trip_points(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     points = trip.points.all()
@@ -1096,7 +1092,7 @@ def trip_points(request, trip_id):
         'routes': routes,
     })
 
-@login_required
+@is_in_tribe
 def add_bingocard(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     if request.method == 'POST':
@@ -1114,7 +1110,7 @@ def add_bingocard(request, trip_id):
         'trip': trip,
     })
 
-@login_required
+@is_in_tribe
 def tripadmin_bingocards(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     bingocards = trip.bingocards.all()
@@ -1169,7 +1165,7 @@ def save_event(request):
 
     return JsonResponse({'error': 'Invalid request'})
 
-@login_required
+@is_in_tribe
 def add_logentry(request, dayprogram_id):
     dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
     current_user = request.user
@@ -1223,7 +1219,7 @@ def dayprogram_add(request, trip_id):
         'trip': trip,
     })
 
-@login_required
+@is_in_tribe
 def tribe_trip_organize(request,tribe_id,trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     tribe = get_object_or_404(Tribe, pk=tribe_id)
@@ -1241,7 +1237,7 @@ def tribe_trip_organize(request,tribe_id,trip_id):
          'enable_admin':enable_admin
         })
 
-@login_required
+@is_in_tribe
 def add_badge_and_question(request, dayprogram_id):
     dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
     if request.method == 'POST':
@@ -1269,7 +1265,7 @@ def add_badge_and_question(request, dayprogram_id):
         'dayprogram': dayprogram
     })
 
-@login_required
+@is_in_tribe
 def add_link(request, dayprogram_id):
     dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
 
@@ -1288,7 +1284,7 @@ def add_link(request, dayprogram_id):
         'dayprogram': dayprogram
     })
 
-@login_required
+@is_in_tribe
 def edit_link(request, dayprogram_id, link_id):
     dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
     link = get_object_or_404(Link, pk=link_id)
@@ -1303,10 +1299,10 @@ def edit_link(request, dayprogram_id, link_id):
 
     return render(request, 'tripapp/edit_link.html', {'form': form, 'link': link})
 
-@login_required
+@is_in_tribe
 def delete_link(request, dayprogram_id, link_id):
     if request.method == 'POST':
-       dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
+       dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
        link = get_object_or_404(Link, id=link_id)
        link.delete()
        return redirect('tripapp:dayprogram_links', dayprogram_id=dayprogram.id)
@@ -1315,7 +1311,7 @@ def delete_link(request, dayprogram_id, link_id):
 
 
 
-@login_required
+@is_in_tribe
 def dayprogram_links(request, dayprogram_id):
     dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
     links = dayprogram.links.all()
@@ -1333,7 +1329,7 @@ def dayprogram_links(request, dayprogram_id):
 
 
 
-@login_required
+@tripper_required
 def upload_route(request,trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     if request.method == 'POST':
@@ -1348,7 +1344,7 @@ def upload_route(request,trip_id):
         form = RouteForm(trip=trip)
     return render(request, 'tripapp/upload_route.html', {'form': form, 'trip':trip})
 
-@login_required
+@is_in_tribe
 def delete_route(request, trip_id, route_id):
     if request.method == 'POST':
        trip = get_object_or_404(Trip, id=trip_id)
@@ -1359,7 +1355,7 @@ def delete_route(request, trip_id, route_id):
        return redirect('tripapp:trip_points', trip_id=trip.id)
 
 
-@login_required
+@is_in_tribe
 def add_suggestion(request, dayprogram_id):
     dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
 
@@ -1386,7 +1382,7 @@ def add_suggestion(request, dayprogram_id):
     }
     return render(request, 'tripapp/add_suggestion.html', context)
 
-@login_required
+@is_in_tribe
 def add_expense(request, trip_id, tripper_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     tripper = get_object_or_404(Tripper, pk=tripper_id)
@@ -1411,7 +1407,7 @@ def add_expense(request, trip_id, tripper_id):
         form = TripExpenseForm(initial={'currency': last_currency})
     return render(request, 'tripapp/add_expense.html', {'form': form, 'trip': trip, 'tripper':tripper})
 
-@login_required
+@is_in_tribe
 def budget_add(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     tripper = get_object_or_404(Tripper, name=request.user)
@@ -1433,7 +1429,7 @@ def budget_add(request, trip_id):
     })
 
 
-@login_required
+@is_in_tribe
 def budget_list(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     budgets = trip.budget.all()
@@ -1446,7 +1442,7 @@ def budget_list(request, trip_id):
         'total': total,
     })
 
-@login_required
+@is_in_tribe
 def budget_update(request, trip_id, budget_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     budget = get_object_or_404(TripBudget, id=budget_id, trip=trip)
@@ -1466,7 +1462,7 @@ def budget_update(request, trip_id, budget_id):
     })
 
 
-@login_required
+@is_in_tribe
 def trip_budget_analysis(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     
@@ -1565,7 +1561,7 @@ def trip_expenses_list(request, trip_id):
 
     return render(request, 'tripapp/trip_expenses_list.html', {'trip': trip, 'expenses': expenses, 'tripper':tripper, 'app_currency':app_currency, 'total_amount': total_amount})
 
-@login_required
+@is_in_tribe
 def trip_update(request, trip_id):
     trip = get_object_or_404(Trip, id=trip_id)
 
@@ -1610,7 +1606,7 @@ def update_profile(request):
     
     return render(request, 'tripapp/update_profile.html', {'form': form})
 
-@login_required
+@is_in_tribe
 def trip_checklist(request,slug):
     trip = get_object_or_404(Trip, slug=slug)
     checklist = Checklist.objects.get_or_create(trip=trip)[0]
@@ -1654,7 +1650,7 @@ def task_manager(request):
 
     return render(request, "tripapp/task_manager.html", {"tasks": tasks, "previous_url":previous_url})
 
-@login_required
+@is_in_tribe
 def trip_documents_view(request, trip_id):
     trip = get_object_or_404(Trip.objects.prefetch_related('dayprograms__links'), id=trip_id)
     trip_documents = Link.objects.filter(dayprogram__trip=trip).order_by('dayprogram__tripdate')
@@ -1676,7 +1672,7 @@ def trip_documents_view(request, trip_id):
         'tripper_documents': tripper_documents,
     })
 
-@login_required
+@is_in_tribe
 def add_or_edit_scheduled_item(request, dayprogram_id, scheduled_item_id=None):
     dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
  
@@ -1698,9 +1694,9 @@ def add_or_edit_scheduled_item(request, dayprogram_id, scheduled_item_id=None):
     return render(request, 'tripapp/scheduled_item_form.html', {'form': form, 'dayprogram': dayprogram, 'scheduled_item': scheduled_item})
 
 
-@login_required
+@is_in_tribe
 def dayprogram_scheduled_items(request, dayprogram_id):
-    dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
+    dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
     scheduled_items = dayprogram.scheduled_items.all().order_by('start_time')
 
     return render(request, 'tripapp/dayprogram_scheduled_items.html', 
@@ -1708,9 +1704,9 @@ def dayprogram_scheduled_items(request, dayprogram_id):
           'scheduled_items' : scheduled_items,
          })
 
-@login_required
+@is_in_tribe
 def delete_scheduled_item(request, dayprogram_id, scheduled_item_id):
-    dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
+    dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
     scheduled_item = get_object_or_404(ScheduledItem, id=scheduled_item_id, dayprogram=dayprogram)
 
     if request.method == 'POST':
@@ -2015,7 +2011,7 @@ def generate_html_trip_outline(trip,map_path=None):
 
 from tempfile import NamedTemporaryFile
 
-
+@is_in_tribe
 def create_trip_outline_html(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)    
 
@@ -2044,7 +2040,7 @@ from .models import Trip, DayProgram
 from django.contrib.auth.decorators import login_required
 
 @csrf_exempt
-@login_required
+@is_in_tribe
 def reorder_dayprograms(request, trip_id):
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid method'}, status=405)
@@ -2720,7 +2716,7 @@ def export_trip_outline_json(request, trip_id):
     return response
 
 
-@login_required
+@is_in_tribe
 def export_trip(request, trip_id):
 
     trip = get_object_or_404(Trip, id=trip_id)
