@@ -4,7 +4,6 @@ from django.contrib.auth.views import LoginView,LogoutView
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from rest_framework.routers import DefaultRouter
-from django.conf import settings
 
 app_name = 'tripapp'
 
@@ -126,8 +125,3 @@ urlpatterns = [
     path('itineraryidea/<int:pk>/update/', views.update_itineraryidea, name='update_itineraryidea'),
     path("itineraryidea/<int:pk>/to_trip/", views.itineraryidea_to_trip, name="itineraryidea-to-trip"),
  ]
-
-if settings.ENABLE_ADMIN:
-    urlpatterns += [
-        path('admin/', admin.site.urls),
-    ]

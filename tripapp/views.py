@@ -243,16 +243,17 @@ def create_trip(request, tribe_id):
         form = TripForm(request.POST,user=request.user)
         if form.is_valid():
             trip = form.save()
-            date_from = trip.date_from
-            date_to = trip.date_to
-            current_date = date_from
-            daynumber =1
+            if trip.date_from:
+                date_from = trip.date_from
+                date_to = trip.date_to
+                current_date = date_from
+                daynumber =1
 
-            # Create DayProgram entries for each day in the trip
-            while current_date <= date_to:
-                DayProgram.objects.create(trip=trip, tripdate=current_date, dayprogramnumber=daynumber)
-                current_date += timedelta(days=1)
-                daynumber += 1
+                # Create DayProgram entries for each day in the trip
+                while current_date <= date_to:
+                    DayProgram.objects.create(trip=trip, tripdate=current_date, dayprogramnumber=daynumber)
+                    current_date += timedelta(days=1)
+                    daynumber += 1
 
             # Ensure the logged-in user is also a Tripper for this trip
             user = request.user
