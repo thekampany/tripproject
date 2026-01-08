@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'channels',
     'rest_framework',
     'rest_framework_api_key',
+    'django_select2',
 ]
 
 MIDDLEWARE = [

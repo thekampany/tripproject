@@ -466,23 +466,6 @@ def add_image(request, dayprogram_id):
     return render(request, 'tripapp/add_image.html', {'form': form, 'dayprogram': dayprogram})
 
 @is_in_tribe
-def add_or_edit_trip(request, trip_id=None):
-    if trip_id:
-        trip = get_object_or_404(Trip, trip_id=id)
-    else:
-        trip = None
-
-    if request.method == 'POST':
-        form = TripForm(request.POST, request.FILES, instance=trip)
-        if form.is_valid():
-            form.save()
-            return redirect('tripapp:trip_detail', id=form.instance.id)
-    else:
-        form = TripForm(instance=trip)
-
-    return render(request, 'tripapp/add_or_edit_trip.html', {'form': form})
-
-@is_in_tribe
 def add_checklist_item(request, trip_id):
     trip = get_object_or_404(Trip, id=trip_id)
     checklist = Checklist.objects.get_or_create(trip=trip)[0]
@@ -1383,7 +1366,7 @@ def add_suggestion(request, dayprogram_id):
     }
     return render(request, 'tripapp/add_suggestion.html', context)
 
-@is_in_tribe
+@is_tripper_in_same_trip
 def add_expense(request, trip_id, tripper_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     tripper = get_object_or_404(Tripper, pk=tripper_id)

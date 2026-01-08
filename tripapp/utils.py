@@ -299,3 +299,12 @@ def get_country_coords(country_code):
             return coords
 
     return None
+
+from django_select2.forms import Select2MultipleWidget
+import pycountry
+
+def country_choices():
+    return sorted(
+        [(c.alpha_2, c.name) for c in pycountry.countries],
+        key=lambda x: x[1]
+    )

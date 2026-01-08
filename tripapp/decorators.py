@@ -38,7 +38,6 @@ def is_in_tribe(view_func):
     @wraps(view_func)
     @login_required
     def _wrapped_view(request, *args, **kwargs):
-        print(kwargs)
         tribes = set()
 
         dayprogram_id = kwargs.get("dayprogram_id")
@@ -82,7 +81,6 @@ def is_tripper_in_same_trip(view_func):
     @wraps(view_func)
     @login_required
     def _wrapped_view(request, *args, **kwargs):
-        print(kwargs)
         
         tripper_id = kwargs.get("tripper_id")
         if tripper_id:
@@ -108,7 +106,6 @@ def is_tripper_in_same_tribe(view_func):
     @wraps(view_func)
     @login_required
     def _wrapped_view(request, *args, **kwargs):
-        print(kwargs)
         
         tripper_id = kwargs.get("tripper_id")
         if tripper_id:

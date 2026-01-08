@@ -19,3 +19,5 @@ djangorestframework
 djangorestframework-api-key==3.*
 qrcode
 geopy
+django-select2
+pycountry

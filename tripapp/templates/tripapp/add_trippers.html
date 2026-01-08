@@ -1,12 +1,18 @@
 {% extends "base_generic.html" %}
 {% load crispy_forms_tags %}
+{% load i18n %}
+
 {% block content %}
   <h2>Add Trippers to {{ trip.name }}</h2>
   <br><br>
   <form method="post">
     {% csrf_token %}
     {{ form|crispy }}
-    <button type="submit" class="btn">Add Trippers</button>
+    <br />
+    <a href="{% url 'tripapp:invite_to_tribe' %}">{% trans "Add someone else? Invite them" %}</a>
+    <br /><br />
+    <button type="submit" class="btn">{% trans "Save Selected" %}</button>
   </form>
+
   <br><br>
 {% endblock %}

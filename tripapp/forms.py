@@ -30,6 +30,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
+from django_select2.forms import Select2MultipleWidget
+from .utils import country_choices
 
 class TripperForm(forms.ModelForm):
     class Meta:
@@ -89,9 +91,19 @@ class BadgeForm(forms.ModelForm):
 
 
 class TripForm(forms.ModelForm):
+    country_codes = forms.MultipleChoiceField(
+        choices=country_choices(),
+        required=False,
+        widget=Select2MultipleWidget(attrs={'style': 'width:100%'})
+    )
+
     class Meta:
         model = Trip
-        fields = ['tribe', 'name', 'description', 'date_from', 'date_to', 'image', 'country_codes', 'use_expenses' ]
+        fields = [
+            'tribe', 'name', 'description',
+            'date_from', 'date_to',
+            'image', 'country_codes', 'use_expenses'
+        ]
         widgets = {
             'date_from': forms.DateInput(attrs={'type': 'date'}),
             'date_to': forms.DateInput(attrs={'type': 'date'}),
@@ -99,15 +111,61 @@ class TripForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
-        tribe = kwargs.pop('tribe', None)  
+        tribe = kwargs.pop('tribe', None)
         super().__init__(*args, **kwargs)
+
         for field in self.fields.values():
             field.widget.attrs.setdefault('class', 'form-control')
+
         if user:
             self.fields['tribe'].queryset = user.userprofile.tribes.all()
         if tribe:
             self.initial['tribe'] = tribe
+
+        if self.instance.pk and self.instance.country_codes:
+            self.initial['country_codes'] = [
+                c.strip() for c in self.instance.country_codes.split(',')
+            ]
+
+    def save(self, commit=True):
+        trip = super().save(commit=False)
+        codes = self.cleaned_data.get('country_codes', [])
+        trip.country_codes = ','.join(codes)
+        if commit:
+            trip.save()
+        return trip
    
+class TripUpdateForm(forms.ModelForm):
+    country_codes = forms.MultipleChoiceField(
+        choices=country_choices(),
+        required=False,
+        widget=Select2MultipleWidget(attrs={
+            'class': 'form-control',
+            'style': 'width:100%',
+            'data-placeholder': 'Select…',
+            'data-allow-clear': 'true', 
+        })
+    )
+    class Meta:
+        model = Trip
+        fields = ['name', 'description', 'image', 'country_codes', 'use_expenses']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.instance.pk and self.instance.country_codes:
+            self.initial['country_codes'] = [
+                c.strip() for c in self.instance.country_codes.split(',')
+            ]
+
+    def save(self, commit=True):
+        trip = super().save(commit=False)
+        codes = self.cleaned_data.get('country_codes', [])
+        trip.country_codes = ','.join(codes)
+        if commit:
+            trip.save()
+        return trip
+
 
 class AddTrippersForm(forms.Form):
     users = forms.ModelMultipleChoiceField(
@@ -383,11 +441,6 @@ class TripExpenseForm(forms.ModelForm):
         if currency:
             return currency.upper()
         return currency
-
-class TripUpdateForm(forms.ModelForm):
-    class Meta:
-        model = Trip
-        fields = ['name', 'description', 'image', 'country_codes', 'use_expenses']
 
 
 

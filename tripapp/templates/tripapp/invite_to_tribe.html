@@ -1,7 +1,7 @@
 {% extends "base_generic.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
-<h1>Invite to Tribe</h1>
+<h2>Invite to Tribe</h2>
 <form method="post">
     {% csrf_token %}
     {{ form|crispy }}
@@ -27,4 +27,5 @@
         Generate Invite Code / QR-code
     </button>
 </form>
+<p>&nbsp;</p>
 {% endblock %}

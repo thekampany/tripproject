@@ -69,11 +69,6 @@
     text-align: center;
 }
 
-.trip-flags img {
-    margin: 0 2px;
-    filter: brightness(0.9); 
-}
-
 .trip-title a {
     text-decoration: none;
     color: #333;
@@ -226,14 +221,16 @@ input:checked + .slider:before {
                                 {% endif %}">
                             </div>
                             <div class="trip-info">
-                                <div class="trip-flags">
-                                    {% for country in trip.country_codes_list %}
-                                        <img src="https://flagcdn.com/16x12/{{ country|lower }}.png" width="16" height="12" alt="{{ country }} flag" />
-                                    {% endfor %}
-                                </div>
+                                {% if trip.image %}
+                                    <div style="display: flex; gap: 4px;  align-items: center;">
+                                        {% for country in trip.country_codes_list %}
+                                            <div style="background-image: url('https://flagcdn.com/16x12/{{ country|lower }}.png');width:16px;height:12px;"></div> 
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
                                 <h3 class="trip-title">{{ trip.name }}</h3>
                                 <p class="trip-dates">
-                                    <span>{{ trip.date_from|date:"d-M-Y" }}</span> - 
+                                    <span>{{ trip.date_from|date:"d-M-Y" }}</span>{% if trip.date_from %} - {% endif %} 
                                     <span>{{ trip.date_to|date:"d-M-Y" }}</span>
                                 </p>
                             </div>
