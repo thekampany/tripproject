@@ -1,0 +1,15 @@
+{% extends "base_generic.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Page not found" %}{% endblock %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <h1 class="display-4">404</h1>
+    <p class="lead">{% trans "We could not find this Trip" %}</p>
+    <p>{% trans "Go back the route you came or go" %}</p>
+    <a href="{% url 'tripapp:trip_list' %}" >
+        Home
+    </a>
+</div>
+{% endblock %}

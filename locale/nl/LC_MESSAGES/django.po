@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-11 20:52+0100\n"
+"POT-Creation-Date: 2026-01-09 23:15+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,9 +18,21 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: tripapp/forms.py:142
+#: tripapp/forms.py:200
 msgid "Your answer here..."
 msgstr "Typ hier je antwoord..."
+
+#: tripapp/templates/404.html:4
+msgid "Page not found"
+msgstr "Pagina niet gevonden"
+
+#: tripapp/templates/404.html:9
+msgid "We could not find this Trip"
+msgstr "We konden deze Trip niet vinden"
+
+#: tripapp/templates/404.html:10
+msgid "Go back the route you came or go"
+msgstr "Ga terug op je route of ga naar"
 
 #: tripapp/templates/tripapp/add_checklist_item.html:16
 #: tripapp/templates/tripapp/trip_checklist.html:61
@@ -46,6 +58,14 @@ msgstr "Log Toevoegen"
 #: tripapp/templates/tripapp/add_logentry.html:12
 msgid "Save Log Entry"
 msgstr "Log Opslaan"
+
+#: tripapp/templates/tripapp/add_trippers.html:12
+msgid "Add someone else? Invite them"
+msgstr "Iemand toevoegen? Nodig uit"
+
+#: tripapp/templates/tripapp/add_trippers.html:14
+msgid "Save Selected"
+msgstr "Bewaar Selectie"
 
 #: tripapp/templates/tripapp/budget_analysis.html:4
 #: tripapp/templates/tripapp/budget_analysis.html:42
@@ -141,7 +161,7 @@ msgstr "Naam van dit Overnachtings Reisschema"
 msgid "Save Itinerary Idea"
 msgstr "Bewaar Reisschema Idee"
 
-#: tripapp/templates/tripapp/create_trip.html:33
+#: tripapp/templates/tripapp/create_trip.html:35
 msgid ""
 "Tip: Consider plotting an itinerary on a map and turn your idea into a trip. "
 msgstr ""
@@ -301,7 +321,7 @@ msgstr ""
 #: tripapp/templates/tripapp/tribe_trip_organize.html:108
 #: tripapp/templates/tripapp/tribe_trips.html:246
 #: tripapp/templates/tripapp/trip_detail.html:238
-#: tripapp/templates/tripapp/trip_list.html:197
+#: tripapp/templates/tripapp/trip_list.html:192
 msgid "My Trips"
 msgstr "Mijn Trips"
 
@@ -418,7 +438,7 @@ msgstr "Nog geen Reisschema ideeen."
 #: tripapp/templates/tripapp/tribe_trips.html:8
 #: tripapp/templates/tripapp/tribe_trips.html:234
 #: tripapp/templates/tripapp/tribe_trips.html:247
-#: tripapp/templates/tripapp/trip_list.html:198
+#: tripapp/templates/tripapp/trip_list.html:193
 msgid "Organize"
 msgstr "Organiseer"
 
@@ -468,7 +488,7 @@ msgstr "Bijwerken"
 
 #: tripapp/templates/tripapp/tribe_map.html:66
 #: tripapp/templates/tripapp/trip_detail.html:236
-#: tripapp/templates/tripapp/trip_list.html:195
+#: tripapp/templates/tripapp/trip_list.html:190
 msgid "Settings"
 msgstr "Instellingen"
 
@@ -632,27 +652,27 @@ msgstr "Geen uitgaven vastgelegd op deze trip"
 msgid "See Balance"
 msgstr "Bekijk Balans"
 
-#: tripapp/templates/tripapp/trip_export.html:94
+#: tripapp/templates/tripapp/trip_export.html:96
 msgid "Download Complete Trip"
 msgstr "Download Complete Trip"
 
-#: tripapp/templates/tripapp/trip_export.html:95
+#: tripapp/templates/tripapp/trip_export.html:97
 msgid "A zip with everything of the trip."
 msgstr "Een zip met alles van de trip"
 
-#: tripapp/templates/tripapp/trip_export.html:102
+#: tripapp/templates/tripapp/trip_export.html:104
 msgid "Download Trip Outline"
 msgstr "Download Reisschema"
 
-#: tripapp/templates/tripapp/trip_export.html:103
+#: tripapp/templates/tripapp/trip_export.html:105
 msgid "De-personalized, no photos, no logs. Just share your itinerary."
 msgstr "Zonder persoonlijke informatie. Deel je reisschema."
 
-#: tripapp/templates/tripapp/trip_export.html:110
+#: tripapp/templates/tripapp/trip_export.html:112
 msgid "Download Trip Outline JSON"
 msgstr "Download Trip Outline JSON"
 
-#: tripapp/templates/tripapp/trip_export.html:111
+#: tripapp/templates/tripapp/trip_export.html:113
 msgid ""
 "Export as JSON. Other Trippanion user can import your trip as startingpoint "
 "for his own trip."
@@ -660,13 +680,13 @@ msgstr ""
 "Exporteer als JSON. Een andere Trippanion user kan dit als starpunt "
 "gebruiken."
 
-#: tripapp/templates/tripapp/trip_list.html:255
+#: tripapp/templates/tripapp/trip_list.html:252
 #, fuzzy
 #| msgid "Create a New Tribe"
 msgid "Create New.."
 msgstr "Maak nieuw "
 
-#: tripapp/templates/tripapp/trip_list.html:265
+#: tripapp/templates/tripapp/trip_list.html:262
 msgid "Show only trips on which I am a tripper"
 msgstr "Toon alleen trips waar ik tripper ben"
 
@@ -686,24 +706,24 @@ msgstr "Trippers krijgen van / betalen aan trippers"
 msgid "No documents uploaded yet"
 msgstr "Geen documenten ge-upload"
 
-#: tripapp/views.py:1370
+#: tripapp/views.py:1350
 #, python-format
 msgid "Suggestion by %(username)s: %(suggestion)s"
 msgstr "Voorstel van %(username)s: %(suggestion)s"
 
-#: tripapp/views.py:1931
+#: tripapp/views.py:1911
 msgid "No Answers"
 msgstr "Geen Antwoorden"
 
-#: tripapp/views.py:2149 tripapp/views.py:2175
+#: tripapp/views.py:2129 tripapp/views.py:2155
 msgid "Tripper and emoji mandatory."
 msgstr "Tripper en emoji verplicht"
 
-#: tripapp/views.py:2160
+#: tripapp/views.py:2140
 msgid "You already liked this log with this emoji."
 msgstr "Je hebt deze log al een emoji gegeven."
 
-#: tripapp/views.py:2187
+#: tripapp/views.py:2167
 msgid "There is no like with this emoji that can be removed."
 msgstr "Er is geen like met deze emoji om te verwijderen"
 

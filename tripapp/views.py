@@ -555,6 +555,12 @@ from .utils import get_country_coords
 @is_in_tribe
 def trip_map_view(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
+    points = trip.points.none()
+    projected_itinerary_points = trip.points.none()
+    simplified_locations = []
+    photolocations = []
+    all_locations = []
+
     if trip.date_from and trip.date_to: 
         points = trip.points.prefetch_related('dayprograms')
 

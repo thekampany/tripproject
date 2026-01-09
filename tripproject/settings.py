@@ -36,8 +36,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('DJANGO_KEY')
 
-DEBUG = os.getenv('DEBUG')
-
 ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
@@ -48,6 +46,8 @@ try:
         VERSION = f.read().strip()
 except FileNotFoundError:
     pass
+
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 ENABLE_ADMIN = os.getenv('ENABLE_ADMIN', 'False').lower() == 'true'
 
@@ -88,7 +88,7 @@ ROOT_URLCONF = 'tripproject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
