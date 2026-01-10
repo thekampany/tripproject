@@ -115,7 +115,7 @@ body {
   background-color: var(--btn-background);
   color: var(--color-text);
   border: none;
-  border-radius: 15px;
+  border-radius: 12px;
   font-size: 16px;
   text-decoration: none;
   cursor: pointer;
@@ -137,7 +137,7 @@ body {
   width: 100%;
   /*background-color: var(--card-background-color);*/  
   color: var(--color-text);
-  border-radius: 15px;
+  border-radius: 12px;
   text-decoration: none;
   border: none;
   font-size: 16px;

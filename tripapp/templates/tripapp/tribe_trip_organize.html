@@ -152,7 +152,7 @@
             <h2 class="block-title">{% trans "Trip Admin Settings" %}</h2>
             <ul class="block-links">
                 <li><a href="{% url 'tripapp:trip_update' trip.id %}"><i class="bi bi-file-richtext"></i>{% trans "Edit Trip Settings" %}</a></li>
-                <li><a href="{% url 'tripapp:add_trippers' trip.id tribe.id %}"><i class="bi bi-person-add"></i> {% trans "Add or Remove Trippers" %}</a></li>
+                <li><a href="{% url 'tripapp:add_trippers' trip.id tribe.id %}?next=tto"><i class="bi bi-person-add"></i> {% trans "Add or Remove Trippers" %}</a></li>
                 <li><a href="{% url 'tripapp:budget_list' trip.id %}"><i class="bi bi-wallet2"></i> {% trans "Budget" %}</a></li>
             </ul>
         </div>

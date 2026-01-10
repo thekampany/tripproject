@@ -30,4 +30,10 @@
             {% endfor %}
         </tbody>
     </table>
+    <p>&nbsp;</p>
+    <p>
+    <a href="{% url 'tripapp:trip_dayprograms' dayprogram.trip.id %}">&larr; to Organize Dayprograms</a>&nbsp;|&nbsp;
+    <a href="{% url 'tripapp:dayprogram_detail' dayprogram.id %}">&rarr; to Day {{ dayprogram.tripdate|date:"d-M" }}</a>
+    </p>
+
 {% endblock %}

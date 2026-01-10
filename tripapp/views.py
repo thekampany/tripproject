@@ -460,7 +460,7 @@ def add_image(request, dayprogram_id):
         files = request.FILES.getlist('images')
         for file in files:
             Image.objects.create(day_program=dayprogram, image=file)
-        return redirect('tripapp:dayprogram_detail', id=dayprogram_id)
+        return redirect('tripapp:dayprogram_detail', dayprogram_id=dayprogram_id)
 
     form = ImageForm(initial={'day_program': dayprogram})
     return render(request, 'tripapp/add_image.html', {'form': form, 'dayprogram': dayprogram})
@@ -507,7 +507,7 @@ def check_answer(request, dayprogram_id, questionid):
     question = get_object_or_404(Question, id=questionid)
 
     if question is None:
-        return redirect('tripapp:dayprogram_detail', id=dayprogram.id)
+        return redirect('tripapp:dayprogram_detail', dayprogram_id=dayprogram.id)
 
     if request.method == 'POST':
         form = AnswerForm(request.POST)
@@ -873,7 +873,7 @@ def create_tribe(request):
 def add_trippers(request, trip_id, tribe_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     tribe = get_object_or_404(Tribe, pk=str(tribe_id))
-
+    next_url = request.GET.get('next')
     if request.method == 'POST':
         form = AddTrippersForm(request.POST, tribe=tribe)
         if form.is_valid():
@@ -884,7 +884,13 @@ def add_trippers(request, trip_id, tribe_id):
                 tripper.trips.add(trip)
             for tripper in trippers.exclude(name__in=[user.username for user in users]):
                 tripper.trips.remove(trip)
-            return redirect('tripapp:tribe_trips')
+            if next_url == 'tt':
+                return redirect('tripapp:tribe_trips')
+            elif next_url == 'tto':
+                return redirect('tripapp:tribe_trip_organize', tribe_id=tribe.id, trip_id=trip.id)
+            else:
+                return redirect('tripapp:tribe_trip_organize', tribe_id=tribe.id, trip_id=trip.id)
+
     else:
         form = AddTrippersForm(tribe=tribe, trip=trip)
 
@@ -975,7 +981,7 @@ def trip_dayprograms(request, trip_id):
 
 @is_in_tribe
 def add_question(request, dayprogram_id):
-    dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
+    dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
 
     if request.method == 'POST':
         form = QuestionForm(request.POST)
@@ -1157,7 +1163,7 @@ def save_event(request):
 
 @is_in_tribe
 def add_logentry(request, dayprogram_id):
-    dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
+    dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
     current_user = request.user
     tripper = Tripper.objects.filter(name=current_user.username).first()
 
@@ -1167,7 +1173,7 @@ def add_logentry(request, dayprogram_id):
             log_entry = form.save(commit=False)
             log_entry.tripper = tripper
             log_entry.save()
-            return redirect('tripapp:dayprogram_detail', id=dayprogram.id)
+            return redirect('tripapp:dayprogram_detail', dayprogram_id=dayprogram.id)
     else:
         form = LogEntryForm(initial={'dayprogram': dayprogram})
 
@@ -1197,7 +1203,7 @@ def dayprogram_add(request, trip_id):
                 trip.date_to = dayprogram.tripdate
                 trip.save()
 
-            return redirect('tripapp:dayprogram_detail', id=dayprogram.pk)
+            return redirect('tripapp:dayprogram_detail', dayprogram_id=dayprogram.pk)
     else:
         form = DayProgramForm(initial={
             'dayprogramnumber': next_dayprogramnumber,
@@ -1362,7 +1368,7 @@ def add_suggestion(request, dayprogram_id):
             else:
                 dayprogram.possible_activities = user_suggestion
             dayprogram.save()
-            return redirect('tripapp:dayprogram_detail',  id=dayprogram.id)
+            return redirect('tripapp:dayprogram_detail',  dayprogram_id=dayprogram.id)
     else:
         form = SuggestionForm()
 
@@ -1390,7 +1396,7 @@ def add_expense(request, trip_id, tripper_id):
             if next_url == 'balance':
                 return redirect('tripapp:trip_balance', trip_id=trip.id)
             elif next_url == 'dayprogram_detail' and dayprogram_id:
-                return redirect('tripapp:dayprogram_detail', id=dayprogram_id)
+                return redirect('tripapp:dayprogram_detail', dayprogram_id=dayprogram_id)
     else:
         last_expense = TripExpense.objects.filter(tripper=tripper).order_by('-date').first()
         last_currency = last_expense.currency if last_expense else settings.APP_CURRENCY
@@ -1664,7 +1670,7 @@ def trip_documents_view(request, trip_id):
 
 @is_in_tribe
 def add_or_edit_scheduled_item(request, dayprogram_id, scheduled_item_id=None):
-    dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
+    dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
  
     if scheduled_item_id:
         scheduled_item = get_object_or_404(ScheduledItem, id=scheduled_item_id, dayprogram=dayprogram)
@@ -1677,7 +1683,7 @@ def add_or_edit_scheduled_item(request, dayprogram_id, scheduled_item_id=None):
             scheduled_item = form.save(commit=False)
             scheduled_item.dayprogram = dayprogram
             scheduled_item.save()
-            return redirect('tripapp:dayprogram_detail', id=dayprogram.id)
+            return redirect('tripapp:dayprogram_detail', dayprogram_id=dayprogram.id)
     else:
         form = ScheduledItemForm(instance=scheduled_item)
 

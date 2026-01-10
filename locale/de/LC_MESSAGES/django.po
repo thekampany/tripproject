@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-11 21:00+0100\n"
+"POT-Creation-Date: 2026-01-10 22:05+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: German <LL@li.org>\n"
@@ -18,9 +18,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: tripapp/forms.py:142
+#: tripapp/forms.py:200
 msgid "Your answer here..."
 msgstr "Ihre Antwort hier..."
+
+#: tripapp/templates/404.html:4
+msgid "Page not found"
+msgstr "Seite nicht gefunden"
+
+#: tripapp/templates/404.html:9
+msgid "We could not find this Trip"
+msgstr "Diese Reise konnten wir leider nicht finden"
+
+#: tripapp/templates/404.html:10
+#: tripapp/templates/tripapp/permission_denied.html:11
+msgid "Go back the route you came or go"
+msgstr "Gehe zurück zu der Seite, von der du gekommen bist, oder gehe zu"
+
 
 #: tripapp/templates/tripapp/add_checklist_item.html:16
 #: tripapp/templates/tripapp/trip_checklist.html:61
@@ -46,6 +60,14 @@ msgstr "Log hinzufügen"
 #: tripapp/templates/tripapp/add_logentry.html:12
 msgid "Save Log Entry"
 msgstr "Log speichern"
+
+#: tripapp/templates/tripapp/add_trippers.html:13
+msgid "Add someone else? Invite them"
+msgstr "Noch jemanden hinzufügen? Lade ihn oder sie ein"
+
+#: tripapp/templates/tripapp/add_trippers.html:15
+msgid "Save Selected"
+msgstr "Auswahl speichern"
 
 #: tripapp/templates/tripapp/budget_analysis.html:4
 #: tripapp/templates/tripapp/budget_analysis.html:42
@@ -131,7 +153,7 @@ msgstr "Name dieser Reiseidee"
 msgid "Save Itinerary Idea"
 msgstr "Reiseidee speichern"
 
-#: tripapp/templates/tripapp/create_trip.html:33
+#: tripapp/templates/tripapp/create_trip.html:35
 msgid ""
 "Tip: Consider plotting an itinerary on a map and turn your idea into a trip. "
 msgstr ""
@@ -291,7 +313,7 @@ msgstr ""
 #: tripapp/templates/tripapp/tribe_trip_organize.html:108
 #: tripapp/templates/tripapp/tribe_trips.html:246
 #: tripapp/templates/tripapp/trip_detail.html:238
-#: tripapp/templates/tripapp/trip_list.html:197
+#: tripapp/templates/tripapp/trip_list.html:192
 msgid "My Trips"
 msgstr "Meine Reisen"
 
@@ -393,7 +415,7 @@ msgstr "Noch keine Reiseideen vorhanden."
 #: tripapp/templates/tripapp/tribe_trips.html:8
 #: tripapp/templates/tripapp/tribe_trips.html:234
 #: tripapp/templates/tripapp/tribe_trips.html:247
-#: tripapp/templates/tripapp/trip_list.html:198
+#: tripapp/templates/tripapp/trip_list.html:193
 msgid "Organize"
 msgstr "Organisieren"
 
@@ -421,6 +443,14 @@ msgstr "Reise erstellen"
 msgid "Edit Itinerary Idea:"
 msgstr "Reiseidee bearbeiten:"
 
+#: tripapp/templates/tripapp/permission_denied.html:5
+msgid "Permission Denied"
+msgstr "Zugriff verweigert"
+
+#: tripapp/templates/tripapp/permission_denied.html:10
+msgid "No access to this part of the Trip"
+msgstr "Kein Zugriff auf diesen Teil der Reise"
+
 #: tripapp/templates/tripapp/scheduled_item_form.html:9
 msgid "Edit Scheduled Item"
 msgstr "Geplanten Eintrag bearbeiten"
@@ -439,7 +469,7 @@ msgstr "Aktualisieren"
 
 #: tripapp/templates/tripapp/tribe_map.html:66
 #: tripapp/templates/tripapp/trip_detail.html:236
-#: tripapp/templates/tripapp/trip_list.html:195
+#: tripapp/templates/tripapp/trip_list.html:190
 msgid "Settings"
 msgstr "Einstellungen"
 
@@ -603,43 +633,43 @@ msgstr "Für diese Reise wurden keine Ausgaben erfasst"
 msgid "See Balance"
 msgstr "Bilanz anzeigen"
 
-#: tripapp/templates/tripapp/trip_export.html:94
+#: tripapp/templates/tripapp/trip_export.html:96
 #, fuzzy
 #| msgid "Download Document"
 msgid "Download Complete Trip"
 msgstr "Dokument herunterladen"
 
-#: tripapp/templates/tripapp/trip_export.html:95
+#: tripapp/templates/tripapp/trip_export.html:97
 msgid "A zip with everything of the trip."
 msgstr ""
 
-#: tripapp/templates/tripapp/trip_export.html:102
+#: tripapp/templates/tripapp/trip_export.html:104
 msgid "Download Trip Outline"
 msgstr "Reiseplan herunterladen"
 
-#: tripapp/templates/tripapp/trip_export.html:103
+#: tripapp/templates/tripapp/trip_export.html:105
 msgid "De-personalized, no photos, no logs. Just share your itinerary."
 msgstr ""
 
-#: tripapp/templates/tripapp/trip_export.html:110
+#: tripapp/templates/tripapp/trip_export.html:112
 #, fuzzy
 #| msgid "Download Trip Outline"
 msgid "Download Trip Outline JSON"
 msgstr "Reiseplan herunterladen"
 
-#: tripapp/templates/tripapp/trip_export.html:111
+#: tripapp/templates/tripapp/trip_export.html:113
 msgid ""
 "Export as JSON. Other Trippanion user can import your trip as startingpoint "
 "for his own trip."
 msgstr ""
 
-#: tripapp/templates/tripapp/trip_list.html:255
+#: tripapp/templates/tripapp/trip_list.html:252
 #, fuzzy
 #| msgid "Create New"
 msgid "Create New.."
 msgstr "Neu .."
 
-#: tripapp/templates/tripapp/trip_list.html:265
+#: tripapp/templates/tripapp/trip_list.html:262
 msgid "Show only trips on which I am a tripper"
 msgstr "Nur Reisen anzeigen, bei denen ich Tripper bin"
 
@@ -659,24 +689,24 @@ msgstr "Tripper schulden Trippern"
 msgid "No documents uploaded yet"
 msgstr "Noch keine Dokumente hochgeladen"
 
-#: tripapp/views.py:1370
+#: tripapp/views.py:1362
 #, python-format
 msgid "Suggestion by %(username)s: %(suggestion)s"
 msgstr "Vorschlag von %(username)s: %(suggestion)s"
 
-#: tripapp/views.py:1931
+#: tripapp/views.py:1923
 msgid "No Answers"
 msgstr "Keine Antworten"
 
-#: tripapp/views.py:2149 tripapp/views.py:2175
+#: tripapp/views.py:2141 tripapp/views.py:2167
 msgid "Tripper and emoji mandatory."
 msgstr "Tripper und Emoji sind Pflicht."
 
-#: tripapp/views.py:2160
+#: tripapp/views.py:2152
 msgid "You already liked this log with this emoji."
 msgstr "Sie haben diesen Eintrag bereits mit diesem Emoji geliked."
 
-#: tripapp/views.py:2187
+#: tripapp/views.py:2179
 msgid "There is no like with this emoji that can be removed."
 msgstr "Es gibt kein Like mit diesem Emoji, das entfernt werden kann."
 

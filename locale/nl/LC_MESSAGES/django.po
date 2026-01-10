@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-09 23:15+0100\n"
+"POT-Creation-Date: 2026-01-10 20:45+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -31,6 +31,7 @@ msgid "We could not find this Trip"
 msgstr "We konden deze Trip niet vinden"
 
 #: tripapp/templates/404.html:10
+#: tripapp/templates/tripapp/permission_denied.html:11
 msgid "Go back the route you came or go"
 msgstr "Ga terug op je route of ga naar"
 
@@ -470,6 +471,14 @@ msgstr "Maak Trip aan"
 msgid "Edit Itinerary Idea:"
 msgstr "Bewerk Reisschema Idee:"
 
+#: tripapp/templates/tripapp/permission_denied.html:5
+msgid "Permission Denied"
+msgstr "Verboden Pad"
+
+#: tripapp/templates/tripapp/permission_denied.html:10
+msgid "No access to this part of the Trip"
+msgstr "Deze route hoort niet bij jouw reis. Kies een andere bestemming of keer terug naar bekende paden."
+
 #: tripapp/templates/tripapp/scheduled_item_form.html:9
 msgid "Edit Scheduled Item"
 msgstr "Bewerk Gepland Item"
@@ -706,24 +715,24 @@ msgstr "Trippers krijgen van / betalen aan trippers"
 msgid "No documents uploaded yet"
 msgstr "Geen documenten ge-upload"
 
-#: tripapp/views.py:1350
+#: tripapp/views.py:1356
 #, python-format
 msgid "Suggestion by %(username)s: %(suggestion)s"
 msgstr "Voorstel van %(username)s: %(suggestion)s"
 
-#: tripapp/views.py:1911
+#: tripapp/views.py:1917
 msgid "No Answers"
 msgstr "Geen Antwoorden"
 
-#: tripapp/views.py:2129 tripapp/views.py:2155
+#: tripapp/views.py:2135 tripapp/views.py:2161
 msgid "Tripper and emoji mandatory."
 msgstr "Tripper en emoji verplicht"
 
-#: tripapp/views.py:2140
+#: tripapp/views.py:2146
 msgid "You already liked this log with this emoji."
 msgstr "Je hebt deze log al een emoji gegeven."
 
-#: tripapp/views.py:2167
+#: tripapp/views.py:2173
 msgid "There is no like with this emoji that can be removed."
 msgstr "Er is geen like met deze emoji om te verwijderen"
 

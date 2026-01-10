@@ -8,6 +8,7 @@
   <form method="post">
     {% csrf_token %}
     {{ form|crispy }}
+    <input type="hidden" name="next" value="{{ next }}">
     <br />
     <a href="{% url 'tripapp:invite_to_tribe' %}">{% trans "Add someone else? Invite them" %}</a>
     <br /><br />

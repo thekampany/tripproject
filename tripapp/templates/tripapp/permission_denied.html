@@ -1,7 +1,16 @@
 {% extends "base_generic.html" %}
 
+{% load i18n %}
+
+{% block title %}{% trans "Permission Denied" %}{% endblock %}
+
 {% block content %}
-  <h2>Permission Denied</h2>
-  <br>
-  <a href="{% url 'tripapp:trip_list' %}" style="text-decoration:none;">Home</a>
+<div class="container text-center mt-5">
+    <h1 class="display-4">Permission Denied</h1>
+    <p class="lead">{% trans "No access to this part of the Trip" %}</p>
+    <p>{% trans "Go back the route you came or go" %}</p>
+    <a href="{% url 'tripapp:trip_list' %}" >
+        to My Trips
+    </a>
+</div>
 {% endblock %}
