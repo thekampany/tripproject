@@ -94,12 +94,14 @@ document.addEventListener("DOMContentLoaded", function() {
       </a>
     </div>
 
+    {% if request.user == idea.created_by %}
     <div style="float:right;">
       <form method="post" action="{% url 'tripapp:itineraryidea-delete' idea.pk %}" style="display:inline;">
         {% csrf_token %}
         <button type="submit" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Delete" %}</button>
       </form>
     </div>
+    {% endif %}
 
     <div style="clear:both;"></div>
   </div>

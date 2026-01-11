@@ -27,6 +27,7 @@
         }
         #map {
             height: 600px;
+            border-radius:12px;
         }
 
         .navigation-bar {
@@ -68,7 +69,7 @@
         </div>
     
         <div class="nav-item nav-date">
-            <h1>{{ dayprogram.tripdate|date:'l j M' }}</h1>
+            <a href="{% url 'tripapp:dayprogram_detail' dayprogram.id %}" style="text-decoration:none" ><h1>{{ dayprogram.tripdate|date:'l j M' }}</h1></a>
         </div>
     
         <div class="nav-item">
@@ -80,8 +81,6 @@
         </div>
     </div>
   
-    
-  <p>&nbsp;</p>
   <div id="map"
     data-trip-id="{{ trip.id }}"
     data-dayprogram-id="{{ dayprogram.id }}"

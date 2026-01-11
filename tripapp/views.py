@@ -78,6 +78,7 @@ import random
 
 from django.db.models import Min
 from django.utils.translation import gettext as _
+from django.core.exceptions import PermissionDenied
 
 def index(request):
     category = "roadtrip"
@@ -2516,9 +2517,12 @@ def update_itineraryidea(request, pk):
 @require_POST
 def itineraryidea_delete(request, pk):
     idea = get_object_or_404(ItineraryIdea, pk=pk)
+
+    if idea.created_by != request.user:
+        raise PermissionDenied 
+
     idea.delete()
     return redirect("tripapp:itineraryidea-list")
-
 
 from tripapp.schemas import ITINERARY_JSON_SCHEMA
 

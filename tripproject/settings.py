@@ -144,14 +144,15 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-SUPPORTED_LANGUAGES = ['en', 'nl']
+SUPPORTED_LANGUAGES = ['en', 'nl', 'de' ]
 LANGUAGE_CODE = os.getenv('LANGUAGE_CODE', 'en')
 if LANGUAGE_CODE not in SUPPORTED_LANGUAGES:
     LANGUAGE_CODE = 'en'
 
 LANGUAGES = [
   ('en', 'English'),
-  ('nl', 'Nederlands')
+  ('nl', 'Nederlands'),
+  ('de', 'Deutsch')
 ]
 
 TIME_ZONE = os.getenv('TIME_ZONE')

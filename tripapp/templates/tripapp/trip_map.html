@@ -21,6 +21,7 @@
         }
         #map {
             height: 600px;
+            border-radius:12px;
         }
      </style>
 </head>
@@ -28,7 +29,7 @@
     <div class="card">
     <div class="container">
 
-    <h1>{{ trip.name }} Map</h1>
+    <a href="{% url 'tripapp:trip_detail' trip.slug %}"><h2>{{ trip.name }} Map</h2></a>
 
     <div id="map"
         data-trip-id="{{ trip.id }}"
