@@ -115,7 +115,7 @@ msgstr "Bedrag"
 
 #: tripapp/templates/tripapp/budget_list.html:26
 msgid "No budget items yet."
-msgstr "Nog geen Buget Items."
+msgstr "Nog geen Budget Items."
 
 #: tripapp/templates/tripapp/budget_list.html:30
 #: tripapp/templates/tripapp/trip_expenses_list.html:116
