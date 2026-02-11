@@ -16,4 +16,4 @@ if settings.ENABLE_ADMIN:
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-handler403 = "tripproject.views.permission_denied"
+handler403 = "tripapp.views.permission_denied"

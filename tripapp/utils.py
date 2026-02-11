@@ -54,11 +54,8 @@ def get_random_unsplash_image(category):
 
 
 def simplify_locations(locations, epsilon=0.0005):
-    coords = np.array([[loc.latitude, loc.longitude] for loc in locations])
-    simplified = rdp(coords, epsilon=epsilon)
-    return simplified 
-
-
+    coords = [(loc.latitude, loc.longitude) for loc in locations]
+    return rdp(coords, epsilon=epsilon)
 
 def generate_static_map(dayprogram):
     staticmaps_url = settings.STATICMAPS_URL

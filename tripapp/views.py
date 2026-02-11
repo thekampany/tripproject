@@ -1118,7 +1118,7 @@ def tripadmin_bingocards(request, trip_id):
         'user_is_tripper': user_is_tripper,
     })
 
-def permission_denied(request):
+def permission_denied(request, exception=None):
     return render(request, 'tripapp/permission_denied.html')
 
 @csrf_exempt
