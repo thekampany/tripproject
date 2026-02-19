@@ -28,6 +28,9 @@ UNSPLASH_ACCESS_KEY = os.getenv('UNSPLASH_ACCESS_KEY')
 STATICMAPS_URL = os.getenv('STATICMAPS_URL')
 STATICMAPS_API_KEY = os.getenv('STATICMAPS_API_KEY')
 
+OPENROUTESERVICE_API_KEY = os.getenv('OPENROUTESERVICE_API_KEY')
+DISTANCE_UNIT = os.getenv('DISTANCE_UNIT')
+
 TEMPERATURE_UNIT = os.getenv('TEMPERATURE_UNIT')
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

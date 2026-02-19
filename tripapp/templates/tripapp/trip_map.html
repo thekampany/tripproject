@@ -45,6 +45,31 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
     <script>
+        // Color scheme for consistency
+        const COLORS = {
+            route_start: '#28a745',   // Green
+            route_end: '#dc3545',     // Red
+            accommodation: '#6f42c1', // Purple
+            food: '#fd7e14',          // Orange
+            activity: '#007bff',      // Blue
+            location: '#6c757d',      // Gray
+            poi: '#ffc107',           // Yellow
+            default: '#ffffff'
+        };
+
+        // Unified icon function - creates consistent circular markers
+        function uniformIcon(color, emoji, size = 30) {
+            return L.divIcon({
+                html: `<div style="background:${color};width:${size}px;height:${size}px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:${size*0.6}px;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.3)">${emoji}</div>`,
+                className: '',
+                iconSize: [size, size],
+                iconAnchor: [size/2, size/2],
+                popupAnchor: [0, -size/2]
+            });
+        }
+
+
+
         // Initialize the map
         {% if country_coords and not points and not locations and not photolocations %}
            var map = L.map('map').setView([{{ country_coords.0 }},{{ country_coords.1 }}], 7);
@@ -64,41 +89,12 @@
 
         new L.Control.Geocoder().addTo(map);
 
-        var bedIcon = L.icon({
-            iconUrl: "{% static 'icons/mapicons/mappin-bed.png' %}",
-            shadowUrl: "{% static 'icons/mapicons/mappin-bed-shadow.png' %}",
-
-            iconSize:     [50, 50], // size of the icon
-            shadowSize:   [50, 50], // size of the shadow
-            iconAnchor:   [25, 50], // point of the icon which will correspond to marker's location
-            shadowAnchor: [25, 50],  // the same for the shadow
-            popupAnchor:  [0, -50] // point from which the popup should open relative to the iconAnchor
-        });
-        var restaurantIcon = L.icon({
-            iconUrl: "{% static 'icons/mapicons/mappin-eat.png' %}",
-            shadowUrl: "{% static 'icons/mapicons/mappin-bed-shadow.png' %}",
-
-            iconSize:     [50, 50], // size of the icon
-            shadowSize:   [50, 50], // size of the shadow
-            iconAnchor:   [25, 50], // point of the icon which will correspond to marker's location
-            shadowAnchor: [25, 50],  // the same for the shadow
-            popupAnchor:  [0, -50] // point from which the popup should open relative to the iconAnchor
-        });
-
-        var visitedLocationIcon = L.icon({
-            iconUrl: "{% static 'icons/mapicons/mappin-visited.png' %}",
-
-            iconSize:     [16, 16], // size of the icon
-            iconAnchor:   [8, 8], // point of the icon which will correspond to marker's location
-            popupAnchor:  [0, -20] // point from which the popup should open relative to the iconAnchor
-        });
-        var visitedPhotoLocationIcon = L.icon({
-            iconUrl: "{% static 'icons/mapicons/mappin-cameraphotoicon.png' %}",
-
-            iconSize:     [20, 20], // size of the icon
-            iconAnchor:   [8, 8], // point of the icon which will correspond to marker's location
-            popupAnchor:  [0, -20] // point from which the popup should open relative to the iconAnchor
-        });
+        // Point markers - using uniform icon system
+        var defaultIcon = uniformIcon(COLORS.default, '📍', 36);
+        var bedIcon = uniformIcon(COLORS.accommodation, '🛏️', 36);
+        var restaurantIcon = uniformIcon(COLORS.food, '🍽️', 36);
+        var visitedLocationIcon = uniformIcon(COLORS.location, '•', 10);
+        var visitedPhotoLocationIcon = uniformIcon(COLORS.activity, '📷', 24);
 
 
 
@@ -172,7 +168,7 @@
             } else if (point.marker_type === 'restaurant') {
                 marker = L.marker(point.coords, {icon: restaurantIcon}).bindPopup(popupContent);
             } else {
-                marker = L.marker(point.coords).bindPopup(popupContent);
+                marker = L.marker(point.coords, {icon: defaultIcon}).bindPopup(popupContent);
             }            
             markers.addLayer(marker);
         });

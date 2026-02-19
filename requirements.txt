@@ -13,7 +13,6 @@ channels
 uvicorn
 pytz
 rdp
-numpy==1.26.4
 gpxpy
 djangorestframework
 djangorestframework-api-key==3.*

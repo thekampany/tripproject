@@ -66,7 +66,6 @@ from django.contrib.auth.forms import AuthenticationForm
 from rest_framework.decorators import action
 from django.templatetags.static import static
 
-import numpy as np
 from rdp import rdp
 
 from django.db.models import F
@@ -582,8 +581,9 @@ def trip_map_view(request, trip_id):
         ).order_by('timestamp')
 
         # Simplify
-        coords = np.array([[loc.latitude, loc.longitude] for loc in all_locations])
+        coords = [(float(loc.latitude), float(loc.longitude)) for loc in all_locations]
         simplified_coords = coords
+
         if len(coords) > 0:
 
             cleaned = [coords[0]]
@@ -692,6 +692,8 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
         dayprogramnumber__gt=dayprogram.dayprogramnumber
     ).order_by('dayprogramnumber').first()
 
+    has_openrouteservice = bool(getattr(settings, 'OPENROUTESERVICE_API_KEY', None))
+    distance_unit = settings.DISTANCE_UNIT
 
     context = {
         'trip': trip,
@@ -705,6 +707,8 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
         'country_coords': country_coords,
         'previous_dayprogram' : previous_dayprogram,
         'next_dayprogram' : next_dayprogram,
+        'has_openrouteservice' : has_openrouteservice,
+        'distance_unit' : distance_unit,
     }
 
     return render(request, 'tripapp/trip_dayprogram_points.html', context) 
@@ -2722,3 +2726,397 @@ def export_trip(request, trip_id):
     trip = get_object_or_404(Trip, id=trip_id)
     return render(request, 'tripapp/trip_export.html', {'trip': trip})
 
+
+@require_POST
+def calculate_route(request):
+    """
+    Bereken route via OpenRouteService API
+    
+    Expected JSON body:
+    {
+        "start": [lng, lat],
+        "end": [lng, lat],
+        "mode": "driving-car"
+    }
+    """
+    
+    try:
+        # Log request info
+        print(f"Method: {request.method}")
+        print(f"Content-Type: {request.content_type}")
+        print(f"Body length: {len(request.body) if request.body else 0}")
+        
+        # Parse request body
+        if not request.body:
+            return JsonResponse({
+                'success': False,
+                'error': 'Empty request body'
+            })
+        
+        try:
+            body_str = request.body.decode('utf-8')
+            data = json.loads(body_str)
+        except json.JSONDecodeError as e:
+            print(f"JSON decode error: {e}")
+            return JsonResponse({
+                'success': False,
+                'error': f'Invalid JSON: {str(e)}'
+            })
+        
+        # Check if data is a dict
+        if not isinstance(data, dict):
+            return JsonResponse({
+                'success': False,
+                'error': f'Expected JSON object, got {type(data).__name__}'
+            })
+        
+        # Extract parameters
+        start = data.get('start')
+        end = data.get('end')
+        mode = data.get('mode', 'driving-car')
+        
+        print(f"Start: {start}")
+        print(f"End: {end}")
+        print(f"Mode: {mode}")
+        
+        # Validate
+        if not start or not end:
+            return JsonResponse({
+                'success': False,
+                'error': 'Missing start or end coordinates'
+            })
+        
+        if not isinstance(start, (list, tuple)) or len(start) != 2:
+            return JsonResponse({
+                'success': False,
+                'error': f'Invalid start coordinates: {start}'
+            })
+        
+        if not isinstance(end, (list, tuple)) or len(end) != 2:
+            return JsonResponse({
+                'success': False,
+                'error': f'Invalid end coordinates: {end}'
+            })
+        
+        # Get API key
+        api_key = getattr(settings, 'OPENROUTESERVICE_API_KEY', None)
+        if not api_key:
+            return JsonResponse({
+                'success': False,
+                'error': 'OpenRouteService API key not configured in settings.py'
+            })
+                
+        # Make API request
+        url = f'https://api.openrouteservice.org/v2/directions/{mode}/geojson'
+        
+        headers = {
+            'Authorization': api_key,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json, application/geo+json'
+        }
+        if settings.DISTANCE_UNIT != 'km':
+            payload = {
+                "coordinates": [start, end], "units":"mi"
+            }
+        else:
+            payload = {
+                "coordinates": [start, end]
+            }
+        
+        print(f"Calling OpenRouteService API...")
+        print(f"URL: {url}")
+        print(f"Payload: {payload}")
+        
+        response = requests.post(url, json=payload, headers=headers, timeout=15)
+        
+        print(f"Response status: {response.status_code}")
+        
+        if response.status_code != 200:
+            error_text = response.text[:500]
+            print(f"API Error: {error_text}")
+            return JsonResponse({
+                'success': False,
+                'error': f'OpenRouteService API error ({response.status_code}): {error_text}'
+            })
+        
+        # Parse response
+        route_data = response.json()
+        
+        features = route_data.get('features', [])
+        if not features:
+            return JsonResponse({
+                'success': False,
+                'error': 'No route found in response'
+            })
+        
+        feature = features[0]
+        properties = feature.get('properties', {})
+        geometry = feature.get('geometry', {})
+        summary = properties.get('summary', {})
+        
+        distance = summary.get('distance', 0)
+        duration = summary.get('duration', 0)
+        coordinates = geometry.get('coordinates', [])
+                
+        return JsonResponse({
+            'success': True,
+            'distance': distance,
+            'duration': duration,
+            'coordinates': coordinates
+        })
+        
+    except Exception as e:
+        print(f"EXCEPTION: {type(e).__name__}: {str(e)}")
+        traceback.print_exc()
+        return JsonResponse({
+            'success': False,
+            'error': f'Error calculating route: {str(e)}'
+        })
+
+
+@require_POST  
+def save_route(request):
+    """
+    Save calculated route as GPX file
+    
+    Expected JSON body:
+    {
+        "dayprogram_id": 123,
+        "description": "Route description",
+        "route_data": {
+            "coordinates": [[lng, lat], ...],
+            "distance": 12345,
+            "duration": 678,
+            "mode": "driving-car"
+        },
+        "start": [lng, lat],
+        "end": [lng, lat]
+    }
+    """
+    
+    try:
+        # Parse request body
+        if not request.body:
+            return JsonResponse({
+                'success': False,
+                'error': 'Empty request body'
+            })
+        
+        try:
+            body_str = request.body.decode('utf-8')
+            print(f"Body: {body_str[:200]}")
+            data = json.loads(body_str)
+        except json.JSONDecodeError as e:
+            return JsonResponse({
+                'success': False,
+                'error': f'Invalid JSON: {str(e)}'
+            })
+        
+        if not isinstance(data, dict):
+            return JsonResponse({
+                'success': False,
+                'error': f'Expected JSON object, got {type(data).__name__}'
+            })
+        
+        # Extract parameters
+        dayprogram_id = data.get('dayprogram_id')
+        description = data.get('description')
+        route_data = data.get('route_data')
+        start = data.get('start')
+        end = data.get('end')
+        
+        print(f"DayProgram ID: {dayprogram_id}")
+        print(f"Description: {description}")
+        print(f"Route data present: {route_data is not None}")
+        
+        # Validate
+        if not all([dayprogram_id, description, route_data]):
+            return JsonResponse({
+                'success': False,
+                'error': 'Missing required fields: dayprogram_id, description, route_data'
+            })
+        
+        # Import models here to avoid circular imports
+        from .models import DayProgram, Route
+        
+        # Get dayprogram
+        try:
+            dayprogram = DayProgram.objects.get(id=dayprogram_id)
+            print(f"Found DayProgram: {dayprogram}")
+        except DayProgram.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': f'DayProgram with id {dayprogram_id} not found'
+            })
+        
+        # Create GPX
+        import gpxpy
+        import gpxpy.gpx
+        from datetime import datetime
+        
+        gpx = gpxpy.gpx.GPX()
+        gpx.name = description
+        gpx.description = f"Route created with {route_data.get('mode', 'unknown')} mode"
+        gpx.time = datetime.now()
+        
+        # Create track
+        gpx_track = gpxpy.gpx.GPXTrack()
+        gpx_track.name = description
+        gpx.tracks.append(gpx_track)
+        
+        # Create segment
+        gpx_segment = gpxpy.gpx.GPXTrackSegment()
+        gpx_track.segments.append(gpx_segment)
+        
+        # Add points
+        coordinates = route_data.get('coordinates', [])
+        print(f"Adding {len(coordinates)} points to GPX")
+        
+        for coord in coordinates:
+            if len(coord) >= 2:
+                gpx_segment.points.append(
+                    gpxpy.gpx.GPXTrackPoint(
+                        latitude=coord[1],
+                        longitude=coord[0]
+                    )
+                )
+        
+        # Add waypoints
+        if start and len(start) >= 2:
+            gpx.waypoints.append(
+                gpxpy.gpx.GPXWaypoint(
+                    latitude=start[1],
+                    longitude=start[0],
+                    name='Start'
+                )
+            )
+        
+        if end and len(end) >= 2:
+            gpx.waypoints.append(
+                gpxpy.gpx.GPXWaypoint(
+                    latitude=end[1],
+                    longitude=end[0],
+                    name='End'
+                )
+            )
+        
+        # Generate GPX XML
+        gpx_xml = gpx.to_xml()
+        
+        # Save route
+        from datetime import datetime
+        filename = f"route_{dayprogram_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.gpx"
+        
+        route = Route(
+            dayprogram=dayprogram,
+            description=description
+        )
+        route.gpx_file.save(filename, ContentFile(gpx_xml.encode('utf-8')))
+        route.save()
+        
+        print(f"Route saved successfully: ID={route.id}")
+        
+        return JsonResponse({
+            'success': True,
+            'route_id': route.id,
+            'message': 'Route successfully saved'
+        })
+        
+    except Exception as e:
+        print(f"EXCEPTION: {type(e).__name__}: {str(e)}")
+        traceback.print_exc()
+        return JsonResponse({
+            'success': False,
+            'error': f'Error saving route: {str(e)}'
+        })
+
+
+
+
+
+OVERPASS_URL = "https://overpass-api.de/api/interpreter"
+
+
+@require_POST
+def fetch_pois_overpass(request):
+    """
+    Fetch POIs from Overpass API
+    """
+    try:
+        payload = json.loads(request.body.decode())
+        lat = payload["lat"]
+        lon = payload["lon"]
+        radius = int(payload["radius"])
+        filter_expr = payload["filter"]
+    except Exception as e:
+        print(f"POI request parsing error: {e}")
+        return JsonResponse({"features": []})
+
+    query = f"""
+    [out:json][timeout:10];
+    (
+      node{filter_expr}(around:{radius},{lat},{lon});
+      way{filter_expr}(around:{radius},{lat},{lon});
+    );
+    out center tags;
+    """
+
+    print(f"POI Query: lat={lat}, lon={lon}, radius={radius}")
+
+    try:
+        resp = requests.post(
+            OVERPASS_URL,
+            data=query,
+            timeout=15,
+            headers={"User-Agent": "holidaytrips/1.0"},
+        )
+        
+        # Check response status
+        if resp.status_code != 200:
+            print(f"Overpass API returned status {resp.status_code}")
+            return JsonResponse({"features": []})
+        
+        # Check if response has content
+        if not resp.text or not resp.text.strip():
+            print("Overpass API returned empty response")
+            return JsonResponse({"features": []})
+        
+        # Try to parse JSON
+        try:
+            data = resp.json()
+        except json.JSONDecodeError as e:
+            print(f"Overpass API returned invalid JSON: {e}")
+            print(f"Response text (first 200 chars): {resp.text[:200]}")
+            return JsonResponse({"features": []})
+            
+    except requests.RequestException as e:
+        print(f"Overpass API request failed: {e}")
+        return JsonResponse({"features": []})
+    except Exception as e:
+        print(f"Unexpected error fetching POIs: {e}")
+        return JsonResponse({"features": []})
+
+    # Parse elements
+    features = []
+    for el in data.get("elements", []):
+        lat_ = el.get("lat") or el.get("center", {}).get("lat")
+        lon_ = el.get("lon") or el.get("center", {}).get("lon")
+        tags = el.get("tags", {})
+
+        if not lat_ or not lon_:
+            continue
+
+        features.append({
+            "lat": lat_,
+            "lon": lon_,
+            "name": tags.get("name", "POI"),
+            "category": (
+                tags.get("amenity")
+                or tags.get("tourism")
+                or tags.get("leisure")
+                or ""
+            ),
+        })
+
+    print(f"Found {len(features)} POIs")
+    return JsonResponse({"features": features})

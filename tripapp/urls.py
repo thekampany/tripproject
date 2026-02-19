@@ -19,6 +19,7 @@ urlpatterns = [
     path('api/trippers/<int:tripper_id>/trips/', views.TripsByTripperView.as_view(), name='trips-by-tripper'),
     path("api/tripoutlines/", views.TripOutlineCreateView.as_view(), name="tripoutline-create"),
     path('api/import_itinerary/', views.import_itineraryidea, name='import_itineraryidea'),
+    path("api/pois/", views.fetch_pois_overpass, name="fetch_pois_overpass"),
     path('index', views.index, name='index'),
     path('', views.index, name='index'),
     path('home', views.trip_list, name='trip_list'),
@@ -123,4 +124,6 @@ urlpatterns = [
     path('itineraryidea/<int:pk>/edit/', views.itineraryidea_edit, name="itineraryidea-edit"),
     path('itineraryidea/<int:pk>/update/', views.update_itineraryidea, name='update_itineraryidea'),
     path("itineraryidea/<int:pk>/to_trip/", views.itineraryidea_to_trip, name="itineraryidea-to-trip"),
- ]
+    path('calculate-route/', views.calculate_route, name='calculate_route'),
+    path('save-route/', views.save_route, name='save_route'),
+]

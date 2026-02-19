@@ -1,4 +1,3 @@
-
 {% load static %}
 <!DOCTYPE html>
 <html>
@@ -52,14 +51,201 @@
             font-size: 24px; 
             text-align: center;
         }
+
+        /* Route Planning Styles */
+        .route-planning-panel {
+            background: silver;
+            padding: 0;
+            border-radius: 8px;
+            margin-top: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .route-planning-header {
+            padding: 15px;
+            background: silver;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .route-planning-header:hover {
+            background: #e9ecef;
+        }
+
+        .route-planning-header h4 {
+            margin: 0;
+        }
+
+        .route-planning-toggle {
+            font-size: 20px;
+            transition: transform 0.3s;
+        }
+
+        .route-planning-toggle.expanded {
+            transform: rotate(180deg);
+        }
+
+        .route-planning-content {
+            padding: 15px;
+            display: none;
+        }
+
+        .route-planning-content.expanded {
+            display: block;
+        }
+
+        .route-point {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            cursor: move;
+        }
+
+        .route-point-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .route-point-icon.start {
+            background: #28a745;
+        }
+
+        .route-point-icon.end {
+            background: #dc3545;
+        }
+
+        .route-point-input {
+            flex-grow: 1;
+            border: 1px solid #ddd;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .route-point-clear {
+            margin-left: 10px;
+            padding: 5px 10px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .route-options {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .route-mode-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .route-mode-btn.active {
+            border-color: #007bff;
+            background: #e7f3ff;
+        }
+
+        .route-mode-btn:hover {
+            border-color: #007bff;
+        }
+
+        .route-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .route-action-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .route-action-btn.primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .route-action-btn.secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .route-action-btn:hover {
+            opacity: 0.9;
+        }
+
+        .route-action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .route-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: #6c757d;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .route-info.visible {
+            display: block;
+        }
+
+        .route-info-item {
+            margin: 5px 0;
+        }
+
+        .route-save-form {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .route-save-form.visible {
+            display: block;
+        }
+
+        .route-save-input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
 <div class="tripappcard">
 <div class="container">
 
-
-      <div class="navigation-bar">
+    <div class="navigation-bar">
         <div class="nav-item">
             {% if previous_dayprogram %}
                 <a href="{% url 'tripapp:trip_dayprogram_points' dayprogram.trip.id previous_dayprogram.id %}" class="nav-link">&larr;</a>
@@ -81,12 +267,369 @@
         </div>
     </div>
   
-  <div id="map"
-    data-trip-id="{{ trip.id }}"
-    data-dayprogram-id="{{ dayprogram.id }}"
-    data-csrf="{{ csrf_token }}">
-  </div>
-  <script>
+    <div id="map"
+        data-trip-id="{{ trip.id }}"
+        data-dayprogram-id="{{ dayprogram.id }}"
+        data-csrf="{{ csrf_token }}">
+    </div>
+
+    {% comment %}
+    Show route planning panel only if:
+    1. has_openrouteservice is True
+    2. dayprogram date is today or in the future
+    {% endcomment %}
+    {% if has_openrouteservice %}
+        {% now "Y-m-d" as today %}
+        {% if dayprogram.tripdate|date:"Y-m-d" >= today %}
+            <!-- Route Planning Panel -->
+            <div class="route-planning-panel">
+                <div class="route-planning-header" onclick="toggleRoutePlanning()">
+                    <h4>Route Planning</h4>
+                    <span class="route-planning-toggle">▼</span>
+                </div>
+                
+                <div class="route-planning-content" id="route-planning-content">
+                    <div class="route-point" id="start-point" draggable="false">
+                        <div class="route-point-icon start">A</div>
+                        <input type="text" class="route-point-input" id="start-input" placeholder="Select starting location on map" readonly>
+                        <button class="route-point-clear" onclick="clearRoutePoint('start')">✕</button>
+                    </div>
+
+                    <div class="route-point" id="end-point" draggable="false">
+                        <div class="route-point-icon end">B</div>
+                        <input type="text" class="route-point-input" id="end-input" placeholder="Select ending location on map" readonly>
+                        <button class="route-point-clear" onclick="clearRoutePoint('end')">✕</button>
+                    </div>
+
+                    <div class="route-options">
+                        <button class="route-mode-btn active" data-mode="driving-car" onclick="selectRouteMode(this)">
+                            🚗 Car
+                        </button>
+                        <button class="route-mode-btn" data-mode="foot-walking" onclick="selectRouteMode(this)">
+                            🚶 Walk
+                        </button>
+                        <button class="route-mode-btn" data-mode="cycling-regular" onclick="selectRouteMode(this)">
+                            🚴 Bicycle
+                        </button>
+                    </div>
+
+                    <div class="route-actions">
+                        <button class="route-action-btn primary" onclick="calculateRoute()" id="calc-route-btn">
+                            Calculate Route
+                        </button>
+                        <button class="route-action-btn secondary" onclick="clearRoute()">
+                            Clear Route
+                        </button>
+                    </div>
+
+                    <div class="route-info" id="route-info">
+                        <div class="route-info-item"><strong>Distance:</strong> <span id="route-distance">-</span></div>
+                        <div class="route-info-item"><strong>Duration:</strong> <span id="route-duration">-</span></div>
+                    </div>
+
+                    <div class="route-save-form" id="route-save-form">
+                        <input type="text" class="route-save-input" id="route-description" placeholder="Route Description">
+                        <button class="route-action-btn primary" onclick="saveRoute()">
+                            Save as Route
+                        </button>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+    
+    <script>
+    // Toggle route planning panel
+    function toggleRoutePlanning() {
+        const content = document.getElementById('route-planning-content');
+        const toggle = document.querySelector('.route-planning-toggle');
+        
+        content.classList.toggle('expanded');
+        toggle.classList.toggle('expanded');
+    }
+
+    // Global variables for route planning
+    let startMarker = null;
+    let endMarker = null;
+    let startCoords = null;
+    let endCoords = null;
+    let routeLayer = null;
+    let currentRouteMode = 'driving-car';
+    let currentRouteData = null;
+
+    // ========================================
+    // UNIFIED ICON SYSTEM - Color Coded
+    // ========================================
+    
+    // Color scheme for consistency
+    const COLORS = {
+        route_start: '#28a745',   // Green
+        route_end: '#dc3545',     // Red
+        accommodation: '#6f42c1', // Purple
+        food: '#fd7e14',          // Orange
+        activity: '#007bff',      // Blue
+        location: '#6c757d',      // Gray
+        poi: '#ffc107',           // Yellow
+        default: '#ffffff'
+    };
+
+    // Unified icon function - creates consistent circular markers
+    function uniformIcon(color, emoji, size = 30) {
+        return L.divIcon({
+            html: `<div style="background:${color};width:${size}px;height:${size}px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:${size*0.6}px;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.3)">${emoji}</div>`,
+            className: '',
+            iconSize: [size, size],
+            iconAnchor: [size/2, size/2],
+            popupAnchor: [0, -size/2]
+        });
+    }
+
+    // Route marker icons
+    const startIcon = uniformIcon(COLORS.route_start, 'A');
+    const endIcon = uniformIcon(COLORS.route_end, 'B');
+
+    // POI icons - uniform style with appropriate colors
+    const POI_ICONS = {
+        food: uniformIcon(COLORS.food, '🍔', 20),
+        sleep: uniformIcon(COLORS.accommodation, '🛏️', 20),
+        sights: uniformIcon(COLORS.activity, '📸', 20),
+        nature: uniformIcon(COLORS.poi, '🌳', 20),
+        practical: uniformIcon(COLORS.activity, '🚻', 20),
+    };
+
+    function selectRouteMode(button) {
+        document.querySelectorAll('.route-mode-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        button.classList.add('active');
+        currentRouteMode = button.dataset.mode;
+        
+        // Recalculate if both points are set
+        if (startCoords && endCoords) {
+            calculateRoute();
+        }
+    }
+
+    function clearRoutePoint(point) {
+        if (point === 'start') {
+            if (startMarker) {
+                map.removeLayer(startMarker);
+                startMarker = null;
+            }
+            startCoords = null;
+            document.getElementById('start-input').value = '';
+        } else {
+            if (endMarker) {
+                map.removeLayer(endMarker);
+                endMarker = null;
+            }
+            endCoords = null;
+            document.getElementById('end-input').value = '';
+        }
+        clearRoute();
+    }
+
+    function clearRoute() {
+        if (routeLayer) {
+            map.removeLayer(routeLayer);
+            routeLayer = null;
+        }
+        document.getElementById('route-info').classList.remove('visible');
+        document.getElementById('route-save-form').classList.remove('visible');
+        currentRouteData = null;
+        
+        // Clear description field
+        document.getElementById('route-description').value = '';
+    }
+
+    async function calculateRoute() {
+        if (!startCoords || !endCoords) {
+            alert('Select a start and end location on the map');
+            return;
+        }
+
+        const calcBtn = document.getElementById('calc-route-btn');
+        calcBtn.disabled = true;
+        calcBtn.textContent = 'Calculating...';
+
+        try {
+            const response = await fetch("{% url 'tripapp:calculate_route' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.getElementById('map').dataset.csrf
+                },
+                body: JSON.stringify({
+                    start: startCoords,
+                    end: endCoords,
+                    mode: currentRouteMode
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Clear existing route
+                if (routeLayer) {
+                    map.removeLayer(routeLayer);
+                }
+
+                // Draw new route
+                const coords = data.coordinates.map(c => [c[1], c[0]]); // Swap to [lat, lng]
+                routeLayer = L.polyline(coords, {
+                    color: '#007bff',
+                    weight: 5,
+                    opacity: 0.7
+                }).addTo(map);
+
+                // Fit bounds to show entire route
+                map.fitBounds(routeLayer.getBounds());
+
+                // Format distance and duration
+                const distanceKm = (data.distance / 1000).toFixed(2);
+                const durationFormatted = formatDuration(data.duration);
+
+                // Show route info
+                document.getElementById('route-distance').textContent = distanceKm + ' km';
+                document.getElementById('route-duration').textContent = durationFormatted;
+                document.getElementById('route-info').classList.add('visible');
+                document.getElementById('route-save-form').classList.add('visible');
+
+                // Auto-fill description with distance and duration
+                const modeText = {
+                    'driving-car': 'Car',
+                    'foot-walking': 'Walk',
+                    'cycling-regular': 'Bicycle'
+                }[currentRouteMode] || 'Route';
+
+                document.getElementById('route-description').value = 
+                    `${modeText}: ${distanceKm}km, ${durationFormatted}`;
+
+                // Store route data for saving
+                currentRouteData = {
+                    coordinates: data.coordinates,
+                    distance: data.distance,
+                    duration: data.duration,
+                    mode: currentRouteMode
+                };
+            } else {
+                alert('Error calculating route: ' + (data.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error calculating route');
+        } finally {
+            calcBtn.disabled = false;
+            calcBtn.textContent = 'Calculate Route';
+        }
+    }
+
+    function formatDuration(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        
+        if (hours > 0) {
+            return `${hours}h ${minutes}m`;
+        }
+        return `${minutes}m`;
+    }
+
+    async function saveRoute() {
+        if (!currentRouteData) {
+            alert('Calculate a Route first');
+            return;
+        }
+
+        const description = document.getElementById('route-description').value;
+        if (!description) {
+            alert('Enter description');
+            return;
+        }
+
+        try {
+            const response = await fetch("{% url 'tripapp:save_route' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.getElementById('map').dataset.csrf
+                },
+                body: JSON.stringify({
+                    dayprogram_id: document.getElementById('map').dataset.dayprogramId,
+                    description: description,
+                    route_data: currentRouteData,
+                    start: startCoords,
+                    end: endCoords
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert('Route saved!');
+                document.getElementById('route-description').value = '';
+                // Optionally reload to show the saved route
+                location.reload();
+            } else {
+                alert('Error saving: ' + (data.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error saving route');
+        }
+    }
+
+    function fetchPOIs(layerKey, lat, lon, radius, filter) {
+        const csrfToken = document.getElementById("map").dataset.csrf;
+
+        return fetch("{% url 'tripapp:fetch_pois_overpass' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken,
+            },
+            body: JSON.stringify({
+                layer: layerKey,
+                lat: lat,
+                lon: lon,
+                radius: radius,
+                filter: filter,
+            })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("POI fetch failed");
+            return res.json();
+        })
+        .then(data => {
+            let targetLayer = {
+                food: poifoodLayer,
+                sleep: poisleepLayer,
+                sights: poisightsLayer,
+                nature: poinatureLayer,
+                practical: poipracticalLayer,
+            }[layerKey];
+
+            if (!targetLayer) return;
+
+            targetLayer.clearLayers();
+
+            data.features.forEach(f => {
+                L.marker(
+                    [f.lat, f.lon],
+                    { icon: POI_ICONS[layerKey] }
+                )
+                .bindPopup(`
+                    <strong>${f.name}</strong><br>
+                    ${f.category}
+                `)
+                .addTo(targetLayer);
+            });
+        })
+        .catch(err => {
+            console.warn("POI error:", err);
+        });
+    }
+
+
     {% if country_coords and not points and not locations and not photolocations %}
         var map = L.map('map').setView([{{ country_coords.0 }},{{ country_coords.1 }}], 7);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -118,40 +661,12 @@
 
         new L.Control.Geocoder().addTo(map);
 
-        var bedIcon = L.icon({
-            iconUrl: "{% static 'icons/mapicons/mappin-bed.png' %}",
-            shadowUrl: "{% static 'icons/mapicons/mappin-bed-shadow.png' %}",
-
-            iconSize:     [50, 50], // size of the icon
-            shadowSize:   [50, 50], // size of the shadow
-            iconAnchor:   [25, 50], // point of the icon which will correspond to marker's location
-            shadowAnchor: [25, 50],  // the same for the shadow
-            popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
-        });
-        var restaurantIcon = L.icon({
-            iconUrl: "{% static 'icons/mapicons/mappin-eat.png' %}",
-            shadowUrl: "{% static 'icons/mapicons/mappin-bed-shadow.png' %}",
-
-            iconSize:     [50, 50], // size of the icon
-            shadowSize:   [50, 50], // size of the shadow
-            iconAnchor:   [25, 50], // point of the icon which will correspond to marker's location
-            shadowAnchor: [25, 50],  // the same for the shadow
-            popupAnchor:  [0, -60] // point from which the popup should open relative to the iconAnchor
-        });
-        var visitedLocationIcon = L.icon({
-            iconUrl: "{% static 'icons/mapicons/mappin-visited.png' %}",
-
-            iconSize:     [12, 12], // size of the icon
-            iconAnchor:   [8, 8], // point of the icon which will correspond to marker's location
-            popupAnchor:  [0, -20] // point from which the popup should open relative to the iconAnchor
-        });
-        var visitedPhotoLocationIcon = L.icon({
-            iconUrl: "{% static 'icons/mapicons/mappin-cameraphotoicon.png' %}",
-
-            iconSize:     [20, 20], // size of the icon
-            iconAnchor:   [8, 8], // point of the icon which will correspond to marker's location
-            popupAnchor:  [0, -20] // point from which the popup should open relative to the iconAnchor
-        });
+        // Point markers - using uniform icon system
+        var defaultIcon = uniformIcon(COLORS.default, '📍', 36);
+        var bedIcon = uniformIcon(COLORS.accommodation, '🛏️', 36);
+        var restaurantIcon = uniformIcon(COLORS.food, '🍽️', 36);
+        var visitedLocationIcon = uniformIcon(COLORS.location, '•', 10);
+        var visitedPhotoLocationIcon = uniformIcon(COLORS.activity, '📷', 24);
 
         // Add markers from Django context
         var points = [
@@ -191,8 +706,6 @@
         points.forEach(function(point) {
             var popupContent = `<div class="custom-popup"><h4>${point.name}</h4></div>`;
             var marker;
-            console.log('marker_type:', point.marker_type);
-            console.log('coords:', point.coords);
 
             if (!point.coords || !Array.isArray(point.coords) || point.coords.length !== 2 || 
                 typeof point.coords[0] !== 'number' || typeof point.coords[1] !== 'number') {
@@ -204,10 +717,11 @@
             } else if (point.marker_type === 'restaurant') {
                 marker = L.marker(point.coords, {icon: restaurantIcon}).bindPopup(popupContent);
             } else {
-                marker = L.marker(point.coords).bindPopup(popupContent);
+                marker = L.marker(point.coords, {icon: defaultIcon}).bindPopup(popupContent);
             }            
             markers.addLayer(marker);
         });
+        
         // visited locations
         locations.forEach(function(location) {
             var popupContent = `<div class="custom-popup"><h4>${location.timestamp}</h4></div>`;
@@ -215,19 +729,19 @@
             marker = L.marker(location.coords, {icon: visitedLocationIcon}).bindPopup(popupContent);
             locationsLayer.addLayer(marker);
         });
+        
         // visited photolocations
          photolocations.forEach(function(photolocation) {
             var popupContent = `<div class="custom-popup"><a href="${photolocation.immich_url}photos/${photolocation.immich_photo_id}"><img src="${photolocation.thumbnail}" alt="Thumbnail" /></a><div class="timestamp">${photolocation.timestamp}</div></div>`;
             var marker;
             marker = L.marker(photolocation.coords, {icon: visitedPhotoLocationIcon}).bindPopup(popupContent);
-            photolocationsLayer.addLayer(marker);
-            console.log('photo')
+            photolocationsLayer.addLayer(marker);  // FIXED: was addTo(marker)
          });
         
         // Add the feature group to the map
         markers.addTo(map);
-        //locationsLayer.addTo(map); //initially off
         photolocationsLayer.addTo(map);
+        
         // Set the view to fit all the markers
         var allLayers = L.featureGroup([markers, locationsLayer, photolocationsLayer]);
         var bounds = allLayers.getBounds();
@@ -258,22 +772,210 @@
             maxZoom: 17, 
         }).addTo(map);
 
+        // GPX Routes with custom start/end markers
         var gpxRoutesLayer = L.layerGroup();
-        // Add route to the map
         {% for route in dayprogram.routes.all %}
-            new L.GPX("{{ route.gpx_file.url }}", {
-                async: true,
-                polyline_options: {
-                color: 'blue',        
-                opacity: 0.7,         
-                weight: 4,            
-                dashArray: '5, 10'
-                }    
-            }).on('loaded', function(e) {
-                map.fitBounds(e.target.getBounds());
-            }).addTo(gpxRoutesLayer);
+            (function() {
+                var routeDescription = "{{ route.description|escapejs }}";
+                
+                new L.GPX("{{ route.gpx_file.url }}", {
+                    async: true,
+                    marker_options: {
+                        startIconUrl: '',
+                        endIconUrl: '',
+                        shadowUrl: '',
+                        wptIconUrls: {}
+                    },
+                    polyline_options: {
+                        color: 'blue',        
+                        opacity: 0.7,         
+                        weight: 4,            
+                        dashArray: '5, 10'
+                    }    
+                }).on('loaded', function(e) {
+                    var bounds = e.target.getBounds();
+                    
+                    // Get start and end coordinates from the GPX
+                    var startPoint = null;
+                    var endPoint = null;
+                    
+                    e.target.getLayers().forEach(function(layer) {
+                        if (layer instanceof L.Polyline) {
+                            var latlngs = layer.getLatLngs();
+                            if (latlngs.length > 0) {
+                                // For multi-segment routes, flatten the array
+                                var allPoints = [];
+                                if (Array.isArray(latlngs[0])) {
+                                    // Multi-segment
+                                    latlngs.forEach(function(segment) {
+                                        allPoints = allPoints.concat(segment);
+                                    });
+                                } else {
+                                    // Single segment
+                                    allPoints = latlngs;
+                                }
+                                
+                                if (allPoints.length > 0) {
+                                    startPoint = allPoints[0];
+                                    endPoint = allPoints[allPoints.length - 1];
+                                }
+                            }
+                            
+                            // Add tooltip and popup to the polyline
+                            layer.bindTooltip(routeDescription, {
+                                sticky: true
+                            });
+                            layer.bindPopup("<strong>" + routeDescription + "</strong>");
+                        } else if (layer instanceof L.Marker) {
+                            // Remove default GPX markers
+                            e.target.removeLayer(layer);
+                        }
+                    });
+                    
+                    // Add custom start marker with uniform icon
+                    if (startPoint) {
+                        var startMarkerGPX = L.marker(startPoint, {
+                            icon: uniformIcon(COLORS.route_start, '▶', 24)
+                        }).addTo(gpxRoutesLayer);
+                        
+                        startMarkerGPX.bindPopup(
+                            "<div style='text-align:center;'>" +
+                            "<strong>Start</strong><br>" +
+                            routeDescription +
+                            "</div>"
+                        );
+                        
+                        startMarkerGPX.bindTooltip("Start: " + routeDescription, {
+                            direction: 'top',
+                            offset: [0, -12]
+                        });
+                    }
+                    
+                    // Add custom end marker with uniform icon
+                    if (endPoint) {
+                        var endMarkerGPX = L.marker(endPoint, {
+                            icon: uniformIcon(COLORS.route_end, '⏹', 24)
+                        }).addTo(gpxRoutesLayer);
+                        
+                        endMarkerGPX.bindPopup(
+                            "<div style='text-align:center;'>" +
+                            "<strong>End</strong><br>" +
+                            routeDescription +
+                            "</div>"
+                        );
+                        
+                        endMarkerGPX.bindTooltip("End: " + routeDescription, {
+                            direction: 'top',
+                            offset: [0, -12]
+                        });
+                    }
+                    
+                    // Fit bounds to show the route
+                    if (bounds.isValid()) {
+                        map.fitBounds(bounds);
+                    }
+                }).addTo(gpxRoutesLayer);
+            })();
         {% endfor %}
         gpxRoutesLayer.addTo(map);
+
+
+        function radiusFromZoom(zoom) {
+        if (zoom >= 17) return 150;
+        if (zoom >= 16) return 250;
+        if (zoom >= 15) return 400;
+        if (zoom >= 14) return 700;
+        if (zoom >= 13) return 1200;
+        if (zoom >= 12) return 2500;
+        return 5000;
+        }
+
+        const POI_LAYERS = {
+        food: {
+            filter: '["amenity"~"restaurant|cafe|bar|fast_food|pub|ice_cream"]',
+            icon: "🍔",
+        },
+        sleep: {
+            filter: '["tourism"~"hotel|hostel|guest_house|camp_site"]',
+            icon: "🛏️",
+        },
+        sights: {
+            filter: '["tourism"~"attraction|museum|viewpoint"]',
+            icon: "📸",
+        },
+        nature: {
+            filter: '["leisure"~"park|nature_reserve"]',
+            icon: "🌳",
+        },
+        practical: {
+            filter: '["amenity"~"toilets|parking|fuel|atm|pharmacy"]',
+            icon: "🚻",
+        }
+        };
+
+        function buildOverpassQuery(lat, lon, radius, filter) {
+        return `
+            [out:json][timeout:10];
+            (
+            node${filter}(around:${radius},${lat},${lon});
+            way${filter}(around:${radius},${lat},${lon});
+            );
+            out center tags;
+        `;
+        }
+
+        var poisleepLayer = L.layerGroup();
+        var poinatureLayer = L.layerGroup();
+        var poisightsLayer = L.layerGroup();
+        var poipracticalLayer = L.layerGroup();
+        var poifoodLayer = L.layerGroup();
+
+
+        map.on("overlayadd", function(e) {
+            const center = map.getCenter();
+            const zoom = map.getZoom();
+            const radius = radiusFromZoom(zoom);
+
+            for (const [key, cfg] of Object.entries(POI_LAYERS)) {
+                const layerMap = {
+                    food: poifoodLayer,
+                    sleep: poisleepLayer,
+                    sights: poisightsLayer,
+                    nature: poinatureLayer,
+                    practical: poipracticalLayer,
+                };
+
+                if (e.layer === layerMap[key]) {
+                    fetchPOIs(key, center.lat, center.lng, radius, cfg.filter);
+                }
+            }
+        });
+
+        // FIXED: Only fetch POIs for visible layers
+        map.on("moveend", () => {
+            const center = map.getCenter();
+            const zoom = map.getZoom();
+            const radius = radiusFromZoom(zoom);
+
+            // Only fetch POIs for layers that are currently visible on the map
+            for (const [key, cfg] of Object.entries(POI_LAYERS)) {
+                const layerMap = {
+                    food: poifoodLayer,
+                    sleep: poisleepLayer,
+                    sights: poisightsLayer,
+                    nature: poinatureLayer,
+                    practical: poipracticalLayer,
+                };
+
+                const layer = layerMap[key];
+                
+                // Only fetch if the layer is visible on the map
+                if (layer && map.hasLayer(layer)) {
+                    fetchPOIs(key, center.lat, center.lng, radius, cfg.filter);
+                }
+            }
+        });
+
 
         var overlays = {
             "Markers": markers,
@@ -281,7 +983,15 @@
             "Tracked Locations": locationsLayer,
             "Photolocations": photolocationsLayer,
             "Lines": polyline,
-            "Heatmap": heatmapLayer
+            "Heatmap": heatmapLayer,
+            {% now "Y-m-d" as today %}
+            {% if dayprogram.tripdate|date:"Y-m-d" >= today %}
+                "POI food": poifoodLayer,
+                "POI sleep": poisleepLayer,
+                "POI sights": poisightsLayer,
+                "POI nature": poinatureLayer,
+                "POI practical": poipracticalLayer,
+            {% endif %}
         };
         const validOverlays = {};
         for (const [key, layer] of Object.entries(overlays)) {
@@ -291,6 +1001,14 @@
         }
 
         L.control.layers(null, validOverlays, { collapsed: true,position: 'bottomright' }).addTo(map);
+
+        {% now "Y-m-d" as today %}
+        {% if dayprogram.tripdate|date:"Y-m-d" >= today %}
+            if (map.hasLayer(poifoodLayer) || map.hasLayer(poinatureLayer) || map.hasLayer(poisightsLayer) || map.hasLayer(poipracticalLayer) || map.hasLayer(poisleepLayer)) {
+                fetchPOIs();
+            }
+        {% endif %}
+
 
     {% endif %}
 
@@ -302,12 +1020,9 @@
             const tripId = mapElement.dataset.tripId;
             const dayprogramId = mapElement.dataset.dayprogramId;
             const csrfToken = mapElement.dataset.csrf;
-            console.log("Trip Id", tripId);
-            console.log("Attaching dblclick event listener to map...");
 
             map.on('dblclick', function (e) {
                 var latLng = e.latlng;
-                console.log('doubleclicked!', latLng);
 
                 var newMarker = L.marker(latLng).addTo(map);
 
@@ -341,8 +1056,6 @@
                     function handleSave() {
                         const eventName = nameInput.value;
                         const eventType = typeSelect.value;
-
-                        console.log('Saving event:', eventName, eventType);
 
                         $.ajax({
                             url: '/save_event/',
@@ -385,15 +1098,73 @@
                     addTapSupport(deleteBtn, handleDelete);
 
                 }, 0);
-
-
             });
         }
 
-
         handleMapDoubleClick(map);
-
         map.doubleClickZoom.disable();
+
+        // Route planning: Click to set start/end markers (only if route planning panel exists)
+        {% if has_openrouteservice %}
+            {% now "Y-m-d" as today %}
+            {% if dayprogram.tripdate|date:"Y-m-d" >= today %}
+                map.on('click', function(e) {
+                    // Check if we're in route planning mode
+                    if (!startCoords) {
+                        // Set start point
+                        if (startMarker) {
+                            map.removeLayer(startMarker);
+                        }
+                        startMarker = L.marker(e.latlng, {
+                            icon: startIcon,
+                            draggable: true
+                        }).addTo(map);
+                        
+                        startCoords = [e.latlng.lng, e.latlng.lat];
+                        document.getElementById('start-input').value = 
+                            `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
+                        
+                        startMarker.on('dragend', function(event) {
+                            const marker = event.target;
+                            const position = marker.getLatLng();
+                            startCoords = [position.lng, position.lat];
+                            document.getElementById('start-input').value = 
+                                `${position.lat.toFixed(5)}, ${position.lng.toFixed(5)}`;
+                            if (endCoords) {
+                                calculateRoute();
+                            }
+                        });
+                    } else if (!endCoords) {
+                        // Set end point
+                        if (endMarker) {
+                            map.removeLayer(endMarker);
+                        }
+                        endMarker = L.marker(e.latlng, {
+                            icon: endIcon,
+                            draggable: true
+                        }).addTo(map);
+                        
+                        endCoords = [e.latlng.lng, e.latlng.lat];
+                        document.getElementById('end-input').value = 
+                            `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
+                        
+                        endMarker.on('dragend', function(event) {
+                            const marker = event.target;
+                            const position = marker.getLatLng();
+                            endCoords = [position.lng, position.lat];
+                            document.getElementById('end-input').value = 
+                                `${position.lat.toFixed(5)}, ${position.lng.toFixed(5)}`;
+                            if (startCoords) {
+                                calculateRoute();
+                            }
+                        });
+                        
+                        // Auto-calculate route when both points are set
+                        calculateRoute();
+                    }
+                });
+            {% endif %}
+        {% endif %}
 
     </script>
 

@@ -4,7 +4,6 @@ from django.conf import settings
 from django.core.files.base import ContentFile
 import logging
 from tripapp.models import Location
-import numpy as np
 from rdp import rdp
 import gpxpy
 
@@ -81,13 +80,16 @@ def generate_static_map(dayprogram):
     if locations:
         logger.info(f"Found {len(locations)} locations for polyline.")
         
-        coords = np.array([[loc.latitude, loc.longitude] for loc in locations])
+        coords = [(loc.latitude, loc.longitude) for loc in locations]
+
         if len(coords) > 150:
             simplified = rdp(coords, epsilon=0.0005)
-            logger.info(f"Reduced from {len(coords)} to {len(simplified)} points using RDP.")
+            logger.info(
+                f"Reduced from {len(coords)} to {len(simplified)} points using RDP."
+            )
         else:
-            simplified = coords
-        
+            simplified = coords        
+                
         polyline_str = "|".join([f"{lat},{lon}" for lat, lon in simplified])
         polyline_params.append(f"polyline=weight:4|color:0000FF|{polyline_str}") 
 
@@ -105,13 +107,19 @@ def generate_static_map(dayprogram):
                             gpx_points.append([point.latitude, point.longitude])
                     
                 if gpx_points:
-                    coords = np.array(gpx_points)
+                    coords = list(gpx_points)
+
                     if len(coords) > 150:
                         simplified = rdp(coords, epsilon=0.0005)
                     else:
                         simplified = coords
-                    polyline_str = "|".join([f"{lat},{lon}" for lat, lon in simplified])
-                    polyline_params.append(f"polyline=weight:4|color:FF0000|{polyline_str}")  
+
+                    polyline_str = "|".join(
+                        f"{lat},{lon}" for lat, lon in simplified
+                    )
+                    polyline_params.append(
+                        f"polyline=weight:4|color:FF0000|{polyline_str}"
+                    )
 
     params = {
         "width": 800,

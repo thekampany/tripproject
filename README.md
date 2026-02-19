@@ -83,6 +83,9 @@ UNSPLASH_ACCESS_KEY = 'xxxxx' #optional - for showing background images on trip 
 EXCHANGERATE_API_KEY = 'xxxxxxxxx' #optional - for calculating tripexpenses to the app_currency: exchangerate-api.com  
 STATICMAPS_URL = 'http://mystaticmaps.mydomain.com/api/staticmaps' #optional - for being able to generate offline maps using https://github.com/dietrichmax/docker-staticmaps  
 STATICMAPS_API_KEY = 'xxxxxxxx' # use when your staticmaps server has allow_api_keyless_access set to false  
+OPENROUTESERVICE_API_KEY = 'xxxx' # get api key from openrouteservice.org in order to plan routes on the map
+DISTANCE_UNIT = 'km' # or 'mi' 
+
 ```
 
 
