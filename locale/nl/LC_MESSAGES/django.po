@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-10 20:45+0100\n"
+"POT-Creation-Date: 2026-02-20 22:05+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -60,11 +60,11 @@ msgstr "Log Toevoegen"
 msgid "Save Log Entry"
 msgstr "Log Opslaan"
 
-#: tripapp/templates/tripapp/add_trippers.html:12
+#: tripapp/templates/tripapp/add_trippers.html:13
 msgid "Add someone else? Invite them"
 msgstr "Iemand toevoegen? Nodig uit"
 
-#: tripapp/templates/tripapp/add_trippers.html:14
+#: tripapp/templates/tripapp/add_trippers.html:15
 msgid "Save Selected"
 msgstr "Bewaar Selectie"
 
@@ -318,7 +318,7 @@ msgstr ""
 "starten mensen uit te nodigen en je Trip te organiseren."
 
 #: tripapp/templates/tripapp/index.html:139
-#: tripapp/templates/tripapp/tribe_map.html:68
+#: tripapp/templates/tripapp/tribe_map.html:69
 #: tripapp/templates/tripapp/tribe_trip_organize.html:108
 #: tripapp/templates/tripapp/tribe_trips.html:246
 #: tripapp/templates/tripapp/trip_detail.html:238
@@ -419,21 +419,21 @@ msgstr "Edit op de Kaart"
 msgid "Convert to Trip"
 msgstr "Exporteer Trip"
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:100
+#: tripapp/templates/tripapp/itineraryidea_list.html:101
 msgid "Are you sure?"
 msgstr "Weet je het zeker?"
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:100
+#: tripapp/templates/tripapp/itineraryidea_list.html:101
 #: tripapp/templates/tripapp/tripper_profile.html:26
 msgid "Delete"
 msgstr "Verwijder"
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:107
+#: tripapp/templates/tripapp/itineraryidea_list.html:109
 msgid "No itinerary ideas yet."
 msgstr "Nog geen Reisschema ideeen."
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:110
-#: tripapp/templates/tripapp/tribe_map.html:69
+#: tripapp/templates/tripapp/itineraryidea_list.html:112
+#: tripapp/templates/tripapp/tribe_map.html:70
 #: tripapp/templates/tripapp/tribe_trip_organize.html:8
 #: tripapp/templates/tripapp/tribe_trip_organize.html:96
 #: tripapp/templates/tripapp/tribe_trips.html:8
@@ -477,7 +477,9 @@ msgstr "Verboden Pad"
 
 #: tripapp/templates/tripapp/permission_denied.html:10
 msgid "No access to this part of the Trip"
-msgstr "Deze route hoort niet bij jouw reis. Kies een andere bestemming of keer terug naar bekende paden."
+msgstr ""
+"Deze route hoort niet bij jouw reis. Kies een andere bestemming of keer "
+"terug naar bekende paden."
 
 #: tripapp/templates/tripapp/scheduled_item_form.html:9
 msgid "Edit Scheduled Item"
@@ -495,7 +497,7 @@ msgstr "Voor dag"
 msgid "Update"
 msgstr "Bijwerken"
 
-#: tripapp/templates/tripapp/tribe_map.html:66
+#: tripapp/templates/tripapp/tribe_map.html:67
 #: tripapp/templates/tripapp/trip_detail.html:236
 #: tripapp/templates/tripapp/trip_list.html:190
 msgid "Settings"
@@ -603,6 +605,81 @@ msgstr "Geen Bingo aangemaakt op deze trip"
 #: tripapp/templates/tripapp/trip_checklist.html:47
 msgid "Trip"
 msgstr "Trip"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:296
+msgid "Select starting location on map"
+msgstr "Selecteer startlocatie op de kaart"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:302
+msgid "Select ending location on map"
+msgstr "Selecteer eindlocatie op de kaart"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:308
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:516
+msgid "Car"
+msgstr "Auto"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:311
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:517
+msgid "Walk"
+msgstr "Lopen"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:314
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:518
+msgid "Bicycle"
+msgstr "Fiets"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:320
+msgid "Calculate Route"
+msgstr "Bereken Route"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:323
+msgid "Clear Route"
+msgstr "Wis Route"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:328
+msgid "Distance:"
+msgstr "Afstand:"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:329
+msgid "Duration:"
+msgstr "Duur:"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:335
+msgid "Save as Route"
+msgstr "Route opslaan"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:345
+msgid "Select a start and end location on the map"
+msgstr "Selecteer start en eind locatie op de kaart"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:346
+msgid "Calculating..."
+msgstr "Berekenen..."
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:347
+msgid "Route saved!"
+msgstr "Route opgeslagen"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:348
+msgid "Error calculating route:"
+msgstr "Fout bij berekenen route:"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:349
+msgid "Calculate a Route first"
+msgstr "Bereken eerst een route"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:350
+msgid "Enter Description"
+msgstr "Geef Omschrijving"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:351
+msgid "Error Saving Route"
+msgstr "Fout bij opslaan route"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:519
+msgid "Route"
+msgstr "Wis Route"
 
 #: tripapp/templates/tripapp/trip_dayprograms.html:9
 msgid "Day"
@@ -715,24 +792,24 @@ msgstr "Trippers krijgen van / betalen aan trippers"
 msgid "No documents uploaded yet"
 msgstr "Geen documenten ge-upload"
 
-#: tripapp/views.py:1356
+#: tripapp/views.py:1367
 #, python-format
 msgid "Suggestion by %(username)s: %(suggestion)s"
 msgstr "Voorstel van %(username)s: %(suggestion)s"
 
-#: tripapp/views.py:1917
+#: tripapp/views.py:1928
 msgid "No Answers"
 msgstr "Geen Antwoorden"
 
-#: tripapp/views.py:2135 tripapp/views.py:2161
+#: tripapp/views.py:2146 tripapp/views.py:2172
 msgid "Tripper and emoji mandatory."
 msgstr "Tripper en emoji verplicht"
 
-#: tripapp/views.py:2146
+#: tripapp/views.py:2157
 msgid "You already liked this log with this emoji."
 msgstr "Je hebt deze log al een emoji gegeven."
 
-#: tripapp/views.py:2173
+#: tripapp/views.py:2184
 msgid "There is no like with this emoji that can be removed."
 msgstr "Er is geen like met deze emoji om te verwijderen"
 

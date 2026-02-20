@@ -1,4 +1,5 @@
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -291,46 +292,46 @@
                 <div class="route-planning-content" id="route-planning-content">
                     <div class="route-point" id="start-point" draggable="false">
                         <div class="route-point-icon start">A</div>
-                        <input type="text" class="route-point-input" id="start-input" placeholder="Select starting location on map" readonly>
+                        <input type="text" class="route-point-input" id="start-input" placeholder="{% trans 'Select starting location on map' %}" readonly>
                         <button class="route-point-clear" onclick="clearRoutePoint('start')">✕</button>
                     </div>
 
                     <div class="route-point" id="end-point" draggable="false">
                         <div class="route-point-icon end">B</div>
-                        <input type="text" class="route-point-input" id="end-input" placeholder="Select ending location on map" readonly>
+                        <input type="text" class="route-point-input" id="end-input" placeholder="{% trans 'Select ending location on map' %}" readonly>
                         <button class="route-point-clear" onclick="clearRoutePoint('end')">✕</button>
                     </div>
 
                     <div class="route-options">
                         <button class="route-mode-btn active" data-mode="driving-car" onclick="selectRouteMode(this)">
-                            🚗 Car
+                            🚗 {% trans "Car" %}
                         </button>
                         <button class="route-mode-btn" data-mode="foot-walking" onclick="selectRouteMode(this)">
-                            🚶 Walk
+                            🚶 {% trans "Walk" %}
                         </button>
                         <button class="route-mode-btn" data-mode="cycling-regular" onclick="selectRouteMode(this)">
-                            🚴 Bicycle
+                            🚴 {% trans "Bicycle" %}
                         </button>
                     </div>
 
                     <div class="route-actions">
                         <button class="route-action-btn primary" onclick="calculateRoute()" id="calc-route-btn">
-                            Calculate Route
+                            {% trans "Calculate Route" %}
                         </button>
                         <button class="route-action-btn secondary" onclick="clearRoute()">
-                            Clear Route
+                            {% trans "Clear Route" %}
                         </button>
                     </div>
 
                     <div class="route-info" id="route-info">
-                        <div class="route-info-item"><strong>Distance:</strong> <span id="route-distance">-</span></div>
-                        <div class="route-info-item"><strong>Duration:</strong> <span id="route-duration">-</span></div>
+                        <div class="route-info-item"><strong>{% trans "Distance:" %}</strong> <span id="route-distance">-</span></div>
+                        <div class="route-info-item"><strong>{% trans "Duration:" %}</strong> <span id="route-duration">-</span></div>
                     </div>
 
                     <div class="route-save-form" id="route-save-form">
                         <input type="text" class="route-save-input" id="route-description" placeholder="Route Description">
                         <button class="route-action-btn primary" onclick="saveRoute()">
-                            Save as Route
+                            {% trans "Save as Route" %}
                         </button>
                     </div>
                 </div>
@@ -339,6 +340,16 @@
     {% endif %}
     
     <script>
+    const translations = {
+    selectStartEnd: "{% trans 'Select a start and end location on the map' %}",
+    calculating: "{% trans 'Calculating...' %}",
+    routeSaved: "{% trans 'Route saved!' %}",
+    errorCalculating: "{% trans 'Error calculating route:' %}",
+    calculateFirst: "{% trans 'Calculate a Route first' %}",
+    enterDescription: "{% trans 'Enter Description' %}",
+    errorSaving: "{% trans 'Error Saving Route' %}",
+    };
+
     // Toggle route planning panel
     function toggleRoutePlanning() {
         const content = document.getElementById('route-planning-content');
@@ -444,7 +455,7 @@
 
     async function calculateRoute() {
         if (!startCoords || !endCoords) {
-            alert('Select a start and end location on the map');
+            alert(translations.selectStartEnd);
             return;
         }
 
@@ -487,24 +498,32 @@
 
                 // Format distance and duration
                 const distanceKm = (data.distance / 1000).toFixed(2);
+                const distanceMi = (data.distance).toFixed(2);
                 const durationFormatted = formatDuration(data.duration);
 
                 // Show route info
-                document.getElementById('route-distance').textContent = distanceKm + ' km';
+                {% if distance_unit == 'km' %} 
+                   document.getElementById('route-distance').textContent = distanceKm + ' km';
+                {% else %}
+                   document.getElementById('route-distance').textContent = distanceMi + ' mi';
+                {% endif %}
                 document.getElementById('route-duration').textContent = durationFormatted;
                 document.getElementById('route-info').classList.add('visible');
                 document.getElementById('route-save-form').classList.add('visible');
 
                 // Auto-fill description with distance and duration
-                const modeText = {
-                    'driving-car': 'Car',
-                    'foot-walking': 'Walk',
-                    'cycling-regular': 'Bicycle'
-                }[currentRouteMode] || 'Route';
+                const modeText = (currentRouteMode === 'driving-car') ? "{% trans 'Car' %}" :
+                                (currentRouteMode === 'foot-walking') ? "{% trans 'Walk' %}" :
+                                (currentRouteMode === 'cycling-regular') ? "{% trans 'Bicycle' %}" :
+                                "{% trans 'Route' %}";
 
-                document.getElementById('route-description').value = 
-                    `${modeText}: ${distanceKm}km, ${durationFormatted}`;
-
+                {% if distance_unit == 'km' %} 
+                    document.getElementById('route-description').value = 
+                        `${modeText}: ${distanceKm}km, ${durationFormatted}`;
+                {% else %}
+                    document.getElementById('route-description').value = 
+                        `${modeText}: ${distanceMi}mi, ${durationFormatted}`;
+                {% endif %}
                 // Store route data for saving
                 currentRouteData = {
                     coordinates: data.coordinates,
@@ -517,7 +536,7 @@
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Error calculating route');
+            alert(translations.errorCalculating);
         } finally {
             calcBtn.disabled = false;
             calcBtn.textContent = 'Calculate Route';
@@ -536,13 +555,13 @@
 
     async function saveRoute() {
         if (!currentRouteData) {
-            alert('Calculate a Route first');
+            alert(translations.calculateFirst)
             return;
         }
 
         const description = document.getElementById('route-description').value;
         if (!description) {
-            alert('Enter description');
+            alert(translations.enterDescription);
             return;
         }
 
@@ -565,7 +584,7 @@
             const data = await response.json();
 
             if (data.success) {
-                alert('Route saved!');
+                alert(translations.routeSaved);
                 document.getElementById('route-description').value = '';
                 // Optionally reload to show the saved route
                 location.reload();
@@ -574,7 +593,7 @@
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Error saving route');
+            alert(translations.errorSaving);
         }
     }
 
@@ -1024,8 +1043,8 @@
             map.on('dblclick', function (e) {
                 var latLng = e.latlng;
 
-                var newMarker = L.marker(latLng).addTo(map);
-
+                //var newMarker = L.marker(latLng).addTo(map);
+                var newMarker = L.marker(latLng, {icon: defaultIcon}).addTo(map);
                 newMarker.bindPopup(
                     `<div class="p-2 leaflet-custom-popup" style="min-width:200px;">
                         <div class="form-group">
@@ -1033,9 +1052,9 @@
                         </div>
                         <div class="form-group">
                             <select class="form-control mb-3 event-type">
-                                <option value="default" selected>Default</option>
-                                <option value="bed">Bed</option>
-                                <option value="restaurant">Restaurant</option>
+                                <option value="default" selected>📍 Default</option>
+                                <option value="bed">🛏️ Bed</option>
+                                <option value="restaurant">🍽️ Restaurant</option>
                             </select>
                         </div>
                         <div class="d-flex justify-content-between">

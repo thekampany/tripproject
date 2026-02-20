@@ -275,7 +275,8 @@
                 var latLng = e.latlng;
                 console.log('doubleclicked!', latLng);
 
-                var newMarker = L.marker(latLng).addTo(map);
+                //var newMarker = L.marker(latLng).addTo(map);
+                var newMarker = L.marker(latLng, {icon: defaultIcon}).addTo(map);
 
                 newMarker.bindPopup(
                     `<div class="p-2 leaflet-custom-popup" style="min-width:200px;">
@@ -284,9 +285,9 @@
                         </div>
                         <div class="form-group">
                             <select class="form-control mb-3 event-type">
-                                <option value="default" selected>Default</option>
-                                <option value="bed">Bed</option>
-                                <option value="restaurant">Restaurant</option>
+                                <option value="default" selected>📍 Default</option>
+                                <option value="bed">🛏️ Bed</option>
+                                <option value="restaurant">🍽️ Restaurant</option>
                             </select>
                         </div>
                         <div class="d-flex justify-content-between">

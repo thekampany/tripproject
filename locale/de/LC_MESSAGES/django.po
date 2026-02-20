@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-10 22:05+0100\n"
+"POT-Creation-Date: 2026-02-20 21:43+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: German <LL@li.org>\n"
@@ -34,7 +34,6 @@ msgstr "Diese Reise konnten wir leider nicht finden"
 #: tripapp/templates/tripapp/permission_denied.html:11
 msgid "Go back the route you came or go"
 msgstr "Gehe zurück zu der Seite, von der du gekommen bist, oder gehe zu"
-
 
 #: tripapp/templates/tripapp/add_checklist_item.html:16
 #: tripapp/templates/tripapp/trip_checklist.html:61
@@ -309,7 +308,7 @@ msgstr ""
 "Stamm zu starten, Leute einzuladen und die Reise zu planen"
 
 #: tripapp/templates/tripapp/index.html:139
-#: tripapp/templates/tripapp/tribe_map.html:68
+#: tripapp/templates/tripapp/tribe_map.html:69
 #: tripapp/templates/tripapp/tribe_trip_organize.html:108
 #: tripapp/templates/tripapp/tribe_trips.html:246
 #: tripapp/templates/tripapp/trip_detail.html:238
@@ -395,21 +394,21 @@ msgstr "Auf Karte bearbeiten"
 msgid "Convert to Trip"
 msgstr "In Reise umwandeln"
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:100
+#: tripapp/templates/tripapp/itineraryidea_list.html:101
 msgid "Are you sure?"
 msgstr "Sind Sie sicher?"
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:100
+#: tripapp/templates/tripapp/itineraryidea_list.html:101
 #: tripapp/templates/tripapp/tripper_profile.html:26
 msgid "Delete"
 msgstr "Löschen"
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:107
+#: tripapp/templates/tripapp/itineraryidea_list.html:109
 msgid "No itinerary ideas yet."
 msgstr "Noch keine Reiseideen vorhanden."
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:110
-#: tripapp/templates/tripapp/tribe_map.html:69
+#: tripapp/templates/tripapp/itineraryidea_list.html:112
+#: tripapp/templates/tripapp/tribe_map.html:70
 #: tripapp/templates/tripapp/tribe_trip_organize.html:8
 #: tripapp/templates/tripapp/tribe_trip_organize.html:96
 #: tripapp/templates/tripapp/tribe_trips.html:8
@@ -467,7 +466,7 @@ msgstr "Für Tag:"
 msgid "Update"
 msgstr "Aktualisieren"
 
-#: tripapp/templates/tripapp/tribe_map.html:66
+#: tripapp/templates/tripapp/tribe_map.html:67
 #: tripapp/templates/tripapp/trip_detail.html:236
 #: tripapp/templates/tripapp/trip_list.html:190
 msgid "Settings"
@@ -577,6 +576,74 @@ msgstr "Für diese Reise wurde kein Bingo erstellt"
 #: tripapp/templates/tripapp/trip_checklist.html:47
 msgid "Trip"
 msgstr "Reise"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:296
+msgid "Select starting location on map"
+msgstr "Startpunkt auf der Karte auswählen"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:302
+msgid "Select ending location on map"
+msgstr "Endpunkt auf der Karte auswählen"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:308
+msgid "Car"
+msgstr "Auto"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:311
+msgid "Walk"
+msgstr "Zu Fuß"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:314
+msgid "Bicycle"
+msgstr "Fahrrad"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:320
+msgid "Calculate Route"
+msgstr "Route berechnen"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:323
+msgid "Clear Route"
+msgstr "Route löschen"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:328
+msgid "Distance:"
+msgstr "Entfernung:"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:329
+msgid "Duration:"
+msgstr "Dauer:"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:335
+msgid "Save as Route"
+msgstr "Als Route speichern"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:345
+msgid "Select a start and end location on the map"
+msgstr "Wählen Sie einen Start- und Endpunkt auf der Karte"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:346
+msgid "Calculating..."
+msgstr "Berechne..."
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:347
+msgid "Route saved!"
+msgstr "Route gespeichert!"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:348
+msgid "Error calculating route:"
+msgstr "Fehler beim Berechnen der Route:"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:349
+msgid "Calculate a Route first"
+msgstr "Berechnen Sie zuerst eine Route"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:350
+msgid "Enter Description"
+msgstr "Beschreibung eingeben"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:351
+msgid "Error Saving Route"
+msgstr "Fehler beim Speichern der Route"
 
 #: tripapp/templates/tripapp/trip_dayprograms.html:9
 msgid "Day"
@@ -689,24 +756,24 @@ msgstr "Tripper schulden Trippern"
 msgid "No documents uploaded yet"
 msgstr "Noch keine Dokumente hochgeladen"
 
-#: tripapp/views.py:1362
+#: tripapp/views.py:1367
 #, python-format
 msgid "Suggestion by %(username)s: %(suggestion)s"
 msgstr "Vorschlag von %(username)s: %(suggestion)s"
 
-#: tripapp/views.py:1923
+#: tripapp/views.py:1928
 msgid "No Answers"
 msgstr "Keine Antworten"
 
-#: tripapp/views.py:2141 tripapp/views.py:2167
+#: tripapp/views.py:2146 tripapp/views.py:2172
 msgid "Tripper and emoji mandatory."
 msgstr "Tripper und Emoji sind Pflicht."
 
-#: tripapp/views.py:2152
+#: tripapp/views.py:2157
 msgid "You already liked this log with this emoji."
 msgstr "Sie haben diesen Eintrag bereits mit diesem Emoji geliked."
 
-#: tripapp/views.py:2179
+#: tripapp/views.py:2184
 msgid "There is no like with this emoji that can be removed."
 msgstr "Es gibt kein Like mit diesem Emoji, das entfernt werden kann."
 
