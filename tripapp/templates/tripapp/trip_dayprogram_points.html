@@ -329,7 +329,7 @@
                     </div>
 
                     <div class="route-save-form" id="route-save-form">
-                        <input type="text" class="route-save-input" id="route-description" placeholder="Route Description">
+                        <input type="text" class="route-save-input" id="route-description" placeholder="{% trans 'Route Description' %}">
                         <button class="route-action-btn primary" onclick="saveRoute()">
                             {% trans "Save as Route" %}
                         </button>
@@ -346,8 +346,10 @@
     routeSaved: "{% trans 'Route saved!' %}",
     errorCalculating: "{% trans 'Error calculating route:' %}",
     calculateFirst: "{% trans 'Calculate a Route first' %}",
+    calculateRoute: "{% trans 'Calculate Route' %}",
     enterDescription: "{% trans 'Enter Description' %}",
     errorSaving: "{% trans 'Error Saving Route' %}",
+    unknownError: "{% trans 'Unknown error' %}"
     };
 
     // Toggle route planning panel
@@ -407,6 +409,13 @@
         nature: uniformIcon(COLORS.poi, '🌳', 20),
         practical: uniformIcon(COLORS.activity, '🚻', 20),
     };
+
+    function isBoundsCapable(layer) {
+        return (
+            typeof layer.getBounds === 'function' ||
+            typeof layer.getLatLng === 'function'
+        );
+    }
 
     function selectRouteMode(button) {
         document.querySelectorAll('.route-mode-btn').forEach(btn => {
@@ -494,7 +503,10 @@
                 }).addTo(map);
 
                 // Fit bounds to show entire route
-                map.fitBounds(routeLayer.getBounds());
+                var boundsGroup = L.featureGroup([routeLayer, markers]);
+                if (boundsGroup.getBounds().isValid()) {
+                    map.fitBounds(boundsGroup.getBounds(), {padding: [50, 50]});
+                }
 
                 // Format distance and duration
                 const distanceKm = (data.distance / 1000).toFixed(2);
@@ -539,7 +551,7 @@
             alert(translations.errorCalculating);
         } finally {
             calcBtn.disabled = false;
-            calcBtn.textContent = 'Calculate Route';
+            calcBtn.textContent = translations.calculateRoute;
         }
     }
 
@@ -715,7 +727,6 @@
             {% endfor %}
         ];
 
-
         // Create a feature group to store all the markers
         var markers = L.featureGroup();
         var locationsLayer = L.featureGroup();
@@ -754,20 +765,12 @@
             var popupContent = `<div class="custom-popup"><a href="${photolocation.immich_url}photos/${photolocation.immich_photo_id}"><img src="${photolocation.thumbnail}" alt="Thumbnail" /></a><div class="timestamp">${photolocation.timestamp}</div></div>`;
             var marker;
             marker = L.marker(photolocation.coords, {icon: visitedPhotoLocationIcon}).bindPopup(popupContent);
-            photolocationsLayer.addLayer(marker);  // FIXED: was addTo(marker)
+            photolocationsLayer.addLayer(marker); 
          });
         
-        // Add the feature group to the map
         markers.addTo(map);
         photolocationsLayer.addTo(map);
         
-        // Set the view to fit all the markers
-        var allLayers = L.featureGroup([markers, locationsLayer, photolocationsLayer]);
-        var bounds = allLayers.getBounds();
-        if (bounds.isValid()) {
-            map.fitBounds(bounds);
-        }
-
         var lineCoordinates = [];
         locations.forEach(function(location) {
             lineCoordinates.push(location.coords);
@@ -793,6 +796,38 @@
 
         // GPX Routes with custom start/end markers
         var gpxRoutesLayer = L.layerGroup();
+
+        setTimeout(function() {
+            // Collect only non-empty layers
+            var layersToFit = [];
+            
+            if (markers.getLayers().length > 0) layersToFit.push(markers);
+            if (locationsLayer.getLayers().length > 0) layersToFit.push(locationsLayer);
+            if (photolocationsLayer.getLayers().length > 0) layersToFit.push(photolocationsLayer);
+            if (gpxRoutesLayer.getLayers().length > 0) layersToFit.push(gpxRoutesLayer);
+            
+            // Only fit bounds if we have at least one layer with content
+            if (layersToFit.length > 0) {
+                var safeLayers = [];
+
+                layersToFit.forEach(group => {
+                    group.eachLayer(layer => {
+                        if (isBoundsCapable(layer)) {
+                            safeLayers.push(layer);
+                        }
+                    });
+                });
+
+                if (safeLayers.length > 0) {
+                    var boundsGroup = L.featureGroup(safeLayers);
+                    var bounds = boundsGroup.getBounds();
+                    if (bounds.isValid()) {
+                        map.fitBounds(bounds, { padding: [50, 50] });
+                    }
+                }
+           }
+        }, 1000);
+
         {% for route in dayprogram.routes.all %}
             (function() {
                 var routeDescription = "{{ route.description|escapejs }}";
@@ -889,10 +924,6 @@
                         });
                     }
                     
-                    // Fit bounds to show the route
-                    if (bounds.isValid()) {
-                        map.fitBounds(bounds);
-                    }
                 }).addTo(gpxRoutesLayer);
             })();
         {% endfor %}
@@ -1128,6 +1159,12 @@
             {% now "Y-m-d" as today %}
             {% if dayprogram.tripdate|date:"Y-m-d" >= today %}
                 map.on('click', function(e) {
+                    // Guard: Check if this is a valid Leaflet event
+                    if (!e.latlng) {
+                        console.warn('Invalid click event, skipping');
+                        return;
+                    }
+
                     // Check if we're in route planning mode
                     if (!startCoords) {
                         // Set start point

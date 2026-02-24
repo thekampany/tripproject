@@ -116,8 +116,6 @@ class Trip(models.Model):
 
         return balance
 
-
-
     def has_expenses(self):
         return self.expenses.exists() 
 

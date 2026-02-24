@@ -30,6 +30,7 @@ urlpatterns = [
     path('trip/<int:trip_id>/tripper_list/', views.tripper_list, name='tripper_list'),
     path('trip/<int:trip_id>/tripper/<int:tripper_id>/badgeassignments/', views.trip_tripper_badgeassignments, name='trip_tripper_badgeassignments'),
     path('trip/<int:trip_id>/update/', views.trip_update, name='trip_update'),
+    path('trip/<int:trip_id>/delete/', views.delete_trip, name='delete_trip'),
     path('trip/<int:trip_id>/add_checklist_item/', views.add_checklist_item, name='add_checklist_item'),
     path('trip/<int:trip_id>/map/', views.trip_map_view, name='trip_map_view'),
     path('trip/<int:trip_id>/tripperbingocard/', views.trip_tripper_bingocard, name='trip_tripper_bingocard'),

@@ -3,10 +3,10 @@ from .models import Trip, Tripper, Badge, DayProgram, Checklist, ChecklistItem, 
 from .models import BingoCard, BingoAnswer, BadgeAssignment
 from .models import Tribe, UserProfile, LogEntry, Link, Route, TripExpense, Location, ImmichPhotos, ScheduledItem
 from .models import TripperDocument, LogEntryLike, InviteCode, TripBudget
-from .models import TripOutline, TripOutlineItem
+from .models import TripOutline
 from .forms import BadgeForm, TripForm, ChecklistItemForm, ImageForm, BingoAnswerForm
 from .forms import CustomUserCreationForm
-from .forms import AnswerForm, AnswerImageForm, TripperForm, TripperAdminForm
+from .forms import AnswerForm, TripperForm, TripperAdminForm
 from .forms import TribeCreationForm, AddTrippersForm, DayProgramForm
 from .forms import QuestionForm, PointForm, BingoCardForm
 from .forms import BadgeAssignmentFormSet, LogEntryForm
@@ -44,9 +44,9 @@ from datetime import timedelta, date, datetime
 import uuid
 from django.http import JsonResponse
 from django.http import HttpResponse
+from django.http import HttpResponseForbidden
 import json
 import requests
-#from weasyprint import HTML
 
 from django.utils.timezone import now
 from django_q.tasks import async_task
@@ -116,7 +116,8 @@ def tribe_trips(request):
          'background_image_url': background_image_url,
          'admin_trips': admin_trips,
          'tripper' : tripper,
-         'enable_admin': enable_admin
+         'enable_admin': enable_admin,
+         'today': date.today()
         })
 
 
@@ -267,6 +268,28 @@ def create_trip(request, tribe_id):
     else:
         form = TripForm(user=request.user, tribe=tribe)
     return render(request, 'tripapp/create_trip.html', {'form': form})
+
+@login_required
+def delete_trip(request, trip_id):
+    trip = get_object_or_404(Trip, pk=trip_id)
+
+    if request.method != 'POST':
+        return redirect('tripapp:trip_list')
+
+    user = request.user
+    try:
+        tripper = Tripper.objects.get(user=user, trips=trip)
+    except Tripper.DoesNotExist:
+        return HttpResponseForbidden("No tripper on this trip.")
+
+    if not tripper.is_trip_admin:
+        return HttpResponseForbidden("Only trip admin can remove trip")
+
+    if trip.date_from is None or trip.date_from > date.today():
+        trip.delete()
+        return redirect('tripapp:trip_list')
+
+    return HttpResponseForbidden("Trip has started and can not be removed.")
 
 @is_in_tribe
 def trip_trippers(request, trip_id):
@@ -1235,7 +1258,8 @@ def tribe_trip_organize(request,tribe_id,trip_id):
          'trip': trip,
          'admin_trips' : admin_trips,
          'tripper':tripper,
-         'enable_admin':enable_admin
+         'enable_admin':enable_admin,
+         'today': date.today(),
         })
 
 @is_in_tribe
@@ -3031,11 +3055,7 @@ def save_route(request):
         })
 
 
-
-
-
 OVERPASS_URL = "https://overpass-api.de/api/interpreter"
-
 
 @require_POST
 def fetch_pois_overpass(request):

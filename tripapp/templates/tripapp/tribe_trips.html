@@ -260,6 +260,11 @@
         {% for tribe in tribes %}
         <span style="color:gray;">{{ tribe.name }}</span><br>
         <div class="trip-container">
+            <div class="new-trip-card">
+                <a href="{% url 'tripapp:create_trip' tribe.id %}">
+                    <span>+&nbsp;{% trans "New Trip" %}</span>
+                </a>
+            </div>
 
             {% for trip in trips %}
                 <div class="trip-card">
@@ -308,15 +313,25 @@
                                 <!--<img src="{% static 'icons/iconeditbingo.png' %}" alt="Edit Bingo">-->
                             </a>
                             {% endif %}
-                        </div>
+                            {% if trip in admin_trips %}
+                                {% if not trip.date_from or trip.date_from > today %}
+                                    &nbsp;&nbsp;
+                                    <form method="post"
+                                        action="{% url 'tripapp:delete_trip' trip.id %}"
+                                        style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                class="btn btn-link p-0 text-danger"
+                                                title="{% trans 'Delete trip' %}">
+                                            <i class="bi bi-exclamation-triangle"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            {% endif %}
+                         </div>
                 </div>
             {% endfor %}
         
-        <div class="new-trip-card">
-            <a href="{% url 'tripapp:create_trip' tribe.id %}">
-                <span>+&nbsp;{% trans "New Trip" %}</span>
-            </a>
-        </div>
         </div>
         {% endfor %}
 
