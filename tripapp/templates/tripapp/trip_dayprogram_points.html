@@ -1068,10 +1068,9 @@
             map.on('dblclick', function (e) {
                 var latLng = e.latlng;
 
-                //var newMarker = L.marker(latLng).addTo(map);
                 var newMarker = L.marker(latLng, {icon: defaultIcon}).addTo(map);
                 newMarker.bindPopup(
-                    `<div class="p-2 leaflet-custom-popup" style="min-width:200px;">
+                    `<div class="p-2 leaflet-custom-popup" style="min-width:250px;">
                         <div class="form-group">
                             <input type="text" class="form-control mb-2 event-name" placeholder="Point Description">
                         </div>
@@ -1083,75 +1082,69 @@
                             </select>
                         </div>
                         <div class="d-flex justify-content-between">
-                            <button class="btn save-event">Save</button>
-                            <button class="btn delete-event">Delete</button>
+                            <button class="btn btn-primary save-event" style="padding:10px 20px; font-size:16px;">Save</button>
+                            <button class="btn btn-secondary delete-event" style="padding:10px 20px; font-size:16px;">Delete</button>
                         </div>
-                    </div>`
+                    </div>`,
+                    {
+                        maxWidth: 300,
+                        closeButton: true,
+                        autoClose: false,
+                        closeOnClick: false
+                    }
                 ).openPopup();
 
                 setTimeout(() => {
-                    const popupContent = document.querySelector('.leaflet-popup-content');
+                    const saveBtn = document.querySelector('.save-event');
+                    const deleteBtn = document.querySelector('.delete-event');
+                    
+                    if (saveBtn) {
+                        saveBtn.onclick = function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            const nameInput = document.querySelector('.event-name');
+                            const typeSelect = document.querySelector('.event-type');
+                            const eventName = nameInput.value;
+                            const eventType = typeSelect.value;
 
-                    const nameInput = popupContent.querySelector('.event-name');
-                    const typeSelect = popupContent.querySelector('.event-type');
-                    const saveBtn = popupContent.querySelector('.save-event');
-                    const deleteBtn = popupContent.querySelector('.delete-event');
-
-                    function handleSave() {
-                        const eventName = nameInput.value;
-                        const eventType = typeSelect.value;
-
-                        $.ajax({
-                            url: '/save_event/',
-                            method: 'POST',
-                            data: {
-                                'name': eventName,
-                                'type': eventType,
-                                'latitude': latLng.lat,
-                                'longitude': latLng.lng,
-                                'trip': tripId,
-                                'dayprogram': dayprogramId,
-                                'csrfmiddlewaretoken': csrfToken
-                            },
-                            success: function () {
-                                console.log('Event saved successfully!');
-                                clearRoutePoint('start');
-                                clearRoutePoint('end');
-                            },
-                            error: function (xhr, status, error) {
-                                console.error('Error saving event:', error);
-                            }
-                        });
-                        map.closePopup();
-                    }
-
-                    function handleDelete() {
-                        map.removeLayer(newMarker);
-                        map.closePopup();
-                    }
-
-                    function addTapSupport(el, handler) {
-                        let executed = false;
-                        
-                        const wrappedHandler = function(e) {
-                            if (executed) return;
-                            executed = true;
-                            handler(e);
+                            $.ajax({
+                                url: '/save_event/',
+                                method: 'POST',
+                                data: {
+                                    'name': eventName,
+                                    'type': eventType,
+                                    'latitude': latLng.lat,
+                                    'longitude': latLng.lng,
+                                    'trip': tripId,
+                                    'dayprogram': dayprogramId,
+                                    'csrfmiddlewaretoken': csrfToken
+                                },
+                                success: function () {
+                                    console.log('Event saved successfully!');
+                                    clearRoutePoint('start');
+                                    clearRoutePoint('end');
+                                    map.closePopup();
+                                },
+                                error: function (xhr, status, error) {
+                                    console.error('Error saving event:', error);
+                                    map.closePopup();
+                                }
+                            });
                         };
-                        
-                        el.addEventListener('click', wrappedHandler);
-                        el.addEventListener('touchend', function (e) {
-                            e.preventDefault(); 
-                            wrappedHandler(e);
-                        });
-                        el.addEventListener('pointerup', wrappedHandler);
                     }
                     
-                    addTapSupport(saveBtn, handleSave);
-                    addTapSupport(deleteBtn, handleDelete);
-
-                }, 0);
+                    if (deleteBtn) {
+                        deleteBtn.onclick = function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            map.removeLayer(newMarker);
+                            map.closePopup();
+                        };
+                    }
+                }, 100);
             });
+
         }
 
         handleMapDoubleClick(map);
