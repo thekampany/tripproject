@@ -660,6 +660,13 @@
         });
     }
 
+    // Point markers - using uniform icon system
+    var defaultIcon = uniformIcon(COLORS.default, '📍', 36);
+    var bedIcon = uniformIcon(COLORS.accommodation, '🛏️', 36);
+    var restaurantIcon = uniformIcon(COLORS.food, '🍽️', 36);
+    var visitedLocationIcon = uniformIcon(COLORS.location, '•', 10);
+    var visitedPhotoLocationIcon = uniformIcon(COLORS.activity, '📷', 24);
+
 
     {% if country_coords and not points and not locations and not photolocations %}
         var map = L.map('map').setView([{{ country_coords.0 }},{{ country_coords.1 }}], 7);
@@ -677,10 +684,8 @@
 
     {% else %}   
 
-        // Initialize the map
         var map = L.map('map');
 
-        // Set up the OSM layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 19,
@@ -691,13 +696,6 @@
         map.addControl(scaleControl);
 
         new L.Control.Geocoder().addTo(map);
-
-        // Point markers - using uniform icon system
-        var defaultIcon = uniformIcon(COLORS.default, '📍', 36);
-        var bedIcon = uniformIcon(COLORS.accommodation, '🛏️', 36);
-        var restaurantIcon = uniformIcon(COLORS.food, '🍽️', 36);
-        var visitedLocationIcon = uniformIcon(COLORS.location, '•', 10);
-        var visitedPhotoLocationIcon = uniformIcon(COLORS.activity, '📷', 24);
 
         // Add markers from Django context
         var points = [
@@ -849,7 +847,6 @@
                 }).on('loaded', function(e) {
                     var bounds = e.target.getBounds();
                     
-                    // Get start and end coordinates from the GPX
                     var startPoint = null;
                     var endPoint = null;
                     
@@ -857,15 +854,12 @@
                         if (layer instanceof L.Polyline) {
                             var latlngs = layer.getLatLngs();
                             if (latlngs.length > 0) {
-                                // For multi-segment routes, flatten the array
                                 var allPoints = [];
                                 if (Array.isArray(latlngs[0])) {
-                                    // Multi-segment
                                     latlngs.forEach(function(segment) {
                                         allPoints = allPoints.concat(segment);
                                     });
                                 } else {
-                                    // Single segment
                                     allPoints = latlngs;
                                 }
                                 
@@ -1121,12 +1115,13 @@
                             },
                             success: function () {
                                 console.log('Event saved successfully!');
+                                clearRoutePoint('start');
+                                clearRoutePoint('end');
                             },
                             error: function (xhr, status, error) {
                                 console.error('Error saving event:', error);
                             }
                         });
-
                         map.closePopup();
                     }
 
@@ -1136,14 +1131,22 @@
                     }
 
                     function addTapSupport(el, handler) {
-                        el.addEventListener('click', handler);
+                        let executed = false;
+                        
+                        const wrappedHandler = function(e) {
+                            if (executed) return;
+                            executed = true;
+                            handler(e);
+                        };
+                        
+                        el.addEventListener('click', wrappedHandler);
                         el.addEventListener('touchend', function (e) {
                             e.preventDefault(); 
-                            handler(e);
+                            wrappedHandler(e);
                         });
-                        el.addEventListener('pointerup', handler);
+                        el.addEventListener('pointerup', wrappedHandler);
                     }
-
+                    
                     addTapSupport(saveBtn, handleSave);
                     addTapSupport(deleteBtn, handleDelete);
 

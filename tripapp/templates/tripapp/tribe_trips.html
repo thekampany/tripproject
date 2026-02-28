@@ -288,29 +288,23 @@
                             {% if trip in admin_trips %}
                                 <a href="{% url 'tripapp:trip_update' trip.id %}">
                                     <i class="bi bi-file-richtext"></i>
-                                    <!--<img src="{% static 'icons/iconedittrip.png'  %}" alt="Edit Trip">-->
                                 </a>&nbsp;&nbsp;
                                 <a href="{% url 'tripapp:add_trippers' trip.id tribe.id %}?next=tt">
                                     <i class="bi bi-person-add"></i>
-                                    <!--<img src="{% static 'icons/iconedittripper.png' %}" alt="Edit Trippers">-->
                                 </a>&nbsp;&nbsp;
                                 <a href="{% url 'tripapp:tripper_list' trip.id %}">
                                     <i class="bi bi-patch-plus"></i>
-                                    <!--<img src="{% static 'icons/iconeditbadge.png' %}" alt="Edit Badges">-->
                                 </a>&nbsp;&nbsp;
                             {% endif %}
                             {% if tripper %}
                             <a href="{% url 'tripapp:trip_dayprograms' trip.id %}">
                                 <i class="bi bi-card-heading"></i>
-                                <!--<img src="{% static 'icons/iconeditdayprogram.png' %}" alt="Edit Day Programs">-->
                             </a>&nbsp;&nbsp;
                             <a href="{% url 'tripapp:trip_points' trip.id %}">
                                 <i class="bi bi-geo-alt"></i>
-                                <!--<img src="{% static 'icons/iconeditmap.png' %}" alt="Edit Map">-->
                             </a>&nbsp;&nbsp;
                             <a href="{% url 'tripapp:tripadmin_bingocards' trip.id %}">
                                 <i class="bi bi-grid-3x3"></i>
-                                <!--<img src="{% static 'icons/iconeditbingo.png' %}" alt="Edit Bingo">-->
                             </a>
                             {% endif %}
                             {% if trip in admin_trips %}

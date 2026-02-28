@@ -121,30 +121,6 @@
     
     <span style="color:gray;">Tribe: {{ tribe.name }}</span>
     <br><br>
-    <!--      <p>&nbsp;</p>
-          
-           {% if trip in admin_trips %}
-           <p><a href="{% url 'tripapp:trip_update' trip.id %}" class="btn-less-padding"><img src="{% static 'icons/iconedittrip.png'  %}" width="40" height="40" ></a>&nbsp;{% trans "Edit Trip Settings" %}</p>
-           <p><a href="{% url 'tripapp:add_trippers' trip.id tribe.id %}" class="btn-less-padding"><img src="{% static 'icons/iconedittripper.png'  %}" width="40" height="40" ></a>&nbsp;{% trans "Add or Remove Trippers" %}</p>
-           <p><a href="{% url 'tripapp:budget_list' trip.id %}" class="btn-less-padding"><img src="{% static 'icons/iconedittripper.png'  %}" width="40" height="40" ></a>&nbsp;{% trans "Budget" %}</p>
-           {% endif %}
-           {% if tripper %}
-           <p><a href="{% url 'tripapp:trip_dayprograms' trip.id  %}" class="btn-less-padding"><img src="{% static 'icons/iconeditdayprogram.png'  %}" width="40" height="40" ></a>&nbsp;{% trans "Edit Dayprograms" %}</p>
-           <p><a href="{% url 'tripapp:trip_points' trip.id  %}" class="btn-less-padding"><img src="{% static 'icons/iconeditmap.png'  %}" width="40" height="40" ></a>&nbsp;{% trans "Add Points and Routes" %}</p>
-           <p><a href="{% url 'tripapp:tripadmin_bingocards' trip.id  %}" class="btn-less-padding"><img src="{% static 'icons/iconeditbingo.png'  %}" width="40" height="40" ></a>&nbsp;{% trans "Organize Tripbingo" %}</p>
-           {% endif %}
-           {% if trip in admin_trips %}
-           <p><a href="{% url 'tripapp:tripper_list' trip.id %}" class="btn-less-padding"><img src="{% static 'icons/iconeditbadge.png'  %}" width="40" height="40" ></a>&nbsp;{% trans "Assign Badges" %}</p>
-           {% endif %}
-          
-          <br /><br />
-    <br />
-    <h1>Badges</h1>
-    <a href="{% url 'tripapp:mytribes_badges_view' %}" class="btn-fixed-width">{% trans "View Badges" %}</a>
-    <a href="{% url 'tripapp:badge_creator' %}" class="btn-fixed-width">{% trans "Create Badge" %}</a>
-    <a href="{% url 'tripapp:upload_badge' %}" class="btn-fixed-width">{% trans "Upload Badge" %}</a>
-
-    -->
 
     <div class="block-container">
         {% if trip in admin_trips %}
