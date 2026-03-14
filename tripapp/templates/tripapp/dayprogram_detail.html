@@ -359,7 +359,7 @@
             </p>
         </div>
         {% else %}
-           {% if is_day_in_future %}
+           {% if is_day_in_future and ollama_configured %}
             <div class="dayprogramcard">
                 <p>
                     <span class="dayprogramcard-title">{% trans "Ideas for Today" %}</span>

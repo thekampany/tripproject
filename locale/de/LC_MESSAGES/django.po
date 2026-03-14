@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-20 21:43+0100\n"
+"POT-Creation-Date: 2026-03-14 20:55+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: German <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: tripapp/forms.py:200
+#: tripapp/forms.py:201
 msgid "Your answer here..."
 msgstr "Ihre Antwort hier..."
 
@@ -75,8 +75,7 @@ msgid "Budget Analysis"
 msgstr "Budgetanalyse"
 
 #: tripapp/templates/tripapp/budget_analysis.html:46
-#: tripapp/templates/tripapp/tribe_trip_organize.html:129
-#: tripapp/templates/tripapp/tribe_trip_organize.html:156
+#: tripapp/templates/tripapp/tribe_trip_organize.html:132
 msgid "Budget"
 msgstr "Budget"
 
@@ -202,7 +201,7 @@ msgid "Suggestion"
 msgstr "Vorschlag"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:321
-#: tripapp/templates/tripapp/dayprogram_detail.html:480
+#: tripapp/templates/tripapp/dayprogram_detail.html:489
 msgid "Question"
 msgstr "Frage"
 
@@ -219,48 +218,53 @@ msgid "Information for Today"
 msgstr "Informationen für heute"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:357
+#: tripapp/templates/tripapp/dayprogram_detail.html:365
 msgid "Ideas for Today"
 msgstr "Ideen für heute"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:365
+#: tripapp/templates/tripapp/dayprogram_detail.html:366
+msgid "Generate suggestions for me"
+msgstr ""
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:374
 msgid "Scheduled Items for Today"
 msgstr "Geplante Punkte für heute"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:407
-#: tripapp/templates/tripapp/dayprogram_detail.html:441
+#: tripapp/templates/tripapp/dayprogram_detail.html:416
+#: tripapp/templates/tripapp/dayprogram_detail.html:450
 msgid "Link to travel document"
 msgstr "Link zum Reisedokument"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:434
+#: tripapp/templates/tripapp/dayprogram_detail.html:443
 #: tripapp/templates/tripapp/trip_documents.html:25
 msgid "Documents and Links"
 msgstr "Dokumente und Links"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:445
+#: tripapp/templates/tripapp/dayprogram_detail.html:454
 msgid "Download Document"
 msgstr "Dokument herunterladen"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:489
+#: tripapp/templates/tripapp/dayprogram_detail.html:498
 msgid "You have the badge for this question!"
 msgstr "Sie haben das Abzeichen für diese Frage!"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:494
+#: tripapp/templates/tripapp/dayprogram_detail.html:503
 msgid "Check Answer"
 msgstr "Antwort prüfen"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:502
+#: tripapp/templates/tripapp/dayprogram_detail.html:511
 msgid "to see and answer the question(s)."
 msgstr "um die Frage(n) zu sehen und zu beantworten."
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:559
+#: tripapp/templates/tripapp/dayprogram_detail.html:568
 msgid "Badge Claimed!"
 msgstr "Badge beansprucht!"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:568
+#: tripapp/templates/tripapp/dayprogram_detail.html:577
 msgid "Close"
 msgstr "Schließen"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:580
+#: tripapp/templates/tripapp/dayprogram_detail.html:589
 msgid "Your Suggestion for this Day:"
 msgstr "Ihr Vorschlag für diesen Tag:"
 
@@ -316,11 +320,11 @@ msgstr ""
 msgid "My Trips"
 msgstr "Meine Reisen"
 
-#: tripapp/templates/tripapp/index.html:141
+#: tripapp/templates/tripapp/index.html:142
 msgid "Register"
 msgstr "Registrieren"
 
-#: tripapp/templates/tripapp/index.html:142
+#: tripapp/templates/tripapp/index.html:144
 msgid "Login"
 msgstr "Anmelden"
 
@@ -363,14 +367,14 @@ msgstr "Noch keine Tage hinzugefügt."
 
 #: tripapp/templates/tripapp/itinerary_dragdrop.html:119
 #: tripapp/templates/tripapp/itineraryidea_update.html:56
-#: tripapp/templates/tripapp/tripper_profile.html:14
+#: tripapp/templates/tripapp/tripper_profile.html:17
 msgid "Save"
 msgstr "Speichern"
 
 #: tripapp/templates/tripapp/itinerary_dragdrop.html:124
 #: tripapp/templates/tripapp/itineraryidea_list.html:4
 #: tripapp/templates/tripapp/itineraryidea_update.html:58
-#: tripapp/templates/tripapp/tribe_trips.html:327
+#: tripapp/templates/tripapp/tribe_trips.html:336
 msgid "Itinerary Ideas"
 msgstr "Reiseideen"
 
@@ -399,7 +403,7 @@ msgid "Are you sure?"
 msgstr "Sind Sie sicher?"
 
 #: tripapp/templates/tripapp/itineraryidea_list.html:101
-#: tripapp/templates/tripapp/tripper_profile.html:26
+#: tripapp/templates/tripapp/tripper_profile.html:32
 msgid "Delete"
 msgstr "Löschen"
 
@@ -472,74 +476,81 @@ msgstr "Aktualisieren"
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: tripapp/templates/tripapp/tribe_trip_organize.html:127
-#: tripapp/templates/tripapp/tribe_trip_organize.html:154
-msgid "Edit Trip Settings"
-msgstr "Reiseeinstellungen bearbeiten"
-
 #: tripapp/templates/tripapp/tribe_trip_organize.html:128
-#: tripapp/templates/tripapp/tribe_trip_organize.html:155
-msgid "Add or Remove Trippers"
-msgstr "Tripper hinzufügen oder entfernen"
-
-#: tripapp/templates/tripapp/tribe_trip_organize.html:132
-#: tripapp/templates/tripapp/tribe_trip_organize.html:165
-msgid "Edit Dayprograms"
-msgstr "Tagesprogramme bearbeiten"
-
-#: tripapp/templates/tripapp/tribe_trip_organize.html:133
-#: tripapp/templates/tripapp/tribe_trip_organize.html:166
-msgid "Add Points and Routes"
-msgstr "Punkte und Routen hinzufügen"
-
-#: tripapp/templates/tripapp/tribe_trip_organize.html:134
-#: tripapp/templates/tripapp/tribe_trip_organize.html:167
-msgid "Organize Tripbingo"
-msgstr "Reisebingo organisieren"
-
-#: tripapp/templates/tripapp/tribe_trip_organize.html:137
-#: tripapp/templates/tripapp/tribe_trip_organize.html:179
-msgid "Assign Badges"
-msgstr "Badges zuweisen"
-
-#: tripapp/templates/tripapp/tribe_trip_organize.html:143
-#: tripapp/templates/tripapp/tribe_trip_organize.html:175
-msgid "View Badges"
-msgstr "Badges anzeigen"
-
-#: tripapp/templates/tripapp/tribe_trip_organize.html:144
-#: tripapp/templates/tripapp/tribe_trip_organize.html:176
-msgid "Create Badge"
-msgstr "Badge erstellen"
-
-#: tripapp/templates/tripapp/tribe_trip_organize.html:145
-#: tripapp/templates/tripapp/tribe_trip_organize.html:177
-msgid "Upload Badge"
-msgstr "Badge hochladen"
-
-#: tripapp/templates/tripapp/tribe_trip_organize.html:152
 #, fuzzy
 #| msgid "Edit Trip Settings"
 msgid "Trip Admin Settings"
 msgstr "Reiseeinstellungen bearbeiten"
 
-#: tripapp/templates/tripapp/tribe_trip_organize.html:163
+#: tripapp/templates/tripapp/tribe_trip_organize.html:130
+msgid "Edit Trip Settings"
+msgstr "Reiseeinstellungen bearbeiten"
+
+#: tripapp/templates/tripapp/tribe_trip_organize.html:131
+msgid "Add or Remove Trippers"
+msgstr "Tripper hinzufügen oder entfernen"
+
+#: tripapp/templates/tripapp/tribe_trip_organize.html:136
+#, fuzzy
+#| msgid "Create Trip"
+msgid "Delete Trip"
+msgstr "Reise erstellen"
+
+#: tripapp/templates/tripapp/tribe_trip_organize.html:146
 msgid "For and by Trippers"
 msgstr ""
 
-#: tripapp/templates/tripapp/tribe_trips.html:317
+#: tripapp/templates/tripapp/tribe_trip_organize.html:148
+msgid "Edit Dayprograms"
+msgstr "Tagesprogramme bearbeiten"
+
+#: tripapp/templates/tripapp/tribe_trip_organize.html:149
+msgid "Add Points and Routes"
+msgstr "Punkte und Routen hinzufügen"
+
+#: tripapp/templates/tripapp/tribe_trip_organize.html:150
+msgid "Organize Tripbingo"
+msgstr "Reisebingo organisieren"
+
+#: tripapp/templates/tripapp/tribe_trip_organize.html:158
+msgid "View Badges"
+msgstr "Badges anzeigen"
+
+#: tripapp/templates/tripapp/tribe_trip_organize.html:159
+msgid "Create Badge"
+msgstr "Badge erstellen"
+
+#: tripapp/templates/tripapp/tribe_trip_organize.html:160
+msgid "Upload Badge"
+msgstr "Badge hochladen"
+
+#: tripapp/templates/tripapp/tribe_trip_organize.html:162
+msgid "Assign Badges"
+msgstr "Badges zuweisen"
+
+#: tripapp/templates/tripapp/tribe_trip_organize.html:177
+msgid "Are you sure you want to delete this trip?"
+msgstr ""
+
+#: tripapp/templates/tripapp/tribe_trips.html:265
 msgid "New Trip"
 msgstr "Neue Reise"
 
-#: tripapp/templates/tripapp/tribe_trips.html:332
+#: tripapp/templates/tripapp/tribe_trips.html:319
+#, fuzzy
+#| msgid "Delete"
+msgid "Delete trip"
+msgstr "Löschen"
+
+#: tripapp/templates/tripapp/tribe_trips.html:341
 msgid "Create a New Tribe"
 msgstr "Neuen Stamm erstellen"
 
-#: tripapp/templates/tripapp/tribe_trips.html:338
+#: tripapp/templates/tripapp/tribe_trips.html:347
 msgid "Invite People to the Tribe"
 msgstr "Personen zum Stamm einladen"
 
-#: tripapp/templates/tripapp/tribe_trips.html:348
+#: tripapp/templates/tripapp/tribe_trips.html:357
 #, fuzzy
 #| msgid "Create a New Tribe"
 msgid "First Create a New Tribe"
@@ -573,6 +584,14 @@ msgstr "Antworten aller Tripper ansehen"
 msgid "No Bingo created for this trip"
 msgstr "Für diese Reise wurde kein Bingo erstellt"
 
+#: tripapp/templates/tripapp/trip_bingocard.html:155
+msgid "add bingocards"
+msgstr "Bingokarten hinzufügen"
+
+#: tripapp/templates/tripapp/trip_bingocard.html:157
+msgid "generate 6 bingocards for me"
+msgstr "6 Bingokarten für mich generieren"
+
 #: tripapp/templates/tripapp/trip_checklist.html:47
 msgid "Trip"
 msgstr "Reise"
@@ -586,18 +605,22 @@ msgid "Select ending location on map"
 msgstr "Endpunkt auf der Karte auswählen"
 
 #: tripapp/templates/tripapp/trip_dayprogram_points.html:308
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:528
 msgid "Car"
 msgstr "Auto"
 
 #: tripapp/templates/tripapp/trip_dayprogram_points.html:311
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:529
 msgid "Walk"
 msgstr "Zu Fuß"
 
 #: tripapp/templates/tripapp/trip_dayprogram_points.html:314
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:530
 msgid "Bicycle"
 msgstr "Fahrrad"
 
 #: tripapp/templates/tripapp/trip_dayprogram_points.html:320
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:350
 msgid "Calculate Route"
 msgstr "Route berechnen"
 
@@ -612,6 +635,10 @@ msgstr "Entfernung:"
 #: tripapp/templates/tripapp/trip_dayprogram_points.html:329
 msgid "Duration:"
 msgstr "Dauer:"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:333
+msgid "Route Description"
+msgstr "Routenbeschreibung"
 
 #: tripapp/templates/tripapp/trip_dayprogram_points.html:335
 msgid "Save as Route"
@@ -637,13 +664,21 @@ msgstr "Fehler beim Berechnen der Route:"
 msgid "Calculate a Route first"
 msgstr "Berechnen Sie zuerst eine Route"
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:350
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:351
 msgid "Enter Description"
 msgstr "Beschreibung eingeben"
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:351
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:352
 msgid "Error Saving Route"
 msgstr "Fehler beim Speichern der Route"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:353
+msgid "Unknown error"
+msgstr "Unbekannter Fehler"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:531
+msgid "Route"
+msgstr "Route"
 
 #: tripapp/templates/tripapp/trip_dayprograms.html:9
 msgid "Day"
@@ -668,7 +703,7 @@ msgid "More"
 msgstr "Mehr"
 
 #: tripapp/templates/tripapp/trip_detail.html:271
-#: tripapp/templates/tripapp/tripper_profile.html:18
+#: tripapp/templates/tripapp/tripper_profile.html:21
 msgid "Documents"
 msgstr "Dokumente"
 
@@ -752,28 +787,37 @@ msgstr "Badges dieser Reise"
 msgid "Trippers owe Trippers"
 msgstr "Tripper schulden Trippern"
 
-#: tripapp/templates/tripapp/tripper_profile.html:30
+#: tripapp/templates/tripapp/tripper_profile.html:22
+msgid ""
+"Put documents that you can use on multiple trips here, eg scan of passport."
+msgstr ""
+
+#: tripapp/templates/tripapp/tripper_profile.html:33
+msgid "Are you sure that you want to delete this?"
+msgstr ""
+
+#: tripapp/templates/tripapp/tripper_profile.html:39
 msgid "No documents uploaded yet"
 msgstr "Noch keine Dokumente hochgeladen"
 
-#: tripapp/views.py:1367
+#: tripapp/views.py:1402
 #, python-format
 msgid "Suggestion by %(username)s: %(suggestion)s"
 msgstr "Vorschlag von %(username)s: %(suggestion)s"
 
-#: tripapp/views.py:1928
+#: tripapp/views.py:1963
 msgid "No Answers"
 msgstr "Keine Antworten"
 
-#: tripapp/views.py:2146 tripapp/views.py:2172
+#: tripapp/views.py:2181 tripapp/views.py:2207
 msgid "Tripper and emoji mandatory."
 msgstr "Tripper und Emoji sind Pflicht."
 
-#: tripapp/views.py:2157
+#: tripapp/views.py:2192
 msgid "You already liked this log with this emoji."
 msgstr "Sie haben diesen Eintrag bereits mit diesem Emoji geliked."
 
-#: tripapp/views.py:2184
+#: tripapp/views.py:2219
 msgid "There is no like with this emoji that can be removed."
 msgstr "Es gibt kein Like mit diesem Emoji, das entfernt werden kann."
 
