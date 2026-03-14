@@ -523,9 +523,15 @@ def run_ollama(job_id: str, trip_id: str) -> str:
     job.status = "running"
     job.save(update_fields=["status"])
 
+    headers = {}
+    api_key = getattr(settings, 'OLLAMA_API_KEY', None)
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+
     try:
         response = httpx.post(
             ollama_api_url,
+            headers=headers,
             json={"model": job.model, "prompt": job.prompt, "stream": False},
             timeout=600,
         )

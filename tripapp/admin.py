@@ -81,7 +81,7 @@ admin.site.register(ItineraryIdeaDay)
 admin.site.register(DayLocation)
 admin.site.register(OvernightLocation)
 admin.site.register(TripBudget)
-admin.site.register(OllamaJob)
+admin.site.register(OllamaJob,OllamaJobAdmin)
 
 
 try:
