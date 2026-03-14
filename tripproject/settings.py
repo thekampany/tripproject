@@ -31,6 +31,9 @@ STATICMAPS_API_KEY = os.getenv('STATICMAPS_API_KEY')
 OPENROUTESERVICE_API_KEY = os.getenv('OPENROUTESERVICE_API_KEY')
 DISTANCE_UNIT = os.getenv('DISTANCE_UNIT')
 
+OLLAMA_URL = os.getenv('OLLAMA_URL')
+OLLAMA_MODEL = os.getenv('OLLAMA_MODEL')
+
 TEMPERATURE_UNIT = os.getenv('TEMPERATURE_UNIT')
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -53,6 +56,8 @@ except FileNotFoundError:
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 ENABLE_ADMIN = os.getenv('ENABLE_ADMIN', 'False').lower() == 'true'
+
+ALLOW_REGISTRATION = os.getenv('ALLOW_REGISTRATION','True').lower() == 'true'
 
 # Application definition
 

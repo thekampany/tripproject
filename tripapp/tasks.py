@@ -3,7 +3,7 @@
 from django.utils import timezone
 from django.db import models
 from django_q.models import Schedule
-from .models import Badge, Tripper, BadgeAssignment, Trip, Location, ImmichPhotos, BingoAnswer, LogEntry, DayProgram
+from .models import Trip,Badge, Tripper, BadgeAssignment, Trip, Location, ImmichPhotos, BingoCard, BingoAnswer, LogEntry, DayProgram, OllamaJob
 import requests
 from datetime import datetime, timedelta
 from django.core.files.base import ContentFile
@@ -14,6 +14,9 @@ from .utils import generate_static_map
 from django.conf import settings
 from collections import Counter
 from statistics import mean
+import httpx
+import json
+
 
 def assign_badges():
     logs = []
@@ -512,3 +515,51 @@ if not Schedule.objects.filter(func='tripapp.tasks.fetch_and_store_yesterdays_we
         repeats=-1
     )
 
+
+def run_ollama(job_id: str, trip_id: str) -> str:
+    ollama_api_url = settings.OLLAMA_URL
+
+    job = OllamaJob.objects.get(id=job_id)
+    job.status = "running"
+    job.save(update_fields=["status"])
+
+    try:
+        response = httpx.post(
+            ollama_api_url,
+            json={"model": job.model, "prompt": job.prompt, "stream": False},
+            timeout=600,
+        )
+        response.raise_for_status()
+        job.answer = response.json().get("response", "").strip()
+        job.status = "done"
+
+    except Exception as e:
+        job.error  = str(e)
+        job.status = "error"
+
+    finally:
+        job.finished_at = timezone.now()
+        job.save(update_fields=["status", "answer", "error", "finished_at"])
+
+    return trip_id
+
+
+def process_bingocard_response(task):
+    job_id  = task.args[0]
+    trip_id = task.result
+
+    job  = OllamaJob.objects.get(id=job_id)
+    trip = Trip.objects.get(id=trip_id)
+
+    if job.status != "done":
+        return
+
+    try:
+        descriptions = json.loads(job.answer)
+    except json.JSONDecodeError:
+        job.error = "Ollama gaf geen geldige JSON terug"
+        job.save(update_fields=["error"])
+        return
+
+    for description in descriptions[:6]:
+        BingoCard.objects.create(trip=trip, description=description)

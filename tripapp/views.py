@@ -3,7 +3,7 @@ from .models import Trip, Tripper, Badge, DayProgram, Checklist, ChecklistItem, 
 from .models import BingoCard, BingoAnswer, BadgeAssignment
 from .models import Tribe, UserProfile, LogEntry, Link, Route, TripExpense, Location, ImmichPhotos, ScheduledItem
 from .models import TripperDocument, LogEntryLike, InviteCode, TripBudget
-from .models import TripOutline
+from .models import TripOutline, OllamaJob
 from .forms import BadgeForm, TripForm, ChecklistItemForm, ImageForm, BingoAnswerForm
 from .forms import CustomUserCreationForm
 from .forms import AnswerForm, TripperForm, TripperAdminForm
@@ -18,7 +18,7 @@ from .serializers import TripSerializer, TripMapDataSerializer, LogEntryLikeSeri
 
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.csrf import csrf_exempt
 
 from django.contrib.auth.decorators import login_required
@@ -27,6 +27,7 @@ from .decorators import tripper_required, user_owns_tripper, is_in_tribe, is_tri
 from django.contrib.auth.models import User
 from .utils import get_random_unsplash_image
 from .utils import generate_static_map_for_trip
+from .utils import country_code_to_name
 from django.db.models import Count, Q
 from django.db.models import Prefetch
 
@@ -82,7 +83,7 @@ from django.core.exceptions import PermissionDenied
 def index(request):
     category = "roadtrip"
     background_image_url = get_random_unsplash_image(category)
-    return render(request, 'tripapp/index.html', {'background_image_url': background_image_url, 'APP_NAME': settings.APP_NAME, 'VERSION':settings.VERSION,'form': AuthenticationForm()})
+    return render(request, 'tripapp/index.html', {'background_image_url': background_image_url, 'APP_NAME': settings.APP_NAME, 'VERSION':settings.VERSION, 'ALLOW_REGISTRATION':settings.ALLOW_REGISTRATION, 'form': AuthenticationForm()})
 
 
 @login_required
@@ -514,6 +515,9 @@ def toggle_checklist_item(request, item_id):
 
 
 def register(request):
+    if not settings.ALLOW_REGISTRATION:
+        raise PermissionDenied
+
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
@@ -749,7 +753,6 @@ def trip_tripper_bingocard(request, trip_id):
     ).order_by('-answer_count')
     trippers_names = [tripper.name for tripper in trippers_on_this_trip]
 
-
     return render(request, 'tripapp/trip_bingocard.html', {
         'trip': trip,
         'bingocards': bingocards,
@@ -758,6 +761,7 @@ def trip_tripper_bingocard(request, trip_id):
         'user_answered_cards_ids': user_answered_cards_ids,
         'trippers_names': trippers_names,
         'trippers_on_this_trip': trippers_on_this_trip,  
+        'ollama_configured': bool(getattr(settings, 'OLLAMA_URL', None)),
          })
 
 @is_in_tribe
@@ -3140,3 +3144,73 @@ def fetch_pois_overpass(request):
 
     print(f"Found {len(features)} POIs")
     return JsonResponse({"features": features})
+
+@csrf_exempt
+@require_POST
+def ask(request):
+    data   = json.loads(request.body)
+    prompt = data.get("prompt", "").strip()
+    model  = data.get("model", settings.OLLAMA_MODEL)
+
+    if not prompt:
+        return JsonResponse({"error": "prompt needed"}, status=400)
+
+    job = OllamaJob.objects.create(prompt=prompt, model=model)
+
+    async_task("tripapp.utils.run_ollama", str(job.id)) 
+
+    return JsonResponse({
+        "job_id": str(job.id),
+        "status": job.status,
+    }, status=202)
+
+@require_GET
+def result(request, job_id):
+    try:
+        job = OllamaJob.objects.get(id=job_id)
+    except OllamaJob.DoesNotExist:
+        return JsonResponse({"error": "not found"}, status=404)
+
+    return JsonResponse({
+        "job_id":   str(job.id),
+        "status":   job.status,
+        "answer":   job.answer,
+        "error":    job.error,
+        "duration": job.duration(),
+    })
+
+@tripper_required
+@csrf_exempt
+@require_POST  
+def generate_bingocards_view(request, trip_id):
+    trip = Trip.objects.get(id=trip_id)
+    countrylist = country_code_to_name(trip.country_codes)
+
+    prompt = f"""
+    Generate road trip bingo items for a trip called "{trip.name}" in {countrylist}.
+
+    Think of things that are distinctive for this region's culture, landscape, or daily life that travelers might see when visiting the region.
+
+    Prefer specific local sights over generic objects.
+
+    Rules:
+    - 6 items
+    - 3-8 words each
+    - no duplicates
+    - add emoji when appropriate
+
+    The response must contain ONLY valid JSON without any text before or after the array.
+    Example:
+    ["item 1", "item 2", "item 3", "item 4", "item 5", "item 6"]
+    """
+
+    job = OllamaJob.objects.create(prompt=prompt, model=settings.OLLAMA_MODEL)
+
+    async_task(
+        "tripapp.tasks.run_ollama",
+        str(job.id),
+        str(trip_id),
+        hook="tripapp.tasks.process_bingocard_response",
+    )
+
+    return JsonResponse({"job_id": str(job.id), "status": "gestart"})

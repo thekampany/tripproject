@@ -138,7 +138,9 @@
             {% if user.is_authenticated %}
                 <a href="{% url 'tripapp:trip_list' %}" class="btn">{% trans "My Trips" %}</a></p>
             {% else %}
-                <a href="{% url 'tripapp:register' %}" class="btn">{% trans "Register" %}</a>
+                {% if ALLOW_REGISTRATION %}
+                   <a href="{% url 'tripapp:register' %}" class="btn">{% trans "Register" %}</a>
+                {% endif %}
                 <a href="javascript:void(0);" class="btn" onclick="openLogin()">{% trans "Login" %}</a>
             {% endif %}
             </div>

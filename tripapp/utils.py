@@ -313,3 +313,20 @@ def country_choices():
         [(c.alpha_2, c.name) for c in pycountry.countries],
         key=lambda x: x[1]
     )
+
+def country_code_to_name(code: str):
+    if not isinstance(code, str) or not code.strip():
+        return []
+
+    countrylist = []
+    countries = code.split(",")
+
+    for countrycode in countries:
+        countrycode = countrycode.strip().upper()
+
+        if len(countrycode) == 2:
+            country = pycountry.countries.get(alpha_2=countrycode)
+            if country:
+                countrylist.append(country.name)
+
+    return countrylist

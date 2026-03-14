@@ -20,3 +20,4 @@ qrcode
 geopy
 django-select2
 pycountry
+httpx

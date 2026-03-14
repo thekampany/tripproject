@@ -14,6 +14,7 @@
     <meta name="theme-color" content="#ffffff">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <script src="{% static 'js/set_timezone.js' %}"></script>
 
     <style>
@@ -72,21 +73,18 @@
     </div>
 
     <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
         const spinner = document.getElementById("loading-spinner");
-
         spinner.classList.remove("active");
 
-        document.querySelectorAll(".btn").forEach(button => {
-            button.addEventListener("click", function(e) {
-                if (!button.classList.contains("dropdown-toggle")) {
-                    spinner.classList.add("active");
-                }
+        document.querySelectorAll("form").forEach(form => {
+            form.addEventListener("submit", function () {
+                spinner.classList.add("active");
             });
         });
     });
 
-    window.addEventListener("pageshow", function(event) {
+    window.addEventListener("pageshow", function () {
         const spinner = document.getElementById("loading-spinner");
         spinner.classList.remove("active");
     });

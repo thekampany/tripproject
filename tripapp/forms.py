@@ -32,11 +32,12 @@ from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django_select2.forms import Select2MultipleWidget
 from .utils import country_choices
+import gpxpy
 
 class TripperForm(forms.ModelForm):
     class Meta:
         model = Tripper
-        fields = ['photo', 'dawarich_url', 'dawarich_api_key', 'immich_url', 'immich_api_key','currency']
+        fields = ['photo','currency', 'dawarich_url', 'dawarich_api_key', 'immich_url', 'immich_api_key']
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['dawarich_url'].initial = 'https://your-dawarich-url.com/api/v1/points'
@@ -398,21 +399,51 @@ class LinkForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         dayprogram = kwargs.pop('dayprogram', None)
         super().__init__(*args, **kwargs)
+        self.fields["document"].widget.attrs["accept"] = ".pdf,.txt,.png,.jpg,.jpeg"
 
         if dayprogram:
             self.fields['scheduled_item'].queryset = ScheduledItem.objects.filter(dayprogram=dayprogram)
+ 
+    def clean_document(self):
+        file = self.cleaned_data.get("document")
 
+        if not file:
+            return file
 
+        allowed_extensions = (".pdf", ".txt", ".png", ".jpg", ".jpeg")
+
+        if not file.name.lower().endswith(allowed_extensions):
+            raise forms.ValidationError(
+                "Allowed file types: PDF, TXT, PNG, JPG"
+            )
+
+        return file
 
 class RouteForm(forms.ModelForm):
     class Meta:
         model = Route
         fields = ['dayprogram', 'description', 'gpx_file']
+
     def __init__(self, *args, **kwargs):
         trip = kwargs.pop('trip', None)
-        super(RouteForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
+        self.fields["gpx_file"].widget.attrs["accept"] = ".gpx"
+
         if trip:
             self.fields['dayprogram'].queryset = DayProgram.objects.filter(trip=trip)
+
+    def clean_gpx_file(self):
+        file = self.cleaned_data.get("gpx_file")
+
+        if file and not file.name.lower().endswith(".gpx"):
+            raise forms.ValidationError("Only GPX files allowed.")
+
+        try:
+            gpxpy.parse(file)
+        except Exception:
+            raise forms.ValidationError("Invalid GPX file.")
+
+        return file
 
 class SuggestionForm(forms.Form):
     suggestion = forms.CharField(widget=forms.Textarea, label='')
@@ -505,6 +536,24 @@ class TripperDocumentForm(forms.ModelForm):
         widgets = {
             'description': forms.TextInput(attrs={'placeholder': 'documentdescription...'}),
         }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["document"].widget.attrs["accept"] = ".pdf,.txt,.png,.jpg,.jpeg"
+ 
+    def clean_document(self):
+        file = self.cleaned_data.get("document")
+
+        if not file:
+            return file
+
+        allowed_extensions = (".pdf", ".txt", ".png", ".jpg", ".jpeg")
+
+        if not file.name.lower().endswith(allowed_extensions):
+            raise forms.ValidationError(
+                "Allowed file types: PDF, TXT, PNG, JPG"
+            )
+
+        return file
 
 
 from .models import TripOutline, TripOutlineItem

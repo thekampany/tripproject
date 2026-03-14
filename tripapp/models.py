@@ -607,3 +607,25 @@ class OvernightLocation(models.Model):
 
     def __str__(self):
         return f"{self.day.day_sequence}, Overnight ({self.description})"
+
+
+class OllamaJob(models.Model):
+    STATUS = [
+        ("pending", "Pending"),
+        ("running", "Running"),
+        ("done",    "Done"),
+        ("error",   "Error"),
+    ]
+
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    model       = models.CharField(max_length=100, default="mistral-small")
+    prompt      = models.TextField()
+    answer      = models.TextField(blank=True)
+    error       = models.TextField(blank=True)
+    status      = models.CharField(max_length=10, choices=STATUS, default="pending")
+    created_at  = models.DateTimeField(auto_now_add=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+
+    def duration(self):
+        if self.finished_at:
+            return (self.finished_at - self.created_at).total_seconds()

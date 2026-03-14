@@ -85,6 +85,9 @@ STATICMAPS_URL = 'http://mystaticmaps.mydomain.com/api/staticmaps' #optional - f
 STATICMAPS_API_KEY = 'xxxxxxxx' # use when your staticmaps server has allow_api_keyless_access set to false  
 OPENROUTESERVICE_API_KEY = 'xxxx' # get api key from openrouteservice.org in order to plan routes on the map
 DISTANCE_UNIT = 'km' # or 'mi' 
+OLLAMA_URL= 'http://localhost:11434/api/generate'
+OLLAMA_MODEL ='tinyllama'
+ALLOW_REGISTRATION=False
 
 ```
 

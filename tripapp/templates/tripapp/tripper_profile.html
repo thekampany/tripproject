@@ -2,11 +2,14 @@
 <!-- tripper_profile.html -->
 {% load crispy_forms_tags %}
 {% load i18n %}
+{% load static %}
 
 {% block content %}
   <h1>{{ tripper.name }}'s Profile</h1>
   {% if tripper.photo %}
     <p><img src="{{ tripper.photo.url }}" alt="{{ tripper.name }}'s photo" height="100"></p>
+  {% else %}
+    <p><img src="{% static 'profile.png' %}" height="100"></p>
   {% endif %}
   <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
@@ -16,6 +19,7 @@
 <hr>
 <p>&nbsp;</p>
 <h1>{{ tripper.name }}'s {% trans "Documents" %}</h1>
+{% trans "Put documents that you can use on multiple trips here, eg scan of passport." %}
   <table>
   {% for document in documents %}
       <tr>
@@ -23,7 +27,12 @@
       <td><a href="{{ document.document.url }}">{{ document.description }}</a></td>
       <td><form method="post" action="{% url 'tripapp:delete_tripper_document' document.id %}" style="display: inline;">
         {% csrf_token %}
-        <button type="submit">{% trans "Delete" %}</button>
+        <button type="submit"
+                class="btn btn-link p-0 text-danger"
+                title="{% trans 'Delete' %}"
+                onclick="return confirm('{% trans "Are you sure that you want to delete this?" %}')">
+          <i class="bi bi-trash"></i>
+        </button>
       </form></td>
       </tr>
   {% empty %}
