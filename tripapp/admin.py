@@ -50,6 +50,8 @@ if schedule_admin:
 class ImmichAdmin(admin.ModelAdmin):
     actions = [run_fetch_locations, run_fetch_and_store_immich_photos]
 
+class OllamaJobAdmin(admin.ModelAdmin):
+    ordering = ['-created_at']
 
 admin.site.register(Trip)
 admin.site.register(DayProgram)

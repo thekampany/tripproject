@@ -28,6 +28,7 @@ from django.contrib.auth.models import User
 from .utils import get_random_unsplash_image
 from .utils import generate_static_map_for_trip
 from .utils import country_code_to_name
+from .utils import reverse_geocode_area
 from django.db.models import Count, Q
 from django.db.models import Prefetch
 
@@ -382,6 +383,10 @@ def dayprogram_detail(request, dayprogram_id):
         dayprogramnumber__gt=dayprogram.dayprogramnumber
     ).order_by('dayprogramnumber').first()
 
+    is_day_in_future = None
+    if dayprogram.tripdate > timezone.now().date():
+       is_day_in_future = True        
+
     questions_with_badge_info = []
     for question in questions:
         question_info = {
@@ -474,6 +479,7 @@ def dayprogram_detail(request, dayprogram_id):
           'scheduled_items' : scheduled_items,
           'weather_forecast_data' : weather_forecast_data,
           'badge_overlay': badge,
+          'is_day_in_future' : is_day_in_future,
          })
 
 
@@ -3194,14 +3200,14 @@ def generate_bingocards_view(request, trip_id):
     Prefer specific local sights over generic objects.
 
     Rules:
-    - 6 items
+    - 6 bingodescriptions
     - 3-8 words each
     - no duplicates
-    - add emoji when appropriate
+    - optionally add emoji to the bingodescription
 
     The response must contain ONLY valid JSON without any text before or after the array.
     Example:
-    ["item 1", "item 2", "item 3", "item 4", "item 5", "item 6"]
+    ["description 1", "description 2", "description 3", "description 4", "description 5", "description 6"]
     """
 
     job = OllamaJob.objects.create(prompt=prompt, model=settings.OLLAMA_MODEL)
@@ -3214,3 +3220,56 @@ def generate_bingocards_view(request, trip_id):
     )
 
     return JsonResponse({"job_id": str(job.id), "status": "gestart"})
+
+@tripper_required
+@csrf_exempt
+@require_POST
+def generate_dayprogram_suggestions_view(request, dayprogram_id):
+    dayprogram  = DayProgram.objects.get(id=dayprogram_id)
+    trip        = dayprogram.trip
+    countrylist = country_code_to_name(trip.country_codes)
+
+    extra_context = []
+
+    if dayprogram.overnight_location:
+        extra_context.append(f"- Overnight stay: {dayprogram.overnight_location}")
+
+    points = dayprogram.points.all()
+    if points.exists():
+        extra_context.append("- Known locations on this day's route:")
+        for point in points:
+            area = reverse_geocode_area(point.latitude, point.longitude)
+            label = f"  • {point.name} ({point.marker_type}) near {area}"
+            extra_context.append(label)
+
+    extra_section = "\n".join(extra_context)
+    if extra_section:
+        extra_section = f"\nAdditional context:\n{extra_section}\n"
+
+    prompt = f"""
+    Suggest possible activities for day {dayprogram.dayprogramnumber} of a road trip called "{trip.name}" in {countrylist}.
+
+    This day is described as: "{dayprogram.description}"
+    {extra_section}
+    Think of things to do, see, or experience that fit this day and location.
+    Be specific and practical. Include a mix of must-sees and local hidden gems.
+
+    Rules:
+    - 2 to 4 suggestions
+    - Keep each suggestion to 1-2 sentences
+    - Add an emoji per suggestion
+
+    Return plain text, one suggestion per line. No JSON, no numbering.
+    """
+
+    job = OllamaJob.objects.create(prompt=prompt, model=settings.OLLAMA_MODEL)
+
+    async_task(
+        "tripapp.tasks.run_ollama",
+        str(job.id),
+        str(dayprogram_id),
+        hook="tripapp.tasks.process_dayprogram_suggestions",
+    )
+
+    return JsonResponse({"job_id": str(job.id), "status": "gestart"})
+

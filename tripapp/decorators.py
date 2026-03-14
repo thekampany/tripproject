@@ -6,12 +6,18 @@ from functools import wraps
 def tripper_required(view_func):
     @login_required
     def _wrapped_view(request, *args, **kwargs):
-        trip = get_object_or_404(Trip, pk=kwargs['trip_id'])
+        if 'trip_id' in kwargs:
+            trip = get_object_or_404(Trip, pk=kwargs['trip_id'])
+        elif 'dayprogram_id' in kwargs:
+            dayprogram = get_object_or_404(DayProgram, pk=kwargs['dayprogram_id'])
+            trip = dayprogram.trip
+        else:
+            return redirect('tripapp:permission_denied')
+
         trippers = Tripper.objects.filter(trips=trip, user__isnull=False)
-        
         if not trippers.filter(name=request.user.username).exists():
             return redirect('tripapp:permission_denied')
-        
+
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 

@@ -3,19 +3,22 @@ import os
 from django.conf import settings
 from django.core.files.base import ContentFile
 import logging
-from tripapp.models import Location
 from rdp import rdp
 import gpxpy
 
 import datetime
 from django.utils.text import slugify
 from geopy.geocoders import Nominatim
-from tripapp.models import Trip, DayProgram, Point, Tripper
+from geopy.exc import GeocoderTimedOut
+
+from tripapp.models import Trip, DayProgram, Point, Tripper, Location
 from django.db import models
 
 from requests.exceptions import RequestException
 from django.core.cache import cache
 
+
+geolocator = Nominatim(user_agent="tripapp")
 
 logger = logging.getLogger(__name__)
 
@@ -293,17 +296,14 @@ def get_country_coords(country_code):
     if coords:
         return coords
 
-    url = f"https://nominatim.openstreetmap.org/search?country={country_code}&format=json&limit=1"
-    response = requests.get(url, headers={'User-Agent': 'trip-planner-app'})
-
-    if response.status_code == 200:
-        data = response.json()
-        if data:
-            coords = float(data[0]['lat']), float(data[0]['lon'])
-            cache.set(cache_key, coords, timeout=86400)
-            return coords
+    location = geolocator.geocode({"country": country_code}, language="en", timeout=5)
+    if location:
+        coords = (location.latitude, location.longitude)
+        cache.set(cache_key, coords, timeout=86400)
+        return coords
 
     return None
+
 
 from django_select2.forms import Select2MultipleWidget
 import pycountry
@@ -330,3 +330,24 @@ def country_code_to_name(code: str):
                 countrylist.append(country.name)
 
     return countrylist
+
+def reverse_geocode_area(latitude, longitude) -> str:
+    try:
+        geolocator = Nominatim(user_agent="tripapp")
+        location   = geolocator.reverse((latitude, longitude), language="en", timeout=5)
+        if not location:
+            return f"{latitude:.2f}, {longitude:.2f}"
+        
+        address = location.raw.get("address", {})
+        area = (
+            address.get("village") or
+            address.get("town") or
+            address.get("city") or
+            address.get("county") or
+            address.get("state") or
+            address.get("country") or
+            location.address
+        )
+        return area
+    except GeocoderTimedOut:
+        return f"{latitude:.2f}, {longitude:.2f}"

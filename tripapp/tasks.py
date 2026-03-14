@@ -563,3 +563,16 @@ def process_bingocard_response(task):
 
     for description in descriptions[:6]:
         BingoCard.objects.create(trip=trip, description=description)
+
+def process_dayprogram_suggestions(task):
+    job_id       = task.args[0]
+    dayprogram_id = task.result
+
+    job        = OllamaJob.objects.get(id=job_id)
+    dayprogram = DayProgram.objects.get(id=dayprogram_id)
+
+    if job.status != "done":
+        return
+
+    dayprogram.possible_activities = job.answer.strip()
+    dayprogram.save(update_fields=["possible_activities"])

@@ -127,7 +127,8 @@ urlpatterns = [
     path("itineraryidea/<int:pk>/to_trip/", views.itineraryidea_to_trip, name="itineraryidea-to-trip"),
     path('calculate-route/', views.calculate_route, name='calculate_route'),
     path('save-route/', views.save_route, name='save_route'),
-    path("ask/",            views.ask,    name="ollama-ask"),
+    path("ask/", views.ask, name="ollama-ask"),
     path("result/<uuid:job_id>/", views.result, name="ollama-result"),
     path("trip/<int:trip_id>/bingo/generate/", views.generate_bingocards_view, name="bingo-generate"),
-]
+    path("dayprogram/<int:dayprogram_id>/suggestions/generate/", views.generate_dayprogram_suggestions_view, name="dayprogram-suggestions-generate"),
+     ]

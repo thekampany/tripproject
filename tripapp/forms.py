@@ -209,7 +209,7 @@ class AnswerImageForm(forms.Form):
 class BingoCardForm(forms.ModelForm):
     class Meta:
         model = BingoCard
-        fields = ['description', 'bingoimage', 'answerimage']
+        fields = ['description', 'bingoimage' ]
 
 class BingoAnswerForm(forms.ModelForm):
     class Meta:

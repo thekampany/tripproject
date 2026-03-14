@@ -154,7 +154,7 @@
     {% trans "No Bingo created for this trip" %}<br>
     &rarr;&nbsp;<a href="{% url 'tripapp:tripadmin_bingocards' trip.id %}">{% trans "add bingocards" %}</a><br>
     {% if ollama_configured %}
-    &rarr;&nbsp;<a href="#" id="generate-btn" data-url="{% url 'tripapp:bingo-generate' trip.id %}">{% trans "Generate 6 bingocards for me" %}</a><br>
+    &rarr;&nbsp;<a href="#" id="generate-btn" data-url="{% url 'tripapp:bingo-generate' trip.id %}">{% trans "generate 6 bingocards for me" %}</a><br>
     {% endif %}
     <p>&nbsp;</p>
 {% endif %}

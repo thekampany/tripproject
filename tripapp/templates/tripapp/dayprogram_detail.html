@@ -358,6 +358,15 @@
                 {{ dayprogram.possible_activities|linebreaks }}
             </p>
         </div>
+        {% else %}
+           {% if is_day_in_future %}
+            <div class="dayprogramcard">
+                <p>
+                    <span class="dayprogramcard-title">{% trans "Ideas for Today" %}</span>
+                    <a href="#" id="suggest-btn" data-url="{% url 'tripapp:dayprogram-suggestions-generate' dayprogram.id %}">{% trans "Generate suggestions for me" %}</a>
+                </p>
+            </div>
+            {% endif %}
         {% endif %}
 
         {% if scheduled_items %}
@@ -667,4 +676,17 @@ function hideBadgeOverlay() {
   overlay.classList.remove("show");
 }
 </script>
+<script>
+document.getElementById('suggest-btn').addEventListener('click', function(e) {
+  e.preventDefault();
+  this.textContent = 'Being generated, will be available later...';
+  this.style.pointerEvents = 'none';
+
+  fetch(this.dataset.url, {
+    method: 'POST',
+    headers: {'X-CSRFToken': '{{ csrf_token }}'},
+  });
+});
+</script>
+
 </html>
