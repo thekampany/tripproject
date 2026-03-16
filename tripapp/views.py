@@ -481,6 +481,7 @@ def dayprogram_detail(request, dayprogram_id):
           'badge_overlay': badge,
           'is_day_in_future' : is_day_in_future,
           'ollama_configured': bool(getattr(settings, 'OLLAMA_URL', None)),
+          'ollama_url': getattr(settings, 'OLLAMA_URL', None),
          })
 
 

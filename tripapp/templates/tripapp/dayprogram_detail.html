@@ -359,13 +359,15 @@
             </p>
         </div>
         {% else %}
-           {% if is_day_in_future and ollama_configured %}
-            <div class="dayprogramcard">
-                <p>
-                    <span class="dayprogramcard-title">{% trans "Ideas for Today" %}</span>
-                    <a href="#" id="suggest-btn" data-url="{% url 'tripapp:dayprogram-suggestions-generate' dayprogram.id %}">{% trans "Generate suggestions for me" %}</a>
-                </p>
-            </div>
+            {% if is_day_in_future %}
+                {% if ollama_configured %}
+                <div class="dayprogramcard">
+                    <p>
+                        <span class="dayprogramcard-title">{% trans "Ideas for Today" %}</span>
+                        <a href="#" id="suggest-btn" data-url="{% url 'tripapp:dayprogram-suggestions-generate' dayprogram.id %}">{% trans "Generate suggestions for me" %}</a>
+                    </p>
+                </div>
+                {% endif %}
             {% endif %}
         {% endif %}
 

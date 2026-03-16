@@ -1,0 +1,24 @@
+# Environment & secrets
+.env
+ 
+# Git
+.git
+.gitignore
+ 
+# Python
+__pycache__/
+ 
+# Django
+*.log
+media/
+ 
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+ 
+# OS
+.DS_Store
+Thumbs.db
+ 
