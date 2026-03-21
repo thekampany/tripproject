@@ -1,0 +1,71 @@
+{% extends "base_generic.html" %}
+{% load i18n %}
+{% block content %}
+<h2>{% trans "Generate an Itinerary" %}</h2>
+
+<span id="job-status-url" data-url="{% url 'tripapp:ollama-job-status' '00000000-0000-0000-0000-000000000000' %}"></span>
+
+<form id="generate-form" method="post">
+    {% csrf_token %}
+    <div>
+        <textarea 
+            name="prompt" 
+            rows="5" 
+            cols="60"
+            placeholder="{% trans 'Describe your trip, e.g. 3 days in Paris, starting at the Eiffel Tower' %}"
+            required
+        >{{ request.POST.prompt }}</textarea>
+    </div>
+    <div>
+        <button type="submit" id="submit-btn" class="btn">{% trans "Generate itinerary" %}</button>
+    </div>
+</form>
+
+<div id="status-box" style="display:none">
+    <p id="status-msg">⏳ {% trans "Generating itinerary, please wait..." %}</p>
+    <p>
+        {% trans "This may take a minute." %} 
+        <a href="{% url 'tripapp:itineraryidea-list' %}">{% trans "Go to your itineraries" %}</a> 
+        {% trans "— your new itinerary will appear there automatically when ready." %}
+    </p>
+</div>
+<script>
+document.getElementById("generate-form").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    const form = e.target;
+    const submitBtn = document.getElementById("submit-btn");
+    const statusBox = document.getElementById("status-box");
+    const statusMsg = document.getElementById("status-msg");
+
+    submitBtn.disabled = true;
+    statusBox.style.display = "block";
+
+    const response = await fetch(form.action || window.location.href, {
+        method: "POST",
+        body: new FormData(form),
+    });
+
+    const data = await response.json();
+    const jobId = data.job_id;
+
+    // Poll job status
+    const interval = setInterval(async () => {
+        const baseUrl = document.getElementById("job-status-url").dataset.url;
+        const poll = await fetch(baseUrl.replace("00000000-0000-0000-0000-000000000000", jobId));
+        const result = await poll.json();
+
+        if (result.status === "done") {
+            clearInterval(interval);
+            statusMsg.textContent = "✅ {% trans 'Itinerary generated! Redirecting...' %}";
+            window.location.href = "{% url 'tripapp:itineraryidea-list' %}";
+        } else if (result.status === "error") {
+            clearInterval(interval);
+            statusMsg.textContent = "❌ {% trans 'Error: ' %}" + result.error;
+            submitBtn.disabled = false;
+        }
+    }, 2000);
+});
+</script>
+{% endblock %}

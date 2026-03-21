@@ -24,6 +24,7 @@ _The application also has the following features:_
 _Integrations with other selfhosted apps:_  
 Add a Dawarich api key and see your tracks - did you go where you planned you would go?  
 Add an Immich api key and see where you took a photo  
+Add Ollama configuration and get AI assisted trip suggestions and roadtripbingo.  
 
 _Control your data:_  
 Your (trip)data is on your server and you decide who can view your tripdata. 
@@ -86,6 +87,7 @@ STATICMAPS_API_KEY = 'xxxxxxxx' # use when your staticmaps server has allow_api_
 OPENROUTESERVICE_API_KEY = 'xxxx' # get api key from openrouteservice.org in order to plan routes on the map
 DISTANCE_UNIT = 'km' # or 'mi' 
 OLLAMA_URL= 'http://localhost:11434/api/generate'
+OLLAMA_API_KEY = 'xxxxxxx'  # api key from ollama.com in order to use cloud models, optional for running ollama models local
 OLLAMA_MODEL ='tinyllama'
 ALLOW_REGISTRATION=False
 

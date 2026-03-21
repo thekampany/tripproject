@@ -2,6 +2,7 @@
 {% load i18n %}
 {% block content %}
 <h2>{% trans "Import Itinerary JSON" %}</h2>
+{% trans "Put your Itinerary into a JSON an import it."}
 {% trans "Ask your favourite AI to create an itinerary idea." %}<br>
 {% trans "Include in the prompt that the idea needs to be presented exactly following the schema at:" %}
 {% url 'tripapp:itinerary-schema' as schema_path %}
@@ -9,8 +10,8 @@
 <br><br>
 <form method="post" action="{% url 'tripapp:import_itineraryidea' %}">
     {% csrf_token %}
-    <textarea id="json_input" name="json_input" rows="20" cols="100" placeholder="Paste JSON here"></textarea><br><br>
-    <button type="submit">Import JSON</button>
+    <textarea id="json_input" name="json_input" rows="20" cols="100" placeholder="{% trans 'Paste JSON here' %}"></textarea><br><br>
+    <button type="submit" class="btn">Import JSON</button>
 </form>
 
 {% if import_status %}

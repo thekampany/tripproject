@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -20,7 +21,6 @@
   </style>
 </head>
 <body>
-
 
 <strong>{% trans "Edit Itinerary Idea:" %} {{ idea.name }}</strong>
 
@@ -60,7 +60,7 @@
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-
+<script src="{% static 'js/uniform_icons_for_leaflet.js' %}"></script>
 <script>
 var map = L.map('map');
 var bounds = [];
@@ -69,10 +69,9 @@ var defaultRadius = 5000;
 var lines = [];
 window.overnightPolygons = [];
 
-L.tileLayer('https://{tile.openstreetmap.org/{z}/{x}/{y}.png', {
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
-
 
 var geocoder = L.Control.geocoder({
     defaultMarkGeocode: false
@@ -88,33 +87,40 @@ var geocoder = L.Control.geocoder({
 })
 .addTo(map);
 
+var dayIcon  = uniformIcon(COLORS.activity, '📍', 36);
+var bedIcon  = uniformIcon(COLORS.accommodation, '🛏️', 36);
 
 function createCircle(latlng, day_sequence, sequence, radius, description, overnightDesc, isNight) {
     var ll = Array.isArray(latlng)
         ? L.latLng(latlng[0], latlng[1])
         : L.latLng(latlng.lat, latlng.lng);
 
-    var color = isNight ? 'orange' : 'blue';
-    var circle = L.circle(ll, {
-        radius: radius || defaultRadius,
-        color: color,
-        fillColor: color,
-        fillOpacity: 0.5
-    }).addTo(map);
+    var icon = isNight ? bedIcon : dayIcon;
 
-    const tooltipNight = `
-    <div style="text-align:center;"><strong>Night ${day_sequence}</strong><br>${overnightDesc || ""}</div>
-    `;
-    const tooltipDay = `
-    <div style="text-align:center;"><strong>Day ${day_sequence}</strong><br>(${sequence}) ${description || ''}</div>
-    `;
+    // Place a marker with the icon instead of a circle with a permanent tooltip
+    var marker = L.marker(ll, { icon: icon }).addTo(map);
 
-    if (isNight) {
-        circle.bindTooltip(tooltipNight, {permanent: true, direction: 'center'}).openTooltip();
-    } else {
-        circle.bindTooltip(tooltipDay, {permanent: true, direction: 'center'}).openTooltip();
+    // Build popup content
+    function buildPopupContent(c) {
+        if (c.isNight) {
+            return `<div style="text-align:center;min-width:120px;">
+                        <strong>🛏️ Night ${c.day_sequence}</strong><br>
+                        ${c.overnightDesc || '<em>no description</em>'}
+                    </div>`;
+        } else {
+            return `<div style="text-align:center;min-width:120px;">
+                        <strong>📍 Day ${c.day_sequence}</strong><br>
+                        <em>#${c.sequence}</em>${c.description ? ' – ' + c.description : ''}
+                    </div>`;
+        }
     }
-    var tableBody = isNight ? document.getElementById('nightlocations-body') : document.getElementById('daylocations-body');
+
+    marker.bindPopup('');
+
+    var tableBody = isNight
+        ? document.getElementById('nightlocations-body')
+        : document.getElementById('daylocations-body');
+
     var row = document.createElement('tr');
 
     if (isNight) {
@@ -135,7 +141,9 @@ function createCircle(latlng, day_sequence, sequence, radius, description, overn
     tableBody.appendChild(row);
 
     var c = {
-        circle: circle,
+        marker: marker,
+        // keep circle reference as alias for compatibility with drawLines etc.
+        get circle() { return { getLatLng: () => this.latlng }; },
         latlng: ll,
         day_sequence: parseInt(day_sequence) || 1,
         sequence: parseInt(sequence) || 0,
@@ -145,6 +153,11 @@ function createCircle(latlng, day_sequence, sequence, radius, description, overn
         isNight: !!isNight,
         row: row
     };
+
+    // Update popup when marker is opened
+    marker.on('popupopen', function() {
+        marker.getPopup().setContent(buildPopupContent(c));
+    });
 
     row.querySelectorAll('input').forEach(input => {
         input.addEventListener('input', function() {
@@ -158,7 +171,7 @@ function createCircle(latlng, day_sequence, sequence, radius, description, overn
 
     var deleteBtn = row.querySelector('.row-delete-btn');
     deleteBtn.addEventListener('click', function() {
-        map.removeLayer(circle);
+        map.removeLayer(marker);
         row.parentNode.removeChild(row);
         circles = circles.filter(x => x !== c);
         updateAll();
@@ -170,24 +183,20 @@ function createCircle(latlng, day_sequence, sequence, radius, description, overn
 
 function convexHull(points) {
     points = points.slice().sort((a,b) => a.lat - b.lat || a.lng - b.lng);
-
     function cross(o, a, b) {
         return (a.lat - o.lat) * (b.lng - o.lng) - (a.lng - o.lng) * (b.lat - o.lat);
     }
-
     let lower = [];
     for (let p of points) {
         while (lower.length >= 2 && cross(lower[lower.length-2], lower[lower.length-1], p) <= 0) lower.pop();
         lower.push(p);
     }
-
     let upper = [];
     for (let i = points.length - 1; i >= 0; i--) {
         let p = points[i];
         while (upper.length >= 2 && cross(upper[upper.length-2], upper[upper.length-1], points[i]) <= 0) upper.pop();
         upper.push(points[i]);
     }
-
     upper.pop();
     lower.pop();
     return lower.concat(upper);
@@ -198,54 +207,39 @@ function drawLines() {
     lines = [];
     var sorted = circles.slice().sort((a,b) => a.day_sequence - b.day_sequence || a.sequence - b.sequence);
     for (var i = 0; i < sorted.length - 1; i++) {
-        var line = L.polyline([sorted[i].circle.getLatLng(), sorted[i+1].circle.getLatLng()], { color: 'green' }).addTo(map);
+        var line = L.polyline([sorted[i].latlng, sorted[i+1].latlng], { color: 'green' }).addTo(map);
         lines.push(line);
     }
 }
 
 function drawOvernightPolygons() {
-    // remove existing polygons
     window.overnightPolygons.forEach(p => map.removeLayer(p));
     window.overnightPolygons = [];
 
-     var dayMap = {};
+    var dayMap = {};
     circles.forEach(c => {
-        if(!dayMap[c.day_sequence]) dayMap[c.day_sequence] = { day: [], night: null };
-        if(c.isNight) dayMap[c.day_sequence].night = c;
+        if (!dayMap[c.day_sequence]) dayMap[c.day_sequence] = { day: [], night: null };
+        if (c.isNight) dayMap[c.day_sequence].night = c;
         else dayMap[c.day_sequence].day.push(c);
     });
-
-    console.log("DayMap:", dayMap); // debug
 
     Object.keys(dayMap).forEach(daySeq => {
         var group = dayMap[daySeq];
         var points = group.day.map(d => d.latlng);
 
-        points.forEach(p => L.circleMarker(p, {radius:4, color:'purple'}).addTo(map));
-
-        if(group.night && points.length >= 3) {
-            // polygon around daylocations
+        if (group.night && points.length >= 3) {
             var hullPoints = convexHull(points).map(ll => [ll.lat, ll.lng]);
-            var poly = L.polygon(hullPoints, {color:'orange', fillOpacity:0.4}).addTo(map);
+            var poly = L.polygon(hullPoints, { color: 'orange', fillOpacity: 0.2 }).addTo(map);
             window.overnightPolygons.push(poly);
-            console.log("Polygon drawn for day_sequence", daySeq, "with", points.length, "points");
-        } else if(group.night && points.length > 0) {
+        } else if (group.night && points.length > 0) {
             points.forEach(p => {
-                var c = L.circle(p, {radius: defaultRadius, color:'orange', fillColor:'orange', fillOpacity:0.4}).addTo(map);
-                window.overnightPolygons.push(c);
+                var circ = L.circle(p, { radius: defaultRadius, color: 'orange', fillColor: 'orange', fillOpacity: 0.2 }).addTo(map);
+                window.overnightPolygons.push(circ);
             });
-            console.log("1-2 points: circles drawn for day_sequence", daySeq);
-        } else if(group.night) {
-            // no daylocations, overnight just a circle
-            var c = group.night;
-            var circle = L.circle(c.latlng, {
-                radius: c.radius || defaultRadius,
-                color: 'orange',
-                fillColor: 'orange',
-                fillOpacity: 0.5
-            }).addTo(map);
-            window.overnightPolygons.push(circle);
-            console.log("No daylocations: overnight circle drawn for day_sequence", daySeq);
+        } else if (group.night) {
+            var nc = group.night;
+            var circ = L.circle(nc.latlng, { radius: nc.radius || defaultRadius, color: 'orange', fillColor: 'orange', fillOpacity: 0.2 }).addTo(map);
+            window.overnightPolygons.push(circ);
         }
     });
 }
@@ -254,7 +248,6 @@ function updateAll() {
     drawLines();
     drawOvernightPolygons();
 }
-
 
 // --- add daylocations and overnightlocations ---
 {% for day_entry in days %}
@@ -282,28 +275,18 @@ function updateAll() {
     {% endif %}
 {% endfor %}
 
-if(bounds.length>0){
-    map.fitBounds(bounds, {padding:[50,50]});
+if (bounds.length > 0) {
+    map.fitBounds(bounds, { padding: [50, 50] });
 } else {
-    map.setView([52.1,5.1],6);
+    map.setView([52.1, 5.1], 6);
 }
 
 map.on('click', function(e) {
     var latlng = e.latlng;
-    var nextDay = circles.length > 0 
-        ? Math.max(...circles.map(c => c.day_sequence)) + 1 
+    var nextDay = circles.length > 0
+        ? Math.max(...circles.map(c => c.day_sequence)) + 1
         : 1;
-
-    createCircle(
-        latlng,
-        nextDay,   
-        0,         
-        defaultRadius,
-        "",        
-        "Overnight stay", 
-        true       
-    );
-
+    createCircle(latlng, nextDay, 0, defaultRadius, "", "Overnight stay", true);
     updateAll();
 });
 
@@ -337,8 +320,8 @@ document.getElementById('saveBtn').addEventListener('click', function() {
     })
     .then(response => response.json())
     .then(data => {
-        if(data.status === "ok"){
-           console.log("Update success:", data);
+        if (data.status === "ok") {
+            console.log("Update success:", data);
         } else {
             console.error("Error:", data);
         }
@@ -348,7 +331,6 @@ document.getElementById('saveBtn').addEventListener('click', function() {
     });
 });
 </script>
-
 
 </body>
 </html>

@@ -11,7 +11,7 @@
 }
 
 .dropdown-button {
-  background-color: silver;
+  background-color: lightgray;
   color: black;
   padding: 10px 16px;
   width: 100%;
@@ -45,13 +45,14 @@
 }
 
 </style>
-
+<p>&nbsp;</p>
 <div class="dropdown">
   <button class="dropdown-button">{% trans "Create New" %}</button>
   <div class="dropdown-content">
     <a href="/itineraryidea/overnightlocations/">{% trans "on Map via OvernightLocations" %}</a>
     <a href="/itineraryidea/daylocations/">{% trans "on Map via DayLocations" %}</a>
     <a href="/itineraryidea/">via Import</a>
+    {% if ollama_configured %}<a href="/itinerary/generate/">{% trans "AI Generated" %}</a>{% endif %}
   </div>
 </div>
 
@@ -87,10 +88,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
     <div style="float:left;">
       <a href="{% url 'tripapp:itineraryidea-edit' idea.pk %}">
-        <button type="button">{% trans "Edit on Map" %}</button>
+        <button type="button" class="btn">{% trans "Edit on Map" %}</button>
       </a>
       <a href="{% url 'tripapp:itineraryidea-to-trip' idea.pk %}">
-        <button type="button">{% trans "Convert to Trip" %}</button>
+        <button type="button" class="btn">{% trans "Convert to Trip" %}</button>
       </a>
     </div>
 
@@ -98,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function() {
     <div style="float:right;">
       <form method="post" action="{% url 'tripapp:itineraryidea-delete' idea.pk %}" style="display:inline;">
         {% csrf_token %}
-        <button type="submit" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Delete" %}</button>
+        <button type="submit" class="btn" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Delete" %}</button>
       </form>
     </div>
     {% endif %}
@@ -109,5 +110,5 @@ document.addEventListener("DOMContentLoaded", function() {
   <p>{% trans "No itinerary ideas yet." %}</p>
 {% endfor %}
 <p>&nbsp;</p>
-<a href="{% url 'tripapp:tribe_trips' %}">&larr;{% trans "Organize" %}</a>
+<a href="{% url 'tripapp:tribe_trips' %}">&larr;{% trans "Organize New" %}</a>
 {% endblock %}

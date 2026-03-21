@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.db import models
 from django_q.models import Schedule
 from .models import Trip,Badge, Tripper, BadgeAssignment, Trip, Location, ImmichPhotos, BingoCard, BingoAnswer, LogEntry, DayProgram, OllamaJob
+from .models import User, ItineraryIdea, ItineraryIdeaDay, DayLocation, OvernightLocation
 import requests
 from datetime import datetime, timedelta
 from django.core.files.base import ContentFile
@@ -582,3 +583,54 @@ def process_dayprogram_suggestions(task):
 
     dayprogram.possible_activities = job.answer.strip()
     dayprogram.save(update_fields=["possible_activities"])
+
+def process_generated_itinerary(task):
+    job_id, user_id = task.args
+
+    job = OllamaJob.objects.get(id=job_id)
+    user = User.objects.get(id=user_id)
+
+    if job.status != "done":
+        return
+
+    try:
+        data = json.loads(job.answer)
+
+        itinerary = ItineraryIdea.objects.create(
+            name=data.get("name", f"Itinerary {timezone.now().strftime('%Y-%m-%d %H:%M')}"),
+            created_by=user,
+        )
+
+        for day_data in data.get("days", []):
+            day = ItineraryIdeaDay.objects.create(
+                itineraryidea=itinerary,
+                day_sequence=day_data.get("day_sequence"),
+                day_description=day_data.get("day_description", ""),
+                day_possible_date=day_data.get("day_possible_date"),
+            )
+
+            for loc in day_data.get("day_locations", []):
+                DayLocation.objects.create(
+                    day=day,
+                    sequence=loc.get("sequence"),
+                    latitude=loc.get("lat"),
+                    longitude=loc.get("long"),
+                    radius=loc.get("radius", 100),
+                    description=loc.get("description", ""),
+                )
+
+            overnight_data = day_data.get("overnightlocation")
+            if overnight_data:
+                OvernightLocation.objects.create(
+                    day=day,
+                    latitude=overnight_data.get("lat"),
+                    longitude=overnight_data.get("long"),
+                    radius=overnight_data.get("radius", 100),
+                    description=overnight_data.get("description", ""),
+                )
+
+
+    except (json.JSONDecodeError, Exception) as e:
+        job.error = str(e)
+        job.status = "error"
+        job.save(update_fields=["error", "status"])

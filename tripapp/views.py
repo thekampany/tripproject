@@ -2467,7 +2467,10 @@ def import_itineraryidea(request):
 
 def itineraryidea_list(request):
     itineraryideas = ItineraryIdea.objects.prefetch_related("itineraryidea_days").all().order_by("-created_at")
-    return render(request, "tripapp/itineraryidea_list.html", {"itineraryideas": itineraryideas})
+    return render(request, "tripapp/itineraryidea_list.html", {
+        "itineraryideas": itineraryideas,
+        "ollama_configured": bool(getattr(settings, 'OLLAMA_URL', None)),
+    })
 
 
 # show an itineraryidea on a map in order to have it edited
@@ -3275,3 +3278,105 @@ def generate_dayprogram_suggestions_view(request, dayprogram_id):
 
     return JsonResponse({"job_id": str(job.id), "status": "gestart"})
 
+@login_required
+def generate_itineraryidea(request):
+    """
+    Sends a user prompt to Ollama, which generates an ItineraryIdea JSON,
+    then passes it to import_itineraryidea logic.
+    """
+    generate_status = None
+    generated_json = None
+
+    ITINERARY_JSON_SCHEMA = {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+            "days": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "day_sequence": {"type": "integer"},
+                        "day_description": {"type": "string"},
+                        "day_possible_date": {"type": "string", "format": "date"},
+                        "day_locations": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "sequence": {"type": "integer"},
+                                    "lat": {"type": "number"},
+                                    "long": {"type": "number"},
+                                    "radius": {"type": "number"},
+                                    "description": {"type": "string"},
+                                },
+                                "required": ["sequence", "lat", "long"]
+                            }
+                        },
+                        "overnightlocation": {
+                            "type": "object",
+                            "properties": {
+                                "lat": {"type": "number"},
+                                "long": {"type": "number"},
+                                "radius": {"type": "number"},
+                                "description": {"type": "string"},
+                            },
+                            "required": ["lat", "long"]
+                        },
+                    },
+                    "required": ["day_sequence"]
+                }
+            },
+        },
+        "required": ["name", "days"]
+    }
+
+    if request.method == "POST":
+        user_prompt = request.POST.get("prompt", "").strip()
+
+        if not user_prompt:
+            generate_status = "No prompt provided."
+        else:
+            prompt = f"""
+You are a travel planner assistant. Convert the user's trip description into a JSON object matching this schema exactly:
+
+{json.dumps(ITINERARY_JSON_SCHEMA, indent=2)}
+
+Rules:
+- Use realistic GPS coordinates for all locations.
+- day_possible_date must be YYYY-MM-DD format, or omitted if unknown.
+- radius is in meters, default 100 if unsure.
+- day_sequence starts at 1.
+- Respond ONLY with valid JSON. No explanation, no markdown, no code blocks.
+
+
+User request: {user_prompt}
+
+"""
+
+        job = OllamaJob.objects.create(
+            prompt=prompt,
+            model=settings.OLLAMA_MODEL 
+        )
+
+        async_task(
+            "tripapp.tasks.run_ollama",
+            str(job.id),
+            str(request.user.id),
+            hook="tripapp.tasks.process_generated_itinerary",
+        )
+
+        return JsonResponse({"job_id": str(job.id), "status": "gestart"})
+
+    return render(request, "tripapp/generate_itinerary.html")
+
+
+def ollama_job_status(request, job_id):
+    try:
+        job = OllamaJob.objects.get(id=job_id)
+        return JsonResponse({
+            "status": job.status,
+            "error": job.error or "",
+        })
+    except OllamaJob.DoesNotExist:
+        return JsonResponse({"status": "not_found"}, status=404)

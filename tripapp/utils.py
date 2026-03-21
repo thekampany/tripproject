@@ -121,7 +121,7 @@ def generate_static_map(dayprogram):
                         f"{lat},{lon}" for lat, lon in simplified
                     )
                     polyline_params.append(
-                        f"polyline=weight:4|color:FF0000|{polyline_str}"
+                        f"polyline=weight:2|color:blue|strokeDasharray:10,15|{polyline_str}"
                     )
 
     params = {

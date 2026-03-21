@@ -131,4 +131,6 @@ urlpatterns = [
     path("result/<uuid:job_id>/", views.result, name="ollama-result"),
     path("trip/<int:trip_id>/bingo/generate/", views.generate_bingocards_view, name="bingo-generate"),
     path("dayprogram/<int:dayprogram_id>/suggestions/generate/", views.generate_dayprogram_suggestions_view, name="dayprogram-suggestions-generate"),
-     ]
+    path("itinerary/generate/", views.generate_itineraryidea, name="itineraryidea-generate"),
+    path("ollama-job-status/<uuid:job_id>/", views.ollama_job_status, name="ollama-job-status"),
+    ]

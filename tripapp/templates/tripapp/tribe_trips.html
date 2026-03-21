@@ -244,7 +244,7 @@
                 {% if tripper %}<li><a class="dropdown-item" href="{% url 'tripapp:tripper_profile' tripper.id %}">Settings</a></li>{% endif %}
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="{% url 'tripapp:trip_list' %}">{% trans "My Trips" %}</a></li>
-                <li><a class="dropdown-item" href="{% url 'tripapp:tribe_trips' %}">{% trans "Organize" %}</a></li>
+                <li><a class="dropdown-item" href="{% url 'tripapp:tribe_trips' %}">{% trans "Organize New.." %}</a></li>
                 <li><hr class="dropdown-divider"></li>
                 {% if user.is_staff  and enable_admin %}<li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>{% endif %}
                 {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'tripapp:task_manager' %}">Background Tasks</a></li>{% endif %}
