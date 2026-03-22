@@ -45,6 +45,8 @@
 <form method="post" enctype="multipart/form-data" action="{% url 'tripapp:upload_tripper_document' %}">
     {% csrf_token %}
     {{ document_form|crispy }}
+    <p>&nbsp;</p>
     <button type="submit" class="btn">Upload Document</button>
+    <p>&nbsp;</p>
 </form>
 {% endblock %}

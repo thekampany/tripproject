@@ -61,7 +61,7 @@
         /* Dark Mode */
         @media (prefers-color-scheme: dark) {
             body {
-                background-color: #121212;
+                background-color: #001f4d;
                 color: #ffffff;
             }
 
@@ -85,10 +85,10 @@
 <body>
 <div class="card">
 <div class="container">
-
-    <h2>{{ trip.name }} Export</h2>
-
-
+    
+    <div class="titlecontainer">
+        <h2>{{ trip.name }} Export</h2>
+    </div>
     <div class="container-cards">
       <div class="export-card">
         <a href="{% url 'tripapp:export_trip_html_zip' trip.id %}">

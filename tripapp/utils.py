@@ -351,3 +351,37 @@ def reverse_geocode_area(latitude, longitude) -> str:
         return area
     except GeocoderTimedOut:
         return f"{latitude:.2f}, {longitude:.2f}"
+
+
+from math import radians, sin, cos, sqrt, atan2
+from django.db.models import Q
+from datetime import date
+
+def haversine(lat1, lon1, lat2, lon2):
+    R = 6371  
+
+    lat1, lon1, lat2, lon2 = map(radians, [float(lat1), float(lon1), float(lat2), float(lon2)])
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    return R * 2 * atan2(sqrt(a), sqrt(1 - a))
+
+
+def distance_per_day(tripper, day: date) -> float:
+    locations = (
+        Location.objects
+        .filter(tripper=tripper, timestamp__date=day)
+        .order_by('timestamp')
+        .values_list('latitude', 'longitude')
+    )
+
+    total_km = 0.0
+    points = list(locations)
+
+    for i in range(len(points) - 1):
+        lat1, lon1 = points[i]
+        lat2, lon2 = points[i + 1]
+        total_km += haversine(lat1, lon1, lat2, lon2)
+
+    return round(total_km, 2)

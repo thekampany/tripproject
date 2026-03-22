@@ -29,6 +29,8 @@ from .utils import get_random_unsplash_image
 from .utils import generate_static_map_for_trip
 from .utils import country_code_to_name
 from .utils import reverse_geocode_area
+from .utils import distance_per_day
+
 from django.db.models import Count, Q
 from django.db.models import Prefetch
 
@@ -119,7 +121,8 @@ def tribe_trips(request):
          'admin_trips': admin_trips,
          'tripper' : tripper,
          'enable_admin': enable_admin,
-         'today': date.today()
+         'today': date.today(),
+         'ollama_configured': bool(getattr(settings, 'OLLAMA_URL', None)),
         })
 
 
@@ -385,8 +388,23 @@ def dayprogram_detail(request, dayprogram_id):
 
     is_day_in_future = None
     if dayprogram.tripdate > timezone.now().date():
-       is_day_in_future = True        
+       is_day_in_future = True    
 
+    tracked_distance = None
+    distance_unit = None
+    if dayprogram.tripdate < timezone.now().date():
+        tripper_with_dawarich = next(
+            (t for t in trippers_on_this_trip if t.dawarich_url and t.dawarich_api_key),
+            None
+        )
+        if tripper_with_dawarich:
+            tracked_distance = distance_per_day(tripper_with_dawarich, dayprogram.tripdate)
+            distance_unit = settings.DISTANCE_UNIT if settings.DISTANCE_UNIT in ('km', 'mi') else None
+            if distance_unit == 'mi':
+                tracked_distance = tracked_distance / 1.609
+            elif distance_unit is None:
+                tracked_distance = None
+                
     questions_with_badge_info = []
     for question in questions:
         question_info = {
@@ -482,6 +500,8 @@ def dayprogram_detail(request, dayprogram_id):
           'is_day_in_future' : is_day_in_future,
           'ollama_configured': bool(getattr(settings, 'OLLAMA_URL', None)),
           'ollama_url': getattr(settings, 'OLLAMA_URL', None),
+          'tracked_distance': tracked_distance,
+          'distance_unit' : distance_unit,
          })
 
 
@@ -700,6 +720,8 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     trippers = trip.trippers.all()
     dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
+    trippers_on_this_trip = dayprogram.trip.trippers.all()
+
     trip_points = Point.objects.filter(trip=trip)
 
     points = trip_points.filter(dayprograms=dayprogram)
@@ -730,6 +752,21 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
     has_openrouteservice = bool(getattr(settings, 'OPENROUTESERVICE_API_KEY', None))
     distance_unit = settings.DISTANCE_UNIT
 
+    tracked_distance = None
+    if dayprogram.tripdate < timezone.now().date():
+        tripper_with_dawarich = next(
+            (t for t in trippers_on_this_trip if t.dawarich_url and t.dawarich_api_key),
+            None
+        )
+        if tripper_with_dawarich:
+            tracked_distance = distance_per_day(tripper_with_dawarich, dayprogram.tripdate)
+            distance_unit = settings.DISTANCE_UNIT if settings.DISTANCE_UNIT in ('km', 'mi') else None
+            if distance_unit == 'mi':
+                tracked_distance = tracked_distance / 1.609
+            elif distance_unit is None:
+                tracked_distance = None
+
+
     context = {
         'trip': trip,
         'dayprogram': dayprogram,
@@ -744,6 +781,7 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
         'next_dayprogram' : next_dayprogram,
         'has_openrouteservice' : has_openrouteservice,
         'distance_unit' : distance_unit,
+        'tracked_distance' : tracked_distance,
     }
 
     return render(request, 'tripapp/trip_dayprogram_points.html', context) 

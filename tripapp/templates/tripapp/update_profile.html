@@ -6,6 +6,8 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form|crispy }}
+        <p>&nbsp;</p>
         <button type="submit" class="btn">Save Changes</button>
+        <p>&nbsp;</p>
     </form>
 {% endblock %}

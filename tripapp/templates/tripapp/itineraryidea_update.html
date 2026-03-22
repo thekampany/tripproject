@@ -8,6 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
   <style>
     #map { height: 400px; }
     body { font-family: sans-serif; }
@@ -87,7 +88,7 @@ var geocoder = L.Control.geocoder({
 })
 .addTo(map);
 
-var dayIcon  = uniformIcon(COLORS.activity, '📍', 36);
+var dayIcon  = uniformIcon(COLORS.default, '📍', 36);
 var bedIcon  = uniformIcon(COLORS.accommodation, '🛏️', 36);
 
 function createCircle(latlng, day_sequence, sequence, radius, description, overnightDesc, isNight) {

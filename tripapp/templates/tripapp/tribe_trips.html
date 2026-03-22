@@ -36,12 +36,12 @@
             padding-bottom: 20px;
             padding-left: 0px;
             padding-right: 0px;
+            align-items: stretch;
         }
 
         .trip-card {
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
             border: 1px solid #ddd;
             border-radius: 8px;
             overflow: hidden;
@@ -64,7 +64,7 @@
             color: white;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
             padding: 10px;
-            height: 100px; 
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -74,6 +74,7 @@
 
         .trip-icons {
             display: flex;
+            flex-shrink: 0;
             justify-content: center;
             flex-wrap: wrap;
             gap: 5px;
@@ -140,19 +141,66 @@
             font-size: 1.2rem;
             margin: 0.5em 0;
             width: 100%;
+            flex: 1;                
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+
+  .block-title {
+    margin-top: 8px;
+    padding-bottom: 0px;
+    font-size: 1.2rem;
+  }
+
+  .block-links {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .block-links li {
+    margin: 0px 0;
+  }
+
+  .block-links a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    font-size: 14px;
+    transition: 0.2s ease-in-out;
+  }
+
+  .block-links a i {
+    font-size: 1.1rem;
+    color: #001f4d;
+    transition: inherit;
+  }
+
+  .block-links a:hover {
+    background: #001f4d;
+    color: white;
+  }
+
+  .block-links a:hover i {
+    color: white;
+  }
 
 
 
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
     body {
-        background-color: #121212;
+        background-color: #001f4d;
         color: #e0e0e0;
     }
 
     .trip-card {
-        background: #1e1e1e;
+        background: #001f4d;
         border: 1px solid #ccc;
         color: #e0e0e0;
     }
@@ -179,7 +227,7 @@
             flex-wrap: wrap;
             gap: 5px;
             padding: 5px;
-            background: #1e1e1e;
+            background: #001f4d;
         }
       
     .trip-name {
@@ -189,7 +237,7 @@
             color: white;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
             padding: 10px;
-            height: 100px; 
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -219,8 +267,29 @@
         font-size: 1.2rem;
         margin: 0.5em 0;
         width: 100%;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        }
+
+    .block-links a {
+        font-size: 14px;
+        color: #e0e0e0;
     }
 
+    .block-links a i {
+        color: #a0b4d0;
+    }
+
+    .block-links a:hover {
+        background: #001f4d;
+        color: white;
+    }
+
+    .block-links a:hover i {
+        color: white;
+    }
 
 </style>
 
@@ -261,14 +330,47 @@
         <span style="color:gray;">{{ tribe.name }}</span><br>
         <div class="trip-container">
             <div class="new-trip-card">
-                <a href="{% url 'tripapp:create_trip' tribe.id %}">
-                    <span>+&nbsp;{% trans "New Trip" %}</span>
-                </a>
-            </div>
+                    <h3 class="block-title">{% trans "New Trip" %}</h3>
+                    <ul class="block-links">
+                        <li>
+                        <a href="{% url 'tripapp:create_trip' tribe.id %}">
+                            <i class="bi bi-pencil-square"></i>
+                            {% trans "Create from scratch" %}
+                        </a>
+                        </li>
+                        {% if ollama_configured %}
+                        <li>
+                        <a href="{% url 'tripapp:generate_itineraryidea' %}">
+                            <i class="bi bi-stars"></i>
+                            {% trans "Generate with AI" %}
+                        </a>
+                        </li>
+                        {% endif %}
+                        <li>
+                        <a href="/itineraryidea/">
+                            <i class="bi bi-filetype-json"></i>
+                            {% trans "Import JSON itinerary" %}
+                        </a>
+                        </li>
+                        <li>
+                        <a href="/itineraryidea/overnightlocations/">
+                            <i class="bi bi-moon-stars"></i>
+                            {% trans "Map overnight locations" %}
+                        </a>
+                        </li>
+                        <li>
+                        <a href="/itineraryidea/daylocations/">
+                            <i class="bi bi-geo-alt"></i>
+                            {% trans "Map activity locations" %}
+                        </a>
+                        </li>
+                    </ul>
+
+
+                </div>
 
             {% for trip in trips %}
                 <div class="trip-card">
-                        <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" style="text-decoration:none;">
                         <div class="trip-name" style="
                         background-image: 
                             {% if trip.image %}
@@ -280,9 +382,10 @@
                             {% else %}
                                 url('{% static "default-trip.png" %}'); 
                             {% endif %}">
+                            <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" style="text-decoration:none;">
                             <span>{{ trip.name }}</span>
+                            </a>
                         </div>
-                        </a>
 
                         <div class="trip-icons">
                             {% if trip in admin_trips %}

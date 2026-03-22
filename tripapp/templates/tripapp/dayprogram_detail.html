@@ -561,7 +561,18 @@
         </div>
         {% endif %}
     </div>
+
+    {% if tracked_distance %}
+    <div class="dayprogramcard">
+        <p>
+            {% trans "Tracked Distance:" %}
+            {{ tracked_distance }}{{ distance_unit }}
+        </p>
+    </div>
+    {% endif %}
+
     <p>&nbsp;</p>
+
 </div>
 </div>
 

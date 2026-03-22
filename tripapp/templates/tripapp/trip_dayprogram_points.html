@@ -274,6 +274,11 @@
         data-csrf="{{ csrf_token }}">
     </div>
 
+    {% if tracked_distance %}
+            {% trans "Tracked Distance:" %}
+            {{ tracked_distance }}{{ distance_unit }}
+    {% endif %}
+
     {% comment %}
     Show route planning panel only if:
     1. has_openrouteservice is True
