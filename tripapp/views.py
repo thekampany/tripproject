@@ -1866,7 +1866,23 @@ def generate_html_with_images(trip):
 
     html_content += "<h2>📅 Dayprograms</h2>"
 
+
     for day in trip.dayprograms.all().order_by('dayprogramnumber'):
+        trippers_on_this_trip = day.trip.trippers.all()
+        tracked_distance = None
+        distance_unit = None
+        if day.tripdate < timezone.now().date():
+            tripper_with_dawarich = next(
+                (t for t in trippers_on_this_trip if t.dawarich_url and t.dawarich_api_key),
+                None
+            )
+            if tripper_with_dawarich:
+                tracked_distance = distance_per_day(tripper_with_dawarich, day.tripdate)
+                distance_unit = settings.DISTANCE_UNIT if settings.DISTANCE_UNIT in ('km', 'mi') else None
+                if distance_unit == 'mi':
+                    tracked_distance = tracked_distance / 1.609
+                elif distance_unit is None:
+                    tracked_distance = None
 
         html_content += f"""
         <div class="card">
@@ -1876,7 +1892,6 @@ def generate_html_with_images(trip):
         
         if day.recorded_weather_text:
             html_content += f"""<p>{day.recorded_weather_text}</p>"""
-
 
         if day.scheduled_items.exists():
             html_content += "<h4> Scheduled Items</h4><ul>"
@@ -1919,6 +1934,9 @@ def generate_html_with_images(trip):
         if day.map_image:
             img_base64 = encode_image_to_base64(day.map_image.name)  
             html_content += f'<p><img src="{img_base64}" ></p>'
+
+        if tracked_distance:
+            html_content += f"""<p>tracked distance {Tracked_distance} { day.tripdate }: {distance_unit }</p>"""
 
         if day.question_set.exists():
             html_content += "<h4>❓ Question(s)</h4><ul>"

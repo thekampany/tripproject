@@ -2,7 +2,7 @@
 {% load i18n %}
 {% block content %}
 <h2>{% trans "Generate an Itinerary" %}</h2>
-
+<p>&nbsp;</p>
 <span id="job-status-url" data-url="{% url 'tripapp:ollama-job-status' '00000000-0000-0000-0000-000000000000' %}"></span>
 
 <form id="generate-form" method="post">
@@ -16,9 +16,11 @@
             required
         >{{ request.POST.prompt }}</textarea>
     </div>
+    <br><br>
     <div>
         <button type="submit" id="submit-btn" class="btn">{% trans "Generate itinerary" %}</button>
     </div>
+    <p>&nbsp;</p>
 </form>
 
 <div id="status-box" style="display:none">

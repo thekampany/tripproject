@@ -18,11 +18,11 @@
     --color-text: white; /* black => white */
     --color-background: #001f4d; /* white => black */
 
-    --card-background-color: #001f4d(0, 0, 0, 0.7);
+    --card-background-color: rgba(0, 31, 77, 0.7);
     --card-box-shadow: 0 4px 8px 0 rgba(255,255,255,0.2);
     --card-box-shadow-hover: 0 8px 16px 0 rgba(255,255,255,0.2);
     --btn-background: #C70039;
-    --dayprogram-background:#001f4d(0,0,0,0.8);
+    --dayprogram-background:rgba(0,31,77,0.8);
     --bs-dropdown-bg-overr: rgba(255, 255, 255, 0.100);
   }
 }

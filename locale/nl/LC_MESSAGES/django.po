@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-22 21:42+0100\n"
+"POT-Creation-Date: 2026-03-22 22:49+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -126,59 +126,57 @@ msgstr "Totaal"
 msgid "to Organize Trip"
 msgstr "Organiseer Trip"
 
-#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:5
-#, fuzzy
-#| msgid ""
-#| "Create a Itinerary Idea by indicating Day locations / areas on this map"
+#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:6
 msgid "Create Itinerary Idea - by Day Locations"
 msgstr "Maak Reisschema Idee door Dag activiteiten op de kaart te zetten"
 
-#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:24
-#: tripapp/templates/tripapp/itinerary_dragdrop.html:54
-#, fuzzy
-#| msgid ""
-#| "Create a Itinerary Idea by indicating Day locations / areas on this map"
-msgid "Create a Itinerary Idea by indicating day locations"
+#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:25
+msgid "Create Itinerary Idea by indicating day locations"
 msgstr "Maak Reisschema Idee door Dag activiteiten op de kaart te zetten"
 
-#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:25
+#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:26
 msgid "Step 1 - Put markers on locations or areas that you want to visit"
 msgstr "Stap 1 - Zet markers op lokaties of gebieden die je wil bezoeken"
 
-#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:29
+#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:30
 msgid "Day Locations:"
-msgstr "Dag Activiteiten"
+msgstr "Dag Activiteiten:"
 
-#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:34
-#, fuzzy
-#| msgid "Name of this Overnight Itinerary Idea"
+#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:35
 msgid "Name of this Itinerary Idea"
-msgstr "Naam van dit Overnachtings Reisschema Idee"
+msgstr "Naam van dit Reisschema"
 
-#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:36
-#, fuzzy
-#| msgid "Itinerary"
+#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:37
 msgid "Save Itinerary Idea"
 msgstr "Bewaar Reisschema Idee"
 
-#: tripapp/templates/tripapp/create_tripoutline.html:5
+#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:213
+#: tripapp/templates/tripapp/create_tripoutline.html:228
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:124
+#: tripapp/templates/tripapp/itineraryidea_list.html:4
+#: tripapp/templates/tripapp/itineraryidea_update.html:58
+#: tripapp/templates/tripapp/tribe_trips.html:439
+msgid "Itinerary Ideas"
+msgstr "Reisschema Ideeen"
+
+#: tripapp/templates/tripapp/create_tripoutline.html:6
 msgid "Create Tripoutline"
 msgstr "Maak Reisschema Idee aan"
 
-#: tripapp/templates/tripapp/create_tripoutline.html:23
+#: tripapp/templates/tripapp/create_tripoutline.html:24
 msgid ""
 "Create a Itinerary Idea by indicating OVERNIGHT locations / areas on this map"
 msgstr "Maak Reisschema Idee door Overnachtingslocaties op de kaart te zetten"
 
-#: tripapp/templates/tripapp/create_tripoutline.html:27
+#: tripapp/templates/tripapp/create_tripoutline.html:28
 msgid "Overnight Locations:"
 msgstr "Overnachtings Locaties:"
 
-#: tripapp/templates/tripapp/create_tripoutline.html:30
+#: tripapp/templates/tripapp/create_tripoutline.html:31
 msgid "Name of this Overnight Itinerary Idea"
 msgstr "Naam van dit Overnachtings Reisschema Idee"
 
-#: tripapp/templates/tripapp/create_tripoutline.html:31
+#: tripapp/templates/tripapp/create_tripoutline.html:32
 msgid "Save Overnight Outline"
 msgstr "Bewaar Overnachtings Reisschema Idee"
 
@@ -224,8 +222,6 @@ msgid "Ideas for Today"
 msgstr "Ideeen voor vandaag"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:367
-#, fuzzy
-#| msgid "generate suggestions for me"
 msgid "Generate suggestions for me"
 msgstr "genereer suggesties voor mij"
 
@@ -285,31 +281,31 @@ msgid "Describe your trip, e.g. 3 days in Paris, starting at the Eiffel Tower"
 msgstr ""
 "Omschrijf je reisidee, bijv 3 dagen in Parijs, startend bij de Eiffeltoren"
 
-#: tripapp/templates/tripapp/generate_itinerary.html:20
+#: tripapp/templates/tripapp/generate_itinerary.html:21
 msgid "Generate itinerary"
 msgstr "Genereer reisschema"
 
-#: tripapp/templates/tripapp/generate_itinerary.html:25
+#: tripapp/templates/tripapp/generate_itinerary.html:27
 msgid "Generating itinerary, please wait..."
 msgstr "Reisschema aan het genereren, een moment geduld..."
 
-#: tripapp/templates/tripapp/generate_itinerary.html:27
+#: tripapp/templates/tripapp/generate_itinerary.html:29
 msgid "This may take a minute."
 msgstr "Dit kan een paar minuten duren"
 
-#: tripapp/templates/tripapp/generate_itinerary.html:28
+#: tripapp/templates/tripapp/generate_itinerary.html:30
 msgid "Go to your itineraries"
 msgstr "Ga naar je reisschema ideeen"
 
-#: tripapp/templates/tripapp/generate_itinerary.html:29
+#: tripapp/templates/tripapp/generate_itinerary.html:31
 msgid "— your new itinerary will appear there automatically when ready."
 msgstr "- je nieuwe reisschema verschijnt daar zodra gereed."
 
-#: tripapp/templates/tripapp/generate_itinerary.html:61
+#: tripapp/templates/tripapp/generate_itinerary.html:63
 msgid "Itinerary generated! Redirecting..."
 msgstr "Reisschema gegenereerd! Je wordt doorgezet..."
 
-#: tripapp/templates/tripapp/generate_itinerary.html:65
+#: tripapp/templates/tripapp/generate_itinerary.html:67
 msgid "Error: "
 msgstr "Fout: "
 
@@ -391,6 +387,10 @@ msgstr "Deel deze link"
 msgid "Have it scanned by the person you want to invite to the tribe."
 msgstr "Laat scannen door persoon die je wil toevoegen aan de tribe"
 
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:54
+msgid "Create a Itinerary Idea by indicating day locations"
+msgstr "Maak Reisschema Idee door Dag activiteiten op de kaart te zetten"
+
 #: tripapp/templates/tripapp/itinerary_dragdrop.html:55
 msgid "Step 2 - Cluster the activities into days"
 msgstr "Stap 2 - Groepeer de activiteiten tot dagen"
@@ -418,17 +418,10 @@ msgid "No days added yet."
 msgstr "Nog geen dagen toegevoegd"
 
 #: tripapp/templates/tripapp/itinerary_dragdrop.html:119
-#: tripapp/templates/tripapp/itineraryidea_update.html:57
+#: tripapp/templates/tripapp/itineraryidea_update.html:56
 #: tripapp/templates/tripapp/tripper_profile.html:17
 msgid "Save"
 msgstr "Bewaar"
-
-#: tripapp/templates/tripapp/itinerary_dragdrop.html:124
-#: tripapp/templates/tripapp/itineraryidea_list.html:4
-#: tripapp/templates/tripapp/itineraryidea_update.html:59
-#: tripapp/templates/tripapp/tribe_trips.html:439
-msgid "Itinerary Ideas"
-msgstr "Reisschema Ideeen"
 
 #: tripapp/templates/tripapp/itineraryidea_list.html:50
 msgid "Create New"
@@ -439,14 +432,12 @@ msgid "on Map via OvernightLocations"
 msgstr "via Overnachtings Locaties op de kaart"
 
 #: tripapp/templates/tripapp/itineraryidea_list.html:53
-#, fuzzy
-#| msgid "Day Locations:"
 msgid "on Map via DayLocations"
 msgstr "via Dag Activiteiten op de kaart"
 
 #: tripapp/templates/tripapp/itineraryidea_list.html:55
 msgid "AI Generated"
-msgstr "Gegenereerdmet AI"
+msgstr "Gegenereerd met AI"
 
 #: tripapp/templates/tripapp/itineraryidea_list.html:91
 msgid "Edit on Map"
@@ -493,7 +484,7 @@ msgstr "Startdatum:"
 msgid "Create Trip"
 msgstr "Maak Trip aan"
 
-#: tripapp/templates/tripapp/itineraryidea_update.html:26
+#: tripapp/templates/tripapp/itineraryidea_update.html:25
 msgid "Edit Itinerary Idea:"
 msgstr "Bewerk Reisschema Idee:"
 
@@ -618,7 +609,7 @@ msgstr "Zet overnachtingen op de kaart"
 
 #: tripapp/templates/tripapp/tribe_trips.html:364
 msgid "Map activity locations"
-msgstr "Zet Activiteiten op de kaart"
+msgstr "Zet activiteiten op de kaart"
 
 #: tripapp/templates/tripapp/tribe_trips.html:422
 msgid "Delete trip"
@@ -671,8 +662,6 @@ msgid "add bingocards"
 msgstr "maak bingokaart"
 
 #: tripapp/templates/tripapp/trip_bingocard.html:157
-#, fuzzy
-#| msgid "Generate 6 bingocards for me"
 msgid "generate 6 bingocards for me"
 msgstr "genereer 6 bingokaarten voor mij"
 

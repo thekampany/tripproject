@@ -11,7 +11,6 @@
   <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
   <style>
     #map { height: 400px; }
-    body { font-family: sans-serif; }
     .coords-box { margin-top: 10px; }
     .coords-box input { margin: 2px; }
     .coords-row { margin-bottom: 5px; }
@@ -217,32 +216,32 @@ function drawOvernightPolygons() {
     window.overnightPolygons.forEach(p => map.removeLayer(p));
     window.overnightPolygons = [];
 
-    var dayMap = {};
-    circles.forEach(c => {
-        if (!dayMap[c.day_sequence]) dayMap[c.day_sequence] = { day: [], night: null };
-        if (c.isNight) dayMap[c.day_sequence].night = c;
-        else dayMap[c.day_sequence].day.push(c);
-    });
+    //var dayMap = {};
+    //circles.forEach(c => {
+    //    if (!dayMap[c.day_sequence]) dayMap[c.day_sequence] = { day: [], night: null };
+    //    if (c.isNight) dayMap[c.day_sequence].night = c;
+    //    else dayMap[c.day_sequence].day.push(c);
+    //});
 
-    Object.keys(dayMap).forEach(daySeq => {
-        var group = dayMap[daySeq];
-        var points = group.day.map(d => d.latlng);
+    //Object.keys(dayMap).forEach(daySeq => {
+    //    var group = dayMap[daySeq];
+    //    var points = group.day.map(d => d.latlng);
 
-        if (group.night && points.length >= 3) {
-            var hullPoints = convexHull(points).map(ll => [ll.lat, ll.lng]);
-            var poly = L.polygon(hullPoints, { color: 'orange', fillOpacity: 0.2 }).addTo(map);
-            window.overnightPolygons.push(poly);
-        } else if (group.night && points.length > 0) {
-            points.forEach(p => {
-                var circ = L.circle(p, { radius: defaultRadius, color: 'orange', fillColor: 'orange', fillOpacity: 0.2 }).addTo(map);
-                window.overnightPolygons.push(circ);
-            });
-        } else if (group.night) {
-            var nc = group.night;
-            var circ = L.circle(nc.latlng, { radius: nc.radius || defaultRadius, color: 'orange', fillColor: 'orange', fillOpacity: 0.2 }).addTo(map);
-            window.overnightPolygons.push(circ);
-        }
-    });
+    //    if (group.night && points.length >= 3) {
+    //        var hullPoints = convexHull(points).map(ll => [ll.lat, ll.lng]);
+    //        var poly = L.polygon(hullPoints, { color: 'orange', fillOpacity: 0.2 }).addTo(map);
+    //        window.overnightPolygons.push(poly);
+    //    } else if (group.night && points.length > 0) {
+    //        points.forEach(p => {
+    //            var circ = L.circle(p, { radius: defaultRadius, color: 'orange', fillColor: 'orange', fillOpacity: 0.2 }).addTo(map);
+    //            window.overnightPolygons.push(circ);
+    //        });
+    //    } else if (group.night) {
+    //        var nc = group.night;
+    //        var circ = L.circle(nc.latlng, { radius: nc.radius || defaultRadius, color: 'orange', fillColor: 'orange', fillOpacity: 0.2 }).addTo(map);
+    //        window.overnightPolygons.push(circ);
+    //    }
+    //});
 }
 
 function updateAll() {
