@@ -23,7 +23,7 @@
     --card-box-shadow-hover: 0 8px 16px 0 rgba(255,255,255,0.2);
     --btn-background: #C70039;
     --dayprogram-background:rgba(0,31,77,0.8);
-    --bs-dropdown-bg-overr: rgba(255, 255, 255, 0.100);
+    --bs-dropdown-bg-overr: rgba(0, 31, 77, 0.700);
   }
 }
 

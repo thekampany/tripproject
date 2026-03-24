@@ -9,8 +9,9 @@
   <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
   <style>
     .draggable {
-      background: #fff;
-      border: 1px solid #ddd;
+      background: var(--card-background-color);
+      border: 1px solid var(--color-text);
+      color: var(--color-text);
       border-radius: .5rem;
       padding: .5rem .75rem;
       margin-bottom: .5rem;
@@ -20,9 +21,9 @@
     .dropzone {
       min-height: 80px;
       padding: .75rem;
-      border: 2px dashed #ccc;
       border-radius: .5rem;
-      background-color: #fafafa;
+      background-color: var(--dayprogram-background);
+      border: 2px dashed var(--color-text);
       transition: background-color .2s;
     }
     .dropzone.dragover {
@@ -30,7 +31,7 @@
       border-color: #007bff;
     }
     .day-card {
-      background-color: white;
+      background-color: var(--card-background-color);
       border: 1px solid #ddd;
       border-radius: .5rem;
       padding: 1rem;
@@ -42,25 +43,48 @@
       align-items: center;
     }
     .overnight-wrapper {
-      background: #fff;
+      background-color: var(--card-background-color);
       border: 1px dashed #bbb;
       border-radius: .5rem;
       padding: .75rem 1rem;
       margin-bottom: 1rem;
+    }
+
+    /* Override padding voor card-header */
+    .card-header {
+      padding: 0 !important;
+    }
+
+    /* Override padding voor container-fluid */
+    .container-fluid {
+      padding-right: 0 !important;
+      padding-left: 0 !important;
+    }
+
+    /* Override padding voor row */
+    .row {
+      padding-right: 0 !important;
+      padding-left: 0 !important;
+      margin-right: 0 !important;
+      margin-left: 0 !important;
+    }
+    .row > * {
+      padding-right: 0 !important;
+      padding-left: 0 !important;
+      margin-top: 0 !important;
     }
   </style>
 </head>
 <body class="p-3">
   <strong>{% trans "Create a Itinerary Idea by indicating day locations" %}</strong><br>
   {% trans "Step 2 - Cluster the activities into days" %}
-
+  <br><br>
   <div class="container-fluid">
-    <h4 class="mb-4">Itinerary: {{ itinerary_idea.name }}</h4>
 
     <div class="row">
       <div class="col-md-4">
         <div class="card shadow-sm mb-3">
-          <div class="card-header bg-light">
+          <div class="card-header">
             <h5 class="mb-0">{% trans "List of Activities / Locations" %}</h5>
           </div>
           <div class="card-body">
@@ -116,6 +140,7 @@
     </div>
 
     <div class="mt-4 text-end">
+      <h4 class="mb-4">Itinerary: {{ itinerary_idea.name }}</h4>&nbsp;
       <button id="saveBtn" class="btn btn-primary">{% trans "Save" %}</button>
     </div>
   </div>

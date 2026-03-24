@@ -18,6 +18,7 @@
     .coords-row input[type="text"] { width: 120px; }
     .export { margin-top: 10px; }
     textarea { width: 100%; height: 150px; }
+    .overpass-status { font-size: 11px; color: #666; margin-top: 4px; min-height: 16px; }
   </style>
 </head>
 <body>
@@ -38,27 +39,266 @@
 
 <script>
   var map = L.map('map').setView([52.1, 5.1], 7);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+
+  var baseLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap'
   }).addTo(map);
 
-  var geocoder = L.Control.geocoder({
-    defaultMarkGeocode: false
-  })
+  // ─── Overpass overnight-locations layer ──────────────────────────────────────
+
+  var overpassLayer = L.layerGroup();
+
+  var OVERNIGHT_TYPES = [
+    { key: 'tourism', value: 'hotel',        label: 'Hotel',            color: '#e05c2a', emoji: '🏨' },
+    { key: 'tourism', value: 'hostel',       label: 'Hostel',           color: '#c0392b', emoji: '🛏' },
+    { key: 'tourism', value: 'guest_house',  label: 'B&B / guesthouse', color: '#8e44ad', emoji: '🏡' },
+    { key: 'tourism', value: 'motel',        label: 'Motel',            color: '#d35400', emoji: '🏩' },
+    { key: 'tourism', value: 'camp_site',    label: 'Camping',          color: '#27ae60', emoji: '⛺' },
+    { key: 'tourism', value: 'caravan_site', label: 'Camperplaats',     color: '#16a085', emoji: '🚐' },
+    { key: 'tourism', value: 'chalet',       label: 'Chalet',           color: '#2980b9', emoji: '🏔' },
+    { key: 'tourism', value: 'apartment',    label: 'Appartement',      color: '#7f8c8d', emoji: '🏢' },
+  ];
+
+  function typeConfig(tags) {
+    for (var t of OVERNIGHT_TYPES) {
+      if (tags[t.key] === t.value) return t;
+    }
+    return { label: 'Overnachting', color: '#555', emoji: '🛌' };
+  }
+
+  function makeIcon(cfg) {
+    return L.divIcon({
+      className: '',
+      html: '<div style="background:' + cfg.color + ';width:22px;height:22px;border-radius:50%;'
+          + 'border:2px solid white;display:flex;align-items:center;justify-content:center;'
+          + 'font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.45);">'
+          + cfg.emoji + '</div>',
+      iconSize: [22, 22],
+      iconAnchor: [11, 11],
+      popupAnchor: [0, -13]
+    });
+  }
+
+  var overpassXHR = null;
+  var overpassEnabled = false;
+  var overpassRetryTimer = null;
+
+  // Two public Overpass endpoints — fall back to second on 429/504
+  var OVERPASS_ENDPOINTS = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter'
+  ];
+  var endpointIndex = 0;
+
+  function buildQuery(south, west, north, east) {
+    // One compact regex union instead of 16 separate node/way lines —
+    // much lighter for the server, far fewer 504s
+    var bbox   = '(' + south + ',' + west + ',' + north + ',' + east + ')';
+    var values = OVERNIGHT_TYPES.map(function(t) { return t.value; }).join('|');
+    return '[out:json][timeout:20];\n'
+         + 'nwr["tourism"~"' + values + '"]' + bbox + ';\n'
+         + 'out center 300;';
+  }
+
+  function loadOverpass(retryCount) {
+    if (!overpassEnabled) return;
+    retryCount = retryCount || 0;
+
+    // Minimum zoom 11 → smaller bbox, faster query, far fewer 504s
+    if (map.getZoom() < 11) {
+      setStatus('Zoom verder in om overnachtingslocaties te laden (zoom ≥ 11).');
+      overpassLayer.clearLayers();
+      return;
+    }
+
+    var bounds = map.getBounds();
+    var south  = bounds.getSouth().toFixed(3);
+    var west   = bounds.getWest().toFixed(3);
+    var north  = bounds.getNorth().toFixed(3);
+    var east   = bounds.getEast().toFixed(3);
+
+    var query      = buildQuery(south, west, north, east);
+    var endpoint   = OVERPASS_ENDPOINTS[endpointIndex % OVERPASS_ENDPOINTS.length];
+    var serverName = (endpointIndex % 2 === 0) ? 'overpass-api.de' : 'overpass.kumi.systems';
+
+    setStatus('Loading… (' + serverName + ')');
+
+    if (overpassXHR) { overpassXHR.abort(); overpassXHR = null; }
+    clearTimeout(overpassRetryTimer);
+
+    overpassXHR = new XMLHttpRequest();
+    overpassXHR.open('POST', endpoint);
+    overpassXHR.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    overpassXHR.timeout = 22000; // slightly above server's 20s timeout
+
+    overpassXHR.onload = function() {
+      if (!overpassEnabled) return;
+
+      var status = overpassXHR.status;
+
+      // 429 Too Many Requests → switch endpoint + exponential backoff
+      if (status === 429) {
+        endpointIndex++;
+        var wait = Math.min(2000 * Math.pow(2, retryCount), 16000);
+        setStatus('Rate limited (429). Retry in ' + (wait / 1000).toFixed(0) + 's…');
+        overpassRetryTimer = setTimeout(function() { loadOverpass(retryCount + 1); }, wait);
+        return;
+      }
+
+      // 502/504 → switch endpoint + retry up to 2 times
+      if (status === 502 || status === 504) {
+        endpointIndex++;
+        if (retryCount < 2) {
+          setStatus('Server timeout (' + status + '). Switching server…');
+          overpassRetryTimer = setTimeout(function() { loadOverpass(retryCount + 1); }, 1500);
+        } else {
+          setStatus('Overpass servers unavailable. Try again later.');
+        }
+        return;
+      }
+
+      if (status !== 200) {
+        setStatus('Unexpected HTTP status: ' + status);
+        console.error('Overpass status', status, overpassXHR.responseText.slice(0, 200));
+        return;
+      }
+
+      var raw = overpassXHR.responseText;
+
+      if (!raw || raw.trim() === '') {
+        setStatus('Empty response from Overpass.');
+        console.error('Overpass: empty responseText');
+        return;
+      }
+
+      var data;
+      try {
+        data = JSON.parse(raw);
+      } catch(e) {
+        setStatus('Error parsing Overpass response (invalid JSON).');
+        console.error('JSON.parse failed:', e.message);
+        console.error('Raw response (first 500 chars):', raw.slice(0, 500));
+        return;
+      }
+
+      if (!data.elements) {
+        setStatus('Unexpected response structure from Overpass.');
+        console.error('No .elements in response:', data);
+        return;
+      }
+
+      renderOverpass(data.elements);
+      setStatus(data.elements.length + ' locations found.');
+      endpointIndex = 0; // reset to primary on success
+    };
+
+    overpassXHR.ontimeout = function() {
+      endpointIndex++;
+      if (retryCount < 2) {
+        setStatus('Timeout. Switching server…');
+        overpassRetryTimer = setTimeout(function() { loadOverpass(retryCount + 1); }, 1000);
+      } else {
+        setStatus('No response from Overpass servers. Try again later.');
+      }
+    };
+
+    overpassXHR.onerror = function() {
+      setStatus('Network error. Check your connection.');
+    };
+
+    overpassXHR.send('data=' + encodeURIComponent(query));
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function renderOverpass(elements) {
+    overpassLayer.clearLayers();
+    elements.forEach(function(el) {
+      var lat = el.lat !== undefined ? el.lat : (el.center ? el.center.lat : null);
+      var lng = el.lon !== undefined ? el.lon : (el.center ? el.center.lon : null);
+      if (lat === null || lng === null) return;
+
+      var tags = el.tags || {};
+      var cfg  = typeConfig(tags);
+      var name = tags.name || cfg.label;
+
+      var popupHtml = '<strong>' + escHtml(name) + '</strong>'
+        + '<br><em>' + cfg.label + '</em>';
+      if (tags.website) popupHtml += '<br><a href="' + tags.website + '" target="_blank">Website</a>';
+      if (tags.phone)   popupHtml += '<br>📞 ' + tags.phone;
+      if (tags['addr:street']) {
+        popupHtml += '<br>' + tags['addr:street']
+          + (tags['addr:housenumber'] ? ' ' + tags['addr:housenumber'] : '')
+          + (tags['addr:city'] ? ', ' + tags['addr:city'] : '');
+      }
+
+      L.marker([lat, lng], { icon: makeIcon(cfg) })
+        .bindPopup(popupHtml)
+        .addTo(overpassLayer);
+    });
+  }
+
+  // ─── Layer control ────────────────────────────────────────────────────────────
+
+  var overlays = { '🛌 Overnight options': overpassLayer };
+  L.control.layers(null, overlays, { collapsed: false }).addTo(map);
+
+  var statusEl = document.createElement('div');
+  statusEl.className = 'overpass-status';
+  statusEl.id = 'overpass-status';
+  document.getElementById('map').insertAdjacentElement('afterend', statusEl);
+
+  function setStatus(msg) {
+    document.getElementById('overpass-status').textContent = msg;
+  }
+
+  map.on('overlayadd', function(e) {
+    if (e.layer === overpassLayer) {
+      overpassEnabled = true;
+      overpassLayer.addTo(map);
+      loadOverpass();
+    }
+  });
+
+  map.on('overlayremove', function(e) {
+    if (e.layer === overpassLayer) {
+      overpassEnabled = false;
+      overpassLayer.clearLayers();
+      setStatus('');
+      clearTimeout(overpassRetryTimer);
+      if (overpassXHR) { overpassXHR.abort(); overpassXHR = null; }
+    }
+  });
+
+  // Debounce at 1500ms — generous enough to avoid rapid-fire 429s on pan/zoom
+  var overpassDebounce = null;
+  map.on('moveend', function() {
+    if (!overpassEnabled) return;
+    clearTimeout(overpassDebounce);
+    overpassDebounce = setTimeout(loadOverpass, 1500);
+  });
+
+  // ─── Geocoder ─────────────────────────────────────────────────────────────────
+
+  var geocoder = L.Control.geocoder({ defaultMarkGeocode: false })
   .on('markgeocode', function(e) {
     var latlng = e.geocode.center;
     var marker = L.marker(latlng).addTo(map);
-    marker.on('click', function() {
-      createCircle(latlng);
-      drawLines();
-    });
-
-  map.setView(latlng, 12);
+    marker.on('click', function() { createCircle(latlng); drawLines(); });
+    map.setView(latlng, 12);
   })
   .addTo(map);
 
-  var circles = []; 
-  var lines = [];   
+  // ─── Circle / itinerary logic ─────────────────────────────────────────────────
+
+  var circles = [];
+  var lines   = [];
   var nextNumber = 1;
   var defaultRadius = 5000;
 
@@ -69,15 +309,11 @@
     }
   });
 
-
   function createCircle(latlng) {
     var number = nextNumber++;
 
     var circle = L.circle(latlng, {
-      radius: defaultRadius,
-      color: 'blue',
-      fillColor: 'blue',
-      fillOpacity: 0.5
+      radius: defaultRadius, color: 'blue', fillColor: 'blue', fillOpacity: 0.5
     }).addTo(map);
 
     circle.bindTooltip(number.toString(), {permanent: true, direction: 'center'}).openTooltip();
@@ -102,10 +338,10 @@
     `;
     coordsBox.appendChild(row);
 
-    var numberInput = row.querySelectorAll('input[type="number"]')[0];
-    var descInput = row.querySelector('input[type="text"]');
-    var nightsInput = row.querySelectorAll('input[type="number"]')[1];
-    var radiusInput = row.querySelectorAll('input[type="number"]')[2];
+    var numberInput  = row.querySelectorAll('input[type="number"]')[0];
+    var descInput    = row.querySelector('input[type="text"]');
+    var nightsInput  = row.querySelectorAll('input[type="number"]')[1];
+    var radiusInput  = row.querySelectorAll('input[type="number"]')[2];
     var deleteButton = row.querySelector('button');
 
     numberInput.addEventListener('input', function() {
@@ -120,9 +356,7 @@
 
     radiusInput.addEventListener('input', function() {
       var newRadius = parseFloat(this.value);
-      if (!isNaN(newRadius) && newRadius > 0) {
-        circle.setRadius(newRadius);
-      }
+      if (!isNaN(newRadius) && newRadius > 0) circle.setRadius(newRadius);
     });
 
     deleteButton.addEventListener('click', function() {
@@ -131,22 +365,14 @@
     });
 
     circles.push({
-      circle: circle, 
-      dragMarker: dragMarker, 
-      latlng: latlng, 
-      number: number, 
-      row: row, 
-      descInput: descInput, 
-      radiusInput: radiusInput,
-      nightsInput: nightsInput
+      circle, dragMarker, latlng, number, row,
+      descInput, radiusInput, nightsInput
     });
   }
 
   function updateCircleLatLng(circle, newLatLng) {
     var c = circles.find(c => c.circle === circle);
-    if (c) {
-      c.latlng = newLatLng;
-    }
+    if (c) c.latlng = newLatLng;
   }
 
   function removeCircle(circle, row, dragMarker) {
@@ -159,75 +385,59 @@
   function drawLines() {
     lines.forEach(line => map.removeLayer(line));
     lines = [];
-
-    var sorted = circles.slice().sort((a,b) => a.number - b.number);
-
+    var sorted = circles.slice().sort((a, b) => a.number - b.number);
     for (var i = 0; i < sorted.length - 1; i++) {
-      var latlngs = [sorted[i].circle.getLatLng(), sorted[i+1].circle.getLatLng()];
-      var line = L.polyline(latlngs, { color: 'green' }).addTo(map);
+      var line = L.polyline(
+        [sorted[i].circle.getLatLng(), sorted[i+1].circle.getLatLng()],
+        { color: 'green' }
+      ).addTo(map);
       lines.push(line);
     }
   }
 
+  // ─── Save ─────────────────────────────────────────────────────────────────────
 
-  // save
   document.getElementById('sendBtn').addEventListener('click', function() {
-  var sorted = circles.slice().sort((a,b) => a.number - b.number);
-  var outlineName = document.getElementById('outlineName').value || null;
+    var sorted = circles.slice().sort((a, b) => a.number - b.number);
+    var outlineName = document.getElementById('outlineName').value || null;
+    var seqCounter = 1;
+    var items = [];
 
-  var seqCounter = 1;
-  var items = [];
-
-  sorted.forEach(c => {
-    var latlng = c.circle.getLatLng();
-    var nights = parseInt(c.nightsInput.value) || 1;
-
-    for (var i = 0; i < nights; i++) {
-      let obj = {
-        sequence: seqCounter++,
-        latitude: Number(latlng.lat.toFixed(6)),
-        longitude: Number(latlng.lng.toFixed(6)),
-        radius: parseFloat(c.radiusInput.value),
-        description: c.descInput.value,
-        overnightlocation: c.descInput.value
-      };
-
-      if (i === 0) {
-        obj.nr_of_nights = nights; 
+    sorted.forEach(c => {
+      var latlng = c.circle.getLatLng();
+      var nights = parseInt(c.nightsInput.value) || 1;
+      for (var i = 0; i < nights; i++) {
+        let obj = {
+          sequence: seqCounter++,
+          latitude: Number(latlng.lat.toFixed(6)),
+          longitude: Number(latlng.lng.toFixed(6)),
+          radius: parseFloat(c.radiusInput.value),
+          description: c.descInput.value,
+          overnightlocation: c.descInput.value
+        };
+        if (i === 0) obj.nr_of_nights = nights;
+        items.push(obj);
       }
+    });
 
-      items.push(obj);
-    }
+    var payload = { name: outlineName, items: items };
+    var json = JSON.stringify(payload, null, 2);
+    document.getElementById('exportOutput').value = json;
+
+    fetch("{% url 'tripapp:save_tripoutline' %}", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: json
+    })
+    .then(resp => resp.json())
+    .then(result => { console.log("Save success:", result); })
+    .catch(err  => { console.error("Save error:", err); });
   });
-
-  var payload = { 
-    name: outlineName, 
-    items: items 
-  };
-
-  var json = JSON.stringify(payload, null, 2);
-  document.getElementById('exportOutput').value = json;
-
-  fetch("{% url 'tripapp:save_tripoutline' %}", {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: json
-  })
-  .then(resp => resp.json())
-  .then(result => {
-    console.log("Save success:", result);
-  })
-  .catch(err => {
-    console.error("Save error:", err);
-  });
-});
-
 </script>
+
 <p>&nbsp;</p>
 <div>
-<a href="{% url 'tripapp:itineraryidea-list' %}" style="text-decoration: none;">&larr; {% trans "Itinerary Ideas" %}</a>
+  <a href="{% url 'tripapp:itineraryidea-list' %}" style="text-decoration: none;">&larr; {% trans "Itinerary Ideas" %}</a>
 </div>
-
-
 </body>
 </html>

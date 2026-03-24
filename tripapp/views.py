@@ -1936,7 +1936,7 @@ def generate_html_with_images(trip):
             html_content += f'<p><img src="{img_base64}" ></p>'
 
         if tracked_distance:
-            html_content += f"""<p>tracked distance {Tracked_distance} { day.tripdate }: {distance_unit }</p>"""
+            html_content += f"""<p>tracked distance {tracked_distance} { day.tripdate }: {distance_unit }</p>"""
 
         if day.question_set.exists():
             html_content += "<h4>❓ Question(s)</h4><ul>"
