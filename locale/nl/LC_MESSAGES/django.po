@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-22 22:49+0100\n"
+"POT-Creation-Date: 2026-03-29 11:20+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -36,7 +36,6 @@ msgid "Go back the route you came or go"
 msgstr "Ga terug op je route of ga naar"
 
 #: tripapp/templates/tripapp/add_checklist_item.html:16
-#: tripapp/templates/tripapp/trip_checklist.html:61
 msgid "Add Checklist Item"
 msgstr "Voeg Checklist Item toe"
 
@@ -151,8 +150,8 @@ msgid "Save Itinerary Idea"
 msgstr "Bewaar Reisschema Idee"
 
 #: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:213
-#: tripapp/templates/tripapp/create_tripoutline.html:228
-#: tripapp/templates/tripapp/itinerary_dragdrop.html:124
+#: tripapp/templates/tripapp/create_tripoutline.html:440
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:149
 #: tripapp/templates/tripapp/itineraryidea_list.html:4
 #: tripapp/templates/tripapp/itineraryidea_update.html:58
 #: tripapp/templates/tripapp/tribe_trips.html:439
@@ -163,20 +162,20 @@ msgstr "Reisschema Ideeen"
 msgid "Create Tripoutline"
 msgstr "Maak Reisschema Idee aan"
 
-#: tripapp/templates/tripapp/create_tripoutline.html:24
+#: tripapp/templates/tripapp/create_tripoutline.html:25
 msgid ""
 "Create a Itinerary Idea by indicating OVERNIGHT locations / areas on this map"
 msgstr "Maak Reisschema Idee door Overnachtingslocaties op de kaart te zetten"
 
-#: tripapp/templates/tripapp/create_tripoutline.html:28
+#: tripapp/templates/tripapp/create_tripoutline.html:29
 msgid "Overnight Locations:"
 msgstr "Overnachtings Locaties:"
 
-#: tripapp/templates/tripapp/create_tripoutline.html:31
+#: tripapp/templates/tripapp/create_tripoutline.html:32
 msgid "Name of this Overnight Itinerary Idea"
 msgstr "Naam van dit Overnachtings Reisschema Idee"
 
-#: tripapp/templates/tripapp/create_tripoutline.html:32
+#: tripapp/templates/tripapp/create_tripoutline.html:33
 msgid "Save Overnight Outline"
 msgstr "Bewaar Overnachtings Reisschema Idee"
 
@@ -188,6 +187,7 @@ msgstr "Reisschema"
 #: tripapp/templates/tripapp/dayprogram_detail.html:308
 #: tripapp/templates/tripapp/scheduled_item_form.html:66
 #: tripapp/templates/tripapp/trip_dayprograms.html:11
+#: tripapp/templates/tripapp/trip_checklist.html:49
 msgid "Add"
 msgstr "Invoegen"
 
@@ -387,37 +387,37 @@ msgstr "Deel deze link"
 msgid "Have it scanned by the person you want to invite to the tribe."
 msgstr "Laat scannen door persoon die je wil toevoegen aan de tribe"
 
-#: tripapp/templates/tripapp/itinerary_dragdrop.html:54
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:79
 msgid "Create a Itinerary Idea by indicating day locations"
 msgstr "Maak Reisschema Idee door Dag activiteiten op de kaart te zetten"
 
-#: tripapp/templates/tripapp/itinerary_dragdrop.html:55
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:80
 msgid "Step 2 - Cluster the activities into days"
 msgstr "Stap 2 - Groepeer de activiteiten tot dagen"
 
-#: tripapp/templates/tripapp/itinerary_dragdrop.html:64
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:88
 msgid "List of Activities / Locations"
 msgstr "Lijst activiteiten / Lokaties"
 
-#: tripapp/templates/tripapp/itinerary_dragdrop.html:77
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:101
 msgid "No unassigned daylocations"
 msgstr "Geen niet-gegroepeerde daglocaties"
 
-#: tripapp/templates/tripapp/itinerary_dragdrop.html:86
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:110
 msgid "Projected Tripdays"
 msgstr "Verwachte Tripdagen"
 
-#: tripapp/templates/tripapp/itinerary_dragdrop.html:87
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:111
 #, fuzzy
 #| msgid "Add Image"
 msgid "Add Day"
 msgstr "Dag Toevoegen"
 
-#: tripapp/templates/tripapp/itinerary_dragdrop.html:112
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:136
 msgid "No days added yet."
 msgstr "Nog geen dagen toegevoegd"
 
-#: tripapp/templates/tripapp/itinerary_dragdrop.html:119
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:144
 #: tripapp/templates/tripapp/itineraryidea_update.html:56
 #: tripapp/templates/tripapp/tripper_profile.html:17
 msgid "Save"
@@ -665,7 +665,19 @@ msgstr "maak bingokaart"
 msgid "generate 6 bingocards for me"
 msgstr "genereer 6 bingokaarten voor mij"
 
-#: tripapp/templates/tripapp/trip_checklist.html:47
+#: tripapp/templates/tripapp/trip_checklist.html:30
+msgid "Pack Check Wish"
+msgstr "Pak Check Lijst"
+
+#: tripapp/templates/tripapp/trip_checklist.html:48
+msgid "Add item…"
+msgstr "Item Toevoegen"
+
+#: tripapp/templates/tripapp/trip_checklist.html:51
+msgid "Enter for next item · Shift+Enter to stop"
+msgstr "Enter voor volgende item  Shift+Enter om te stoppen"
+
+#: tripapp/templates/tripapp/trip_checklist.html:53
 msgid "Trip"
 msgstr "Trip"
 
@@ -812,27 +824,27 @@ msgstr "Geen uitgaven vastgelegd op deze trip"
 msgid "See Balance"
 msgstr "Bekijk Balans"
 
-#: tripapp/templates/tripapp/trip_export.html:96
+#: tripapp/templates/tripapp/trip_export.html:97
 msgid "Download Complete Trip"
 msgstr "Download Complete Trip"
 
-#: tripapp/templates/tripapp/trip_export.html:97
+#: tripapp/templates/tripapp/trip_export.html:98
 msgid "A zip with everything of the trip."
 msgstr "Een zip met alles van de trip"
 
-#: tripapp/templates/tripapp/trip_export.html:104
+#: tripapp/templates/tripapp/trip_export.html:105
 msgid "Download Trip Outline"
 msgstr "Download Reisschema"
 
-#: tripapp/templates/tripapp/trip_export.html:105
+#: tripapp/templates/tripapp/trip_export.html:106
 msgid "De-personalized, no photos, no logs. Just share your itinerary."
 msgstr "Zonder persoonlijke informatie. Deel je reisschema."
 
-#: tripapp/templates/tripapp/trip_export.html:112
+#: tripapp/templates/tripapp/trip_export.html:113
 msgid "Download Trip Outline JSON"
 msgstr "Download Trip Outline JSON"
 
-#: tripapp/templates/tripapp/trip_export.html:113
+#: tripapp/templates/tripapp/trip_export.html:114
 msgid ""
 "Export as JSON. Other Trippanion user can import your trip as startingpoint "
 "for his own trip."
@@ -882,19 +894,19 @@ msgstr "Geen documenten ge-upload"
 msgid "Suggestion by %(username)s: %(suggestion)s"
 msgstr "Voorstel van %(username)s: %(suggestion)s"
 
-#: tripapp/views.py:2002
+#: tripapp/views.py:2042
 msgid "No Answers"
 msgstr "Geen Antwoorden"
 
-#: tripapp/views.py:2220 tripapp/views.py:2246
+#: tripapp/views.py:2260 tripapp/views.py:2286
 msgid "Tripper and emoji mandatory."
 msgstr "Tripper en emoji verplicht"
 
-#: tripapp/views.py:2231
+#: tripapp/views.py:2271
 msgid "You already liked this log with this emoji."
 msgstr "Je hebt deze log al een emoji gegeven."
 
-#: tripapp/views.py:2258
+#: tripapp/views.py:2298
 msgid "There is no like with this emoji that can be removed."
 msgstr "Er is geen like met deze emoji om te verwijderen"
 

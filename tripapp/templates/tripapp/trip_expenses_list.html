@@ -38,7 +38,7 @@
 <div class="container">
 
 <h2>{% trans "Expenses" %}</h2>
-<b>{{ trip.name }}</b>
+<p><strong>{{ trip.name }}</strong></p>
 <br /><br />
 <!--add expense-->
 <a href="{% url 'tripapp:add_expense' trip.id tripper.id %}?next=balance" class="btn">{% trans "Add New Expense" %}</a>

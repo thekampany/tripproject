@@ -2,3 +2,5 @@
 FROM nginx:latest
 
 COPY ./nginx /etc/nginx
+
+COPY ./tripapp/templates/503.html /etc/nginx/errorpages/503.html

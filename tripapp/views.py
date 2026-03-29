@@ -79,7 +79,8 @@ from django.db.models import Sum
 import qrcode
 import random
 
-from django.db.models import Min
+from django.db.models import Min, Avg
+from django.db.models.expressions import RawSQL
 from django.utils.translation import gettext as _
 from django.core.exceptions import PermissionDenied
 
@@ -622,9 +623,22 @@ def trip_map_view(request, trip_id):
         projected_itinerary_points = (
             trip.points
             .prefetch_related('dayprograms')
-            .annotate(first_tripdate=Min('dayprograms__tripdate'))
-            .order_by('first_tripdate')
+            .annotate(
+                first_tripdate=Min('dayprograms__tripdate'),
+                avg_tripdate=RawSQL(
+                    """
+                    SELECT AVG(EXTRACT(EPOCH FROM dp.tripdate))
+                    FROM tripapp_dayprogram dp
+                    INNER JOIN tripapp_point_dayprograms tpd 
+                        ON tpd.dayprogram_id = dp.id
+                    WHERE tpd.point_id = "tripapp_point"."id"
+                    """,
+                    []
+                )
+            )
+            .order_by('avg_tripdate')
         )
+
 
         start_of_day = timezone.make_aware(datetime.combine(trip.date_from, datetime.min.time()))
         end_of_day = timezone.make_aware(datetime.combine(trip.date_to, datetime.max.time()))
@@ -1697,6 +1711,28 @@ def trip_checklist(request,slug):
         'items': checklist_items,
         'tripper': tripper
     })
+
+@require_POST
+@login_required
+def toggle_checklist_item(request, item_id):
+    item = get_object_or_404(ChecklistItem, id=item_id)
+    if not item.checklist.trip.tribe.members.filter(user=request.user).exists():
+        return JsonResponse({'error': 'permission denied'}, status=403)
+    item.is_completed = not item.is_completed
+    item.save()
+    return JsonResponse({'is_completed': item.is_completed})
+
+@is_in_tribe
+def add_checklist_items_bulk(request, trip_id):
+    trip = get_object_or_404(Trip, id=trip_id)
+    checklist, _ = Checklist.objects.get_or_create(trip=trip)
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        text = data.get('text', '').strip()
+        if text:
+            item = ChecklistItem.objects.create(checklist=checklist, text=text)
+            return JsonResponse({'id': item.id, 'text': item.text, 'is_completed': False})
+    return JsonResponse({'error': 'invalid'}, status=400)
 
 @login_required
 def task_manager(request):

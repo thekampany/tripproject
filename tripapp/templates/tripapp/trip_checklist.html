@@ -1,73 +1,114 @@
-                                             
 {% load static %}
 {% load i18n %}
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{{ trip.name }}</title>
+    <title>{{ trip.name }} — Checklist</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon/favicon-16x16.png' %}">
-    <link rel="manifest" href="{% static 'favicon/site.webmanifest' %}">
-    <link rel="mask-icon" href="{% static 'favicon/safari-pinned-tab.svg' %}" color="#5bbad5">
-    <meta name="msapplication-TileColor" content="#da532c">
-    <meta name="theme-color" content="#ffffff">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
-    <script src="{% static 'js/set_timezone.js' %}"></script>
-
     <style>
         body {
             {% if trip.image %}
-             background: url('{{ trip.image.url }}') no-repeat center center fixed; 
-             -webkit-background-size: cover;
-             -moz-background-size: cover;
-             -o-background-size: cover;
-             background-size: cover;
+            background: url('{{ trip.image.url }}') no-repeat center center fixed;
+            background-size: cover;
             {% endif %}
         }
-        ul.no-bullets {
-            list-style-type: none;
-            padding: 0px;
-        }
-        .completed {
-            text-decoration: line-through;
-        }
+        .checklist-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,.08); }
+        .checklist-item input[type=checkbox] { width: 18px; height: 18px; cursor: pointer; flex-shrink: 0; }
+        .checklist-item label { font-size: 15px; margin: 0; flex: 1; cursor: pointer; transition: color .15s; }
+        .checklist-item.done label { text-decoration: line-through; color: #999; }
+        .progress { height: 6px; border-radius: 99px; margin-bottom: 6px; }
+        #add-input { font-size: 15px; }
+        .hint { font-size: 12px; color: #999; margin-top: 6px; }
     </style>
 </head>
 <body>
-    <div class="tripappcard">
-    <div class="container">
-    
+<div class="tripappcard">
+<div class="container">
 
-       <h2>Check / Pack / Wishlist</h2>
-       <b>{% trans "Trip" %}&nbsp;{{ trip.name }}</b>
-       <br /><br /><br />
-       <ul class="no-bullets">
-           {% for item in items %}
-              <li class="{% if item.is_completed %}completed{% endif %}">
-              <form method="post" action="{% url 'tripapp:toggle_checklist_item' item.id %}">
-                  {% csrf_token %}
-                  <input type="checkbox" onclick="this.form.submit()" {% if item.is_completed %}checked{% endif %}>
-                  {{ item.text }}
-              </form>
-              </li>
-            {% endfor %}
-        </ul>
-        <br /><br />
-        <a href="{% url 'tripapp:add_checklist_item' trip.id %}" class="btn">{% trans "Add Checklist Item" %}</a>
-        <br /><br /><br />
-   
-        <p>&nbsp;</p>
-        <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" >&larr;Trip</a>
+    <h2>{% trans "Pack Check Wish" %}</h2>
+    <p><strong>{{ trip.name }}</strong></p>
 
+    <div class="progress mb-1">
+        <div id="progress-bar" class="progress-bar bg-dark" role="progressbar" style="width: 0%"></div>
     </div>
+    <p id="progress-label" class="hint mb-4"></p>
+
+    <ul id="item-list" class="list-unstyled">
+        {% for item in items %}
+        <li class="checklist-item {% if item.is_completed %}done{% endif %}" data-id="{{ item.id }}">
+            <input type="checkbox" id="item-{{ item.id }}" {% if item.is_completed %}checked{% endif %}>
+            <label for="item-{{ item.id }}">{{ item.text }}</label>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <div class="d-flex gap-2 align-items-center border-top pt-3 mt-2">
+        <input id="add-input" type="text" class="form-control" placeholder="{% trans 'Add item…' %}">
+        <button id="add-btn" class="btn btn-dark text-nowrap">+ {% trans "Add" %}</button>
     </div>
-    
+    <p class="hint">{% trans "Enter for next item · Shift+Enter to stop" %}</p>
+
+    <p class="mt-5"><a href="{% url 'tripapp:trip_detail' slug=trip.slug %}">&larr; {% trans "Trip" %}</a></p>
+</div>
+</div>
+
+<script>
+const TOGGLE_URL = "{% url 'tripapp:toggle_checklist_item' 0 %}".slice(0, -2);
+const ADD_URL = "{% url 'tripapp:add_checklist_item_ajax' trip.id %}";
+const CSRF = "{{ csrf_token }}";
+
+function updateProgress() {
+    const items = document.querySelectorAll('.checklist-item');
+    const done = document.querySelectorAll('.checklist-item.done').length;
+    const pct = items.length ? Math.round(done / items.length * 100) : 0;
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('progress-label').textContent = done + ' of ' + items.length + ' packed';
+}
+
+document.getElementById('item-list').addEventListener('change', async e => {
+    if (!e.target.matches('input[type=checkbox]')) return;
+    const li = e.target.closest('.checklist-item');
+    const id = li.dataset.id;
+    const res = await fetch(TOGGLE_URL + id + '/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF }
+    });
+    if (!res.ok) return;  
+    const data = await res.json();
+    li.classList.toggle('done', data.is_completed);
+    updateProgress();
+});
+
+async function addItem() {
+    const input = document.getElementById('add-input');
+    const text = input.value.trim();
+    if (!text) return;
+    const res = await fetch(ADD_URL, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+    });
+    const item = await res.json();
+    if (item.id) {
+        const li = document.createElement('li');
+        li.className = 'checklist-item';
+        li.dataset.id = item.id;
+        li.innerHTML = `<input type="checkbox" id="item-${item.id}"><label for="item-${item.id}">${item.text}</label>`;
+        document.getElementById('item-list').appendChild(li);
+        input.value = '';
+        input.focus();
+        updateProgress();
+    }
+}
+
+document.getElementById('add-btn').onclick = addItem;
+document.getElementById('add-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addItem(); }
+});
+
+updateProgress();
+</script>
 </body>
-
-
 </html>

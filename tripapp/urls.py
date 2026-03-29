@@ -60,6 +60,7 @@ urlpatterns = [
     path('trip/<int:trip_id>/export/tripoutline/', views.create_trip_outline_html, name="create_trip_outline_html"),
     path('trip/<int:trip_id>/export/tripoutline-json/', views.export_trip_outline_json, name='export_trip_outline_json'),
     path('trip/<slug:slug>/checklist/', views.trip_checklist, name='trip_checklist'),
+    path('checklist/add-ajax/<int:trip_id>/', views.add_checklist_items_bulk, name='add_checklist_item_ajax'),
     path('tripper/<int:tripper_id>/profile/', views.tripper_profile, name='tripper_profile'),
     path('tripper/<int:tripper_id>/badgeassignments/', views.tripper_badgeassignments, name='tripper_badgeassignments'),
     path('tripper/<int:tripper_id>/trip/<int:trip_id>/edit/', views.edit_tripper, name='edit_tripper'),
