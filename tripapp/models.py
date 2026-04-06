@@ -454,6 +454,8 @@ class ScheduledItem(models.Model):
         ('Train','Train'),
         ('Car','Car'),
         ('Taxi', 'Taxi'),
+        ('Walking', 'Walking'),
+        ('Cycling', 'Cycling'),
         ('Other', 'Other'),
     ]
 

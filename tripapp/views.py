@@ -84,6 +84,12 @@ from django.db.models.expressions import RawSQL
 from django.utils.translation import gettext as _
 from django.core.exceptions import PermissionDenied
 
+
+import traceback
+import polyline as polyline_decoder 
+
+
+
 def index(request):
     category = "roadtrip"
     background_image_url = get_random_unsplash_image(category)
@@ -2858,151 +2864,325 @@ def export_trip(request, trip_id):
     return render(request, 'tripapp/trip_export.html', {'trip': trip})
 
 
-@require_POST
+
+
+def decode_polyline(encoded, precision=6):
+    coords = polyline_decoder.decode(encoded, precision)
+    return [[lng, lat] for lat, lng in coords]  
+
+
+def transitous_legs_to_gpx(itinerary):
+    """
+    Converteer een Transitous itinerary naar GPX XML string.
+    Alle legs worden samengevoegd tot één doorlopende route.
+    """
+    legs = itinerary.get('legs', [])
+    
+    all_trkpts = []
+    
+    for leg in legs:
+        geometry = leg.get('legGeometry', {})
+        encoded = geometry.get('points', '')
+        precision = geometry.get('precision', 6)
+        
+        if not encoded:
+            continue
+        
+        try:
+            coords = polyline_decoder.decode(encoded, precision)  # (lat, lng) tuples
+        except Exception:
+            continue
+        
+        # Voorkom dubbele punten op aansluitpunten tussen legs
+        if all_trkpts and coords:
+            coords = coords[1:]
+        
+        for lat, lng in coords:
+            all_trkpts.append(f'      <trkpt lat="{lat}" lon="{lng}"></trkpt>')
+    
+    # Route naam op basis van begin en eindpunt
+    from_name = legs[0].get('from', {}).get('name', 'Start') if legs else 'Start'
+    to_name = legs[-1].get('to', {}).get('name', 'End') if legs else 'End'
+    duration_min = round(itinerary.get('duration', 0) / 60)
+    transfers = itinerary.get('transfers', 0)
+    
+    gpx = f"""<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="TransitPlanner"
+  xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>{from_name} → {to_name}</name>
+    <desc>Reistijd: {duration_min} min, Overstappen: {transfers}</desc>
+  </metadata>
+  <trk>
+    <name>{from_name} → {to_name}</name>
+    <trkseg>
+{chr(10).join(all_trkpts)}
+    </trkseg>
+  </trk>
+</gpx>"""
+    return gpx
+
+def transitous_legs_to_geojson_coordinates(itinerary):
+    """
+    Combineer alle leg-coördinaten tot één lijst voor de kaart.
+    Geeft [lng, lat] coördinaten terug (zelfde formaat als ORS).
+    """
+    all_coords = []
+    legs = itinerary.get('legs', [])
+    
+    for leg in legs:
+        geometry = leg.get('legGeometry', {})
+        encoded = geometry.get('points', '')
+        precision = geometry.get('precision', 6)
+        
+        if not encoded:
+            continue
+        
+        try:
+            coords = polyline_decoder.decode(encoded, precision)  # (lat, lng) tuples
+            leg_coords = [[lng, lat] for lat, lng in coords]
+            
+            # Voorkom dubbele punten op aansluitpunten
+            if all_coords and leg_coords:
+                all_coords.extend(leg_coords[1:])
+            else:
+                all_coords.extend(leg_coords)
+        except Exception:
+            continue
+    
+    return all_coords
+
+def summarize_itinerary(itinerary):
+    """Haal alleen de relevante velden op uit een itinerary."""
+    legs = itinerary.get('legs', [])
+    summary = []
+    
+    for leg in legs:
+        from_stop = leg.get('from', {})
+        to_stop = leg.get('to', {})
+        
+        summary.append({
+            'mode': leg.get('mode'),
+            'from': {
+                'name': from_stop.get('name'),
+                'arrival': from_stop.get('arrival'),
+                'departure': from_stop.get('departure'),
+                'track': from_stop.get('track'),
+            },
+            'to': {
+                'name': to_stop.get('name'),
+                'arrival': to_stop.get('arrival'),
+                'departure': to_stop.get('departure'),
+                'track': to_stop.get('track'),
+            },
+        })
+    
+    return summary
+
+def short_summary(itinerary):
+    legs = itinerary.get('legs', [])
+    transit_legs = [leg for leg in legs if leg.get('mode') != 'WALK']
+    
+    if not transit_legs:
+        return None
+    
+    first_leg = transit_legs[0]
+    last_leg = transit_legs[-1]
+    
+    total_duration = sum(leg.get('duration', 0) for leg in transit_legs)
+    
+    return {
+        'from': {
+            'name': first_leg.get('from', {}).get('name'),
+            'departure': first_leg.get('from', {}).get('departure'),
+            'track': first_leg.get('from', {}).get('track'),
+        },
+        'to': {
+            'name': last_leg.get('to', {}).get('name'),
+            'arrival': last_leg.get('to', {}).get('arrival'),
+            'track': last_leg.get('to', {}).get('track'),
+        },
+        'duration': total_duration,  # in seconds
+        'duration_min': round(total_duration / 60),
+    }
+
 def calculate_route(request):
     """
-    Bereken route via OpenRouteService API
+    Bereken route via OpenRouteService API of Transitous (public transport)
     
     Expected JSON body:
     {
         "start": [lng, lat],
         "end": [lng, lat],
-        "mode": "driving-car"
+        "mode": "driving-car" | "cycling-regular" | "foot-walking" | "publictransport"
     }
     """
     
     try:
-        # Log request info
         print(f"Method: {request.method}")
         print(f"Content-Type: {request.content_type}")
         print(f"Body length: {len(request.body) if request.body else 0}")
         
-        # Parse request body
         if not request.body:
-            return JsonResponse({
-                'success': False,
-                'error': 'Empty request body'
-            })
+            return JsonResponse({'success': False, 'error': 'Empty request body'})
         
         try:
             body_str = request.body.decode('utf-8')
             data = json.loads(body_str)
         except json.JSONDecodeError as e:
-            print(f"JSON decode error: {e}")
-            return JsonResponse({
-                'success': False,
-                'error': f'Invalid JSON: {str(e)}'
-            })
+            return JsonResponse({'success': False, 'error': f'Invalid JSON: {str(e)}'})
         
-        # Check if data is a dict
         if not isinstance(data, dict):
-            return JsonResponse({
-                'success': False,
-                'error': f'Expected JSON object, got {type(data).__name__}'
-            })
+            return JsonResponse({'success': False, 'error': f'Expected JSON object, got {type(data).__name__}'})
         
-        # Extract parameters
-        start = data.get('start')
-        end = data.get('end')
+        start = data.get('start')  # [lng, lat]
+        end = data.get('end')      # [lng, lat]
         mode = data.get('mode', 'driving-car')
         
-        print(f"Start: {start}")
-        print(f"End: {end}")
-        print(f"Mode: {mode}")
+        print(f"Start: {start}, End: {end}, Mode: {mode}")
         
-        # Validate
         if not start or not end:
-            return JsonResponse({
-                'success': False,
-                'error': 'Missing start or end coordinates'
-            })
+            return JsonResponse({'success': False, 'error': 'Missing start or end coordinates'})
         
         if not isinstance(start, (list, tuple)) or len(start) != 2:
-            return JsonResponse({
-                'success': False,
-                'error': f'Invalid start coordinates: {start}'
-            })
+            return JsonResponse({'success': False, 'error': f'Invalid start coordinates: {start}'})
         
         if not isinstance(end, (list, tuple)) or len(end) != 2:
-            return JsonResponse({
-                'success': False,
-                'error': f'Invalid end coordinates: {end}'
-            })
-        
-        # Get API key
-        api_key = getattr(settings, 'OPENROUTESERVICE_API_KEY', None)
-        if not api_key:
-            return JsonResponse({
-                'success': False,
-                'error': 'OpenRouteService API key not configured in settings.py'
-            })
-                
-        # Make API request
-        url = f'https://api.openrouteservice.org/v2/directions/{mode}/geojson'
-        
-        headers = {
-            'Authorization': api_key,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json, application/geo+json'
-        }
-        if settings.DISTANCE_UNIT != 'km':
-            payload = {
-                "coordinates": [start, end], "units":"mi"
+            return JsonResponse({'success': False, 'error': f'Invalid end coordinates: {end}'})
+
+        # ─── PUBLIC TRANSPORT via Transitous ────────────────────────────────────
+        if mode == 'publictransport':
+            # start/end zijn [lng, lat], Transitous wil lat,lng
+            start_lat, start_lng = start[1], start[0]
+            end_lat, end_lng = end[1], end[0]
+
+            route_date = data.get('date')  # 'YYYY-MM-DD'
+            route_time = data.get('time')  # 'HH:MM'
+            
+            if route_date and route_time:
+                datetime_str = f"{route_date}T{route_time}:00Z"  # Z toegevoegd
+            else:
+                from datetime import datetime, timezone
+                datetime_str = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+            url = 'https://api.transitous.org/api/v5/plan'
+            params = {
+                'fromPlace': f'{start_lat},{start_lng}',
+                'toPlace': f'{end_lat},{end_lng}',
+                'time': datetime_str,
             }
+            headers={"User-Agent": "Trippanion/1.0"}
+            
+            print(f"Calling Transitous API: {url} params={params}")
+            response = requests.get(url, params=params, headers=headers,timeout=30)
+            print(f"Transitous response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Transitous API error ({response.status_code}): {response.text[:500]}'
+                })
+            
+            route_data = response.json()
+            itineraries = route_data.get('itineraries', [])
+            
+            if not itineraries:
+                return JsonResponse({'success': False, 'error': 'No public transport routes found'})
+            
+            best = itineraries[0]
+            
+            duration = best.get('duration', 0)       # in seconds
+            transfers = best.get('transfers', 0)
+            legs = best.get('legs', [])
+            
+            distance = sum(leg.get('distance', 0) for leg in legs)
+            coordinates = transitous_legs_to_geojson_coordinates(best)
+            gpx_string = transitous_legs_to_gpx(best)
+            
+            legs_summary = []
+            for leg in legs:
+                legs_summary.append({
+                    'mode': leg.get('mode'),
+                    'from': leg.get('from', {}).get('name'),
+                    'to': leg.get('to', {}).get('name'),
+                    'duration': leg.get('duration'),
+                    'distance': leg.get('distance'),
+                    'startTime': leg.get('startTime'),
+                    'endTime': leg.get('endTime'),
+                    'headsign': leg.get('headsign', ''),
+                    'routeShortName': leg.get('routeShortName', ''),
+                    'agencyName': leg.get('agencyName', ''),
+                })
+            
+            return JsonResponse({
+                'success': True,
+                'distance': distance,
+                'duration': duration,
+                'coordinates': coordinates,
+                'transfers': transfers,
+                'legs': legs_summary,
+                'gpx': gpx_string,           # GPX als string, frontend kan dit opslaan
+                'raw_itinerary': best,        # Volledige data indien nodig
+                'itinerary_summary': summarize_itinerary(best),  # in plaats van raw_itinerary
+                'itinerary_short': short_summary(best),
+                'itineraries_all': itineraries,
+            })
+
+        # ─── OVERIGE MODES via OpenRouteService ─────────────────────────────────
         else:
-            payload = {
-                "coordinates": [start, end]
+            api_key = getattr(settings, 'OPENROUTESERVICE_API_KEY', None)
+            if not api_key:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'OpenRouteService API key not configured in settings.py'
+                })
+            
+            url = f'https://api.openrouteservice.org/v2/directions/{mode}/geojson'
+            headers = {
+                'Authorization': api_key,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json, application/geo+json'
             }
-        
-        print(f"Calling OpenRouteService API...")
-        print(f"URL: {url}")
-        print(f"Payload: {payload}")
-        
-        response = requests.post(url, json=payload, headers=headers, timeout=15)
-        
-        print(f"Response status: {response.status_code}")
-        
-        if response.status_code != 200:
-            error_text = response.text[:500]
-            print(f"API Error: {error_text}")
+            
+            if settings.DISTANCE_UNIT != 'km':
+                payload = {"coordinates": [start, end], "units": "mi"}
+            else:
+                payload = {"coordinates": [start, end]}
+            
+            print(f"Calling OpenRouteService: {url}")
+            response = requests.post(url, json=payload, headers=headers, timeout=15)
+            print(f"ORS response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                error_text = response.text[:500]
+                return JsonResponse({
+                    'success': False,
+                    'error': f'OpenRouteService API error ({response.status_code}): {error_text}'
+                })
+            
+            route_data = response.json()
+            features = route_data.get('features', [])
+            
+            if not features:
+                return JsonResponse({'success': False, 'error': 'No route found in response'})
+            
+            feature = features[0]
+            properties = feature.get('properties', {})
+            geometry = feature.get('geometry', {})
+            summary = properties.get('summary', {})
+            
             return JsonResponse({
-                'success': False,
-                'error': f'OpenRouteService API error ({response.status_code}): {error_text}'
+                'success': True,
+                'distance': summary.get('distance', 0),
+                'duration': summary.get('duration', 0),
+                'coordinates': geometry.get('coordinates', []),
             })
-        
-        # Parse response
-        route_data = response.json()
-        
-        features = route_data.get('features', [])
-        if not features:
-            return JsonResponse({
-                'success': False,
-                'error': 'No route found in response'
-            })
-        
-        feature = features[0]
-        properties = feature.get('properties', {})
-        geometry = feature.get('geometry', {})
-        summary = properties.get('summary', {})
-        
-        distance = summary.get('distance', 0)
-        duration = summary.get('duration', 0)
-        coordinates = geometry.get('coordinates', [])
-                
-        return JsonResponse({
-            'success': True,
-            'distance': distance,
-            'duration': duration,
-            'coordinates': coordinates
-        })
-        
+    
     except Exception as e:
         print(f"EXCEPTION: {type(e).__name__}: {str(e)}")
         traceback.print_exc()
-        return JsonResponse({
-            'success': False,
-            'error': f'Error calculating route: {str(e)}'
-        })
+        return JsonResponse({'success': False, 'error': f'Error calculating route: {str(e)}'})
+
 
 
 @require_POST  
@@ -3195,7 +3375,7 @@ def fetch_pois_overpass(request):
             OVERPASS_URL,
             data=query,
             timeout=15,
-            headers={"User-Agent": "holidaytrips/1.0"},
+            headers={"User-Agent": "Trippanion/1.0"},
         )
         
         # Check response status
@@ -3472,3 +3652,81 @@ def ollama_job_status(request, job_id):
         })
     except OllamaJob.DoesNotExist:
         return JsonResponse({"status": "not_found"}, status=404)
+
+def _save_gpx_route(dayprogram_id, description, gpx_string):
+    from .models import DayProgram, Route
+    from django.core.files.base import ContentFile
+    from datetime import datetime
+    
+    dayprogram = DayProgram.objects.get(id=dayprogram_id)
+    filename = f"route_{dayprogram_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.gpx"
+    
+    route = Route(
+        dayprogram=dayprogram,
+        description=description
+    )
+    route.gpx_file.save(filename, ContentFile(gpx_string.encode('utf-8')))
+    route.save()
+    return route
+
+@require_POST
+def save_scheduled_route(request):
+    try:
+        data = json.loads(request.body)
+        itinerary = data['itinerary']
+        dayprogram_id = data['dayprogram_id']
+        gpx_string = data.get('gpx')
+
+        if gpx_string:
+            first_leg = itinerary['legs'][0] if itinerary['legs'] else {}
+            last_leg = itinerary['legs'][-1] if itinerary['legs'] else {}
+            from_name = first_leg.get('from', {}).get('name', 'START') if isinstance(first_leg.get('from'), dict) else 'START'
+            to_name = last_leg.get('to', {}).get('name', 'END') if isinstance(last_leg.get('to'), dict) else 'END'
+            description = f"🚆 {from_name} → {to_name}"
+            _save_gpx_route(dayprogram_id, description, gpx_string)
+
+        for leg in itinerary['legs']:
+            from_data = leg['from']
+            to_data = leg['to']
+
+            if isinstance(from_data, dict):
+                start_address = from_data.get('name', '')
+                track = from_data.get('track') or from_data.get('platformCode')
+                if track:
+                    start_address += f" (Platform {track})"
+            else:
+                start_address = str(from_data)
+
+            if isinstance(to_data, dict):
+                end_address = to_data.get('name', '')
+                track = to_data.get('track') or to_data.get('platformCode')
+                if track:
+                    end_address += f" (Platform {track})"
+            else:
+                end_address = str(to_data)
+
+            start_time = datetime.fromisoformat(leg['startTime'].replace('Z', '+00:00')).time()
+            end_time = datetime.fromisoformat(leg['endTime'].replace('Z', '+00:00')).time()
+
+            if leg['mode'] == 'WALK':
+                transportation_type = 'Walking'
+            elif 'RAIL' in leg['mode']:
+                transportation_type = 'Train'
+            else:
+                transportation_type = 'Other'
+
+            ScheduledItem.objects.create(
+                dayprogram_id=dayprogram_id,
+                start_time=start_time,
+                end_time=end_time,
+                start_address=start_address,
+                end_address=end_address,
+                category='Transportation',
+                transportation_type=transportation_type
+            )
+
+        return JsonResponse({'success': True})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'success': False, 'error': str(e)})

@@ -134,4 +134,5 @@ urlpatterns = [
     path("dayprogram/<int:dayprogram_id>/suggestions/generate/", views.generate_dayprogram_suggestions_view, name="dayprogram-suggestions-generate"),
     path("itinerary/generate/", views.generate_itineraryidea, name="generate_itineraryidea"),
     path("ollama-job-status/<uuid:job_id>/", views.ollama_job_status, name="ollama-job-status"),
+    path('save_scheduled_route/', views.save_scheduled_route, name='save_scheduled_route'),
     ]

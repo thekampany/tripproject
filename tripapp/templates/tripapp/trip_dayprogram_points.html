@@ -284,9 +284,8 @@
     1. has_openrouteservice is True
     2. dayprogram date is today or in the future
     {% endcomment %}
-    {% if has_openrouteservice %}
-        {% now "Y-m-d" as today %}
-        {% if dayprogram.tripdate|date:"Y-m-d" >= today %}
+    {% now "Y-m-d" as today %}
+    {% if dayprogram.tripdate|date:"Y-m-d" >= today %}
             <!-- Route Planning Panel -->
             <div class="route-planning-panel">
                 <div class="route-planning-header" onclick="toggleRoutePlanning()">
@@ -307,7 +306,21 @@
                         <button class="route-point-clear" onclick="clearRoutePoint('end')">✕</button>
                     </div>
 
+                    <div style="display:flex; gap:10px; margin-bottom:10px;">
+                        <div style="flex:1; padding:10px; background:#f8f9fa; border-radius:6px;">
+                            <label style="font-size:0.85em; color:#666;">Date</label>
+                            <input type="text" id="route-date" value="{{ dayprogram.tripdate|date:'Y-m-d' }}" readonly
+                                style="width:100%; border:1px solid #ddd; padding:6px; border-radius:4px; background:#e9ecef;">
+                        </div>
+                        <div style="flex:1; padding:10px; background:#f8f9fa; border-radius:6px;">
+                            <label style="font-size:0.85em; color:#666;">Time</label>
+                            <input type="time" id="route-time"
+                                style="width:100%; border:1px solid #ddd; padding:6px; border-radius:4px;">
+                        </div>
+                    </div>
+
                     <div class="route-options">
+                        {% if has_openrouteservice %}
                         <button class="route-mode-btn active" data-mode="driving-car" onclick="selectRouteMode(this)">
                             🚗 {% trans "Car" %}
                         </button>
@@ -316,6 +329,10 @@
                         </button>
                         <button class="route-mode-btn" data-mode="cycling-regular" onclick="selectRouteMode(this)">
                             🚴 {% trans "Bicycle" %}
+                        </button>
+                        {% endif %}
+                         <button class="route-mode-btn" data-mode="publictransport" onclick="selectRouteMode(this)">
+                            🚆 {% trans "Public Transport" %}
                         </button>
                     </div>
 
@@ -331,6 +348,27 @@
                     <div class="route-info" id="route-info">
                         <div class="route-info-item"><strong>{% trans "Distance:" %}</strong> <span id="route-distance">-</span></div>
                         <div class="route-info-item"><strong>{% trans "Duration:" %}</strong> <span id="route-duration">-</span></div>
+
+                        <div class="itinerary-list" id="itinerary-list" style="display: none;">
+                            <h5>Options:</h5>
+                            <div class="itinerary-options" id="itinerary-options">
+                                <!-- itineraries -->
+                            </div>
+                        </div>
+                        <div class="itinerary-details" id="itinerary-details" style="display: none;">
+                            <h5>Details selected route:</h5>
+                            <div class="itinerary-legs" id="itinerary-legs">
+                                <!-- details selected route -->
+                            </div>
+                            <button class="route-action-btn secondary" onclick="showItineraries(currentRouteData)">
+                                ← Back to options
+                            </button>
+                            <button class="route-action-btn primary" onclick="saveSelectedItinerary()">
+                                Save as Scheduled Items
+                            </button>
+                        </div>
+
+
                     </div>
 
                     <div class="route-save-form" id="route-save-form">
@@ -341,7 +379,6 @@
                     </div>
                 </div>
             </div>
-        {% endif %}
     {% endif %}
     
     <script src="{% static 'js/uniform_icons_for_leaflet.js' %}"></script>
@@ -358,6 +395,17 @@
     unknownError: "{% trans 'Unknown error' %}"
     };
 
+    // Vul tijd in met huidige tijd
+    const now = new Date();
+    const timeStr = now.toTimeString().slice(0, 5); // HH:MM
+    document.getElementById('route-time').value = timeStr;
+
+    // Maak tijdveld alleen bewerkbaar bij publictransport
+    function updateTimeFieldState() {
+        const timeInput = document.getElementById('route-time');
+        timeInput.readOnly = (currentRouteMode !== 'publictransport');
+        timeInput.style.background = (currentRouteMode !== 'publictransport') ? '#e9ecef' : 'white';
+    }
     // Toggle route planning panel
     function toggleRoutePlanning() {
         const content = document.getElementById('route-planning-content');
@@ -403,7 +451,7 @@
         });
         button.classList.add('active');
         currentRouteMode = button.dataset.mode;
-        
+        updateTimeFieldState();         
         // Recalculate if both points are set
         if (startCoords && endCoords) {
             calculateRoute();
@@ -462,87 +510,103 @@
                 body: JSON.stringify({
                     start: startCoords,
                     end: endCoords,
-                    mode: currentRouteMode
+                    mode: currentRouteMode,
+                    date: document.getElementById('route-date').value,
+                    time: document.getElementById('route-time').value
                 })
             });
 
             const data = await response.json();
 
             if (data.success) {
-                // Clear existing route
                 if (routeLayer) {
                     map.removeLayer(routeLayer);
                 }
 
-                // Draw new route
-                const coords = data.coordinates.map(c => [c[1], c[0]]); // Swap to [lat, lng]
+                const coords = data.coordinates.map(c => [c[1], c[0]]);
                 routeLayer = L.polyline(coords, {
                     color: '#007bff',
                     weight: 5,
                     opacity: 0.7
                 }).addTo(map);
 
-                // Fit bounds to show entire route
                 var boundsGroup = L.featureGroup([routeLayer, markers]);
                 if (boundsGroup.getBounds().isValid()) {
                     map.fitBounds(boundsGroup.getBounds(), {padding: [50, 50]});
                 }
 
-                // Format distance and duration
                 const distanceKm = (data.distance / 1000).toFixed(2);
                 const distanceMi = (data.distance).toFixed(2);
                 const durationFormatted = formatDuration(data.duration);
 
-                // Show route info
                 {% if distance_unit == 'km' %} 
-                   document.getElementById('route-distance').textContent = distanceKm + ' km';
+                document.getElementById('route-distance').textContent = distanceKm + ' km';
                 {% else %}
-                   document.getElementById('route-distance').textContent = distanceMi + ' mi';
+                document.getElementById('route-distance').textContent = distanceMi + ' mi';
                 {% endif %}
                 document.getElementById('route-duration').textContent = durationFormatted;
                 document.getElementById('route-info').classList.add('visible');
                 document.getElementById('route-save-form').classList.add('visible');
 
-                // Auto-fill description with distance and duration
-                const modeText = (currentRouteMode === 'driving-car') ? "{% trans 'Car' %}" :
-                                (currentRouteMode === 'foot-walking') ? "{% trans 'Walk' %}" :
-                                (currentRouteMode === 'cycling-regular') ? "{% trans 'Bicycle' %}" :
-                                "{% trans 'Route' %}";
-
-                {% if distance_unit == 'km' %} 
-                    document.getElementById('route-description').value = 
-                        `${modeText}: ${distanceKm}km, ${durationFormatted}`;
-                {% else %}
-                    document.getElementById('route-description').value = 
-                        `${modeText}: ${distanceMi}mi, ${durationFormatted}`;
-                {% endif %}
-                // Store route data for saving
+                // Sla route data op EERST, voor showItineraries wordt aangeroepen
                 currentRouteData = {
                     coordinates: data.coordinates,
                     distance: data.distance,
                     duration: data.duration,
-                    mode: currentRouteMode
+                    mode: currentRouteMode,
+                    gpx: data.gpx
                 };
+
+                if (currentRouteMode === 'publictransport' && data.raw_itinerary) {
+                    //currentRouteData.itineraries = [data.raw_itinerary];
+                    currentRouteData.itineraries = data.itineraries_all || [data.raw_itinerary];
+
+                    if (data.itinerary_short) {
+                        const summary = data.itinerary_short;
+                        const dep = new Date(summary.from.departure).toLocaleTimeString('nl-NL', {hour: '2-digit', minute: '2-digit'});
+                        const arr = new Date(summary.to.arrival).toLocaleTimeString('nl-NL', {hour: '2-digit', minute: '2-digit'});
+                        document.getElementById('route-description').value = 
+                            `🚆 ${summary.from.name} ${dep} → ${summary.to.name} ${arr} (${summary.duration_min} min)`;
+                    }
+
+                    showItineraries(currentRouteData);
+                    
+
+                } else {
+                    const modeText = (currentRouteMode === 'driving-car') ? "{% trans 'Car' %}" :
+                                    (currentRouteMode === 'foot-walking') ? "{% trans 'Walk' %}" :
+                                    (currentRouteMode === 'cycling-regular') ? "{% trans 'Bicycle' %}" :
+                                    "{% trans 'Route' %}";
+                    {% if distance_unit == 'km' %} 
+                        document.getElementById('route-description').value = `${modeText}: ${distanceKm}km, ${durationFormatted}`;
+                    {% else %}
+                        document.getElementById('route-description').value = `${modeText}: ${distanceMi}mi, ${durationFormatted}`;
+                    {% endif %}
+                    document.getElementById('itinerary-list').style.display = 'none';
+                    document.getElementById('itinerary-details').style.display = 'none';
+                }
+
             } else {
                 alert('Error calculating route: ' + (data.error || 'Unknown error'));
             }
         } catch (error) {
-            console.error('Error:', error);
-            alert(translations.errorCalculating);
+            console.error('Volledige fout:', error);
+            alert(translations.errorCalculating + ' ' + error.message);
         } finally {
             calcBtn.disabled = false;
             calcBtn.textContent = translations.calculateRoute;
         }
     }
 
+
     function formatDuration(seconds) {
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
         
         if (hours > 0) {
-            return `${hours}h ${minutes}m`;
+            return `${hours}h ${minutes}min`;
         }
-        return `${minutes}m`;
+        return `${minutes}min`;
     }
 
     async function saveRoute() {
@@ -639,6 +703,103 @@
             console.warn("POI error:", err);
         });
     }
+
+    function showItineraries(data) {
+        const itineraryOptions = document.getElementById('itinerary-options');
+        itineraryOptions.innerHTML = '';
+
+        data.itineraries.forEach((itinerary, index) => {
+            const option = document.createElement('div');
+            option.className = 'itinerary-option';
+            option.style.cssText = 'background:#f8f9fa; color: darkblue; border-radius:6px; padding:10px; margin-bottom:8px;';
+            option.onclick = () => selectItinerary(index);
+            option.innerHTML = `
+                <div>
+                    <strong>${index + 1}.</strong>
+                    ${new Date(itinerary.startTime).toLocaleTimeString('nl-NL', {hour:'2-digit', minute:'2-digit'})}
+                    &rarr;
+                    ${new Date(itinerary.endTime).toLocaleTimeString('nl-NL', {hour:'2-digit', minute:'2-digit'})}
+                    &nbsp;(${formatDuration(itinerary.duration)})
+                </div>
+                <div style="color:#666; font-size:0.9em; margin-top:4px;">
+                    ${itinerary.legs.map(leg => leg.mode).join(' → ')}
+                </div>
+            `;
+            itineraryOptions.appendChild(option);
+        });
+
+        document.getElementById('itinerary-list').style.display = 'block';
+        document.getElementById('itinerary-details').style.display = 'none';
+    }
+
+    function selectItinerary(index) {
+        const itinerary = currentRouteData.itineraries[index];
+        const legsContainer = document.getElementById('itinerary-legs');
+        legsContainer.innerHTML = '';
+
+        itinerary.legs.forEach((leg, i) => {
+            const legElement = document.createElement('div');
+            legElement.className = 'itinerary-leg';
+            if (leg.mode === 'WALK') {
+                legElement.innerHTML = `
+                    <p><strong>${leg.mode} (${formatDuration(leg.duration)})</strong></p>
+                `;
+            } else {
+                legElement.innerHTML = `
+                    <p><strong>${leg.mode} (${formatDuration(leg.duration)}) ${leg.agencyName ? ' (' + leg.agencyName + ')' : ''}</strong></p>
+                    <p>${leg.from.name}<br> 
+                        ${leg.from.track ? '&nbsp;&nbsp;Track ' + leg.from.track + '<br>' : ''}
+                        ${leg.routeShortName ? '&nbsp;&nbsp;' + leg.routeShortName + ' ' : ''}
+                        ${leg.headsign ? '&nbsp;&nbsp; ' + leg.headsign + '' : ''}
+                        <br>&nbsp;&nbsp;<i>Departure: ${new Date(leg.startTime).toLocaleTimeString()}</i>
+                    </p>
+                    <p>${leg.to.name} ${leg.to.track ? '(track ' + leg.to.track + ')' : ''}
+                        <br>&nbsp;&nbsp;<i>Arrival: ${new Date(leg.endTime).toLocaleTimeString()}</i>
+                    </p>
+                `;
+            }
+            legsContainer.appendChild(legElement);
+        });
+
+        document.getElementById('itinerary-list').style.display = 'none';
+        document.getElementById('itinerary-details').style.display = 'block';
+        currentSelectedItinerary = itinerary;
+    }
+
+    async function saveSelectedItinerary() {
+        if (!currentSelectedItinerary) {
+            alert('Selecteer eerst een route!');
+            return;
+        }
+
+        try {
+            const response = await fetch("{% url 'tripapp:save_scheduled_route' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.getElementById('map').dataset.csrf
+                },
+                body: JSON.stringify({
+                    dayprogram_id: document.getElementById('map').dataset.dayprogramId,
+                    itinerary: currentSelectedItinerary,
+                    gpx: currentRouteData.gpx
+            })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert('Route en legs opgeslagen als scheduled items!');
+                location.reload();
+            } else {
+                alert('Error saving: ' + (data.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error saving route');
+        }
+    }
+
 
     // Point markers - using uniform icon system
     var defaultIcon = uniformIcon(COLORS.default, '📍', 36);
