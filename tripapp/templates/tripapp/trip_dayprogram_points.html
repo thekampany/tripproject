@@ -55,16 +55,14 @@
 
         /* Route Planning Styles */
         .route-planning-panel {
-            background: silver;
             padding: 0;
             border-radius: 8px;
-            margin-top: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 5px;
+            box-shadow: 0 2px 4px rgba(100,100,100,0.1);
         }
 
         .route-planning-header {
             padding: 15px;
-            background: silver;
             border-radius: 8px 8px 0 0;
             cursor: pointer;
             display: flex;
@@ -75,6 +73,7 @@
 
         .route-planning-header:hover {
             background: #e9ecef;
+            color: darkblue;
         }
 
         .route-planning-header h4 {
@@ -348,15 +347,16 @@
                     <div class="route-info" id="route-info">
                         <div class="route-info-item"><strong>{% trans "Distance:" %}</strong> <span id="route-distance">-</span></div>
                         <div class="route-info-item"><strong>{% trans "Duration:" %}</strong> <span id="route-duration">-</span></div>
-
                         <div class="itinerary-list" id="itinerary-list" style="display: none;">
+                            <hr>
                             <h5>Options:</h5>
                             <div class="itinerary-options" id="itinerary-options">
                                 <!-- itineraries -->
                             </div>
                         </div>
                         <div class="itinerary-details" id="itinerary-details" style="display: none;">
-                            <h5>Details selected route:</h5>
+                            <hr>
+                            <h5>Selected route details:</h5>
                             <div class="itinerary-legs" id="itinerary-legs">
                                 <!-- details selected route -->
                             </div>
@@ -535,7 +535,9 @@
                     map.fitBounds(boundsGroup.getBounds(), {padding: [50, 50]});
                 }
 
-                const distanceKm = (data.distance / 1000).toFixed(2);
+                const distanceKm = currentRouteMode === 'publictransport' 
+                    ? (data.distance /10).toFixed(2) 
+                    : (data.distance / 1000).toFixed(2);
                 const distanceMi = (data.distance).toFixed(2);
                 const durationFormatted = formatDuration(data.duration);
 
@@ -747,15 +749,21 @@
             } else {
                 legElement.innerHTML = `
                     <p><strong>${leg.mode} (${formatDuration(leg.duration)}) ${leg.agencyName ? ' (' + leg.agencyName + ')' : ''}</strong></p>
-                    <p>${leg.from.name}<br> 
-                        ${leg.from.track ? '&nbsp;&nbsp;Track ' + leg.from.track + '<br>' : ''}
-                        ${leg.routeShortName ? '&nbsp;&nbsp;' + leg.routeShortName + ' ' : ''}
-                        ${leg.headsign ? '&nbsp;&nbsp; ' + leg.headsign + '' : ''}
-                        <br>&nbsp;&nbsp;<i>Departure: ${new Date(leg.startTime).toLocaleTimeString()}</i>
-                    </p>
-                    <p>${leg.to.name} ${leg.to.track ? '(track ' + leg.to.track + ')' : ''}
-                        <br>&nbsp;&nbsp;<i>Arrival: ${new Date(leg.endTime).toLocaleTimeString()}</i>
-                    </p>
+                    <div style="display:flex; justify-content:space-between; gap:10px;">
+                        <div>
+                            <strong>${leg.from.name}</strong><br>
+                            ${leg.from.track ? 'Track ' + leg.from.track + '<br>' : ''}
+                            ${leg.routeShortName ? leg.routeShortName + ' ' : ''}
+                            ${leg.headsign ? leg.headsign : ''}
+                            <br><i>Departure: ${new Date(leg.startTime).toLocaleTimeString()}</i>
+                        </div>
+                        <div style="text-align:right;">
+                            <strong>${leg.to.name}</strong><br>
+                            ${leg.to.track ? 'Track ' + leg.to.track + '<br>' : ''}
+                            <br><i>Arrival: ${new Date(leg.endTime).toLocaleTimeString()}</i>
+                        </div>
+                    </div>
+                    <p>&nbsp;</p>
                 `;
             }
             legsContainer.appendChild(legElement);

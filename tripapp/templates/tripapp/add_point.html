@@ -1,12 +1,122 @@
 {% extends "base_generic.html" %}
+{% load i18n %}
 {% load crispy_forms_tags %}
+{% block extra_css %}
+<style>
+#address-section {
+    position: relative;
+    margin-bottom: 1rem;
+}
+#address-results {
+    border: 1px solid #ccc;
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+    position: absolute;
+    z-index: 1000;
+    width: 100%;
+    display: none;
+}
+#address-results div {
+    padding: 5px;
+    cursor: pointer;
+}
+#address-results div:hover {
+    background: #f0f0f0;
+}
+.address-field {
+    position: relative;
+}
+</style>
+{% endblock %}
 {% block content %}
     <h2>Add Point</h2><br>
     <b> for Trip {{ trip.name }}</b>
     <br><br>
     <form method="post">
         {% csrf_token %}
-        {{ form|crispy }}
-        <button type="submit" class="btn">Save Point</button>
+        <div id="address-section" class="address-field">
+            <label>
+                <input type="checkbox" id="toggle-address" checked> {% trans "Lookup via address" %}
+            </label>
+            <div id="address-field-container">
+                <input type="text" id="id_address" name="address" placeholder="{% trans 'Enter address...' %}">
+                <div id="address-results"></div>
+            </div>
+        </div>
+        {% for field in form %}
+            {% if field.name != 'address' %}
+                {{ field|as_crispy_field }}
+            {% endif %}
+        {% endfor %}
+        <button type="submit" class="btn">{% trans "Save Point" %}</button>
     </form>
+{% endblock %}
+{% block extra_js %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Address field:", document.getElementById('id_address'));
+    const addressField = document.getElementById('id_address');
+    const latitudeField = document.getElementById('id_latitude');
+    const longitudeField = document.getElementById('id_longitude');
+    const resultsContainer = document.getElementById('address-results');
+    const toggleAddress = document.getElementById('toggle-address');
+    const addressFieldContainer = document.getElementById('address-field-container');
+
+    toggleAddress.addEventListener('change', function(e) {
+        addressFieldContainer.style.display = e.target.checked ? 'block' : 'none';
+    });
+
+    function searchAddress() {
+        if (addressField.value.length > 3) {
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressField.value)}`, {
+                headers: {
+                    'User-Agent': 'Trippanion/1.0'
+                }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                if (data.length > 0) {
+                    resultsContainer.innerHTML = '';
+                    if (data.length === 1) {
+                        latitudeField.value = data[0].lat;
+                        longitudeField.value = data[0].lon;
+                        resultsContainer.style.display = 'none';
+                    } else {
+                        data.forEach(item => {
+                            const option = document.createElement('div');
+                            option.textContent = item.display_name;
+                            option.addEventListener('click', function() {
+                                latitudeField.value = item.lat;
+                                longitudeField.value = item.lon;
+                                resultsContainer.style.display = 'none';
+                            });
+                            resultsContainer.appendChild(option);
+                        });
+                        resultsContainer.style.display = 'block';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                resultsContainer.style.display = 'none';
+            });
+        } else {
+            resultsContainer.style.display = 'none';
+        }
+    }
+
+    addressField.addEventListener('input', searchAddress);
+    addressField.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchAddress();
+        }
+    });
+});
+</script>
 {% endblock %}

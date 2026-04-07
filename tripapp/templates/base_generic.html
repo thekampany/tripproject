@@ -64,10 +64,11 @@
 
 
     }
-
     </style>
+    
 </head>
 <body>
+    {% block extra_css %}{% endblock %}
     <div id="loading-spinner" class="spinner-overlay">
         <div class="spinner"></div>
     </div>
@@ -97,5 +98,7 @@
         {% endblock %}
     </div>
     </div>
+    {% block extra_js %}{% endblock %}
+
 </body>
 </html>

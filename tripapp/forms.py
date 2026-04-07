@@ -305,6 +305,15 @@ class PointForm(forms.ModelForm):
         choices=MARKER_TYPE_CHOICES,
         required=False
     )
+    address = forms.CharField(
+        label='Address',
+        required=False,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Enter Address...',
+            'id': 'id_address'
+        })
+    )
+
     class Meta:
         model = Point
         fields = ['name', 'latitude', 'longitude', 'dayprograms','marker_type']
