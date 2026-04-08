@@ -173,6 +173,6 @@ Could look like this on your mobile
 Flags from https://flagpedia.net  
 Weather from https://api.open-meteo.com  
 Leaflet https://leafletjs.com/  
-Leaflet-control-geocoder https://github.com/perliedman/leaflet-control-geocoder
-Overpass https://overpass-api.de
-Transitous https://transitous.org
+Leaflet-control-geocoder https://github.com/perliedman/leaflet-control-geocoder  
+Overpass https://overpass-api.de  
+Transitous https://transitous.org  

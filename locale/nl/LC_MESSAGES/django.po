@@ -663,7 +663,7 @@ msgstr "#Antwoorden"
 
 #: tripapp/templates/tripapp/trip_bingocard.html:151
 msgid "See answers for all trippers"
-msgstr "Bekijke antwoorden van alle trippers"
+msgstr "Bekijk antwoorden van alle trippers"
 
 #: tripapp/templates/tripapp/trip_bingocard.html:154
 msgid "No Bingo created for this trip"

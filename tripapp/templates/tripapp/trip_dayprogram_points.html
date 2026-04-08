@@ -395,14 +395,15 @@
     unknownError: "{% trans 'Unknown error' %}"
     };
 
-    // Vul tijd in met huidige tijd
     const now = new Date();
     const timeStr = now.toTimeString().slice(0, 5); // HH:MM
-    document.getElementById('route-time').value = timeStr;
-
-    // Maak tijdveld alleen bewerkbaar bij publictransport
+    const routeTimeInput = document.getElementById('route-time');
+    if (routeTimeInput) {
+        routeTimeInput.value = timeStr;
+    }
     function updateTimeFieldState() {
         const timeInput = document.getElementById('route-time');
+        if (!timeInput) return;
         timeInput.readOnly = (currentRouteMode !== 'publictransport');
         timeInput.style.background = (currentRouteMode !== 'publictransport') ? '#e9ecef' : 'white';
     }
