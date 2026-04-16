@@ -203,26 +203,34 @@ def invite_to_tribe(request):
 def trip_list(request):
     user_profile = request.user.userprofile
     tribes = user_profile.tribes.all()
-    trips = Trip.objects.filter(tribe__in=tribes).order_by('-date_from', '-id')
-    category = "roadtrip"
-    background_image_url = get_random_unsplash_image(category)
-    only_mine = request.GET.get("only_mine") == "true"
-
     tripper = None
+
     if request.user.is_authenticated:
         tripper = Tripper.objects.filter(user=request.user).first()
-        for trip in trips:
-            trip.is_tripper = tripper in trip.trippers.all()
-    else:
-        for trip in trips:
-            trip.is_tripper = False
-    
+
+    only_mine = request.GET.get("only_mine") == "true"
+
+    trips = Trip.objects.filter(tribe__in=tribes).order_by('-date_from', '-id')
+
+    if only_mine and tripper:
+        trips = trips.filter(trippers=tripper)
 
     for trip in trips:
+        trip.is_tripper = tripper in trip.trippers.all() if tripper else False
         trip.country_codes_list = trip.country_codes.split(',') if trip.country_codes else []
+
+    category = "roadtrip"
+    background_image_url = get_random_unsplash_image(category)
     enable_admin = settings.ENABLE_ADMIN
 
-    return render(request, 'tripapp/trip_list.html', {'tribes': tribes, 'trips': trips, 'background_image_url': background_image_url, 'tripper':tripper,"only_mine": only_mine, "enable_admin": enable_admin})
+    return render(request, 'tripapp/trip_list.html', {
+        'tribes': tribes, 
+        'trips': trips, 
+        'background_image_url': background_image_url, 
+        'tripper':tripper,
+        "only_mine": only_mine, 
+        "enable_admin": enable_admin
+        })
 
 @is_in_tribe
 def trip_detail(request, slug):
@@ -364,6 +372,7 @@ def dayprogram_detail(request, dayprogram_id):
     trippers_on_this_trip = dayprogram.trip.trippers.all()
     trippers_names = [tripper.name for tripper in trippers_on_this_trip]
 
+    routes = dayprogram.routes.all()
     log_entries = dayprogram.logentries.all()
     logentry_ids = [le.id for le in log_entries]
     likes = LogEntryLike.objects.filter(logentry_id__in=logentry_ids).select_related('tripper')
@@ -494,6 +503,7 @@ def dayprogram_detail(request, dayprogram_id):
           'suggestionform':suggestionform,
           'today': timezone.now().date(),
           'trippers_names': trippers_names,
+          'routes':routes,
           'log_entries': log_entries,
           'emoji_options': emoji_options,
           'previous_dayprogram' : previous_dayprogram,

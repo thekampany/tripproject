@@ -202,46 +202,44 @@ input:checked + .slider:before {
 
     <p>&nbsp;</p>
     {% if tribes %}
+        <div class="trip-list">
+            {% for trip in trips %}
+                {% if not only_mine or trip.is_tripper %}
+                    <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" class="trip-card">
+                        <div class="trip-image" style="
+                        background-image: 
+                            {% if trip.image %}
+                                url('{{ trip.image.url }}'); 
+                            {% elif trip.country_codes_list %}
+                                url('https://flagcdn.com/w320/{{ trip.country_codes_list|first|lower }}.png'); 
+                                filter: grayscale(5%); 
+                                opacity: 0.9; 
+                            {% else %}
+                                url('{% static "default-trip.png" %}'); 
+                            {% endif %}">
+                        </div>
+                        <div class="trip-info">
+                            {% if trip.image %}
+                                <div style="display: flex; gap: 4px;  align-items: center;">
+                                    {% for country in trip.country_codes_list %}
+                                        <div style="background-image: url('https://flagcdn.com/16x12/{{ country|lower }}.png');width:16px;height:12px;"></div> 
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <h3 class="trip-title">{{ trip.name }}</h3>
+                            <p class="trip-dates">
+                                <span>{{ trip.date_from|date:"d-M-Y" }}</span>{% if trip.date_from %} - {% endif %} 
+                                <span>{{ trip.date_to|date:"d-M-Y" }}</span>
+                            </p>
+                        </div>
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </div> 
+
+        <br />
         {% for tribe in tribes %}
-
-            <div class="trip-list">
-                {% for trip in trips %}
-                    {% if not only_mine or trip.is_tripper %}
-                        <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}" class="trip-card">
-                            <div class="trip-image" style="
-                            background-image: 
-                                {% if trip.image %}
-                                    url('{{ trip.image.url }}'); 
-                                {% elif trip.country_codes_list %}
-                                    url('https://flagcdn.com/w320/{{ trip.country_codes_list|first|lower }}.png'); 
-                                    filter: grayscale(5%); 
-                                    opacity: 0.9; 
-                                {% else %}
-                                    url('{% static "default-trip.png" %}'); 
-                                {% endif %}">
-                            </div>
-                            <div class="trip-info">
-                                {% if trip.image %}
-                                    <div style="display: flex; gap: 4px;  align-items: center;">
-                                        {% for country in trip.country_codes_list %}
-                                            <div style="background-image: url('https://flagcdn.com/16x12/{{ country|lower }}.png');width:16px;height:12px;"></div> 
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                                <h3 class="trip-title">{{ trip.name }}</h3>
-                                <p class="trip-dates">
-                                    <span>{{ trip.date_from|date:"d-M-Y" }}</span>{% if trip.date_from %} - {% endif %} 
-                                    <span>{{ trip.date_to|date:"d-M-Y" }}</span>
-                                </p>
-                            </div>
-                        </a>
-                    {% endif %}
-                {% endfor %}
-            </div> 
-
-            <br />
-            <a href="{% url 'tripapp:tribe_map_view' tribe.id %}" class="fab" title="Switch to Map View">🗺️</a><br />
-
+           <a href="{% url 'tripapp:tribe_map_view' tribe.id %}" class="fab" title="Switch to Map View">🗺️</a><br />
         {% endfor %}
     {% else %}
 

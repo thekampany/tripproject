@@ -370,6 +370,7 @@
                 </div>
 
             {% for trip in trips %}
+                {% if trip.tribe == tribe %}
                 <div class="trip-card">
                         <div class="trip-name" style="
                         background-image: 
@@ -427,6 +428,7 @@
                             {% endif %}
                          </div>
                 </div>
+                {% endif %}
             {% endfor %}
         
         </div>

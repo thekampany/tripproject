@@ -438,6 +438,18 @@
         </div>
         {% endif %}
 
+        {% if is_day_in_future %}
+            {% if routes %}
+            <div class="dayprogramcard">
+                <p><span class="dayprogramcard-title">{% trans "Planned Routes for Today" %}</span></p>
+                {% for route in routes %}
+                    <p>{{ route.description }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% endif %}
+
+
 
         {% if links_without_scheduled_item %}
         <div class="dayprogramcard">
