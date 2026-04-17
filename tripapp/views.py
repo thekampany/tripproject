@@ -3736,7 +3736,5 @@ def save_scheduled_route(request):
             )
 
         return JsonResponse({'success': True})
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        return JsonResponse({'success': False, 'error': str(e)})
+   except Exception as e:
+        return JsonResponse({'success': False, 'error': 'An unexpected error occurred.'})

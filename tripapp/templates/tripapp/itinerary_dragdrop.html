@@ -196,19 +196,33 @@ function renumberDays() {
   days.forEach((dayCard, idx) => {
     const nextDay = days[idx + 1];
     if (nextDay) {
-      const overnight = document.createElement('div');
-      overnight.classList.add('overnight-wrapper');
-      overnight.innerHTML = `
-        <label class="form-label fw-bold mb-1">Overnight location after Day ${idx + 1}</label>
-        <div class="d-flex gap-2">
-          <input type="text" class="form-control overnight-input"
-                 data-prev-day-id="${dayCard.dataset.dayId}"
-                 value="${dayCard.querySelector('.draggable strong')?.textContent || ''}"
-                 placeholder="Enter overnight location name">
-          <button type="button" class="btn btn-outline-danger btn-sm remove-overnight-btn">X</button>
-        </div>
-      `;
-      nextDay.parentNode.insertBefore(overnight, nextDay);
+        const overnight = document.createElement('div');
+        overnight.classList.add('overnight-wrapper');
+
+        const label = document.createElement('label');
+        label.classList.add('form-label', 'fw-bold', 'mb-1');
+        label.textContent = `Overnight location after Day ${idx + 1}`;
+
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('d-flex', 'gap-2');
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.classList.add('form-control', 'overnight-input');
+        input.dataset.prevDayId = dayCard.dataset.dayId;
+        input.value = dayCard.querySelector('.draggable strong')?.textContent || '';
+        input.placeholder = 'Enter overnight location name';
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.classList.add('btn', 'btn-outline-danger', 'btn-sm', 'remove-overnight-btn');
+        removeBtn.textContent = 'X';
+
+        wrapper.appendChild(input);
+        wrapper.appendChild(removeBtn);
+        overnight.appendChild(label);
+        overnight.appendChild(wrapper);
+        nextDay.parentNode.insertBefore(overnight, nextDay);
     }
   });
 

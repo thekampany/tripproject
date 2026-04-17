@@ -64,40 +64,36 @@ def generate_static_map(dayprogram):
     staticmaps_api_key = settings.STATICMAPS_API_KEY
 
     if not staticmaps_url:
-        logger.info(f"No staticmaps url {staticmaps_url}")
+        logger.info("No staticmaps url configured.")  
         return  
     
     markers = []
     polyline_params = []
 
     if dayprogram.points.exists():
-        logger.info(f"Points")
+        logger.info("Processing points for markers.") 
         for point in dayprogram.points.all():
             markers.append(f"{point.latitude},{point.longitude}")
 
     tripdate = dayprogram.tripdate
-    logger.info(f"Dayprogram tripdate {tripdate} ")
+    logger.info("Processing dayprogram for date: %s", tripdate)
 
     locations = list(Location.objects.filter(timestamp__date=tripdate))
 
     if locations:
-        logger.info(f"Found {len(locations)} locations for polyline.")
+        logger.info("Found %d locations for polyline.", len(locations))
         
         coords = [(loc.latitude, loc.longitude) for loc in locations]
 
         if len(coords) > 150:
             simplified = rdp(coords, epsilon=0.0005)
-            logger.info(
-                f"Reduced from {len(coords)} to {len(simplified)} points using RDP."
-            )
+            logger.info("Reduced from %d to %d points using RDP.", len(coords), len(simplified))
         else:
             simplified = coords        
                 
         polyline_str = "|".join([f"{lat},{lon}" for lat, lon in simplified])
         polyline_params.append(f"polyline=weight:4|color:0000FF|{polyline_str}") 
 
-
-    routes = dayprogram.routes.all()
     for route in dayprogram.routes.all():
         if route.gpx_file:
             with route.gpx_file.open("r") as f:
@@ -111,46 +107,32 @@ def generate_static_map(dayprogram):
                     
                 if gpx_points:
                     coords = list(gpx_points)
-
-                    if len(coords) > 150:
-                        simplified = rdp(coords, epsilon=0.0005)
-                    else:
-                        simplified = coords
-
-                    polyline_str = "|".join(
-                        f"{lat},{lon}" for lat, lon in simplified
-                    )
+                    simplified = rdp(coords, epsilon=0.0005) if len(coords) > 150 else coords
+                    polyline_str = "|".join(f"{lat},{lon}" for lat, lon in simplified)
                     polyline_params.append(
                         f"polyline=weight:2|color:blue|strokeDasharray:10,15|{polyline_str}"
                     )
 
-    params = {
-        "width": 800,
-        "height": 600,
-        "format": "png",
-    }
     marker_param = None
     if markers:
         marker_param = f"markers=width:20|height:20|{'|'.join(markers)}"
 
-    query_parts = polyline_params
+    query_parts = polyline_params[:] 
     if marker_param:
         query_parts.append(marker_param)
 
     base_url = f"{staticmaps_url}?{'&'.join(query_parts)}"
+    logger.info("Requesting static map (without api_key): %s", base_url)
 
-    if staticmaps_api_key:
-        request_url = f"{base_url}&api_key={staticmaps_api_key}"
-    else:
-        request_url = base_url
+    request_url = f"{base_url}&api_key={staticmaps_api_key}" if staticmaps_api_key else base_url
 
-    logger.info(f"{request_url}")
     response = requests.get(request_url)
     if response.status_code == 200:
         filename = f"map_dayprogram_{dayprogram.id}.png"
-        dayprogram.map_image.save(filename, ContentFile(response.content))
+        dayprogram.map_image.save(filename, ContentFile(response.content)) 
         dayprogram.save()
-
+    else:
+        logger.warning("Static map request failed with status %d", response.status_code)
 
 def generate_static_map_for_trip(trip):
     staticmaps_url = settings.STATICMAPS_URL
@@ -164,16 +146,11 @@ def generate_static_map_for_trip(trip):
     os.makedirs(map_dir, exist_ok=True)
 
     markers = []
-
-
     dayprograms = trip.dayprograms.all().order_by('dayprogramnumber')
-
     for dp in dayprograms:
         for point in dp.points.all():
             markers.append(f"{point.latitude},{point.longitude}")
 
-
-    # Staticmap parameters
     params = {
         "width": 1000,
         "height": 700,
@@ -181,39 +158,32 @@ def generate_static_map_for_trip(trip):
     }
 
     query_parts = []
-
     if markers:
-        marker_param = f"markers=width:20|height:20|{'|'.join(markers)}"
-        query_parts.append(marker_param)
+        query_parts.append(f"markers=width:20|height:20|{'|'.join(markers)}")
 
     base_url = f"{staticmaps_url}?{'&'.join(query_parts)}"
+    logger.info(f"StaticTripMap URL: {base_url}") 
 
     if staticmaps_api_key:
         request_url = f"{base_url}&api_key={staticmaps_api_key}"
     else:
         request_url = base_url
 
-    logger.info(f"StaticTripMap URL: {request_url}")
-
     response = requests.get(request_url)
     if response.status_code != 200:
+        logger.warning(f"Staticmap request failed with status {response.status_code}")
         return None
-    
-    folder = os.path.join(settings.MEDIA_ROOT, "trip_maps")
-    os.makedirs(folder, exist_ok=True)
 
     filename = f"{trip.slug}.png"
-    filepath = os.path.join(folder, filename)
-
+    filepath = os.path.join(map_dir, filename)
     with open(filepath, "wb") as f:
-        f.write(response.content)
+        f.write(response.content) 
 
     return filepath
 
 
-
 def create_trip_from_itinerary(itinerary, tribe, start_date,user):
-    geolocator = Nominatim(user_agent="my_trip_app")
+    geolocator = Nominatim(user_agent="trippanion")
 
     all_locations = []
     for day in itinerary.itineraryidea_days.all():
@@ -230,7 +200,7 @@ def create_trip_from_itinerary(itinerary, tribe, start_date,user):
             if location and "country_code" in location.raw["address"]:
                 countries.add(location.raw["address"]["country_code"].upper())
         except Exception as e:
-            print(f"Error geocoding {lat},{lon}: {e}")
+            logger.warning("Error geocoding (%.1f, %.1f): %s", lat, lon, e)
 
     country_codes = ",".join(sorted(countries))
 
