@@ -86,8 +86,11 @@ from django.core.exceptions import PermissionDenied
 
 
 import traceback
+import logging
+
 import polyline as polyline_decoder 
 
+logger = logging.getLogger(__name__)
 
 
 def index(request):
@@ -2234,7 +2237,8 @@ def reorder_dayprograms(request, trip_id):
         return JsonResponse({'status': 'success'})
     
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=400)
+        logger.error("Error Reordering Days: %s", str(e), exc_info=True)
+        return JsonResponse({"error": "Error Reordering Days"}, status=400)
 
 
 from rest_framework import generics
@@ -2428,13 +2432,21 @@ def create_itineraryidea_daylocations(request):
 
 
 @csrf_exempt
+@login_required
 def save_tripoutline(request):
     if request.method == "POST":
         try:
             payload = json.loads(request.body)
 
+            name = str(payload.get("name") or "").strip()[:200]
+            name = name or f"Itinerary {timezone.now().strftime('%Y-%m-%d %H:%M')}"
+
+            MAX_ITEMS = 100
+            if len(items_data) > MAX_ITEMS:
+                return JsonResponse({"error": f"Max {MAX_ITEMS} items allowed"}, status=400)
+
             idea = ItineraryIdea.objects.create(
-                name=payload.get("name") or f"Itinerary {timezone.now().strftime('%Y-%m-%d %H:%M')}",
+                name=name,
                 created_by=request.user,
             )
 
@@ -2472,7 +2484,8 @@ def save_tripoutline(request):
             })
 
         except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
+            logger.error("save_tripoutline failed: %s", str(e), exc_info=True)
+            return JsonResponse({"error": "Internal Error"}, status=500)
 
     return JsonResponse({"error": "Method not allowed"}, status=405)
 
@@ -2511,7 +2524,8 @@ def save_tripoutline_daylocations(request):
             return redirect('tripapp:itinerary_daylocations_dragdrop', pk=idea.id)
 
         except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
+            logger.error("Error Saving Itinerary Idea Daylocations: %s", str(e), exc_info=True)
+            return JsonResponse({"error": "Error Saving Itinerary Idea Daylocations"}, status=500)
 
     return JsonResponse({"error": "Method not allowed"}, status=405)
 
@@ -2677,7 +2691,8 @@ def update_itineraryidea(request, pk):
         return JsonResponse({"status": "ok", "itinerary_id": idea.id})
 
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        logger.error("Error Updating Itinerary Idea: %s", str(e), exc_info=True)
+        return JsonResponse({"error": "Error Updating Itinerary Idea"}, status=500)
 
 @login_required
 @require_POST
@@ -2815,9 +2830,8 @@ def save_daylocation_assignments(request):
         return JsonResponse({"status": "ok", "saved": len(assignments)})
 
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
-
-
+        logger.error("Error saving Daylocation Assignment: %s", str(e), exc_info=True)
+        return JsonResponse({"error": "Error Saving Daylocation Assignment"}, status=500)
 
 
 def export_trip_outline(trip_id):
@@ -3054,9 +3068,10 @@ def calculate_route(request):
         try:
             body_str = request.body.decode('utf-8')
             data = json.loads(body_str)
-        except json.JSONDecodeError as e:
-            return JsonResponse({'success': False, 'error': f'Invalid JSON: {str(e)}'})
-        
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            logger.warning("Invalid JSON from %s", request.META.get('REMOTE_ADDR'))
+            return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+
         if not isinstance(data, dict):
             return JsonResponse({'success': False, 'error': f'Expected JSON object, got {type(data).__name__}'})
         
@@ -3204,10 +3219,17 @@ def calculate_route(request):
             })
     
     except Exception as e:
-        print(f"EXCEPTION: {type(e).__name__}: {str(e)}")
-        traceback.print_exc()
-        return JsonResponse({'success': False, 'error': f'Error calculating route: {str(e)}'})
-
+        logger.error(
+            "Error calculating route: %s: %s",
+            type(e).__name__,
+            str(e),
+            exc_info=True  
+        )
+        
+        return JsonResponse({
+            'success': False,
+            'error': 'Error when calculating route'
+        })
 
 
 @require_POST  
@@ -3359,13 +3381,17 @@ def save_route(request):
         })
         
     except Exception as e:
-        print(f"EXCEPTION: {type(e).__name__}: {str(e)}")
-        traceback.print_exc()
+        logger.error(
+            "Error saving route: %s: %s",
+            type(e).__name__,
+            str(e),
+            exc_info=True
+        )
+        
         return JsonResponse({
             'success': False,
-            'error': f'Error saving route: {str(e)}'
+            'error': 'Error when saving route.'
         })
-
 
 OVERPASS_URL = "https://overpass-api.de/api/interpreter"
 
