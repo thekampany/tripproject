@@ -588,16 +588,27 @@ def check_answer(request, dayprogram_id, questionid):
             if answer.lower() in question.correct_answer.lower():
                 current_user = request.user
                 tripper = Tripper.objects.filter(name=current_user.username).first()
-                tripper.badges.add(question.badge)
-                BadgeAssignment.objects.create(tripper=tripper, badge=question.badge, trip=dayprogram.trip)
 
+                already_assigned = BadgeAssignment.objects.filter(
+                    tripper=tripper,
+                    badge=question.badge,
+                    trip=dayprogram.trip
+                ).exists()
+
+                if not already_assigned:
+                    tripper.badges.add(question.badge)
+                    BadgeAssignment.objects.create(
+                        tripper=tripper,
+                        badge=question.badge,
+                        trip=dayprogram.trip
+                    )
+ 
                 url = reverse('tripapp:dayprogram_detail', args=[dayprogram.id])
                 return redirect(f"{url}?badge={question.badge.id}")
             else:
                 return redirect('tripapp:dayprogram_detail', dayprogram_id=dayprogram.id)
 
     return redirect('tripapp:dayprogram_detail', dayprogram_id=dayprogram.id)
-
 @login_required
 def badge_claimed(request, badge_id):
     badge = get_object_or_404(Badge, pk=badge_id)
@@ -1228,22 +1239,27 @@ def tripadmin_bingocards(request, trip_id):
 def permission_denied(request, exception=None):
     return render(request, 'tripapp/permission_denied.html')
 
-@csrf_exempt
+@login_required
 def save_event(request):
     if request.method == 'POST':
-        name = request.POST.get('name')
-        marker_type = request.POST.get('type') 
-        latitude = request.POST.get('latitude')
-        longitude = request.POST.get('longitude')
-        event_id = request.POST.get('id')
-        trip_id = request.POST.get('trip')
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+        name = data.get('name')
+        marker_type = data.get('type')
+        latitude = data.get('latitude')
+        longitude = data.get('longitude')
+        event_id = data.get('id')
+        trip_id = data.get('trip')
         trip = get_object_or_404(Trip, pk=trip_id)
-        dayprogram_id = request.POST.get('dayprogram')
+        dayprogram_id = data.get('dayprogram')
+
         if dayprogram_id:
-           dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
+            dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
 
         if event_id:
-            # Update existing event
             event = get_object_or_404(Point, pk=event_id)
             event.name = name
             event.marker_type = marker_type
@@ -1252,22 +1268,21 @@ def save_event(request):
             event.trip = trip
             event.save()
             if dayprogram_id:
-               event.dayprograms.add(dayprogram) 
+                event.dayprograms.add(dayprogram)
         else:
-            # Create new event
             event = Point.objects.create(
                 name=name,
                 marker_type=marker_type,
                 latitude=latitude,
                 longitude=longitude,
-                trip = trip
+                trip=trip
             )
             if dayprogram_id:
-               event.dayprograms.add(dayprogram)
+                event.dayprograms.add(dayprogram)
 
         return JsonResponse({'message': 'Event saved successfully!'})
 
-    return JsonResponse({'error': 'Invalid request'})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
 
 @is_in_tribe
 def add_logentry(request, dayprogram_id):
@@ -3736,5 +3751,5 @@ def save_scheduled_route(request):
             )
 
         return JsonResponse({'success': True})
-   except Exception as e:
+    except Exception as e:
         return JsonResponse({'success': False, 'error': 'An unexpected error occurred.'})
