@@ -122,7 +122,7 @@ def generate_static_map(dayprogram):
         query_parts.append(marker_param)
 
     base_url = f"{staticmaps_url}?{'&'.join(query_parts)}"
-    logger.info("Requesting static map (without api_key): %s", base_url)
+    logger.info("Requesting static map: %s", base_url)
 
     request_url = f"{base_url}&api_key={staticmaps_api_key}" if staticmaps_api_key else base_url
 
@@ -355,3 +355,34 @@ def distance_per_day(tripper, day: date) -> float:
         total_km += haversine(lat1, lon1, lat2, lon2)
 
     return round(total_km, 2)
+
+
+
+def get_latest_github_version(repo="thekampany/tripproject"):
+    cache_key = "github_latest_version"
+    cached = cache.get(cache_key)
+    if cached:
+        return cached
+
+    try:
+        response = requests.get(
+            f"https://api.github.com/repos/{repo}/releases/latest",
+            timeout=3,
+            headers={"Accept": "application/vnd.github+json"}
+        )
+        response.raise_for_status()
+        tag = response.json().get("tag_name", "").lstrip("v")
+        cache.set(cache_key, tag, timeout=3600)  
+        return tag
+    except Exception:
+        return None 
+
+def is_update_available(current_version, latest_version):
+    if not latest_version:
+        return False
+    try:
+        current = tuple(int(x) for x in current_version.lstrip("v").split("."))
+        latest = tuple(int(x) for x in latest_version.lstrip("v").split("."))
+        return latest > current
+    except (ValueError, AttributeError):
+        return False

@@ -30,6 +30,8 @@ from .utils import generate_static_map_for_trip
 from .utils import country_code_to_name
 from .utils import reverse_geocode_area
 from .utils import distance_per_day
+from .utils import get_latest_github_version
+from .utils import is_update_available
 
 from django.db.models import Count, Q
 from django.db.models import Prefetch
@@ -96,8 +98,19 @@ logger = logging.getLogger(__name__)
 def index(request):
     category = "roadtrip"
     background_image_url = get_random_unsplash_image(category)
-    return render(request, 'tripapp/index.html', {'background_image_url': background_image_url, 'APP_NAME': settings.APP_NAME, 'VERSION':settings.VERSION, 'ALLOW_REGISTRATION':settings.ALLOW_REGISTRATION, 'form': AuthenticationForm()})
 
+    latest_version = get_latest_github_version("thekampany/tripproject")
+    update_available = is_update_available(settings.VERSION, latest_version)
+
+    return render(request, 'tripapp/index.html', {
+        'background_image_url': background_image_url,
+        'APP_NAME': settings.APP_NAME,
+        'VERSION': settings.VERSION,
+        'ALLOW_REGISTRATION': settings.ALLOW_REGISTRATION,
+        'form': AuthenticationForm(),
+        'latest_version': latest_version,
+        'update_available': update_available,
+    })
 
 @login_required
 def tribe_trips(request):
@@ -3262,14 +3275,10 @@ def save_route(request):
         
         try:
             body_str = request.body.decode('utf-8')
-            print(f"Body: {body_str[:200]}")
             data = json.loads(body_str)
         except json.JSONDecodeError as e:
-            return JsonResponse({
-                'success': False,
-                'error': f'Invalid JSON: {str(e)}'
-            })
-        
+            return JsonResponse({'success': False, 'error': 'Inalid JSON'}, status=400)
+                
         if not isinstance(data, dict):
             return JsonResponse({
                 'success': False,
@@ -3693,7 +3702,7 @@ User request: {user_prompt}
 
     return render(request, "tripapp/generate_itinerary.html")
 
-
+@login_required
 def ollama_job_status(request, job_id):
     try:
         job = OllamaJob.objects.get(id=job_id)

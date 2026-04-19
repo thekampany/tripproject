@@ -121,7 +121,16 @@
 
     <div class="hero">
         <div class="hero-content">
-            <span style="font-style: italic; font-size: 0.9rem;">{{ APP_NAME }} {{ VERSION }}</span>
+            <span style="font-style: italic; font-size: 0.9rem;">
+                {{ APP_NAME }} {{ VERSION }} 
+                {% if update_available %}
+                <a href="https://github.com/thekampany/tripproject/releases/latest" 
+                    target="_blank" 
+                    title="New {{ latest_version }} available!">
+                    Update Available
+                </a>
+                {% endif %} 
+            </span>
             <h1>{% if user.is_authenticated %}{{ user.username }},<br>{% endif %}
                 {% trans "Welcome" %}!</h1>
             <p>
