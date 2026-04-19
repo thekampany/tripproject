@@ -122,7 +122,7 @@ def generate_static_map(dayprogram):
         query_parts.append(marker_param)
 
     base_url = f"{staticmaps_url}?{'&'.join(query_parts)}"
-    logger.info("Requesting static map: %s", base_url)
+    logger.info("Requesting static map with query: %s", query_parts)
 
     request_url = f"{base_url}&api_key={staticmaps_api_key}" if staticmaps_api_key else base_url
 
@@ -162,7 +162,7 @@ def generate_static_map_for_trip(trip):
         query_parts.append(f"markers=width:20|height:20|{'|'.join(markers)}")
 
     base_url = f"{staticmaps_url}?{'&'.join(query_parts)}"
-    logger.info(f"StaticTripMap URL: {base_url}") 
+    logger.info(f"StaticTripMap query_parts: {query_parts}") 
 
     if staticmaps_api_key:
         request_url = f"{base_url}&api_key={staticmaps_api_key}"
@@ -183,7 +183,7 @@ def generate_static_map_for_trip(trip):
 
 
 def create_trip_from_itinerary(itinerary, tribe, start_date,user):
-    geolocator = Nominatim(user_agent="trippanion")
+    geolocator = Nominatim(user_agent="Trippanion")
 
     all_locations = []
     for day in itinerary.itineraryidea_days.all():
@@ -200,7 +200,7 @@ def create_trip_from_itinerary(itinerary, tribe, start_date,user):
             if location and "country_code" in location.raw["address"]:
                 countries.add(location.raw["address"]["country_code"].upper())
         except Exception as e:
-            logger.warning("Error geocoding (%.1f, %.1f): %s", lat, lon, e)
+            logger.warning("Error when geocoding")
 
     country_codes = ",".join(sorted(countries))
 

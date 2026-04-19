@@ -3556,7 +3556,7 @@ def generate_bingocards_view(request, trip_id):
         hook="tripapp.tasks.process_bingocard_response",
     )
 
-    return JsonResponse({"job_id": str(job.id), "status": "gestart"})
+    return JsonResponse({"job_id": str(job.id), "status": "started"})
 
 @tripper_required
 @csrf_exempt
@@ -3608,7 +3608,7 @@ def generate_dayprogram_suggestions_view(request, dayprogram_id):
         hook="tripapp.tasks.process_dayprogram_suggestions",
     )
 
-    return JsonResponse({"job_id": str(job.id), "status": "gestart"})
+    return JsonResponse({"job_id": str(job.id), "status": "started"})
 
 @login_required
 def generate_itineraryidea(request):
@@ -3698,7 +3698,7 @@ User request: {user_prompt}
             hook="tripapp.tasks.process_generated_itinerary",
         )
 
-        return JsonResponse({"job_id": str(job.id), "status": "gestart"})
+        return JsonResponse({"job_id": str(job.id), "status": "started"})
 
     return render(request, "tripapp/generate_itinerary.html")
 
@@ -3711,7 +3711,7 @@ def ollama_job_status(request, job_id):
             "error": job.error or "",
         })
     except OllamaJob.DoesNotExist:
-        return JsonResponse({"status": "not_found"}, status=404)
+        return JsonResponse({"status": "not found"}, status=404)
 
 def _save_gpx_route(dayprogram_id, description, gpx_string):
     from .models import DayProgram, Route
