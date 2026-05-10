@@ -72,7 +72,6 @@ body {
 
 .menucontainer {
   color: var(--color-text);
-  padding: 10px;
   text-align: right;  
 }
 
@@ -109,16 +108,22 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
   width: 100%; 
   height: 70px; 
   background-color: var(--btn-background);
   color: var(--color-text);
   border: none;
   border-radius: 12px;
-  font-size: 16px;
+  font-size: 12px;
   text-decoration: none;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  gap: 4px;
+}
+.tripmenuitem a.btn i {
+  font-size: 22px;
+  line-height: 1;
 }
 .tripmenuitem a.btn img {
   height: 50px; 
@@ -516,7 +521,6 @@ a.btn-more-padding:hover {background: var(--color-background);}
     box-shadow: 0 2px 5px rgba(0,0,0,0.3);
     transition: background-color 0.2s;
 }
-
 
 
 /* leaflet */

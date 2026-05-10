@@ -221,7 +221,10 @@ def fetch_locations_for_tripper():
         logs.append(f"Trip: {trip.name}")
         for tripper in trip.trippers.all():
             last_location = Location.objects.filter(tripper=tripper).order_by('-timestamp').first()
-            start_date = last_location.timestamp if last_location else today - timedelta(days=1)
+
+            max_lookback = today - timedelta(days=7)
+            start_date = max(last_location.timestamp if last_location else today - timedelta(days=1), max_lookback)
+            #start_date = last_location.timestamp if last_location else today - timedelta(days=1)
             logs.append(f"last location for {tripper.name} stored at: {start_date}")
             end_date = start_date + timedelta(hours=1)
             if tripper.dawarich_url:
@@ -255,12 +258,30 @@ def fetch_locations_for_tripper():
                     location_count = 0
 
                     for point in data:
+
+                        # 1. Directe velden
                         current_lat = point.get('latitude')
                         current_long = point.get('longitude')
+
+                        # 2. Fallback: geodata
+                        if current_lat is None or current_long is None:
+                            coords = (point.get('geodata') or {}).get('geometry', {}).get('coordinates', [])
+                            if len(coords) == 2:
+                                current_long, current_lat = coords[0], coords[1]
+
+                        # 3. Fallback: lonlat string
+                        if current_lat is None or current_long is None:
+                            lonlat = point.get('lonlat')
+                            if lonlat:
+                                try:
+                                    lng_str, lat_str = lonlat.replace('POINT (', '').replace(')', '').split()
+                                    current_long, current_lat = float(lng_str), float(lat_str)
+                                except (ValueError, AttributeError):
+                                    pass
                         timestamp = point.get('timestamp')
 
-                        if not current_lat or not current_long or not timestamp:
-                            logs.append("Invalid point data; skipping.")
+                        if current_lat is None or current_long is None or timestamp is None:
+                            logs.append(f"Invalid point data; skipping. lat={current_lat}, long={current_long}, ts={timestamp}")
                             continue
 
                         try:

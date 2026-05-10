@@ -37,7 +37,7 @@ import gpxpy
 class TripperForm(forms.ModelForm):
     class Meta:
         model = Tripper
-        fields = ['photo','currency', 'dawarich_url', 'dawarich_api_key', 'immich_url', 'immich_api_key']
+        fields = ['photo','currency', 'home_location', 'home_location_lat', 'home_location_lon','dawarich_url', 'dawarich_api_key', 'immich_url', 'immich_api_key']
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['dawarich_url'].initial = 'https://your-dawarich-url.com/api/v1/points'

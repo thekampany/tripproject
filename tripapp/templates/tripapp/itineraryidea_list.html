@@ -3,79 +3,18 @@
 {% block content %}
 <h2>{% trans "Itinerary Ideas" %}</h2>
 
-<style>
-.dropdown {
-  position: relative;
-  display: block;
-  width: 100%;
-}
-
-.dropdown-button {
-  background-color: lightgray;
-  color: black;
-  padding: 10px 16px;
-  width: 100%;
-  font-size: 16px;
-  border: none;
-  cursor: pointer;
-  border-radius: 4px;
-  text-align: left;
-}
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f9f9f9;
-  width: 100%;
-  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
-  z-index: 1;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.dropdown-content a {
-  color: black;
-  padding: 10px 16px;
-  text-decoration: none;
-  display: block;
-}
-
-.dropdown-content a:hover {
-  background-color: #f1f1f1;
-}
-
-</style>
 <p>&nbsp;</p>
-<div class="dropdown">
-  <button class="dropdown-button">{% trans "Create New" %}</button>
-  <div class="dropdown-content">
-    <a href="/itineraryidea/overnightlocations/">{% trans "on Map via OvernightLocations" %}</a>
-    <a href="/itineraryidea/daylocations/">{% trans "on Map via DayLocations" %}</a>
-    <a href="/itineraryidea/">via Import</a>
-    {% if ollama_configured %}<a href="/itinerary/generate/">{% trans "AI Generated" %}</a>{% endif %}
-  </div>
-</div>
+<div class="tripmenucontainer">
 
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-  const dropdownBtn = document.querySelector(".dropdown-button");
-  const dropdownContent = document.querySelector(".dropdown-content");
-
-  dropdownBtn.addEventListener("click", function(e) {
-    e.stopPropagation();
-    dropdownContent.style.display = dropdownContent.style.display === "block" ? "none" : "block";
-  });
-
-  document.addEventListener("click", function() {
-    dropdownContent.style.display = "none";
-  });
-});
-</script>
+  <div class="tripmenuitem"><a href="{% url 'tripapp:create_itineraryidea_daylocations'  %}" class="btn"><span>{% trans "Brainstorm on Map" %}</span></a></div>
+  <div class="tripmenuitem"><a href="{% url 'tripapp:pastecreate_itineraryidea' %}" class="btn"><span>{% trans "Import" %}</span></a></div>
+  {% if ollama_configured %}<div class="tripmenuitem"><a href="{% url 'tripapp:generate_itineraryidea' %}" class="btn"><span>{% trans "Generate via AI" %}</span></a></div>{% endif %}
+</div>  
 
 <p>&nbsp;</p>
 
 {% for idea in itineraryideas %}
-  <div class="itinerary-idea" style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:4px;">
+  <div class="itinerary-idea" style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:12px;">
     <strong>{{ idea.name }}</strong>
     <span style="float:right; color:gray; font-style:italic;">
       {% if idea.updated_at %}
@@ -87,12 +26,18 @@ document.addEventListener("DOMContentLoaded", function() {
     <br><br>
 
     <div style="float:left;">
-      <a href="{% url 'tripapp:itineraryidea-edit' idea.pk %}">
-        <button type="button" class="btn">{% trans "Edit on Map" %}</button>
+      <a href="{% url 'tripapp:edit_map_markers' idea.pk %}">
+        {% if request.user == idea.created_by %}
+           <button type="button" class="btn">{% trans "Edit" %}</button>
+        {% else %}
+           <button type="button" class="btn">{% trans "View" %}</button>
+        {% endif %}
       </a>
-      <a href="{% url 'tripapp:itineraryidea-to-trip' idea.pk %}">
-        <button type="button" class="btn">{% trans "Convert to Trip" %}</button>
+      {% if request.user == idea.created_by %}
+      <a href="{% url 'tripapp:itineraryidea-detail' idea.pk %}">
+        <button type="button" class="btn">{% trans "Assign and Convert" %}</button>
       </a>
+      {% endif %}
     </div>
 
     {% if request.user == idea.created_by %}

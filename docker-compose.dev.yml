@@ -7,6 +7,7 @@ services:
     volumes:
       - static_volume:/usr/src/app/staticfiles
       - media_volume:/usr/src/app/media
+      - .:/usr/src/app
     expose:
       - 8000
     env_file:

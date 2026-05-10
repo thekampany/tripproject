@@ -1,64 +1,30 @@
-                                             
+{% extends "base_generic.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Task Manager</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon/favicon-16x16.png' %}">
-    <link rel="manifest" href="{% static 'favicon/site.webmanifest' %}">
-    <link rel="mask-icon" href="{% static 'favicon/safari-pinned-tab.svg' %}" color="#5bbad5">
-    <meta name="msapplication-TileColor" content="#da532c">
-    <meta name="theme-color" content="#ffffff">
-    <!--<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">-->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
-    <script src="{% static 'js/set_timezone.js' %}"></script>
-    <style>
-    .back-link {
-        text-decoration: none; 
-    }
-    </style>
-</head>
-<body>
-    <div class="tripappcard">
-    <div class="container">
-    
-        <h1>Task Manager</h1>    
+{% block content %}    
+    <h2>Task Manager</h2>    
 
-        <table border="0">
-            <tbody>
-                {% for task in tasks %}
-                    <tr>
-                        <td><b>{{ task.description }}</b></td>
-                        <td>{{ task.last_run|date:"d-m-Y H:i:s" }}</td>
-                        <td colspan="3">
-                            <form method="post" action="">
-                                {% csrf_token %}
-                                <input type="hidden" name="task_name" value="{{ task.name }}">
-                                <button type="submit">Run Task</button>
-                            </form>
-                        </td>
-                    </tr><tr>
-                        <td>{{ task.last_message|linebreaksbr }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <p>&nbsp;</p>
-        <a href="{{ previous_url|default:'#' }}" class="back-link">← Back</a>
-        <p>&nbsp;</p>
+    <table border="0">
+        <tbody>
+            {% for task in tasks %}
+                <tr>
+                    <td><b>{{ task.description }}</b></td>
+                    <td>{{ task.last_run|date:"d-m-Y H:i:s" }}</td>
+                    <td colspan="3">
+                        <form method="post" action="">
+                            {% csrf_token %}
+                            <input type="hidden" name="task_name" value="{{ task.name }}">
+                            <button type="submit" class="btn">Run Task</button>
+                        </form>
+                    </td>
+                </tr><tr>
+                    <td>{{ task.last_message|linebreaksbr }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p>&nbsp;</p>
+    <a href="{{ previous_url|default:'#' }}" >← Back</a>
+    <p>&nbsp;</p>
         
-
-    </div>
-    </div>
-
-    
-</body>
-
-
-</html>
+    <br /><br />
+{% endblock %}

@@ -1,0 +1,662 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% trans "Assign Markers to Days" %} – {{ idea.name }}</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+
+    #page { display: flex; height: 100vh; }
+    #map  { flex: 1; }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      width: 230px;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border-left: 1px solid #e5e5e5;
+      z-index: 500;
+    }
+    #sidebar-header {
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    #sidebar-header h2 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a1a2e;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #sidebar-header p { font-size: 11px; color: #888; margin-top: 2px; }
+
+    #day-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 10px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .day-card {
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      padding: 8px 10px;
+      background: #fafafa;
+    }
+    .day-card-title {
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #1a1a2e;
+    }
+    .day-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .day-card-title span.label { flex: 1; }
+    .day-delete-btn {
+      background: none;
+      border: none;
+      color: #ccc;
+      cursor: pointer;
+      font-size: 13px;
+      padding: 0 2px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .day-delete-btn:hover { color: #e03; }
+
+    .day-slots {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-height: 12px;
+    }
+    .slot {
+      font-size: 11px;
+      color: #555;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    .slot-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .slot-bed { border-radius: 2px; }
+
+    #add-day-btn {
+      margin: 10px 10px 0;
+      width: calc(100% - 20px);
+      background: none;
+      border: 1.5px dashed #c4beff;
+      border-radius: 10px;
+      color: #6c63ff;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 8px;
+      cursor: pointer;
+      text-align: center;
+    }
+    #add-day-btn:hover { background: #f4f2ff; }
+
+    #save-bar {
+      padding: 12px 10px;
+      border-top: 1px solid #e5e5e5;
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    #unassigned-count {
+      font-size: 11px;
+      color: #e07000;
+      text-align: center;
+      min-height: 14px;
+    }
+    #save-btn {
+      width: 100%;
+      background: #6c63ff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 9px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    #save-btn:hover { opacity: .88; }
+
+    /* ── Popups ── */
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10,10,20,.45);
+      backdrop-filter: blur(2px);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+    .popup-overlay.active { display: flex; }
+
+    .popup-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 22px 22px 18px;
+      width: 290px;
+      box-shadow: 0 20px 50px rgba(0,0,0,.25);
+      animation: popIn .15s cubic-bezier(.22,1,.36,1);
+    }
+    @keyframes popIn {
+      from { transform: scale(.9); opacity: 0; }
+      to   { transform: scale(1);  opacity: 1; }
+    }
+    .popup-card h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1a1a2e;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      margin-bottom: 14px;
+    }
+    .popup-section-label {
+      font-size: 11px;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 7px;
+    }
+    .popup-input {
+      width: 100%;
+      border: 1.5px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 13px;
+      outline: none;
+      margin-bottom: 10px;
+      color: #1a1a2e;
+    }
+    .popup-input:focus { border-color: #6c63ff; }
+
+    .day-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      background: none;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 13px;
+      cursor: pointer;
+      margin-bottom: 5px;
+      color: #1a1a2e;
+      text-align: left;
+      transition: background .12s;
+    }
+    .day-btn:hover { background: #f4f2ff; border-color: #c4beff; }
+    .day-btn.active { background: #ede9ff; border-color: #6c63ff; }
+    .day-btn-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .remove-btn {
+      margin-top: 6px;
+      color: #aaa;
+      border-color: #eee;
+      font-size: 12px;
+    }
+    .remove-btn:hover { background: #fff0f0; border-color: #ffb3b3; color: #c00; }
+
+    .night-row {
+      display: flex;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+    }
+    .night-row:last-of-type { border-bottom: none; }
+    .night-row label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      width: 100%;
+      color: #1a1a2e;
+    }
+    .night-row input[type=checkbox] { accent-color: #6c63ff; width: 14px; height: 14px; }
+    .night-color { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+    .popup-actions { display: flex; gap: 8px; margin-top: 14px; }
+    .btn-cancel {
+      flex: 1; padding: 8px;
+      border: 1px solid #e5e5e5; border-radius: 8px;
+      background: none; font-size: 13px; cursor: pointer; color: #666;
+    }
+    .btn-confirm {
+      flex: 1; padding: 8px;
+      border: none; border-radius: 8px;
+      background: #6c63ff; color: #fff;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .btn-confirm:hover { opacity: .88; }
+
+    #toast {
+      position: fixed;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(50px);
+      background: #1a1a2e; color: #fff;
+      padding: 9px 20px; border-radius: 30px;
+      font-size: 13px; opacity: 0;
+      transition: all .3s; z-index: 99999; pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<div id="page">
+  <div id="map"></div>
+
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <h2>{{ idea.name }}</h2>
+      <p>{% trans "Assign markers to days" %}</p>
+    </div>
+
+    <div id="day-list">
+      <!-- Dynamisch gevuld via JS -->
+    </div>
+
+    <button id="add-day-btn" onclick="openAddDayPopup()">+ {% trans "Add day" %}</button>
+
+    <div id="save-bar">
+      <div id="unassigned-count"></div>
+      <button id="save-btn" onclick="saveAssignments()">{% trans "Save assignments" %}</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ── Dag aanmaken popup ── -->
+<div class="popup-overlay" id="add-day-popup">
+  <div class="popup-card">
+    <h3>{% trans "Add day" %}</h3>
+    <div class="popup-section-label">{% trans "Description (optional)" %}</div>
+    <input class="popup-input" type="text" id="new-day-desc" placeholder="{% trans 'e.g. Arrival in Paris' %}">
+    <div class="popup-section-label">{% trans "Date (optional)" %}</div>
+    <input class="popup-input" type="date" id="new-day-date">
+    <div class="popup-actions">
+      <button class="btn-cancel" onclick="closeAddDayPopup()">{% trans "Cancel" %}</button>
+      <button class="btn-confirm" onclick="submitAddDay()">{% trans "Add" %}</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Pin popup ── -->
+<div class="popup-overlay" id="pin-popup">
+  <div class="popup-card">
+    <h3 id="pin-popup-title">{% trans "Assign to day" %}</h3>
+    <div class="popup-section-label">{% trans "Choose a day" %}</div>
+    <div id="pin-day-buttons"></div>
+    <button class="day-btn remove-btn" onclick="assignPin(null)">✕ {% trans "Remove assignment" %}</button>
+  </div>
+</div>
+
+<!-- ── Bed popup ── -->
+<div class="popup-overlay" id="bed-popup">
+  <div class="popup-card">
+    <h3 id="bed-popup-title">{% trans "Overnight stay" %}</h3>
+    <div class="popup-section-label">{% trans "Select nights" %}</div>
+    <div id="bed-night-checkboxes"></div>
+    <div class="popup-actions">
+      <button class="btn-cancel" onclick="closePopups()">{% trans "Cancel" %}</button>
+      <button class="btn-confirm" onclick="assignBed()">{% trans "Save" %}</button>
+    </div>
+  </div>
+</div>
+
+<!-- Django data → JS -->
+<script>
+  const DRAFTS = [
+    {% for d in drafts %}
+    {
+      pk:          {{ d.pk }},
+      icon:        "{{ d.icon }}",
+      description: "{{ d.description|default:''|escapejs }}",
+      latitude:    {{ d.latitude }},
+      longitude:   {{ d.longitude }}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
+
+  let DAYS = [
+    {% for day in days %}
+    {
+      pk:          {{ day.pk }},
+      sequence:    {{ day.day_sequence }},
+      description: "{{ day.day_description|default:''|escapejs }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
+
+  const ADD_DAY_URL    = "{% url 'tripapp:add_day_ajax' idea.pk %}";
+  const DELETE_DAY_URL = "{% url 'tripapp:delete_day_ajax' idea.pk 0 %}".replace('/0/', '/');
+  const SAVE_URL       = "{% url 'tripapp:assign_markers_to_days' idea.pk %}";
+  const CSRF           = "{{ csrf_token }}";
+  const DETAIL_URL     = "{% url 'tripapp:itineraryidea-detail' idea.pk %}";
+</script>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+
+  // ── Kleuren ──────────────────────────────────────────────────
+  const PALETTE = [
+    '#534AB7','#0F6E56','#993C1D','#185FA5','#854F0B',
+    '#72243E','#3B6D11','#5F5E5A','#A32D2D','#0C447C'
+  ];
+  function dayColor(idx) { return PALETTE[idx % PALETTE.length]; }
+  function dayLabel(day) {
+    return 'Day ' + day.sequence + (day.description ? ' – ' + day.description : '');
+  }
+
+  // ── State ────────────────────────────────────────────────────
+  const pinAssignments = {};
+  const bedAssignments = {};
+  const leafletMarkers = {};
+  let activeMarker = null;
+
+  // ── Kaart ────────────────────────────────────────────────────
+  const map = L.map('map', { zoomControl: true }).setView([52.1, 5.1], 7);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap &copy; CARTO'
+  }).addTo(map);
+
+  function makeIcon(emoji, borderColor) {
+    return L.divIcon({
+      html: `<div style="font-size:26px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.35));
+                         cursor:pointer;border:2.5px solid ${borderColor};border-radius:50%;
+                         padding:2px;background:${borderColor}22;">${emoji}</div>`,
+      iconSize: [36,36], iconAnchor: [18,32], className: ''
+    });
+  }
+
+  function refreshMarkerIcon(draftPk) {
+    const draft = DRAFTS.find(d => d.pk === draftPk);
+    const lm    = leafletMarkers[draftPk];
+    if (!draft || !lm) return;
+    let color = '#aaa';
+    if (draft.icon === 'pin') {
+      const dayPk = pinAssignments[draftPk];
+      if (dayPk !== undefined) {
+        const idx = DAYS.findIndex(d => d.pk === dayPk);
+        color = dayColor(idx);
+      }
+    } else {
+      const nights = bedAssignments[draftPk] || [];
+      if (nights.length) {
+        const idx = DAYS.findIndex(d => d.pk === nights[0]);
+        color = nights.length > 1 ? '#888' : dayColor(idx);
+      }
+    }
+    lm.setIcon(makeIcon(draft.icon === 'bed' ? '🛏️' : '📍', color));
+  }
+
+  // Markers op kaart zetten
+  const bounds = [];
+  DRAFTS.forEach(function(draft) {
+    const latlng = L.latLng(draft.latitude, draft.longitude);
+    const lm = L.marker(latlng, {
+      icon: makeIcon(draft.icon === 'bed' ? '🛏️' : '📍', '#aaa')
+    }).addTo(map);
+    lm.on('click', function() { openMarkerPopup(draft.pk); });
+    leafletMarkers[draft.pk] = lm;
+    bounds.push(latlng);
+  });
+  if (bounds.length === 1) map.setView(bounds[0], 10);
+  else if (bounds.length > 1) map.fitBounds(L.latLngBounds(bounds), { padding: [60,60] });
+
+  // ── Sidebar renderen ─────────────────────────────────────────
+  function renderDayList() {
+    const list = document.getElementById('day-list');
+    list.innerHTML = '';
+    DAYS.forEach(function(day, i) {
+      const card = document.createElement('div');
+      card.className = 'day-card';
+      card.id = 'daycard-' + day.pk;
+      card.innerHTML = `
+        <div class="day-card-title">
+          <span class="day-dot" style="background:${dayColor(i)}"></span>
+          <span class="label">${dayLabel(day)}</span>
+          <button class="day-delete-btn" onclick="deleteDay(${day.pk})" title="Remove day">✕</button>
+        </div>
+        <div class="day-slots" id="slots-${day.pk}"></div>`;
+      list.appendChild(card);
+    });
+    renderSlots();
+    updateUnassigned();
+  }
+
+  // ── Dag toevoegen ─────────────────────────────────────────────
+  function openAddDayPopup() {
+    document.getElementById('new-day-desc').value = '';
+    document.getElementById('new-day-date').value = '';
+    document.getElementById('add-day-popup').classList.add('active');
+    setTimeout(() => document.getElementById('new-day-desc').focus(), 120);
+  }
+  function closeAddDayPopup() {
+    document.getElementById('add-day-popup').classList.remove('active');
+  }
+  document.getElementById('add-day-popup').addEventListener('click', function(e) {
+    if (e.target === this) closeAddDayPopup();
+  });
+
+  function submitAddDay() {
+    const desc = document.getElementById('new-day-desc').value.trim();
+    const date = document.getElementById('new-day-date').value;
+    fetch(ADD_DAY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify({ description: desc, date: date || null })
+    })
+    .then(r => r.json())
+    .then(function(data) {
+      if (data.ok) {
+        DAYS.push({ pk: data.pk, sequence: data.sequence, description: data.description || '' });
+        closeAddDayPopup();
+        renderDayList();
+        showToast('✅ {% trans "Day added" %}');
+      } else {
+        showToast('❌ ' + (data.error || 'Error'));
+      }
+    })
+    .catch(() => showToast('❌ {% trans "Network error." %}'));
+  }
+
+  // ── Dag verwijderen ───────────────────────────────────────────
+  function deleteDay(dayPk) {
+    if (!confirm('{% trans "Remove this day? Assignments to this day will be cleared." %}')) return;
+    fetch(DELETE_DAY_URL + dayPk + '/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify({})
+    })
+    .then(r => r.json())
+    .then(function(data) {
+      if (data.ok) {
+        DAYS = DAYS.filter(d => d.pk !== dayPk);
+        // Toewijzingen aan deze dag opschonen
+        Object.keys(pinAssignments).forEach(k => {
+          if (pinAssignments[k] === dayPk) delete pinAssignments[k];
+        });
+        Object.keys(bedAssignments).forEach(k => {
+          bedAssignments[k] = bedAssignments[k].filter(pk => pk !== dayPk);
+          if (bedAssignments[k].length === 0) delete bedAssignments[k];
+        });
+        DRAFTS.forEach(d => refreshMarkerIcon(d.pk));
+        renderDayList();
+        showToast('🗑️ {% trans "Day removed" %}');
+      } else {
+        showToast('❌ ' + (data.error || 'Error'));
+      }
+    })
+    .catch(() => showToast('❌ {% trans "Network error." %}'));
+  }
+
+  // ── Marker popup openen ───────────────────────────────────────
+  function openMarkerPopup(draftPk) {
+    if (DAYS.length === 0) {
+      showToast('⚠ {% trans "Add a day first." %}');
+      return;
+    }
+    activeMarker = draftPk;
+    const draft  = DRAFTS.find(d => d.pk === draftPk);
+    if (draft.icon === 'pin') openPinPopup(draft);
+    else openBedPopup(draft);
+  }
+
+  function openPinPopup(draft) {
+    document.getElementById('pin-popup-title').textContent = draft.description || '{% trans "Activity / Visit" %}';
+    const container = document.getElementById('pin-day-buttons');
+    container.innerHTML = '';
+    const current = pinAssignments[draft.pk];
+    DAYS.forEach(function(day, i) {
+      const btn = document.createElement('button');
+      btn.className = 'day-btn' + (current === day.pk ? ' active' : '');
+      btn.innerHTML = `<span class="day-btn-dot" style="background:${dayColor(i)}"></span>${dayLabel(day)}`;
+      btn.onclick = function() { assignPin(day.pk); };
+      container.appendChild(btn);
+    });
+    document.getElementById('pin-popup').classList.add('active');
+  }
+
+  function openBedPopup(draft) {
+    document.getElementById('bed-popup-title').textContent = draft.description || '{% trans "Overnight stay" %}';
+    const container = document.getElementById('bed-night-checkboxes');
+    container.innerHTML = '';
+    const current = bedAssignments[draft.pk] || [];
+    DAYS.forEach(function(day, i) {
+      const row = document.createElement('div');
+      row.className = 'night-row';
+      row.innerHTML = `
+        <label>
+          <input type="checkbox" value="${day.pk}" ${current.includes(day.pk) ? 'checked' : ''}>
+          <span class="night-color" style="background:${dayColor(i)}"></span>
+          ${dayLabel(day)}
+        </label>`;
+      container.appendChild(row);
+    });
+    document.getElementById('bed-popup').classList.add('active');
+  }
+
+  // ── Toewijzen ─────────────────────────────────────────────────
+  function assignPin(dayPk) {
+    if (activeMarker === null) return;
+    if (dayPk === null) delete pinAssignments[activeMarker];
+    else pinAssignments[activeMarker] = dayPk;
+    refreshMarkerIcon(activeMarker);
+    closePopups();
+    renderSlots();
+    updateUnassigned();
+  }
+
+  function assignBed() {
+    if (activeMarker === null) return;
+    const selected = [...document.querySelectorAll('#bed-night-checkboxes input[type=checkbox]:checked')]
+                     .map(cb => parseInt(cb.value));
+    if (selected.length === 0) delete bedAssignments[activeMarker];
+    else bedAssignments[activeMarker] = selected;
+    refreshMarkerIcon(activeMarker);
+    closePopups();
+    renderSlots();
+    updateUnassigned();
+  }
+
+  function closePopups() {
+    document.getElementById('pin-popup').classList.remove('active');
+    document.getElementById('bed-popup').classList.remove('active');
+    activeMarker = null;
+  }
+  document.getElementById('pin-popup').addEventListener('click', function(e) { if (e.target === this) closePopups(); });
+  document.getElementById('bed-popup').addEventListener('click', function(e) { if (e.target === this) closePopups(); });
+
+  // ── Slots in sidebar ──────────────────────────────────────────
+  function renderSlots() {
+    DAYS.forEach(function(day, i) {
+      const el = document.getElementById('slots-' + day.pk);
+      if (!el) return;
+      el.innerHTML = '';
+      DRAFTS.filter(d => d.icon === 'pin').forEach(function(draft) {
+        if (pinAssignments[draft.pk] === day.pk) {
+          const s = document.createElement('div');
+          s.className = 'slot';
+          s.innerHTML = `<span class="slot-dot" style="background:${dayColor(i)}"></span>📍 ${draft.description || '(no description)'}`;
+          el.appendChild(s);
+        }
+      });
+      DRAFTS.filter(d => d.icon === 'bed').forEach(function(draft) {
+        if ((bedAssignments[draft.pk] || []).includes(day.pk)) {
+          const s = document.createElement('div');
+          s.className = 'slot';
+          s.innerHTML = `<span class="slot-dot slot-bed" style="background:#888"></span>🛏️ ${draft.description || '(no description)'}`;
+          el.appendChild(s);
+        }
+      });
+    });
+  }
+
+  // ── Teller ────────────────────────────────────────────────────
+  function updateUnassigned() {
+    const assigned = new Set([
+      ...Object.keys(pinAssignments),
+      ...Object.keys(bedAssignments)
+    ]);
+    const unassigned = DRAFTS.length - assigned.size;
+    const el = document.getElementById('unassigned-count');
+    if (unassigned > 0) {
+      el.style.color = '#e07000';
+      el.textContent = `⚠ ${unassigned} marker${unassigned > 1 ? 's' : ''} not yet assigned`;
+    } else {
+      el.style.color = '#2a7a4b';
+      el.textContent = '✓ All markers assigned';
+    }
+  }
+
+  // ── Opslaan ───────────────────────────────────────────────────
+  function saveAssignments() {
+    fetch(SAVE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify({ pin_mapping: pinAssignments, bed_mapping: bedAssignments })
+    })
+    .then(r => r.json())
+    .then(function(data) {
+      if (data.ok) window.location.href = DETAIL_URL;
+      else showToast('❌ {% trans "Something went wrong." %}');
+    })
+    .catch(() => showToast('❌ {% trans "Network error." %}'));
+  }
+
+  // ── Toast ─────────────────────────────────────────────────────
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // ── Init ──────────────────────────────────────────────────────
+  renderDayList();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,447 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ idea.name }} – {% trans "Itinerary Idea" %}</title>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .page-header {
+      padding: 28px 32px 24px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .page-header-left h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -.3px;
+    }
+    .page-header-left p {
+      font-size: 12px;
+      color: #8888aa;
+      margin-top: 4px;
+      font-family: sans-serif;
+    }
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-family: sans-serif;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      transition: opacity .15s, transform .1s;
+      white-space: nowrap;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-ghost {
+      background: rgba(255,255,255,.08);
+      color: #ccc;
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,.14); color: #fff; }
+    .btn-primary { background: #6c63ff; color: #fff; }
+    .btn-primary:hover { opacity: .88; }
+    .btn-success { background: #0f6e56; color: #fff; }
+    .btn-success:hover { opacity: .88; }
+    .btn-outline {
+      background: #fff;
+      color: #1a1a2e;
+      border: 1px solid #ddd;
+    }
+    .btn-outline:hover { background: #f4f2ff; border-color: #c4beff; color:#f4f2ff; }
+
+    /* ── Content ── */
+    .page-body {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 32px 24px 60px;
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+    .stat-pill {
+      background: #fff;
+      border: 1px solid #e8e8e8;
+      border-radius: 30px;
+      padding: 6px 16px;
+      font-size: 12px;
+      font-family: sans-serif;
+      color: #555;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .stat-pill strong { color: #1a1a2e; }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      background: #fff;
+      border-radius: 16px;
+      border: 1px dashed #d0cef5;
+    }
+    .empty-state .emoji { font-size: 40px; margin-bottom: 12px; }
+    .empty-state h3 { font-size: 16px; margin-bottom: 8px; }
+    .empty-state p { font-size: 13px; color: #888; margin-bottom: 20px; }
+
+    /* ── Dag kaarten ── */
+    .day-section { margin-bottom: 24px; }
+
+    .day-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .day-number {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .day-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .day-date {
+      font-size: 11px;
+      color: #888;
+      font-family: sans-serif;
+      margin-left: auto;
+    }
+
+    .day-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e8e8e8;
+      overflow: hidden;
+    }
+
+    .location-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid #f2f2f2;
+    }
+    .location-row:last-child { border-bottom: none; }
+    .location-icon { font-size: 18px; flex-shrink: 0; }
+    .location-desc {
+      flex: 1;
+      font-size: 13px;
+      color: #1a1a2e;
+      font-family: sans-serif;
+    }
+    .location-desc.empty { color: #aaa; font-style: italic; }
+    .location-type {
+      font-size: 10px;
+      font-family: sans-serif;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      background: #f5f5f5;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+
+    .day-empty {
+      padding: 16px;
+      font-size: 12px;
+      color: #bbb;
+      font-family: sans-serif;
+      font-style: italic;
+      text-align: center;
+    }
+
+    /* ── Drafts sectie ── */
+    .section-title {
+      font-size: 11px;
+      font-family: sans-serif;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: #aaa;
+      margin-bottom: 12px;
+    }
+    .drafts-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+    .draft-pill {
+      background: #fff;
+      border: 1px solid #e8e8e8;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-family: sans-serif;
+      color: #555;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .draft-pill.unassigned { border-color: #ffd6a5; background: #fff9f0; color: #a05000; }
+
+    /* ── Action bar onderaan ── */
+    .action-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(255,255,255,.96);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid #e8e8e8;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 100;
+      box-shadow: 0 -4px 20px rgba(0,0,0,.06);
+    }
+    .action-bar-left { display: flex; gap: 8px; }
+    .action-bar-right { display: flex; gap: 8px; }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 80px; left: 50%;
+      transform: translateX(-50%) translateY(30px);
+      background: #1a1a2e; color: #fff;
+      padding: 9px 20px; border-radius: 30px;
+      font-size: 13px; opacity: 0; font-family: sans-serif;
+      transition: all .3s; z-index: 9999; pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .page-header { flex-direction: column; }
+      .header-actions { justify-content: flex-start; }
+      .action-bar { flex-direction: column; align-items: stretch; }
+      .action-bar-left, .action-bar-right { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>{{ idea.name }}</h1>
+    <p>{% trans "Created" %} {{ idea.created_at|date:"j N Y" }} &nbsp;·&nbsp; {% trans "by" %} {{ idea.created_by.username }}</p>
+  </div>
+  <div class="header-actions">
+    <a href="{% url 'tripapp:edit_map_markers' idea.pk %}" class="btn btn-outline">{% trans "Edit markers" %}</a>
+    <a href="{% url 'tripapp:assign_markers_view' idea.pk %}" class="btn btn-outline">{% trans "Assign days" %}</a>
+    {% if has_days %}
+    <button class="btn btn-success" onclick="openTripPopup()">{% trans "Create trip" %}</button> 
+    {% endif %}
+  </div>
+</div>
+
+<div class="page-body">
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-pill">📍 <strong>{{ total_pins }}</strong> {% trans "activities" %}</div>
+    <div class="stat-pill">🛏️ <strong>{{ total_overnights }}</strong> {% trans "overnight locations" %}</div>
+    <div class="stat-pill">📅 <strong>{{ total_days }}</strong> {% trans "days" %}</div>
+    {% if unassigned_count > 0 %}
+    <div class="stat-pill" style="border-color:#ffd6a5;background:#fff9f0;color:#a05000;">
+      ⚠ <strong>{{ unassigned_count }}</strong> {% trans "unassigned markers" %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Onassigned drafts -->
+  {% if unassigned_drafts %}
+  <div style="margin-bottom:28px;">
+    <div class="section-title">{% trans "Not yet assigned to a day" %}</div>
+    <div class="drafts-grid">
+      {% for draft in unassigned_drafts %}
+      <div class="draft-pill unassigned">
+        {% if draft.icon == 'bed' %}🛏️{% else %}📍{% endif %}
+        {{ draft.description|default:"(no description)" }}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Dagen -->
+  {% if days %}
+    {% for day in days %}
+    {% with day_idx=forloop.counter0 %}
+    <div class="day-section">
+      <div class="day-header">
+        <div class="day-number" style="background: {{ day.color }}">{{ day.day_sequence }}</div>
+        <div class="day-title">
+          {% trans "Day" %} {{ day.day_sequence }}{% if day.day_description %} — {{ day.day_description }}{% endif %}
+        </div>
+        {% if day.day_possible_date %}
+        <div class="day-date">{{ day.day_possible_date|date:"j N" }}</div>
+        {% endif %}
+      </div>
+
+      <div class="day-card">
+        {% for loc in day.day_locations.all %}
+        <div class="location-row">
+          <div class="location-icon">📍</div>
+          <div class="location-desc {% if not loc.description %}empty{% endif %}">
+            {{ loc.description|default:"(no description)" }}
+          </div>
+          <div class="location-type">{% trans "Activity" %}</div>
+        </div>
+        {% endfor %}
+
+        {% for overnight in day.overnightlocations.all %}
+        <div class="location-row">
+          <div class="location-icon">🛏️</div>
+          <div class="location-desc {% if not overnight.description %}empty{% endif %}">
+            {{ overnight.description|default:"(no description)" }}
+          </div>
+          <div class="location-type">{% trans "Overnight" %}</div>
+        </div>
+        {% endfor %}
+
+        {% if not day.day_locations.exists and not day.overnightlocations.exists %}
+        <div class="day-empty">{% trans "No locations assigned to this day yet." %}</div>
+        {% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% endfor %}
+
+  {% else %}
+  <div class="empty-state">
+    <div class="emoji">🗓</div>
+    <h3>{% trans "No days yet" %}</h3>
+    <p>{% trans "Go to 'Assign days' to create days and assign your markers." %}</p>
+    <a href="{% url 'tripapp:assign_markers_view' idea.pk %}" class="btn btn-primary">{% trans "Assign days" %}</a>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- Action bar -->
+<div class="action-bar">
+  <div class="action-bar-left">
+    <a href="{% url 'tripapp:itineraryidea-list' %}" class="btn btn-outline">← {% trans "All ideas" %}</a>
+  </div>
+  <div class="action-bar-right">
+    <a href="{% url 'tripapp:edit_map_markers' idea.pk %}" class="btn btn-outline">{% trans "Edit markers" %}</a>
+    <a href="{% url 'tripapp:assign_markers_view' idea.pk %}" class="btn btn-outline">{% trans "Assign days" %}</a>
+    {% if has_days %}
+    <button class="btn btn-success" onclick="openTripPopup()">{% trans "Create trip" %}</button>
+    {% endif %}
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  function openTripPopup() {
+    document.getElementById('trip-popup').style.display = 'flex';
+  }
+  function closeTripPopup() {
+    document.getElementById('trip-popup').style.display = 'none';
+  }
+  document.getElementById('trip-popup').addEventListener('click', function(e) {
+    if (e.target === this) closeTripPopup();
+  });
+
+  {% if messages %}
+  document.addEventListener('DOMContentLoaded', function() {
+    const t = document.getElementById('toast');
+    t.textContent = "{% for m in messages %}{{ m }}{% endfor %}";
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  });
+  {% endif %}
+</script>
+
+<!-- ── Create trip popup ── -->
+<div class="popup-overlay" id="trip-popup" style="
+  display:none; position:fixed; inset:0;
+  background:rgba(10,10,20,.55); backdrop-filter:blur(3px);
+  z-index:9999; align-items:center; justify-content:center;">
+  <div style="background:#fff; border-radius:14px; padding:28px; width:340px;
+              box-shadow:0 24px 60px rgba(0,0,0,.3);
+              animation: popIn .18s cubic-bezier(.22,1,.36,1);">
+    <h3 style="font-size:15px;font-weight:700;color:#1a1a2e;
+               text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">
+      🚀 {% trans "Create Trip" %}
+    </h3>
+    <p style="font-size:12px;color:#888;font-family:sans-serif;margin-bottom:20px;">
+      {{ idea.name }}
+    </p>
+
+    <form method="POST" action="{% url 'tripapp:itineraryidea-to-trip' idea.pk %}">
+      {% csrf_token %}
+
+      <div style="margin-bottom:14px;">
+        <label style="font-size:11px;font-family:sans-serif;text-transform:uppercase;
+                      letter-spacing:.5px;color:#aaa;display:block;margin-bottom:6px;">
+          {% trans "Tribe" %}
+        </label>
+        {{ form.tribe }}
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <label style="font-size:11px;font-family:sans-serif;text-transform:uppercase;
+                      letter-spacing:.5px;color:#aaa;display:block;margin-bottom:6px;">
+          {% trans "Start date" %}
+        </label>
+        {{ form.start_date }}
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button type="button" onclick="closeTripPopup()"
+                style="flex:1;padding:10px;border:1px solid #e5e5e5;border-radius:8px;
+                       background:none;font-size:13px;cursor:pointer;color:#666;font-family:sans-serif;">
+          {% trans "Cancel" %}
+        </button>
+        <button type="submit"
+                style="flex:1;padding:10px;border:none;border-radius:8px;
+                       background:#0f6e56;color:#fff;font-size:13px;
+                       font-weight:600;cursor:pointer;font-family:sans-serif;">
+          🚀 {% trans "Create trip" %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,417 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% trans "Kaart - Locaties toevoegen" %}</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden;  }
+
+    #map { width: 100vw; height: 100vh; }
+
+    /* ── Popup overlay ── */
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 10, 20, 0.55);
+      backdrop-filter: blur(3px);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+    .popup-overlay.active { display: flex; }
+
+    .popup-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 28px 28px 22px;
+      width: 320px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+      animation: popIn .18s cubic-bezier(.22, 1, .36, 1);
+    }
+    @keyframes popIn {
+      from { transform: scale(.88); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .popup-card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 18px;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+
+    /* Icon keuze */
+    .icon-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .icon-btn {
+      flex: 1;
+      padding: 10px 8px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      background: #f8f8f8;
+      cursor: pointer;
+      font-size: 22px;
+      text-align: center;
+      transition: all .15s;
+      user-select: none;
+    }
+    .icon-btn:hover  { border-color: #6c63ff; background: #f0eeff; }
+    .icon-btn.selected {
+      border-color: #6c63ff;
+      background: #ede9ff;
+      box-shadow: 0 0 0 3px #c4beff55;
+    }
+    .icon-label {
+      font-size: 11px;
+      color: #888;
+      display: block;
+      margin-top: 3px;
+      font-family: sans-serif;
+    }
+
+    /* Textarea */
+    .popup-card textarea {
+      width: 100%;
+      height: 80px;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-family: sans-serif;
+      resize: none;
+      color: #1a1a2e;
+      outline: none;
+      transition: border-color .15s;
+      margin-bottom: 18px;
+    }
+    .popup-card textarea:focus { border-color: #6c63ff; }
+
+    /* Knoppen */
+    .btn-row { display: flex; gap: 10px; }
+    .btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: sans-serif;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-primary   { background: #6c63ff; color: #fff; }
+    .btn-primary:hover  { opacity: .88; }
+    .btn-secondary { background: #f0f0f0; color: #555; }
+    .btn-secondary:hover { background: #e4e4e4; }
+    .btn-danger    { background: #ff4757; color: #fff; }
+    .btn-danger:hover   { opacity: .88; }
+
+    /* Toast melding */
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(60px);
+      background: #1a1a2e;
+      color: #fff;
+      padding: 10px 22px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-family: sans-serif;
+      opacity: 0;
+      transition: all .3s;
+      z-index: 99999;
+      pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Teller badge */
+    #marker-count {
+      position: fixed;
+      bottom: 68px;
+      left: 16px;
+      background: rgba(255, 255, 255, .92);
+      backdrop-filter: blur(8px);
+      border-radius: 30px;
+      padding: 7px 16px;
+      font-family: sans-serif;
+      font-size: 13px;
+      color: #1a1a2e;
+      font-weight: 600;
+      z-index: 1000;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, .15);
+      pointer-events: none;
+    }
+
+    #save-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      backdrop-filter: blur(8px);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 1000;
+      box-shadow: 0 -4px 20px rgba(0,0,0,.1);
+    }
+    #save-bar input[type="text"] {
+      flex: 1;
+      padding: 9px 14px;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: sans-serif;
+      outline: none;
+    }
+    #save-bar input[type="text"]:focus { border-color: #6c63ff; }
+    #save-bar .btn { flex: 0 0 auto; padding: 9px 22px; }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+<div id="marker-count">📍 0 markers</div>
+<div id="toast"></div>
+
+<!-- ── ADD popup ── -->
+<div class="popup-overlay" id="add-popup">
+  <div class="popup-card">
+    <h3>{% trans "New location" %}</h3>
+    <div class="icon-row">
+      <div class="icon-btn selected" data-icon="pin" onclick="selectIcon(this,'pin')">
+        📍<span class="icon-label">{% trans "Activity / Visit" %}</span>
+      </div>
+      <div class="icon-btn" data-icon="bed" onclick="selectIcon(this,'bed')">
+        🛏️<span class="icon-label">{% trans "Overnight Location" %}</span>
+      </div>
+    </div>
+    <textarea id="add-desc" placeholder="{% trans 'Description (optional)...' %}"></textarea>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="cancelAdd()">{% trans "Cancel" %}</button>
+      <button class="btn btn-primary"   onclick="confirmAdd()">{% trans "Save" %}</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── EDIT popup ── -->
+<div class="popup-overlay" id="edit-popup">
+  <div class="popup-card">
+    <h3>{% trans "Edit Location" %}</h3>
+    <textarea id="edit-desc" placeholder="{% trans 'Description...' %}"></textarea>
+    <div class="btn-row">
+      <button class="btn btn-danger"  onclick="deleteMarker()">{% trans "Remove" %}</button>
+      <button class="btn btn-primary" onclick="saveEdit()">{% trans "Save" %}</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Opslaan balk ── -->
+<form id="markerForm" method="POST" action="{% url 'tripapp:save_map_markers' %}" novalidate onsubmit="return prepareAndValidateForm()">
+  {% csrf_token %}
+  <div id="save-bar">
+    <input type="text" id="mapName" name="name" placeholder="{% trans 'Name of brainstorm map...' %}">
+    <input type="hidden" id="items_json" name="items_json">
+    <button type="submit" class="btn btn-primary">{% trans "Save" %}</button>
+  </div>
+</form>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+<script>
+  // ── Kaart initialisatie ──────────────────────────────────────
+  const map = L.map('map', { zoomControl: true }).setView(
+      [
+          {{ tripper.home_location_lat|default:"52.1" }},
+          {{ tripper.home_location_lon|default:"5.1" }}
+      ],
+      7
+  );
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  //L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
+  }).addTo(map);
+
+  L.Control.geocoder({ defaultMarkGeocode: false })
+    .on('markgeocode', function(e) {
+      map.setView(e.geocode.center, 12);
+    })
+    .addTo(map);
+
+  // ── State ────────────────────────────────────────────────────
+  // markers: Map van id → { leafletMarker, icon, description, latlng }
+  const markers   = new Map();
+  let pendingLatLng = null;
+  let editingId     = null;
+  let selectedIcon  = 'pin';
+  let nextId        = 1;
+
+  // ── Icon helpers ─────────────────────────────────────────────
+  const ICONS = {
+    pin: { emoji: '📍', label: 'Pin'     },
+    bed: { emoji: '🛏️', label: 'Verblijf' }
+  };
+
+  function makeLeafletIcon(type) {
+    const e = ICONS[type].emoji;
+    return L.divIcon({
+      html: `<div style="font-size:28px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));cursor:pointer">${e}</div>`,
+      iconSize:   [32, 32],
+      iconAnchor: [16, 28],
+      className:  ''
+    });
+  }
+
+  // ── Kaart klik → ADD popup ───────────────────────────────────
+  map.on('click', function(e) {
+    // Klik op leaflet controls negeren
+    if (e.originalEvent.target.closest && e.originalEvent.target.closest('.leaflet-control')) return;
+
+    pendingLatLng = e.latlng;
+    selectedIcon  = 'pin';
+
+    // Reset icon selectie
+    document.querySelectorAll('#add-popup .icon-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelector('#add-popup [data-icon="pin"]').classList.add('selected');
+
+    document.getElementById('add-desc').value = '';
+    document.getElementById('add-popup').classList.add('active');
+    setTimeout(() => document.getElementById('add-desc').focus(), 120);
+  });
+
+  function selectIcon(el, type) {
+    selectedIcon = type;
+    document.querySelectorAll('#add-popup .icon-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function cancelAdd() {
+    pendingLatLng = null;
+    document.getElementById('add-popup').classList.remove('active');
+  }
+
+  function confirmAdd() {
+    if (!pendingLatLng) return;
+
+    const desc = document.getElementById('add-desc').value.trim();
+    const id   = nextId++;
+    const lm   = L.marker(pendingLatLng, { icon: makeLeafletIcon(selectedIcon) }).addTo(map);
+
+    lm.on('click', function() { openEdit(id); });
+
+    markers.set(id, {
+      leafletMarker: lm,
+      icon:          selectedIcon,
+      description:   desc,
+      latlng:        pendingLatLng
+    });
+
+    pendingLatLng = null;
+    document.getElementById('add-popup').classList.remove('active');
+    updateCount();
+    showToast(ICONS[selectedIcon].emoji + ' {% trans "Locatie opgeslagen" %}');
+  }
+
+  // ── Edit popup ───────────────────────────────────────────────
+  function openEdit(id) {
+    editingId = id;
+    const m   = markers.get(id);
+    document.getElementById('edit-desc').value = m.description || '';
+    document.getElementById('edit-popup').classList.add('active');
+    setTimeout(() => document.getElementById('edit-desc').focus(), 120);
+  }
+
+  function saveEdit() {
+    if (editingId === null) return;
+    const m        = markers.get(editingId);
+    m.description  = document.getElementById('edit-desc').value.trim();
+    document.getElementById('edit-popup').classList.remove('active');
+    editingId = null;
+    showToast('✅ {% trans "Opgeslagen" %}');
+  }
+
+  function deleteMarker() {
+    if (editingId === null) return;
+    const m = markers.get(editingId);
+    map.removeLayer(m.leafletMarker);
+    markers.delete(editingId);
+    document.getElementById('edit-popup').classList.remove('active');
+    editingId = null;
+    updateCount();
+    showToast('🗑️ {% trans "Verwijderd" %}');
+  }
+
+  // Overlay klik sluit popup
+  document.getElementById('add-popup').addEventListener('click', function(e) {
+    if (e.target === this) cancelAdd();
+  });
+  document.getElementById('edit-popup').addEventListener('click', function(e) {
+    if (e.target === this) {
+      document.getElementById('edit-popup').classList.remove('active');
+      editingId = null;
+    }
+  });
+
+  // ── Form submit ──────────────────────────────────────────────
+  function prepareAndValidateForm() {
+    if (markers.size === 0) {
+      alert("{% trans 'Voeg minstens één locatie toe voor je opslaat.' %}");
+      return false;
+    }
+
+    const data = [...markers.entries()].map(([id, m]) => ({
+      id:          id,
+      icon:        m.icon,
+      description: m.description,
+      latitude:    parseFloat(m.latlng.lat.toFixed(6)),
+      longitude:   parseFloat(m.latlng.lng.toFixed(6))
+    }));
+
+    document.getElementById('items_json').value = JSON.stringify(data);
+    return true;
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────
+  function updateCount() {
+    const n = markers.size;
+    document.getElementById('marker-count').textContent = '📍 ' + n + ' marker' + (n !== 1 ? 's' : '');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  // ── Publieke helper voor eigen gebruik ───────────────────────
+  // Roep window.getMarkersData() aan om de huidige staat op te halen.
+  window.getMarkersData = function() {
+    return [...markers.entries()].map(([id, m]) => ({
+      id:          id,
+      icon:        m.icon,
+      description: m.description,
+      latitude:    parseFloat(m.latlng.lat.toFixed(6)),
+      longitude:   parseFloat(m.latlng.lng.toFixed(6))
+    }));
+  };
+</script>
+
+</body>
+</html>

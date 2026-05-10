@@ -10,7 +10,7 @@
     <p class="lead">{% trans "No access to this part of the Trip" %}</p>
     <p>{% trans "Go back the route you came or go" %}</p>
     <a href="{% url 'tripapp:trip_list' %}" >
-        to My Trips
+        {% trans "to My Trips" %}
     </a>
 </div>
 {% endblock %}

@@ -189,9 +189,9 @@ def create_trip_from_itinerary(itinerary, tribe, start_date,user):
     for day in itinerary.itineraryidea_days.all():
         for loc in day.day_locations.all():
             all_locations.append((loc.latitude, loc.longitude))
-        if getattr(day, "overnightlocation", None):
-            o = day.overnightlocation
-            all_locations.append((o.latitude, o.longitude))
+        overnight = day.overnightlocations.first()
+        if overnight:
+            all_locations.append((overnight.latitude, overnight.longitude))
 
     countries = set()
     for lat, lon in all_locations:
@@ -226,15 +226,14 @@ def create_trip_from_itinerary(itinerary, tribe, start_date,user):
 
     for day in itinerary.itineraryidea_days.all().order_by("day_sequence"):
         tripdate = start_date + datetime.timedelta(days=day.day_sequence - 1)
+        overnight = day.overnightlocations.first()
 
         dayprogram = DayProgram.objects.create(
             trip=trip,
             description=day.day_description or f"Day {day.day_sequence}",
             tripdate=tripdate,
             dayprogramnumber=day.day_sequence,
-            overnight_location=getattr(day.overnightlocation, "description", None)
-            if getattr(day, "overnightlocation", None)
-            else None,
+            overnight_location=overnight.description if overnight else None,
         )
 
         for loc in day.day_locations.all().order_by("sequence"):
@@ -246,12 +245,11 @@ def create_trip_from_itinerary(itinerary, tribe, start_date,user):
             )
             point.dayprograms.add(dayprogram)
 
-        if getattr(day, "overnightlocation", None):
-            o = day.overnightlocation
+        if overnight:
             point = Point.objects.create(
-                name=o.description or "Overnight location",
-                latitude=o.latitude,
-                longitude=o.longitude,
+                name=overnight.description or "Overnight location",
+                latitude=overnight.latitude,
+                longitude=overnight.longitude,
                 trip=trip,
                 marker_type="bed",
             )

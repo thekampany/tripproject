@@ -12,6 +12,7 @@
     max-height: 200px;
     overflow-y: auto;
     background: white;
+    color: black;
     position: absolute;
     z-index: 1000;
     width: 100%;
@@ -70,11 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function searchAddress() {
         if (addressField.value.length > 3) {
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressField.value)}`, {
-                headers: {
-                    'User-Agent': 'Trippanion/1.0'
-                }
-            })
+            fetch(`/address-search/?q=${encodeURIComponent(addressField.value)}`)
             .then(response => {
                 if (!response.ok) throw new Error('Network response was not ok');
                 return response.json();

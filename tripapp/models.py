@@ -166,6 +166,9 @@ class Tripper(models.Model):
     immich_url = models.URLField(help_text="Enter immich-url in order to see locations where you took a picture plotted on the trip map", null=True, blank=True) 
     immich_api_key = models.CharField(max_length=100, help_text="immich-api-key", null=True, blank=True)
     currency = models.CharField(max_length=10, null=True, blank=True)
+    home_location = models.CharField(max_length=255, null=True, blank=True, help_text="Name/address of home location. Will be used as starting point for brainstorm map")
+    home_location_lat = models.FloatField(null=True, blank=True)
+    home_location_lon = models.FloatField(null=True, blank=True)
     #def count_badges(self):
     #    return self.badges.count()
 
@@ -598,10 +601,10 @@ class DayLocation(models.Model):
 
 
 class OvernightLocation(models.Model):
-    day = models.OneToOneField(
+    day = models.ForeignKey(
         ItineraryIdeaDay,
         on_delete=models.CASCADE,
-        related_name="overnightlocation"
+        related_name="overnightlocations" 
     )
     latitude = models.FloatField()
     longitude = models.FloatField()
@@ -611,6 +614,28 @@ class OvernightLocation(models.Model):
     def __str__(self):
         return f"{self.day.day_sequence}, Overnight ({self.description})"
 
+
+class MapMarkerDraft(models.Model):
+    ICON_CHOICES = [
+        ('pin', 'Activity / Visit'),
+        ('bed', 'Overnight Location'),
+    ]
+    itinerary_idea = models.ForeignKey(
+        ItineraryIdea,
+        on_delete=models.CASCADE,
+        related_name='marker_drafts'
+    )
+    icon        = models.CharField(max_length=20, choices=ICON_CHOICES, default='pin')
+    description = models.TextField(blank=True, null=True)
+    latitude    = models.FloatField()
+    longitude   = models.FloatField()
+    sequence    = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['sequence']
+
+    def __str__(self):
+        return f"{self.itinerary_idea} – {self.icon} ({self.latitude}, {self.longitude})"
 
 class OllamaJob(models.Model):
     STATUS = [

@@ -15,11 +15,13 @@
     <div class="badgecontainer">
         {% for badge in badges %}
             {% if badge.level == 'global' %}
+               <p>{{ badge.name }}</p>
                <p><img src="{% static badge.image %}" alt="{{ badge.name }}"></p>
-               {{ badge.name }}
+               <br>
             {% else %}
+               <p>{{ badge.name }}</p>
                <p><img class="img" src="{{ badge.image.url }}" alt="{{ badge.name }}"></p>
-               {{ badge.name }}
+               <br>
             {% endif %}
         {% endfor %}
     </div>

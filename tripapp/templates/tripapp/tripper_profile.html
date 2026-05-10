@@ -11,11 +11,34 @@
   {% else %}
     <p><img src="{% static 'profile.png' %}" height="100"></p>
   {% endif %}
+  
   <form method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      {{ form|crispy }}
-      <button type="submit" class="btn">{% trans "Save" %} Profile</button>
-  </form>
+    {% csrf_token %}
+    
+  
+    {% for field in form %}
+        {% if field.name == 'home_location_lat' or field.name == 'home_location_lon' %}
+            <input type="hidden" name="{{ field.html_name }}" 
+                   id="{{ field.auto_id }}" value="{{ field.value|default:'' }}">
+        {% elif field.name != 'home_location' %}
+            {{ field|as_crispy_field }}
+        {% endif %}
+    {% endfor %}
+    <div id="address-section" class="address-field" style="margin-bottom: 1rem;">
+        <label for="id_address">Home Location</label>
+        <div id="address-field-container">
+            <input type="text" id="id_address" placeholder="Enter home address..."
+                  value="{{ tripper.home_location|default:'' }}"
+                  style="width: 100%; box-sizing: border-box;">
+            <input type="hidden" id="id_home_location" name="home_location"
+                  value="{{ tripper.home_location|default:'' }}">
+            <div id="address-results" style="border: 1px solid #ccc; max-height: 200px; overflow-y: auto; color: black; background: white; position: absolute; z-index: 1000; width: 100%; display: none;"></div>
+        </div>
+        <small class="form-text text-muted">Enter your home address to set your home location on the map.</small>
+    </div>
+    <p>&nbsp;</p>
+    <button type="submit" class="btn">Save Profile</button>
+</form>
 <hr>
 <p>&nbsp;</p>
 <h1>{{ tripper.name }}'s {% trans "Documents" %}</h1>
@@ -49,4 +72,64 @@
     <button type="submit" class="btn">Upload Document</button>
     <p>&nbsp;</p>
 </form>
+{% endblock %}
+{% block extra_js %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Address field:", document.getElementById('id_address'));
+    const addressField = document.getElementById('id_address');
+    const latitudeField = document.getElementById('id_home_location_lat');
+    const longitudeField = document.getElementById('id_home_location_lon');
+    const resultsContainer = document.getElementById('address-results');
+    const addressFieldContainer = document.getElementById('address-field-container');
+
+    function searchAddress() {
+        if (addressField.value.length > 3) {
+            fetch(`/address-search/?q=${encodeURIComponent(addressField.value)}`)
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                if (data.length > 0) {
+                    resultsContainer.innerHTML = '';
+                    if (data.length === 1) {
+                        latitudeField.value = data[0].lat;
+                        longitudeField.value = data[0].lon;
+                        resultsContainer.style.display = 'none';
+                    } else {
+                        data.forEach(item => {
+                            const option = document.createElement('div');
+                            option.textContent = item.display_name;
+                            option.addEventListener('click', function() {
+                                latitudeField.value = item.lat;
+                                longitudeField.value = item.lon;
+                                document.getElementById('id_home_location').value = item.display_name;
+                                resultsContainer.style.display = 'none';
+                            });
+                            resultsContainer.appendChild(option);
+                        });
+                        resultsContainer.style.display = 'block';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                resultsContainer.style.display = 'none';
+            });
+        } else {
+            resultsContainer.style.display = 'none';
+        }
+    }
+
+    addressField.addEventListener('input', searchAddress);
+    addressField.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchAddress();
+        }
+    });
+});
+</script>
 {% endblock %}

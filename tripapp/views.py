@@ -3,7 +3,7 @@ from .models import Trip, Tripper, Badge, DayProgram, Checklist, ChecklistItem, 
 from .models import BingoCard, BingoAnswer, BadgeAssignment
 from .models import Tribe, UserProfile, LogEntry, Link, Route, TripExpense, Location, ImmichPhotos, ScheduledItem
 from .models import TripperDocument, LogEntryLike, InviteCode, TripBudget
-from .models import TripOutline, OllamaJob
+from .models import TripOutline, MapMarkerDraft, OllamaJob
 from .forms import BadgeForm, TripForm, ChecklistItemForm, ImageForm, BingoAnswerForm
 from .forms import CustomUserCreationForm
 from .forms import AnswerForm, TripperForm, TripperAdminForm
@@ -91,6 +91,8 @@ import traceback
 import logging
 
 import polyline as polyline_decoder 
+
+from django.contrib import messages
 
 logger = logging.getLogger(__name__)
 
@@ -220,6 +222,7 @@ def trip_list(request):
     user_profile = request.user.userprofile
     tribes = user_profile.tribes.all()
     tripper = None
+    today = timezone.now().date()
 
     if request.user.is_authenticated:
         tripper = Tripper.objects.filter(user=request.user).first()
@@ -235,6 +238,9 @@ def trip_list(request):
         trip.is_tripper = tripper in trip.trippers.all() if tripper else False
         trip.country_codes_list = trip.country_codes.split(',') if trip.country_codes else []
 
+    upcoming = [t for t in trips if t.date_to and t.date_to >= today]
+    past     = [t for t in trips if not t.date_to or t.date_to < today]
+
     category = "roadtrip"
     background_image_url = get_random_unsplash_image(category)
     enable_admin = settings.ENABLE_ADMIN
@@ -242,6 +248,8 @@ def trip_list(request):
     return render(request, 'tripapp/trip_list.html', {
         'tribes': tribes, 
         'trips': trips, 
+        'upcoming': upcoming,
+        'past': past,
         'background_image_url': background_image_url, 
         'tripper':tripper,
         "only_mine": only_mine, 
@@ -370,7 +378,7 @@ def tripper_badgeassignments(request, tripper_id):
     return render(request, 'tripapp/tripper_badgeassignments.html', {'tripper': tripper, 'badges': badges, 'count_tripper_badges':count_tripper_badges})
 
 
-@is_tripper_in_same_trip
+@is_in_tribe
 def trip_tripper_badgeassignments(request, trip_id, tripper_id):
     trip = get_object_or_404(Trip, id=trip_id)
     tripper = get_object_or_404(Tripper, id=tripper_id)
@@ -2019,7 +2027,7 @@ def generate_html_with_images(trip):
             html_content += f'<p><img src="{img_base64}" ></p>'
 
         if tracked_distance:
-            html_content += f"""<p>tracked distance {tracked_distance} { day.tripdate }: {distance_unit }</p>"""
+            html_content += f"""<p>tracked distance { day.tripdate }: {tracked_distance } {distance_unit }</p>"""
 
         if day.question_set.exists():
             html_content += "<h4>❓ Question(s)</h4><ul>"
@@ -2441,8 +2449,11 @@ def create_itineraryidea_overnightlocations(request):
 
 @login_required
 def create_itineraryidea_daylocations(request):
-    return render(request, 'tripapp/create_itineraryidea_daylocations.html')
-
+    tripper = get_object_or_404(Tripper, user=request.user)
+    #return render(request, 'tripapp/create_itineraryidea_daylocations.html')
+    return render(request, 'tripapp/create_trip_brainstorm.html', {
+        'tripper': tripper,
+    })
 
 @csrf_exempt
 @login_required
@@ -3706,9 +3717,14 @@ User request: {user_prompt}
 def ollama_job_status(request, job_id):
     try:
         job = OllamaJob.objects.get(id=job_id)
+        if job.error:
+            logger.warning("OllamaJob %s failed: %s", job_id, job.error)
+        
+        error_msg = "An error occurred. Please try again." if job.error else ""
+        
         return JsonResponse({
             "status": job.status,
-            "error": job.error or "",
+            "error": error_msg,
         })
     except OllamaJob.DoesNotExist:
         return JsonResponse({"status": "not found"}, status=404)
@@ -3788,3 +3804,300 @@ def save_scheduled_route(request):
         return JsonResponse({'success': True})
     except Exception as e:
         return JsonResponse({'success': False, 'error': 'An unexpected error occurred.'})
+
+@login_required
+def save_map_markers(request):
+    if request.method != 'POST':
+        return redirect('tripapp:create_itineraryidea_daylocations')
+
+    name = request.POST.get('name', '').strip()
+    items_json = request.POST.get('items_json', '[]')
+
+    if not name:
+        messages.error(request, "Please provide a name.")
+        return redirect('tripapp:create_itineraryidea_daylocations')  
+
+    try:
+        items = json.loads(items_json)
+    except json.JSONDecodeError:
+        messages.error(request, "Invalid data.")
+        return redirect('tripapp:create_itineraryidea_daylocations')
+
+    if not items:
+        messages.error(request, "Add at least one marker.")
+        return redirect('tripapp:create_itineraryidea_daylocations')
+
+    idea = ItineraryIdea.objects.create(
+        name       = name,
+        created_by = request.user,
+        updated_by = request.user,
+    )
+
+    MapMarkerDraft.objects.bulk_create([
+        MapMarkerDraft(
+            itinerary_idea = idea,
+            icon           = item.get('icon', 'pin'),
+            description    = item.get('description', ''),
+            latitude       = item.get('latitude'),
+            longitude      = item.get('longitude'),
+            sequence       = idx + 1,
+        )
+        for idx, item in enumerate(items)
+    ])
+
+    messages.success(request, "Markers saved.")
+    return redirect('tripapp:itineraryidea-list')
+
+@login_required
+def edit_map_markers(request, idea_pk):
+    idea      = get_object_or_404(ItineraryIdea, pk=idea_pk)
+    drafts    = MapMarkerDraft.objects.filter(itinerary_idea=idea)
+    can_edit  = idea.created_by == request.user
+
+    day_locations       = DayLocation.objects.filter(day__itineraryidea=idea).select_related('day')
+    overnight_locations = OvernightLocation.objects.filter(day__itineraryidea=idea).select_related('day')
+
+    return render(request, 'tripapp/map_markers_edit.html', {
+        'idea':                idea,
+        'drafts':              drafts,
+        'can_edit':            can_edit,
+        'day_locations':       day_locations,
+        'overnight_locations': overnight_locations,
+    })
+
+
+@login_required
+def update_map_markers(request, idea_pk):
+    if request.method != 'POST':
+        return redirect('tripapp:itineraryidea-list')
+
+    idea       = get_object_or_404(ItineraryIdea, pk=idea_pk, created_by=request.user)
+    name       = request.POST.get('name', '').strip()
+    items_json = request.POST.get('items_json', '[]')
+
+    if not name:
+        messages.error(request, "Please provide a name.")
+        return redirect('tripapp:edit_map_markers', idea_pk=idea_pk)
+
+    try:
+        items = json.loads(items_json)
+    except json.JSONDecodeError:
+        messages.error(request, "Invalid data.")
+        return redirect('tripapp:edit_map_markers', idea_pk=idea_pk)
+
+    idea.name       = name
+    idea.updated_by = request.user
+    idea.save()
+
+    # Split items by source
+    draft_items     = [it for it in items if it.get('source') == 'draft']
+    day_items       = [it for it in items if it.get('source') == 'day']
+    overnight_items = [it for it in items if it.get('source') == 'overnight']
+
+    # ── Drafts: vervang alles (zelfde als voorheen) ──────────────
+    MapMarkerDraft.objects.filter(itinerary_idea=idea).delete()
+    MapMarkerDraft.objects.bulk_create([
+        MapMarkerDraft(
+            itinerary_idea = idea,
+            icon           = item.get('icon', 'pin'),
+            description    = item.get('description', ''),
+            latitude       = item.get('latitude'),
+            longitude      = item.get('longitude'),
+            sequence       = idx + 1,
+        )
+        for idx, item in enumerate(draft_items)
+    ])
+
+    # ── DayLocations: update individueel op PK ───────────────────
+    for item in day_items:
+        try:
+            loc = DayLocation.objects.get(pk=int(item['source_id']), day__itineraryidea=idea)
+        except (DayLocation.DoesNotExist, ValueError, KeyError):
+            continue
+        loc.description = item.get('description', '')
+        loc.latitude    = item.get('latitude')
+        loc.longitude   = item.get('longitude')
+        loc.save()
+
+    # ── OvernightLocations: update individueel op PK ─────────────
+    for item in overnight_items:
+        try:
+            loc = OvernightLocation.objects.get(pk=int(item['source_id']), day__itinerary_idea=idea)
+        except (OvernightLocation.DoesNotExist, ValueError, KeyError):
+            continue
+        loc.description = item.get('description', '')
+        loc.latitude    = item.get('latitude')
+        loc.longitude   = item.get('longitude')
+        loc.save()
+
+    messages.success(request, f"'{name}' updated.")
+    return redirect('tripapp:itineraryidea-list')
+
+@login_required
+def assign_markers_view(request, idea_pk):
+    idea  = get_object_or_404(ItineraryIdea, pk=idea_pk)
+    days  = idea.itineraryidea_days.all()
+    drafts = MapMarkerDraft.objects.filter(itinerary_idea=idea)
+    can_edit = idea.created_by == request.user
+
+    return render(request, 'tripapp/assign_markers_to_days.html', {
+        'idea': idea, 'days': days, 'drafts': drafts, 'can_edit': can_edit,
+    })
+
+
+@login_required
+@require_POST
+def assign_markers_to_days(request, idea_pk):
+    idea = get_object_or_404(ItineraryIdea, pk=idea_pk, created_by=request.user)
+
+    try:
+        payload = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    pin_mapping = payload.get('pin_mapping', {})  # {draftPk: dayPk}
+    bed_mapping = payload.get('bed_mapping', {})  # {draftPk: [dayPk, ...]}
+
+    # Pin markers → DayLocation
+    for draft_pk, day_pk in pin_mapping.items():
+        try:
+            draft = MapMarkerDraft.objects.get(pk=draft_pk, itinerary_idea=idea)
+            day   = ItineraryIdeaDay.objects.get(pk=day_pk, itineraryidea=idea)
+            next_seq = DayLocation.objects.filter(day=day).count() + 1
+            DayLocation.objects.create(
+                day         = day,
+                sequence    = next_seq,
+                latitude    = draft.latitude,
+                longitude   = draft.longitude,
+                description = draft.description,
+            )
+            #draft.delete()
+        except (MapMarkerDraft.DoesNotExist, ItineraryIdeaDay.DoesNotExist):
+            continue
+
+    # Bed markers → OvernightLocation
+    for draft_pk, day_pks in bed_mapping.items():
+        try:
+            draft = MapMarkerDraft.objects.get(pk=draft_pk, itinerary_idea=idea)
+            for day_pk in day_pks:
+                day = ItineraryIdeaDay.objects.get(pk=day_pk, itineraryidea=idea)
+                OvernightLocation.objects.create(
+                    day         = day,
+                    latitude    = draft.latitude,
+                    longitude   = draft.longitude,
+                    description = draft.description,
+                )
+            #draft.delete()
+        except (MapMarkerDraft.DoesNotExist, ItineraryIdeaDay.DoesNotExist):
+            continue
+
+    return JsonResponse({'ok': True})
+
+@login_required
+@require_POST
+def add_day_ajax(request, idea_pk):
+    idea = get_object_or_404(ItineraryIdea, pk=idea_pk, created_by=request.user)
+    try:
+        payload = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'ok': False, 'error': 'Invalid JSON'}, status=400)
+
+    next_seq = idea.itineraryidea_days.count() + 1
+    day = ItineraryIdeaDay.objects.create(
+        itineraryidea       = idea,
+        day_sequence        = next_seq,
+        day_description     = payload.get('description') or None,
+        day_possible_date   = payload.get('date') or None,
+    )
+    return JsonResponse({
+        'ok':          True,
+        'pk':          day.pk,
+        'sequence':    day.day_sequence,
+        'description': day.day_description or '',
+    })
+
+
+@login_required
+@require_POST
+def delete_day_ajax(request, idea_pk, day_pk):
+    idea = get_object_or_404(ItineraryIdea, pk=idea_pk, created_by=request.user)
+    day  = get_object_or_404(ItineraryIdeaDay, pk=day_pk, itineraryidea=idea)
+    day.delete()
+    return JsonResponse({'ok': True})
+
+
+PALETTE = [
+    '#534AB7','#0F6E56','#993C1D','#185FA5','#854F0B',
+    '#72243E','#3B6D11','#5F5E5A','#A32D2D','#0C447C'
+]
+
+from .forms import CreateTripFromItineraryForm
+
+@login_required
+def itineraryidea_detail(request, pk):
+    idea   = get_object_or_404(ItineraryIdea, pk=pk, created_by=request.user)
+    days   = list(idea.itineraryidea_days.prefetch_related('day_locations', 'overnightlocations').all())
+    drafts = MapMarkerDraft.objects.filter(itinerary_idea=idea)
+
+    for i, day in enumerate(days):
+        day.color = PALETTE[i % len(PALETTE)]
+
+    assigned_pks = set()
+    for day in days:
+        for loc in day.day_locations.all():
+            match = drafts.filter(latitude=loc.latitude, longitude=loc.longitude).first()
+            if match:
+                assigned_pks.add(match.pk)
+        for overnight in day.overnightlocations.all():
+            match = drafts.filter(latitude=overnight.latitude, longitude=overnight.longitude).first()
+            if match:
+                assigned_pks.add(match.pk)
+
+    unassigned_drafts = [d for d in drafts if d.pk not in assigned_pks]
+
+    total_pins      = sum(day.day_locations.count() for day in days)
+    total_overnights = sum(day.overnightlocations.count() for day in days)
+
+    form = CreateTripFromItineraryForm(user=request.user)
+
+    return render(request, 'tripapp/itineraryidea_detail.html', {
+        'idea':              idea,
+        'days':              days,
+        'drafts':            drafts,
+        'unassigned_drafts': unassigned_drafts,
+        'unassigned_count':  len(unassigned_drafts),
+        'total_pins':        total_pins,
+        'total_overnights':  total_overnights,
+        'total_days':        len(days),
+        'has_days':          len(days) > 0,
+        'form': form,
+    })
+
+
+def address_search(request):
+    query = request.GET.get('q', '')
+    if len(query) < 3:
+        return JsonResponse([], safe=False)
+    
+    try:
+        response = requests.get(
+            'https://nominatim.openstreetmap.org/search',
+            params={'format': 'json', 'q': query},
+            headers={'User-Agent': 'Trippanion/1.0'},
+            timeout=5
+        )
+        response.raise_for_status()
+        
+        # log wat nominatim teruggeeft voor debugging
+        print(f"Nominatim status: {response.status_code}")
+        print(f"Nominatim response: {response.text[:200]}")
+        
+        data = response.json()
+        return JsonResponse(data, safe=False)
+        
+    except requests.exceptions.JSONDecodeError:
+        print(f"Nominatim gaf geen JSON terug: {response.text[:200]}")
+        return JsonResponse([], safe=False)
+    except Exception as e:
+        print(f"Address search error: {e}")
+        return JsonResponse([], safe=False)
