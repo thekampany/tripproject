@@ -205,15 +205,17 @@
 <!-- ── EDIT popup ── -->
 <div class="popup-overlay" id="edit-popup">
   <div class="popup-card">
-    <h3>{% trans "Edit location" %}</h3>
+    <h3 id="edit-popup-title">{% trans "Edit location" %}</h3>
     <textarea id="edit-desc" placeholder="{% trans 'Description...' %}"></textarea>
-    <div class="btn-row">
+    <div class="btn-row" id="edit-buttons-edit">
       <button class="btn btn-danger"  onclick="deleteMarker()">{% trans "Remove" %}</button>
       <button class="btn btn-primary" onclick="saveEdit()">{% trans "Save" %}</button>
     </div>
+    <div class="btn-row" id="edit-buttons-view" style="display:none;">
+      <button class="btn btn-secondary" onclick="closeEditPopup()">{% trans "Close" %}</button>
+    </div>
   </div>
 </div>
-
 <!-- ── Save bar ── -->
 {% if can_edit %}
 <form id="markerForm" method="POST" action="{% url 'tripapp:update_map_markers' idea.pk %}" novalidate onsubmit="return prepareAndValidateForm()">
@@ -337,10 +339,7 @@
       const markerClass = item.markerClass || defaultMarkerClass;
       const lm          = L.marker(latlng, { icon: makeLeafletIcon(item.icon, markerClass) }).addTo(map);
 
-      lm.on('click', function() {
-        if (!CAN_EDIT) return;
-        openEdit(id);
-      });
+      lm.on('click', function() { openEdit(id); }); 
 
       const idStr  = String(item.id);
       const parts  = idStr.split('-');
@@ -380,8 +379,8 @@
     updateCount();
   }
 
-  map.on('click', function(e) {
-    if (!CAN_EDIT) return; 
+  map.on('click', function(e) { 
+    if (!CAN_EDIT) return;
     if (e.originalEvent.target.closest && e.originalEvent.target.closest('.leaflet-control')) return;
 
     pendingLatLng = e.latlng;
@@ -412,10 +411,7 @@
     const id   = nextId++;
     const lm   = L.marker(pendingLatLng, { icon: makeLeafletIcon(selectedIcon) }).addTo(map);
 
-    lm.on('click', function() {
-      if (!CAN_EDIT) return;  
-      openEdit(id);
-    });
+    lm.on('click', function() { openEdit(id); }); 
 
     markers.set(id, {
       leafletMarker: lm,
@@ -438,10 +434,26 @@
     editingId = id;
     const m   = markers.get(id);
     document.getElementById('edit-desc').value = m.description || '';
+    document.getElementById('edit-desc').readOnly = !CAN_EDIT;
+
+    if (CAN_EDIT) {
+        document.getElementById('edit-popup-title').textContent = '{% trans "Edit location" %}';
+        document.getElementById('edit-buttons-edit').style.display = 'flex';
+        document.getElementById('edit-buttons-view').style.display = 'none';
+    } else {
+        document.getElementById('edit-popup-title').textContent = '{% trans "Location" %}';
+        document.getElementById('edit-buttons-edit').style.display = 'none';
+        document.getElementById('edit-buttons-view').style.display = 'flex';
+    }
+
     document.getElementById('edit-popup').classList.add('active');
-    setTimeout(() => document.getElementById('edit-desc').focus(), 120);
+    if (CAN_EDIT) setTimeout(() => document.getElementById('edit-desc').focus(), 120);
   }
 
+  function closeEditPopup() {
+    document.getElementById('edit-popup').classList.remove('active');
+    editingId = null;
+  }
   function saveEdit() {
     if (editingId === null) return;
     const m       = markers.get(editingId);

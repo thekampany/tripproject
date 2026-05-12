@@ -327,6 +327,10 @@
 
 <!-- Django data → JS -->
 <script>
+  const INITIAL_PIN_ASSIGNMENTS = {{ pin_assignments|safe }};
+  const INITIAL_BED_ASSIGNMENTS = {{ bed_assignments|safe }};
+
+
   const DRAFTS = [
     {% for d in drafts %}
     {
@@ -655,7 +659,11 @@
   }
 
   // ── Init ──────────────────────────────────────────────────────
+  Object.assign(pinAssignments, INITIAL_PIN_ASSIGNMENTS);
+  Object.assign(bedAssignments, INITIAL_BED_ASSIGNMENTS);
+  DRAFTS.forEach(d => refreshMarkerIcon(d.pk));
   renderDayList();
+
 </script>
 
 </body>

@@ -3939,9 +3939,28 @@ def assign_markers_view(request, idea_pk):
     days  = idea.itineraryidea_days.all()
     drafts = MapMarkerDraft.objects.filter(itinerary_idea=idea)
     can_edit = idea.created_by == request.user
+    pin_assignments = {}
+    bed_assignments = {}
+    for loc in DayLocation.objects.filter(day__itineraryidea=idea).select_related('day'):
+        draft = drafts.filter(
+            latitude=loc.latitude,
+            longitude=loc.longitude
+        ).first()
+        if draft:
+            pin_assignments[str(draft.pk)] = loc.day.pk
+    for loc in OvernightLocation.objects.filter(day__itineraryidea=idea).select_related('day'):
+        draft = drafts.filter(
+            latitude=loc.latitude,
+            longitude=loc.longitude
+        ).first()
+        if draft:
+            bed_assignments[str(draft.pk)] = loc.day.pk
 
     return render(request, 'tripapp/assign_markers_to_days.html', {
         'idea': idea, 'days': days, 'drafts': drafts, 'can_edit': can_edit,
+        'pin_assignments': pin_assignments,
+        'bed_assignments': bed_assignments,
+
     })
 
 

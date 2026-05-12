@@ -1,6 +1,20 @@
 {% extends "base_generic.html" %}
 {% load i18n %}
 {% block content %}
+<style>
+  #bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    backdrop-filter: blur(8px);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    z-index: 1000;
+    box-shadow: 0 -4px 20px rgba(0,0,0,.1);
+  }
+</style>
 <h2>{% trans "Itinerary Ideas" %}</h2>
 
 <p>&nbsp;</p>
@@ -57,4 +71,9 @@
 <p>&nbsp;</p>
 <a href="{% url 'tripapp:tribe_trips' %}">&larr;{% trans "Organize New" %}</a>
 <p>&nbsp;</p>
+<div id="bottom-bar">
+  <a href="{% url 'tripapp:tribe_trips' %}" class="btn">&larr;{% trans "Organize New" %}</a>&nbsp;
+  <a href="{% url 'tripapp:trip_list' %}" class="btn">{% trans "My Trips" %}</a>
+</div>
+<div style="height: 60px;"></div>
 {% endblock %}
