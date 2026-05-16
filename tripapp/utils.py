@@ -182,15 +182,20 @@ def generate_static_map_for_trip(trip):
     return filepath
 
 
-def create_trip_from_itinerary(itinerary, tribe, start_date,user):
+def create_trip_from_itinerary(itinerary, tribe, start_date, user,
+                                excluded_pins=None, excluded_beds=None):
+    excluded_pins = set(int(pk) for pk in (excluded_pins or []))
+    excluded_beds = set(int(pk) for pk in (excluded_beds or []))
+
     geolocator = Nominatim(user_agent="Trippanion")
 
     all_locations = []
     for day in itinerary.itineraryidea_days.all():
         for loc in day.day_locations.all():
-            all_locations.append((loc.latitude, loc.longitude))
+            if loc.pk not in excluded_pins:
+                all_locations.append((loc.latitude, loc.longitude))
         overnight = day.overnightlocations.first()
-        if overnight:
+        if overnight and overnight.pk not in excluded_beds:
             all_locations.append((overnight.latitude, overnight.longitude))
 
     countries = set()
@@ -217,26 +222,27 @@ def create_trip_from_itinerary(itinerary, tribe, start_date,user):
         country_codes=country_codes,
     )
 
-    # Ensure the logged-in user is also a Tripper for this trip
     tripper, created = Tripper.objects.get_or_create(user=user, defaults={'name': user.username})
     tripper.trips.add(trip)
     tripper.is_trip_admin = True
     tripper.save()
 
-
     for day in itinerary.itineraryidea_days.all().order_by("day_sequence"):
         tripdate = start_date + datetime.timedelta(days=day.day_sequence - 1)
         overnight = day.overnightlocations.first()
+        overnight_excluded = overnight and overnight.pk in excluded_beds
 
         dayprogram = DayProgram.objects.create(
             trip=trip,
             description=day.day_description or f"Day {day.day_sequence}",
             tripdate=tripdate,
             dayprogramnumber=day.day_sequence,
-            overnight_location=overnight.description if overnight else None,
+            overnight_location=overnight.description if overnight and not overnight_excluded else None,
         )
 
         for loc in day.day_locations.all().order_by("sequence"):
+            if loc.pk in excluded_pins:
+                continue
             point = Point.objects.create(
                 name=loc.description or f"Point {loc.sequence}",
                 latitude=loc.latitude,
@@ -245,7 +251,7 @@ def create_trip_from_itinerary(itinerary, tribe, start_date,user):
             )
             point.dayprograms.add(dayprogram)
 
-        if overnight:
+        if overnight and not overnight_excluded:
             point = Point.objects.create(
                 name=overnight.description or "Overnight location",
                 latitude=overnight.latitude,
@@ -256,7 +262,6 @@ def create_trip_from_itinerary(itinerary, tribe, start_date,user):
             point.dayprograms.add(dayprogram)
 
     return trip
-
 
 def get_country_coords(country_code):
     cache_key = f"country_coords_{country_code}"

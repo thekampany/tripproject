@@ -142,8 +142,8 @@
     /* Teller badge */
     #marker-count {
       position: fixed;
-      bottom: 68px;
-      left: 16px;
+      bottom: 86px;
+      right: 16px;
       background: rgba(255, 255, 255, .92);
       backdrop-filter: blur(8px);
       border-radius: 30px;
@@ -159,9 +159,10 @@
 
     #save-bar {
       position: fixed;
-      bottom: 0;
-      left: 0;
+      bottom: 20px;
+      left: 20%;
       right: 0;
+      color: black;
       backdrop-filter: blur(8px);
       padding: 12px 20px;
       display: flex;
@@ -169,6 +170,7 @@
       gap: 12px;
       z-index: 1000;
       box-shadow: 0 -4px 20px rgba(0,0,0,.1);
+      border-radius: 12px 0 0 12px;
     }
     #save-bar input[type="text"] {
       flex: 1;
@@ -248,9 +250,23 @@
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
   }).addTo(map);
 
+  var scaleControl = L.control.scale();
+  scaleControl.setPosition('bottomleft');
+  map.addControl(scaleControl);
+ 
   L.Control.geocoder({ defaultMarkGeocode: false })
     .on('markgeocode', function(e) {
       map.setView(e.geocode.center, 12);
+
+      pendingLatLng = e.geocode.center;
+      selectedIcon  = 'pin';
+
+      document.querySelectorAll('#add-popup .icon-btn').forEach(b => b.classList.remove('selected'));
+      document.querySelector('#add-popup [data-icon="pin"]').classList.add('selected');
+
+      document.getElementById('add-desc').value = e.geocode.name || '';
+      document.getElementById('add-popup').classList.add('active');
+      setTimeout(() => document.getElementById('add-desc').focus(), 120);
     })
     .addTo(map);
 

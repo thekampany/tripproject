@@ -137,7 +137,7 @@
     #marker-count {
       position: fixed;
       bottom: 64px;
-      left: 16px;
+      right: 16px;
       background: rgba(255, 255, 255, .92);
       backdrop-filter: blur(8px);
       border-radius: 30px;
@@ -151,35 +151,63 @@
       pointer-events: none;
     }
 
-    #save-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      backdrop-filter: blur(8px);
-      padding: 12px 20px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      z-index: 1000;
-      box-shadow: 0 -4px 20px rgba(0,0,0,.1);
-    }
-    #save-bar input[type="text"] {
-      flex: 1;
-      padding: 9px 14px;
-      border: 1.5px solid #ddd;
-      border-radius: 8px;
-      font-size: 14px;
-      font-family: sans-serif;
-      outline: none;
-    }
-    #save-bar input[type="text"]:focus { border-color: #6c63ff; }
-    #save-bar .btn { flex: 0 0 auto; padding: 9px 22px; }
+#bottom-bar {
+  position: fixed;
+  bottom: 20px;
+  left: 20%;
+  right: 0;
+  display: flex;
+  align-items: stretch;
+  z-index: 1000;
+  border-radius: 12px 0 0 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.15);
+  overflow: hidden;
+}
+#markerForm {
+  flex: 1;
+  display: flex;
+}
+#save-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  backdrop-filter: blur(8px);
+  background: rgba(255,255,255,0);
+}
+#save-bar input[type="text"] {
+  flex: 1;
+  padding: 9px 14px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: sans-serif;
+  outline: none;
+}
+#save-bar input[type="text"]:focus { border-color: #6c63ff; }
+#save-bar .btn { flex: 0 0 auto; padding: 9px 18px; }
+
+#copyForm {
+  display: flex;
+}
+#copy-bar {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  backdrop-filter: blur(8px);
+  background: rgba(255,255,255,0);
+}
+#copy-bar .btn {
+  white-space: nowrap;
+  padding: 9px 18px;
+}
+
+
   </style>
 </head>
 <body>
 <div id="map"></div>
-<div id="marker-count">📍 0 markers</div>
 <div id="toast"></div>
 
 <!-- ── ADD popup ── -->
@@ -218,17 +246,41 @@
 </div>
 <!-- ── Save bar ── -->
 {% if can_edit %}
-<form id="markerForm" method="POST" action="{% url 'tripapp:update_map_markers' idea.pk %}" novalidate onsubmit="return prepareAndValidateForm()">
-  {% csrf_token %}
-  <div id="save-bar">
-    <input type="text" id="mapName" name="name" value="{{ idea.name }}" placeholder="{% trans 'Name of brainstorm map...' %}">
+<div id="bottom-bar">
+  <form id="markerForm" method="POST" action="{% url 'tripapp:update_map_markers' idea.pk %}"
+        novalidate onsubmit="return prepareAndValidateForm()">
+    {% csrf_token %}
     <input type="hidden" id="items_json" name="items_json">
-    <button type="submit" class="btn btn-primary">{% trans "Save" %}</button>
-  </div>
-</form>
+    <div id="save-bar">
+      <input type="text" id="mapName" name="name" value="{{ idea.name }}"
+             placeholder="{% trans 'Name of brainstorm map...' %}">
+      <button type="submit" class="btn btn-primary">{% trans "Save" %}</button>
+    </div>
+  </form>
+
+  <form id="copyForm" method="POST" action="{% url 'tripapp:copy_itinerary_idea' idea.pk %}">
+    {% csrf_token %}
+    <div id="copy-bar">
+      <button type="submit" class="btn btn-secondary"
+              onclick="return confirm('{% trans "Copy this map as a new brainstorm map?" %}')">
+        {% trans "Copy" %}
+      </button>
+    </div>
+  </form>
+</div>
+
 {% else %}
-<div id="save-bar">
-    {% trans "You are viewing this map in read-only mode." %}
+<div id="bottom-bar" style="border-radius:12px 0 0 12px;">
+  <div id="save-bar" style="background:rgba(255,255,255,0);backdrop-filter:blur(8px);flex:1;display:flex;align-items:center;gap:12px;padding:10px 16px;justify-content: space-between;">
+    <span style="font-size:14px;font-family:sans-serif;color:#555;">{% trans "You are viewing this map in read-only mode." %}</span>
+    <form method="POST" action="{% url 'tripapp:copy_itinerary_idea' idea.pk %}" style="margin:0">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-secondary"
+              onclick="return confirm('{% trans "Copy this map as a new brainstorm map?" %}')">
+        {% trans "Copy" %}
+      </button>
+    </form>
+  </div>
 </div>
 {% endif %}
 
@@ -245,7 +297,9 @@
     }{% if not forloop.last %},{% endif %}
     {% endfor %}
   ];
-
+  let nextId = existingMarkers.length
+    ? Math.max(...existingMarkers.map(m => m.id)) + 1
+    : 1;
   const dayLocationMarkers = [
     {% for loc in day_locations %}
     {
@@ -284,8 +338,26 @@
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
   }).addTo(map);
 
+  var scaleControl = L.control.scale();
+  scaleControl.setPosition('bottomleft');
+  map.addControl(scaleControl);
+
   L.Control.geocoder({ defaultMarkGeocode: false })
-    .on('markgeocode', function(e) { map.setView(e.geocode.center, 12); })
+    .on('markgeocode', function(e) {
+      map.setView(e.geocode.center, 12);
+
+      if (!CAN_EDIT) return;
+
+      pendingLatLng = e.geocode.center;
+      selectedIcon  = 'pin';
+
+      document.querySelectorAll('#add-popup .icon-btn').forEach(b => b.classList.remove('selected'));
+      document.querySelector('#add-popup [data-icon="pin"]').classList.add('selected');
+
+      document.getElementById('add-desc').value = e.geocode.name || '';
+      document.getElementById('add-popup').classList.add('active');
+      setTimeout(() => document.getElementById('add-desc').focus(), 120);
+    })
     .addTo(map);
 
   // ── State ────────────────────────────────────────────────────
@@ -293,7 +365,6 @@
   let pendingLatLng = null;
   let editingId     = null;
   let selectedIcon  = 'pin';
-  let nextId        = 1;
 
   const ICONS = {
     pin: { emoji: '📍', label: 'Activity' },
@@ -375,8 +446,6 @@
     } else if (bounds.length > 1) {
       map.fitBounds(L.latLngBounds(bounds), { padding: [60, 60] });
     }
-
-    updateCount();
   }
 
   map.on('click', function(e) { 
@@ -506,10 +575,6 @@
   }
 
   // ── Helpers ──────────────────────────────────────────────────
-  function updateCount() {
-    const n = markers.size;
-    document.getElementById('marker-count').textContent = '📍 ' + n + ' marker' + (n !== 1 ? 's' : '');
-  }
 
   function showToast(msg) {
     const t = document.getElementById('toast');

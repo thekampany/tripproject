@@ -382,8 +382,12 @@
   // ── Kaart ────────────────────────────────────────────────────
   const map = L.map('map', { zoomControl: true }).setView([52.1, 5.1], 7);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; OpenStreetMap &copy; CARTO'
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>'
   }).addTo(map);
+
+  var scaleControl = L.control.scale();
+  scaleControl.setPosition('bottomleft');
+  map.addControl(scaleControl);
 
   function makeIcon(emoji, borderColor) {
     return L.divIcon({

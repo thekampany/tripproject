@@ -134,6 +134,7 @@ urlpatterns = [
     path('brainstorm/<int:idea_pk>/add-day/',         views.add_day_ajax,    name='add_day_ajax'),
     path('brainstorm/<int:idea_pk>/delete-day/<int:day_pk>/', views.delete_day_ajax, name='delete_day_ajax'),
     path('brainstorm/<int:pk>/', views.itineraryidea_detail, name='itineraryidea-detail'),
+    path('brainstorm/<int:idea_pk>/copy/', views.copy_itinerary_idea, name='copy_itinerary_idea'),
     path('save-route/', views.save_route, name='save_route'),
     path("ask/", views.ask, name="ollama-ask"),
     path("result/<uuid:job_id>/", views.result, name="ollama-result"),

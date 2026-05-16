@@ -2750,8 +2750,16 @@ def itineraryidea_to_trip(request, pk):
             tribe = form.cleaned_data["tribe"]
             start_date = form.cleaned_data["start_date"]
 
-            trip = create_trip_from_itinerary(itinerary, tribe, start_date, user=request.user)
+            import json
+            excluded_pins = json.loads(request.POST.get('excluded_pins', '[]'))
+            excluded_beds = json.loads(request.POST.get('excluded_beds', '[]'))
 
+            trip = create_trip_from_itinerary(
+                itinerary, tribe, start_date,
+                user=request.user,
+                excluded_pins=excluded_pins,
+                excluded_beds=excluded_beds,
+            )
             return redirect("tripapp:trip_list")
     else:
         form = CreateTripFromItineraryForm(user=request.user)
@@ -3935,34 +3943,35 @@ def update_map_markers(request, idea_pk):
 
 @login_required
 def assign_markers_view(request, idea_pk):
-    idea  = get_object_or_404(ItineraryIdea, pk=idea_pk)
-    days  = idea.itineraryidea_days.all()
+    idea   = get_object_or_404(ItineraryIdea, pk=idea_pk)
+    days   = idea.itineraryidea_days.all()
     drafts = MapMarkerDraft.objects.filter(itinerary_idea=idea)
     can_edit = idea.created_by == request.user
+
     pin_assignments = {}
     bed_assignments = {}
+
     for loc in DayLocation.objects.filter(day__itineraryidea=idea).select_related('day'):
-        draft = drafts.filter(
-            latitude=loc.latitude,
-            longitude=loc.longitude
-        ).first()
+        draft = drafts.filter(latitude=loc.latitude, longitude=loc.longitude).first()
         if draft:
             pin_assignments[str(draft.pk)] = loc.day.pk
+
     for loc in OvernightLocation.objects.filter(day__itineraryidea=idea).select_related('day'):
-        draft = drafts.filter(
-            latitude=loc.latitude,
-            longitude=loc.longitude
-        ).first()
+        draft = drafts.filter(latitude=loc.latitude, longitude=loc.longitude).first()
         if draft:
-            bed_assignments[str(draft.pk)] = loc.day.pk
+            key = str(draft.pk)
+            if key not in bed_assignments:
+                bed_assignments[key] = []
+            bed_assignments[key].append(loc.day.pk)
 
     return render(request, 'tripapp/assign_markers_to_days.html', {
-        'idea': idea, 'days': days, 'drafts': drafts, 'can_edit': can_edit,
-        'pin_assignments': pin_assignments,
-        'bed_assignments': bed_assignments,
-
+        'idea':            idea,
+        'days':            days,
+        'drafts':          drafts,
+        'can_edit':        can_edit,
+        'pin_assignments': json.dumps(pin_assignments),
+        'bed_assignments': json.dumps(bed_assignments),
     })
-
 
 @login_required
 @require_POST
@@ -4120,3 +4129,54 @@ def address_search(request):
     except Exception as e:
         print(f"Address search error: {e}")
         return JsonResponse([], safe=False)
+
+
+@login_required
+def copy_itinerary_idea(request, idea_pk):
+    if request.method != 'POST':
+        return redirect('tripapp:edit_map_markers', idea_pk=idea_pk)
+
+    original = get_object_or_404(ItineraryIdea, pk=idea_pk)
+
+    new_idea = ItineraryIdea.objects.create(
+        name=f"{original.name} (copy)",
+        created_by=request.user,
+        updated_by=request.user,
+    )
+
+    for day in original.itineraryidea_days.all():
+        new_day = ItineraryIdeaDay.objects.create(
+            itineraryidea=new_idea,
+            day_sequence=day.day_sequence,
+            day_description=day.day_description,
+            day_possible_date=day.day_possible_date,
+        )
+        for loc in day.day_locations.all():
+            DayLocation.objects.create(
+                day=new_day,
+                sequence=loc.sequence,
+                latitude=loc.latitude,
+                longitude=loc.longitude,
+                radius=loc.radius,
+                description=loc.description,
+            )
+        for loc in day.overnightlocations.all():
+            OvernightLocation.objects.create(
+                day=new_day,
+                latitude=loc.latitude,
+                longitude=loc.longitude,
+                radius=loc.radius,
+                description=loc.description,
+            )
+
+    for draft in original.marker_drafts.all():
+        MapMarkerDraft.objects.create(
+            itinerary_idea=new_idea,
+            icon=draft.icon,
+            description=draft.description,
+            latitude=draft.latitude,
+            longitude=draft.longitude,
+            sequence=draft.sequence,
+        )
+
+    return redirect('tripapp:edit_map_markers', idea_pk=new_idea.pk)
