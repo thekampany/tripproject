@@ -1911,8 +1911,11 @@ def encode_image_to_base64(image_path, max_size=(300, 300)):
     full_path = os.path.join(settings.MEDIA_ROOT, image_path)
     
     if not os.path.exists(full_path):
-        print(f"⚠️ file not found: {full_path}")  
-        return None
+        print(f"⚠️ file not found: {full_path}")
+        #bypass for the globalbadges?  
+        full_path = os.path.join(settings.STATIC_ROOT, image_path)
+        if not os.path.exists(full_path):
+            return None
 
     try:
         with PILImage.open(full_path) as img:
@@ -2059,6 +2062,8 @@ def generate_html_with_images(trip):
                 img_base64 = encode_image_to_base64(assignment.badge.image.name)
                 if img_base64:
                     html_content += f'<img src="{img_base64}" width="200px"  height="200px">'
+                else:
+                    html_content += f'<p>{assignment.badge.name}</p>'
             
 
         html_content += "</div>"

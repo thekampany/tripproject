@@ -16,7 +16,7 @@ from django.db import models
 
 from requests.exceptions import RequestException
 from django.core.cache import cache
-
+from urllib.parse import urlencode, quote
 
 geolocator = Nominatim(user_agent="tripapp")
 
@@ -60,6 +60,9 @@ def simplify_locations(locations, epsilon=0.0005):
     return rdp(coords, epsilon=epsilon)
 
 def generate_static_map(dayprogram):
+    #staticmaps still depends on GET, cant find the right POST spec
+    #cant get strokeDasharray to work
+    
     staticmaps_url = settings.STATICMAPS_URL
     staticmaps_api_key = settings.STATICMAPS_API_KEY
 
@@ -68,18 +71,21 @@ def generate_static_map(dayprogram):
         return  
     
     markers = []
-    polyline_params = []
+    marker_values = []
+    polyline_values = [] 
 
     if dayprogram.points.exists():
         logger.info("Processing points for markers.") 
         for point in dayprogram.points.all():
             markers.append(f"{point.latitude},{point.longitude}")
 
+    marker_values = f"width:20|height:20|{'|'.join(markers)}" if markers else None
+
     tripdate = dayprogram.tripdate
     logger.info("Processing dayprogram for date: %s", tripdate)
 
     locations = list(Location.objects.filter(timestamp__date=tripdate))
-
+    
     if locations:
         logger.info("Found %d locations for polyline.", len(locations))
         
@@ -87,12 +93,18 @@ def generate_static_map(dayprogram):
 
         if len(coords) > 150:
             simplified = rdp(coords, epsilon=0.0005)
+            if len(simplified) > 400:
+                step = len(simplified) // 400
+                simplified = simplified[::step]
+                simplified = rdp(simplified, epsilon=0.1)
+
             logger.info("Reduced from %d to %d points using RDP.", len(coords), len(simplified))
         else:
             simplified = coords        
-                
+
+                   
         polyline_str = "|".join([f"{lat},{lon}" for lat, lon in simplified])
-        polyline_params.append(f"polyline=weight:4|color:0000FF|{polyline_str}") 
+        polyline_values.append(f"weight:1|color:blue|{polyline_str}")
 
     for route in dayprogram.routes.all():
         if route.gpx_file:
@@ -107,25 +119,27 @@ def generate_static_map(dayprogram):
                     
                 if gpx_points:
                     coords = list(gpx_points)
-                    simplified = rdp(coords, epsilon=0.0005) if len(coords) > 150 else coords
+
+                    if len(coords) > 150:
+                        simplified = rdp(coords, epsilon=0.0005)
+                        if len(simplified) > 400:
+                            step = len(simplified) // 400
+                            simplified = simplified[::step]
+                            simplified = rdp(simplified, epsilon=0.1)
+                    else:
+                        simplified = coords        
+
                     polyline_str = "|".join(f"{lat},{lon}" for lat, lon in simplified)
-                    polyline_params.append(
-                        f"polyline=weight:2|color:blue|strokeDasharray:10,15|{polyline_str}"
-                    )
+                    polyline_values.append(f"weight:1|color:green|{polyline_str}")
 
-    marker_param = None
-    if markers:
-        marker_param = f"markers=width:20|height:20|{'|'.join(markers)}"
+    params = [("polyline", v) for v in polyline_values]
+    if marker_values:
+        params.append(("markers", marker_values))
+    if staticmaps_api_key:
+        params.append(("api_key", staticmaps_api_key))
 
-    query_parts = polyline_params[:] 
-    if marker_param:
-        query_parts.append(marker_param)
-
-    base_url = f"{staticmaps_url}?{'&'.join(query_parts)}"
-    logger.info("Requesting static map with query: %s", query_parts)
-
-    request_url = f"{base_url}&api_key={staticmaps_api_key}" if staticmaps_api_key else base_url
-
+    request_url = f"{staticmaps_url}?{urlencode(params)}"
+    
     response = requests.get(request_url)
     if response.status_code == 200:
         filename = f"map_dayprogram_{dayprogram.id}.png"
