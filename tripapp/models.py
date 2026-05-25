@@ -104,15 +104,23 @@ class Trip(models.Model):
         trippers = self.trippers.all() 
         expenses = self.expenses.all() 
         
-        total_expenses = sum(expense.converted_amount for expense in expenses)
-        num_trippers = trippers.count()
-        equal_share = total_expenses / Decimal(num_trippers) if num_trippers > 0 else 0
+        balance = {tripper.name: Decimal(0) for tripper in trippers}
 
-        balance = {}
-        for tripper in trippers:
-            tripper_expenses = expenses.filter(tripper=tripper)
-            spent = sum(expense.converted_amount for expense in tripper_expenses)
-            balance[tripper.name] = spent - equal_share
+        for expense in expenses:
+            participants = expense.split_among.all() if expense.split_among.exists() else trippers
+            num_participants = participants.count()
+
+            if num_participants == 0:
+                continue  # Skip als er niemand meedoet
+
+            equal_share = expense.converted_amount / Decimal(num_participants)
+
+            payer = expense.tripper
+            balance[payer.name] += expense.converted_amount
+
+            for participant in participants:
+                balance[participant.name] -= equal_share
+
 
         return balance
 
@@ -176,7 +184,10 @@ class Tripper(models.Model):
         return self.name
 
 class Checklist(models.Model):
-    trip = models.OneToOneField(Trip, on_delete=models.CASCADE, related_name='checklist')
+    trip           = models.OneToOneField(Trip, on_delete=models.CASCADE, related_name='checklist')
+    suggestion_job = models.ForeignKey(
+        'OllamaJob', null=True, blank=True, on_delete=models.SET_NULL
+    )
 
     def __str__(self):
         return f"Checklist for {self.trip.name}"
@@ -370,7 +381,13 @@ class TripExpense(models.Model):
     description = models.CharField(max_length=30, blank=True, null=True)
     receipt = models.ImageField(upload_to='receipts/', blank=True, null=True)
     category = models.CharField(max_length=20,choices=CATEGORY_CHOICES,blank=True,default='')
- 
+    split_among = models.ManyToManyField(
+        Tripper,
+        related_name='expenses_to_split',
+        blank=True,
+        help_text="Select which trippers should share this expense. If empty, all trippers are assumed."
+    )
+
     def __str__(self):
         return f'{self.amount} {self.currency} on {self.trip.name} by {self.tripper.name}'
 
@@ -657,3 +674,14 @@ class OllamaJob(models.Model):
     def duration(self):
         if self.finished_at:
             return (self.finished_at - self.created_at).total_seconds()
+
+
+class DayVibe(models.Model):
+    dayprogram = models.ForeignKey(DayProgram, on_delete=models.CASCADE, related_name='vibes')
+    tripper    = models.ForeignKey(Tripper, on_delete=models.CASCADE, related_name='vibes')
+    vibe       = models.CharField(max_length=10)   # gewoon een emoji, geen choices
+    note       = models.CharField(max_length=140, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [('dayprogram', 'tripper')]

@@ -9,6 +9,8 @@
 
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
+
+        <!-- Description -->
         <div class="row">
             <div class="col-md-12 mb-3">
                 {{ form.description.label_tag }}
@@ -16,12 +18,12 @@
             </div>
         </div>
 
+        <!-- Amount, Currency, Date -->
         <div class="row">
             <div class="col-4 mb-3">
                 {{ form.amount.label_tag }}
                 {{ form.amount }}
             </div>
-
             <div class="col-4 mb-3">
                 {{ form.currency.label_tag }}
                 {{ form.currency }}
@@ -32,8 +34,8 @@
             </div>
         </div>
 
+        <!-- Category, Receipt -->
         <div class="row">
-
             <div class="col-md-6 mb-3">
                 {{ form.category.label_tag }}
                 {{ form.category }}
@@ -44,8 +46,22 @@
             </div>
         </div>
 
+        <!-- Split Among (Checkboxes) -->
+        <!--<div class="row">
+            <div class="col-md-12 mb-3">
+                {{ form.split_among.label_tag }}
+                <div class="form-check-group">
+                    {% for checkbox in form.split_among %}
+                        <div class="form-check">
+                            {{ checkbox.tag }}
+                            {{ checkbox.choice_label }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>-->
 
-        <button type="submit" class="btn">Add Expense</button>
+        <button type="submit" class="btn btn-primary">Add Expense</button>
         <br><br>
     </form>
 </div>

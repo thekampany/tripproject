@@ -123,6 +123,24 @@
             color: white;
         }
 
+.tl-days { display: flex; flex-direction: column; }
+.tl-day { display: grid; grid-template-columns: 52px 1px 1fr; gap: 0 16px; position: relative; }
+.tl-date { text-align: right; padding: 0 0 1.5rem; }
+.tl-date-day { font-size: 20px; font-weight: 500; line-height: 1; }
+.tl-date-month { font-size: 11px; color: gray; margin-top: 2px; }
+.tl-line { background: var(--border-color); position: relative; }
+.tl-dot { width: 10px; height: 10px; border-radius: 50%; background: gray; position: absolute; left: -4.5px; top: 6px; }
+.tl-dot.today { background: #C70039; width: 12px; height: 12px; left: -5.5px; }
+.tl-content { padding: 0 0 1.5rem; }
+.tl-today-badge { display: inline-block; border: 1px solid #C70039; border-radius: 6px; font-size: 11px; padding: 1px 7px; color: #C70039; margin-bottom: 4px; }
+.tl-dest { font-size: 14px; margin-bottom: 6px; }
+.tl-vibes { display: flex; flex-wrap: wrap; gap: 6px; }
+.tl-vibe-chip { display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,.04); border: 1px solid var(--border-color); border-radius: 20px; padding: 3px 10px; font-size: 13px; }
+.tl-vibe-emoji { font-size: 15px; line-height: 1; }
+.tl-vibe-name { color: gray; font-size: 12px; }
+.tl-vibe-note { color: gray; font-size: 12px; font-style: italic; }
+.tl-future { font-size: 13px; color: gray; font-style: italic; }
+
 </style>
 </head>
 <body>
@@ -175,6 +193,10 @@
                     <li><hr class="dropdown-divider"></li>
                     {% if user.is_staff and enable_admin %}<li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>{% endif %}
                     {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'tripapp:task_manager' %}">Background Tasks</a></li>{% endif %}
+                    {% if user.is_staff %}
+                        <li><a class="dropdown-item" href="{% url 'tripapp:ollama_job_list' %}">Stupid AI</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                    {% endif %}
                     {% if user.is_authenticated %} <li><a class="dropdown-item" href="{% url 'tripapp:logout' %}">Logout</a></li>{% endif %}
                     </ul>
                 </div>
@@ -197,7 +219,7 @@
         <div class="dropdown">
             <!--<a class="btn nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">-->
             <a class="btn" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-three-dots"></i><span style="font-size: 12px;">{% trans "Meer" %}..</span>
+                <i class="bi bi-three-dots"></i><span style="font-size: 12px;">{% trans "More" %}..</span>
             </a>
             <ul class="dropdown-menu custom-dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                 <li><a class="dropdown-item" href="{% url 'tripapp:trip_checklist' trip.slug  %}">CheckPackList</a></li>
@@ -241,6 +263,45 @@
     </div>
 
 
+    {% elif view_mode == "vibe" %}
+        <div class="tl-days">
+        {% for vd in vibe_days %}
+            <div class="tl-day">
+                <div class="tl-date">
+                    <div class="tl-date-day">{{ vd.dayprogram.tripdate|date:"d" }}</div>
+                    <div class="tl-date-month">{{ vd.dayprogram.tripdate|date:"M" }}</div>
+                </div>
+                <div class="tl-line">
+                    <div class="tl-dot {% if vd.state == 'today' %}today{% endif %}"></div>
+                </div>
+                <div class="tl-content">
+                    {% if vd.state == 'today' %}
+                        <span class="tl-today-badge">{% trans "today" %}</span>
+                    {% endif %}
+                    <div class="tl-dest">
+                        <a href="{% url 'tripapp:dayprogram_detail' vd.dayprogram.id %}" class="tripdetail">
+                            {{ vd.dayprogram.description }}
+                        </a>
+                    </div>
+                    {% if vd.state == 'future' %}
+                        {# niets #}
+                    {% elif vd.vibes %}
+                        <div class="tl-vibes">
+                        {% for v in vd.vibes %}
+                            <div class="tl-vibe-chip">
+                                <span class="tl-vibe-emoji">{{ v.vibe }}</span>
+                                <span class="tl-vibe-name">{{ v.tripper.name }}</span>
+                                {% if v.note %}<span class="tl-vibe-note"> — {{ v.note }}</span>{% endif %}
+                            </div>
+                        {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+
+
     {% else %}
         <ul id="dayprogram-list" class="dayprogram-list">
             {% for day_program in dayprograms %}
@@ -267,9 +328,11 @@
         {% endif %}  
 
         {% if view_mode == "grid" %}
-            <a href="?view=list" class="fab2">&#127765;</a>
+            <a href="?view=vibe" class="fab2" title="Vibe">&#127775;</a>
+        {% elif view_mode == "vibe" %}
+            <a href="?view=list" class="fab2" title="List">&#9776;</a>
         {% else %}
-            <a href="?view=grid" class="fab2">&#127769;</a>
+            <a href="?view=grid" class="fab2" title="Grid">&#127769;</a>
 
             {% if tripper.is_trip_admin %}
                 {% if trip.date_to|date:'Y-m-d' > today|date:'Y-m-d'  %}

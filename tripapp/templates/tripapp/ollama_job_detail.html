@@ -1,0 +1,17 @@
+{% extends "base_generic.html" %}
+{% load static %}
+{% block content %}    
+    <h2>Job Details</h2>
+    <p><strong>Model:</strong> {{ ollamajob.model }}</p>
+    <p><strong>Prompt:</strong> {{ ollamajob.prompt }}</p>
+    <p><strong>Answer:</strong> {{ ollamajob.answer }}</p>
+    <p><strong>Error:</strong> {{ ollamajob.error }}</p>
+    <p><strong>Status:</strong> {{ ollamajob.status }}</p>
+    <p><strong>Created at:</strong> {{ ollamajob.created_at }}</p>
+    <p><strong>Finished at:</strong> {{ ollamajob.finished_at }}</p>
+    <p><strong>Duration:</strong> {{ ollamajob.duration }} seconds</p>
+    <p>&nbsp;</p>
+    <a href="{% url 'tripapp:ollama_job_list' %}">← Back to list</a>
+        
+    <br /><br />
+{% endblock %}

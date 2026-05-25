@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.db import models
 from django_q.models import Schedule
 from .models import Trip,Badge, Tripper, BadgeAssignment, Trip, Location, ImmichPhotos, BingoCard, BingoAnswer, LogEntry, DayProgram, OllamaJob
-from .models import User, ItineraryIdea, ItineraryIdeaDay, DayLocation, OvernightLocation
+from .models import User, ItineraryIdea, ItineraryIdeaDay, DayLocation, OvernightLocation, Checklist
 import requests
 from datetime import datetime, timedelta
 from django.core.files.base import ContentFile
@@ -540,7 +540,10 @@ if not Schedule.objects.filter(func='tripapp.tasks.fetch_and_store_yesterdays_we
 
 def run_ollama(job_id: str, trip_id: str) -> str:
     ollama_api_url = settings.OLLAMA_URL
-
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.error(f"DEBUG OLLAMA_URL: '{ollama_api_url}'")
+    logger.error(f"DEBUG OLLAMA_API_KEY aanwezig: {bool(getattr(settings, 'OLLAMA_API_KEY', None))}")
     job = OllamaJob.objects.get(id=job_id)
     job.status = "running"
     job.save(update_fields=["status"])
@@ -582,10 +585,17 @@ def process_bingocard_response(task):
     if job.status != "done":
         return
 
+    # Strip  ```json and ``` 
+    answer = job.answer.strip()
+    if answer.startswith('```json'):
+        answer = answer[7:].strip()
+    if answer.endswith('```'):
+        answer = answer[:-3].strip()
+
     try:
-        descriptions = json.loads(job.answer)
+        descriptions = json.loads(answer)
     except json.JSONDecodeError:
-        job.error = "Ollama gaf geen geldige JSON terug"
+        job.error = "Ollama did not return valid JSON"
         job.save(update_fields=["error"])
         return
 
@@ -653,5 +663,28 @@ def process_generated_itinerary(task):
 
     except (json.JSONDecodeError, Exception) as e:
         job.error = str(e)
+        job.status = "error"
+        job.save(update_fields=["error", "status"])
+
+
+def process_checklist_suggestions(task):
+    job_id       = task.args[0]
+    checklist_id = task.args[1]   
+
+    job       = OllamaJob.objects.get(id=job_id)
+    checklist = Checklist.objects.get(id=checklist_id)
+
+    if job.status != "done":
+        return
+
+    try:
+        raw   = job.answer
+        start = raw.find("[")
+        end   = raw.rfind("]") + 1
+        items = json.loads(raw[start:end]) if start != -1 else []
+        job.answer = json.dumps(items)
+        job.save(update_fields=["answer"])
+    except json.JSONDecodeError:
+        job.error  = "Ollama did not return valid JSON"
         job.status = "error"
         job.save(update_fields=["error", "status"])

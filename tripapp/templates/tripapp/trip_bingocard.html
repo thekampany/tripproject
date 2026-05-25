@@ -148,13 +148,15 @@
         {% endfor %}
     </table>
     <p>&nbsp;</p>
-    <p><a href="{% url 'tripapp:trip_bingocards' trip.id %}">{% trans "See answers for all trippers" %}</a></p>
+    <p><a href="{% url 'tripapp:trip_bingocards' trip.id %}" class="btn">{% trans "See answers for all trippers" %}</a></p>
     <p>&nbsp;</p>
 {% else %}
     {% trans "No Bingo created for this trip" %}<br>
-    &rarr;&nbsp;<a href="{% url 'tripapp:tripadmin_bingocards' trip.id %}">{% trans "add bingocards" %}</a><br>
-    {% if ollama_configured %}
-    &rarr;&nbsp;<a href="#" id="generate-btn" data-url="{% url 'tripapp:bingo-generate' trip.id %}">{% trans "generate 6 bingocards for me" %}</a><br>
+    {% if trip_active %}
+        &rarr;&nbsp;<a href="{% url 'tripapp:tripadmin_bingocards' trip.id %}">{% trans "add bingocards" %}</a><br>
+        {% if ollama_configured %}
+        &rarr;&nbsp;<a href="#" id="generate-btn" data-url="{% url 'tripapp:bingo-generate' trip.id %}">✨ {% trans "generate 6 bingocards for me" %}</a><br>
+        {% endif %}
     {% endif %}
     <p>&nbsp;</p>
 {% endif %}

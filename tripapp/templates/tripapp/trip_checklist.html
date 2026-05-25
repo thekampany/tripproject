@@ -21,6 +21,26 @@
         .progress { height: 6px; border-radius: 99px; margin-bottom: 6px; }
         #add-input { font-size: 15px; }
         .hint { font-size: 12px; color: #999; margin-top: 6px; }
+        .delete-btn { background: none; border: none; color: #ccc; font-size: 16px; line-height: 1; padding: 0 4px; cursor: pointer; transition: color .15s; flex-shrink: 0; }
+        .delete-btn:hover { color: #e74c3c; }
+
+        /* Suggestion banner */
+        #suggestion-banner { border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+        #suggestion-banner.pending { background: #fff8e1; color: #7a6000; }
+        #suggestion-banner.done    { background: #e8f5e9; color: #2e7d32; }
+        #suggestion-banner.error   { background: #fdecea; color: #b71c1c; }
+        .spinner { width: 16px; height: 16px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Suggestions panel */
+        #suggestions-panel { background: rgba(0,0,0,.04); border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+        #suggestions-panel h6 { font-size: 13px; color: #666; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 12px; }
+        .suggestion-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,.06); font-size: 15px; }
+        .suggestion-item span { flex: 1; }
+        .suggestion-item.added span { color: #999; text-decoration: line-through; }
+        .suggestion-item.added .add-suggestion { display: none; }
+        .suggest-link { display: block; text-align: right; font-size: 13px; color: #555; text-decoration: none; }
+        .suggest-link:hover { text-decoration: underline; color: #333; }
     </style>
 </head>
 <body>
@@ -30,83 +50,201 @@
     <h2>{% trans "Pack Check Wish" %}</h2>
     <p><strong>{{ trip.name }}</strong></p>
 
+    {% if ollama_configured %}
+        {% if trip_active %}
+        {# ── Suggestion banner ── #}
+        {% if job_status == "pending" or job_status == "running" %}
+            <div id="suggestion-banner" class="pending">
+                <div class="spinner"></div>
+                <span>{% trans "Generating suggestions… check back in a moment." %}</span>
+            </div>
+
+        {% elif job_status == "done" %}
+            <div id="suggestion-banner" class="done">
+                <span>✨ {% trans "Suggestions ready!" %}</span>
+                <button id="show-suggestions-btn" class="btn btn-sm btn-success ml-auto">{% trans "Show" %}</button>
+            </div>
+            <div id="suggestions-panel" style="display:none">
+                <h6>{% trans "Suggested items — click + to add" %}</h6>
+                <ul id="suggestions-list" class="list-unstyled mb-2"></ul>
+                <button id="dismiss-btn" class="btn btn-sm btn-outline-secondary mt-2">{% trans "Dismiss" %}</button>
+            </div>
+
+        {% elif job_status == "error" %}
+            <div id="suggestion-banner" class="error">
+                <span>⚠️ {% trans "Suggestion generation failed." %}</span>
+                <a href="{% url 'tripapp:suggest_checklist_items' trip.id %}"
+                class="btn btn-sm btn-outline-danger ml-auto">{% trans "Retry" %}</a>
+            </div>
+
+        {% else %}
+            <div class="mb-3">
+                <a href="{% url 'tripapp:suggest_checklist_items' trip.id %}" class="suggest-link">✨ {% trans "Suggest items" %}</a>
+            </div>
+        {% endif %}
+        {% endif %}
+    {% endif %}
+
+    {# ── Progress bar ── #}
     <div class="progress mb-1">
         <div id="progress-bar" class="progress-bar bg-dark" role="progressbar" style="width: 0%"></div>
     </div>
     <p id="progress-label" class="hint mb-4"></p>
 
+    {# ── Checklist ── #}
     <ul id="item-list" class="list-unstyled">
         {% for item in items %}
-        <li class="checklist-item {% if item.is_completed %}done{% endif %}" data-id="{{ item.id }}">
+        <li class="checklist-item {% if item.is_completed %}done{% endif %}"
+            data-id="{{ item.id }}"
+            data-delete-url="{% url 'tripapp:delete_checklist_item' item.id %}">
             <input type="checkbox" id="item-{{ item.id }}" {% if item.is_completed %}checked{% endif %}>
             <label for="item-{{ item.id }}">{{ item.text }}</label>
+            {% if trip_active %}<button class="delete-btn" title="{% trans 'Remove' %}">×</button>{% endif %}
         </li>
         {% endfor %}
     </ul>
-
+    {% if trip_active %}
     <div class="d-flex gap-2 align-items-center border-top pt-3 mt-2">
         <input id="add-input" type="text" class="form-control" placeholder="{% trans 'Add item…' %}">
         <button id="add-btn" class="btn btn-dark text-nowrap">+ {% trans "Add" %}</button>
     </div>
     <p class="hint">{% trans "Enter for next item · Shift+Enter to stop" %}</p>
-
+    {% endif %}
     <p class="mt-5"><a href="{% url 'tripapp:trip_detail' slug=trip.slug %}">&larr; {% trans "Trip" %}</a></p>
 </div>
 </div>
 
 <script>
-const TOGGLE_URL = "{% url 'tripapp:toggle_checklist_item' 0 %}".slice(0, -2);
-const ADD_URL = "{% url 'tripapp:add_checklist_item_ajax' trip.id %}";
-const CSRF = "{{ csrf_token }}";
+const TOGGLE_URL  = "{% url 'tripapp:toggle_checklist_item' 0 %}".slice(0, -2);
+const ADD_URL     = "{% url 'tripapp:add_checklist_item_ajax' trip.id %}";
+const STATUS_URL  = "{% url 'tripapp:checklist_job_status' trip.id %}";
+const DISMISS_URL = "{% url 'tripapp:dismiss_checklist_suggestions' trip.id %}";
+const CSRF        = "{{ csrf_token }}";
+const JOB_STATUS  = "{{ job_status }}";
 
+// ── Progress ──────────────────────────────────────────────
 function updateProgress() {
     const items = document.querySelectorAll('.checklist-item');
-    const done = document.querySelectorAll('.checklist-item.done').length;
-    const pct = items.length ? Math.round(done / items.length * 100) : 0;
+    const done  = document.querySelectorAll('.checklist-item.done').length;
+    const pct   = items.length ? Math.round(done / items.length * 100) : 0;
     document.getElementById('progress-bar').style.width = pct + '%';
     document.getElementById('progress-label').textContent = done + ' of ' + items.length + ' packed';
 }
 
+// ── Toggle ────────────────────────────────────────────────
 document.getElementById('item-list').addEventListener('change', async e => {
     if (!e.target.matches('input[type=checkbox]')) return;
-    const li = e.target.closest('.checklist-item');
-    const id = li.dataset.id;
-    const res = await fetch(TOGGLE_URL + id + '/', {
-        method: 'POST',
-        headers: { 'X-CSRFToken': CSRF }
+    const li  = e.target.closest('.checklist-item');
+    const res = await fetch(TOGGLE_URL + li.dataset.id + '/', {
+        method: 'POST', headers: { 'X-CSRFToken': CSRF }
     });
-    if (!res.ok) return;  
+    if (!res.ok) return;
     const data = await res.json();
     li.classList.toggle('done', data.is_completed);
     updateProgress();
 });
 
-async function addItem() {
-    const input = document.getElementById('add-input');
-    const text = input.value.trim();
-    if (!text) return;
-    const res = await fetch(ADD_URL, {
+// ── Delete ────────────────────────────────────────────────
+document.getElementById('item-list').addEventListener('click', async e => {
+    if (!e.target.matches('.delete-btn')) return;
+    const li  = e.target.closest('.checklist-item');
+    const res = await fetch(li.dataset.deleteUrl, {
+        method: 'POST', headers: { 'X-CSRFToken': CSRF }
+    });
+    if (!res.ok) return;
+    li.remove();
+    updateProgress();
+});
+
+// ── Add item ──────────────────────────────────────────────
+async function addItem(text) {
+    const res  = await fetch(ADD_URL, {
         method: 'POST',
         headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
         body: JSON.stringify({ text })
     });
     const item = await res.json();
-    if (item.id) {
-        const li = document.createElement('li');
-        li.className = 'checklist-item';
-        li.dataset.id = item.id;
-        li.innerHTML = `<input type="checkbox" id="item-${item.id}"><label for="item-${item.id}">${item.text}</label>`;
-        document.getElementById('item-list').appendChild(li);
-        input.value = '';
-        input.focus();
-        updateProgress();
-    }
+    if (!item.id) return null;
+    const li          = document.createElement('li');
+    li.className      = 'checklist-item';
+    li.dataset.id     = item.id;
+    li.dataset.deleteUrl = item.delete_url;
+    li.innerHTML = `
+        <input type="checkbox" id="item-${item.id}">
+        <label for="item-${item.id}">${item.text}</label>
+        <button class="delete-btn" title="Remove">×</button>`;
+    document.getElementById('item-list').appendChild(li);
+    updateProgress();
+    return item;
 }
 
-document.getElementById('add-btn').onclick = addItem;
+document.getElementById('add-btn').onclick = async () => {
+    const input = document.getElementById('add-input');
+    const text  = input.value.trim();
+    if (!text) return;
+    if (await addItem(text)) input.value = '';
+    input.focus();
+};
 document.getElementById('add-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addItem(); }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('add-btn').click(); }
 });
+
+// ── Polling ───────────────────────────────────────────────
+if (JOB_STATUS === 'pending' || JOB_STATUS === 'running') {
+    const poll = setInterval(async () => {
+        const res  = await fetch(STATUS_URL);
+        const data = await res.json();
+        if (data.status === 'done' || data.status === 'error') {
+            clearInterval(poll);
+            location.reload();
+        }
+    }, 2500);
+}
+
+// ── Suggestions panel ─────────────────────────────────────
+const showBtn = document.getElementById('show-suggestions-btn');
+if (showBtn) {
+    fetch(STATUS_URL).then(r => r.json()).then(data => {
+        const list     = document.getElementById('suggestions-list');
+        const existing = [...document.querySelectorAll('.checklist-item label')]
+            .map(l => l.textContent.trim().toLowerCase());
+        const fresh    = data.items.filter(s => !existing.includes(s.toLowerCase()));
+
+        if (!fresh.length) {
+            list.innerHTML = `<li class="hint">{% trans "All suggestions already in your list." %}</li>`;
+            return;
+        }
+
+        fresh.forEach(text => {
+            const li = document.createElement('li');
+            li.className = 'suggestion-item';
+            li.innerHTML = `
+                <span>${text}</span>
+                <button class="btn btn-sm btn-outline-dark add-suggestion">+</button>`;
+            li.querySelector('.add-suggestion').onclick = async () => {
+                await addItem(text);
+                li.classList.add('added');
+            };
+            list.appendChild(li);
+        });
+    });
+
+    showBtn.onclick = () => {
+        const panel = document.getElementById('suggestions-panel');
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        showBtn.textContent = panel.style.display === 'none'
+            ? "{% trans 'Show' %}"
+            : "{% trans 'Hide' %}";
+    };
+}
+
+const dismissBtn = document.getElementById('dismiss-btn');
+if (dismissBtn) {
+    dismissBtn.onclick = async () => {
+        await fetch(DISMISS_URL, { method: 'POST', headers: { 'X-CSRFToken': CSRF } });
+        location.reload();
+    };
+}
 
 updateProgress();
 </script>

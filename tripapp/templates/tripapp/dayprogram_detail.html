@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
     <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <style>
@@ -313,10 +314,6 @@
         {% if weather_forecast_data %}Forecast: 
             {{ weather_forecast_data.weather_code_avg|get_weather_description }}&nbsp;
             {{ weather_forecast_data.temperature_max }}&nbsp;&deg;C
-        {% else %}
-            {% if dayprogram.recorded_weather_text %}
-               {{ dayprogram.recorded_weather_text|get_recorded_weather_summary  }}
-            {% endif %}
         {% endif %}
     </p>
 
@@ -346,7 +343,7 @@
                     <div class="dayprogramcard">
                         <p>
                             <span class="dayprogramcard-title">{% trans "Ideas for Today" %}</span>
-                            <a href="#" id="suggest-btn" data-url="{% url 'tripapp:dayprogram-suggestions-generate' dayprogram.id %}">{% trans "Generate suggestions for me" %}</a>
+                            <a href="#" id="suggest-btn" data-url="{% url 'tripapp:dayprogram-suggestions-generate' dayprogram.id %}">✨ {% trans "Generate suggestions for me" %}</a>
                         </p>
                     </div>
                     {% endif %}
@@ -557,16 +554,88 @@
         {% endif %}
     </div>
 
-    {% if tracked_distance %}
+    {% if tracked_distance or dayprogram.recorded_weather_text %}
+    <p>&nbsp;</p>
     <div class="dayprogramcard">
         <p>
-            {% trans "Tracked Distance:" %}
-            {{ tracked_distance }}{{ distance_unit }}
+            {% if tracked_distance %}
+                {% trans "Tracked Distance:" %} {{ tracked_distance }}{{ distance_unit }}
+            {% endif %}
         </p>
+        <p>
+            {% if dayprogram.recorded_weather_text %}
+               {{ dayprogram.recorded_weather_text|get_recorded_weather_summary  }}
+            {% endif %}
     </div>
     {% endif %}
 
     <p>&nbsp;</p>
+
+
+    {% if day_state == "today" %}
+        <div class="vibe-section mt-4 pt-3 border-top">
+            <p class="hint mb-2">{% trans "Vibe of the day?" %}</p>
+            <div class="vibe-picker mb-2">
+                {% for emoji in default_vibes %}
+                <button class="vibe-btn {% if my_vibe.vibe == emoji %}selected{% endif %}"
+                        data-vibe="{{ emoji }}">{{ emoji }}</button>
+                {% endfor %}
+                <button id="custom-vibe-btn" class="vibe-btn" title="{% trans 'Choose your emoji' %}">✏️</button>
+                <div id="emoji-picker-wrapper" style="display:none; position:absolute; z-index:100;">
+                    <emoji-picker></emoji-picker>
+                </div>
+           </div>
+            <input id="vibe-note" type="text" class="form-control form-control-sm mb-2"
+                maxlength="140" placeholder="{% trans 'Add note… (optional)' %}"
+                value="{{ my_vibe.note|default:'' }}">
+            <p id="vibe-saved" class="hint" style="display:none">✓ {% trans "Saved" %}</p>
+
+            {% if other_vibes %}
+            <div class="other-vibes mt-3">
+                <p class="hint mb-1">{% trans "According to others:" %}</p>
+                {% for v in other_vibes %}
+                <span class="other-vibe-chip" title="{{ v.note }}">
+                    {{ v.vibe }} <small>{{ v.tripper.name }}</small>
+                    {% if v.note %}<em class="hint"> — {{ v.note }}</em>{% endif %}
+                </span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+    {% elif day_state == "past" %}
+        {% if my_vibe or other_vibes %}
+        <div class="vibe-section mt-4 pt-3 border-top">
+            <p class="hint mb-1">{% trans "Vibes this day:" %}</p>
+            {% if my_vibe %}
+            <span class="other-vibe-chip">
+                {{ my_vibe.vibe }} <small>{% trans "You" %}</small>
+                {% if my_vibe.note %}<em class="hint"> — {{ my_vibe.note }}</em>{% endif %}
+            </span>
+            {% endif %}
+            {% for v in other_vibes %}
+            <span class="other-vibe-chip">
+                {{ v.vibe }} <small>{{ v.tripper.name }}</small>
+                {% if v.note %}<em class="hint"> — {{ v.note }}</em>{% endif %}
+            </span>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+    {% endif %}
+    <p>&nbsp;</p>
+    <style>
+    .vibe-picker { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .vibe-btn { background: #f5f5f5; border: 2px solid transparent; border-radius: 20px; padding: 6px 12px; font-size: 20px; cursor: pointer; transition: all .15s; line-height: 1; }
+    .vibe-btn:hover { background: #ececec; }
+    .vibe-btn.selected { border-color: #333; background: #fff; }
+    .vibe-custom { width: 48px; height: 38px; text-align: center; font-size: 20px; border: 2px solid #ddd; border-radius: 20px; padding: 0; background: #f5f5f5; cursor: pointer; }
+    .vibe-custom:focus { outline: none; border-color: #333; background: #fff; }
+    .other-vibe-chip { display: inline-block; background: rgba(0,0,0,.05); border-radius: 16px; padding: 4px 12px; font-size: 13px; margin: 2px; }
+    </style>
+
+
+
 
 </div>
 </div>
@@ -685,16 +754,79 @@ function hideBadgeOverlay() {
 }
 </script>
 <script>
-document.getElementById('suggest-btn').addEventListener('click', function(e) {
-  e.preventDefault();
-  this.textContent = 'Being generated, will be available later...';
-  this.style.pointerEvents = 'none';
+const suggestBtn = document.getElementById('suggest-btn');
+if (suggestBtn) {
+    suggestBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        this.textContent = 'Being generated, will be available later...';
+        this.style.pointerEvents = 'none';
 
-  fetch(this.dataset.url, {
-    method: 'POST',
-    headers: {'X-CSRFToken': '{{ csrf_token }}'},
-  });
-});
+        fetch(this.dataset.url, {
+            method: 'POST',
+            headers: {'X-CSRFToken': '{{ csrf_token }}'},
+        });
+    });
+}
+</script>
+<script>
+const VIBE_URL = "{% url 'tripapp:set_day_vibe' dayprogram.id %}";
+const CSRF     = "{{ csrf_token }}";
+
+let selectedVibe = "{{ my_vibe.vibe|default:'' }}";
+
+if (document.getElementById('vibe-note')) {
+    // Snelkeuze knoppen
+    document.querySelectorAll('.vibe-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.vibe-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedVibe = btn.dataset.vibe;
+            saveVibe();
+        });
+    });
+
+    // Emoji picker
+    const pickerWrapper = document.getElementById('emoji-picker-wrapper');
+    const customBtn     = document.getElementById('custom-vibe-btn');
+
+    customBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        pickerWrapper.style.display = pickerWrapper.style.display === 'none' ? 'block' : 'none';
+    });
+
+    document.addEventListener('click', e => {
+        if (!pickerWrapper.contains(e.target) && e.target !== customBtn) {
+            pickerWrapper.style.display = 'none';
+        }
+    });
+
+    document.querySelector('emoji-picker').addEventListener('emoji-click', e => {
+        const emoji = e.detail.unicode;
+        document.querySelectorAll('.vibe-btn').forEach(b => b.classList.remove('selected'));
+        customBtn.textContent = emoji;
+        customBtn.classList.add('selected');
+        selectedVibe = emoji;
+        pickerWrapper.style.display = 'none';
+        saveVibe();
+    });
+
+    document.getElementById('vibe-note').addEventListener('change', saveVibe);
+
+    async function saveVibe() {
+        if (!selectedVibe) return;
+        const note = document.getElementById('vibe-note').value.trim();
+        const res  = await fetch(VIBE_URL, {
+            method:  'POST',
+            headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ vibe: selectedVibe, note })
+        });
+        if (res.ok) {
+            const saved = document.getElementById('vibe-saved');
+            saved.style.display = 'block';
+            setTimeout(() => saved.style.display = 'none', 2000);
+        }
+    }
+}
 </script>
 
 </html>

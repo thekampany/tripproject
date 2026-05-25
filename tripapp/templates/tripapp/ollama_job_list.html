@@ -1,0 +1,19 @@
+{% extends "base_generic.html" %}
+{% load static %}
+{% block content %}    
+    <h2>Stupid AI - Ollama Jobs</h2>
+    <p>&nbsp;</p>
+    
+    {% for job in ollamajobs %}
+        <a href="{% url 'tripapp:ollama_job_detail' job.pk %}">
+            {{ job.created_at }} - {{ job.status }} - {{ job.model }}
+        </a>
+        <br>
+    {% endfor %}
+    
+    <p>&nbsp;</p>
+    <a href="{% url 'tripapp:trip_list' %}" >← My Trips</a>
+    <p>&nbsp;</p>
+        
+    <br /><br />
+{% endblock %}

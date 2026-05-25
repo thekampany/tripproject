@@ -3,7 +3,7 @@ from .models import Trip, Tripper, Badge, DayProgram, Checklist, ChecklistItem, 
 from .models import BingoCard, BingoAnswer, BadgeAssignment
 from .models import Tribe, UserProfile, LogEntry, Link, Route, TripExpense, Location, ImmichPhotos, ScheduledItem
 from .models import TripperDocument, LogEntryLike, InviteCode, TripBudget
-from .models import TripOutline, MapMarkerDraft, OllamaJob
+from .models import TripOutline, MapMarkerDraft, OllamaJob, DayVibe
 from .forms import BadgeForm, TripForm, ChecklistItemForm, ImageForm, BingoAnswerForm
 from .forms import CustomUserCreationForm
 from .forms import AnswerForm, TripperForm, TripperAdminForm
@@ -267,8 +267,18 @@ def trip_detail(request, slug):
     tripper = None
     if request.user.is_authenticated:
         tripper = Tripper.objects.filter(user=request.user).first()
-    view_mode = request.GET.get("view", "list")
     enable_admin = settings.ENABLE_ADMIN
+
+    view_mode = request.GET.get("view", "list")
+    vibe_days = []
+    if view_mode == 'vibe':        
+        for dp in dayprograms:
+            vibes = DayVibe.objects.filter(dayprogram=dp).select_related('tripper')
+            vibe_days.append({
+                'dayprogram': dp,
+                'vibes': vibes,
+                'state': 'today' if dp.tripdate == today else ('past' if dp.tripdate < today else 'future'),
+            })
 
     return render(request, 'tripapp/trip_detail.html', {
         'trip': trip,
@@ -278,7 +288,8 @@ def trip_detail(request, slug):
         'today': today,
         'tripper': tripper,
         'view_mode': view_mode,
-        'enable_admin': enable_admin
+        'enable_admin': enable_admin,
+        'vibe_days':vibe_days
     })
 
 @login_required
@@ -427,8 +438,15 @@ def dayprogram_detail(request, dayprogram_id):
     ).order_by('dayprogramnumber').first()
 
     is_day_in_future = None
+    day_state = None
+
     if dayprogram.tripdate > timezone.now().date():
        is_day_in_future = True    
+
+    if dayprogram.tripdate == timezone.now().date():
+        day_state = "today"
+    if dayprogram.tripdate < timezone.now().date():
+        day_state = "past"
 
     tracked_distance = None
     distance_unit = None
@@ -518,6 +536,11 @@ def dayprogram_detail(request, dayprogram_id):
                 print(f"Error retrieving weather: {e}")
     # -------- End Weather --------
 
+    DEFAULT_VIBES = ['🏖️', '🏃', '🌧️', '🏛️', '🍽️', '🚗', '🎉']
+    tripper   = Tripper.objects.filter(user=request.user).first()
+    my_vibe   = DayVibe.objects.filter(dayprogram=dayprogram, tripper=tripper).first() if tripper else None
+    other_vibes = DayVibe.objects.filter(dayprogram=dayprogram).exclude(tripper=tripper).select_related('tripper') if tripper else []
+
     return render(request, 'tripapp/dayprogram_detail.html', 
          {'dayprogram': dayprogram, 
           'images': images, 
@@ -543,6 +566,10 @@ def dayprogram_detail(request, dayprogram_id):
           'ollama_url': getattr(settings, 'OLLAMA_URL', None),
           'tracked_distance': tracked_distance,
           'distance_unit' : distance_unit,
+          'my_vibe':      my_vibe,
+          'other_vibes':  other_vibes,
+          'default_vibes': DEFAULT_VIBES,
+          'day_state': day_state,
          })
 
 
@@ -582,6 +609,13 @@ def toggle_checklist_item(request, item_id):
     item.save()
     return redirect('tripapp:trip_detail', item.checklist.trip.slug)
 
+@login_required
+def delete_checklist_item(request, item_id):
+    item = get_object_or_404(ChecklistItem, id=item_id)
+    if request.method == 'POST':
+        item.delete()
+        return JsonResponse({'deleted': True})
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 def register(request):
     if not settings.ALLOW_REGISTRATION:
@@ -863,6 +897,7 @@ def trip_tripper_bingocard(request, trip_id):
         answer_count=Count('bingoanswer', filter=Q(bingoanswer__bingocard__trip=trip))
     ).order_by('-answer_count')
     trippers_names = [tripper.name for tripper in trippers_on_this_trip]
+    trip_active = trip.date_to >= timezone.now().date()
 
     return render(request, 'tripapp/trip_bingocard.html', {
         'trip': trip,
@@ -873,6 +908,7 @@ def trip_tripper_bingocard(request, trip_id):
         'trippers_names': trippers_names,
         'trippers_on_this_trip': trippers_on_this_trip,  
         'ollama_configured': bool(getattr(settings, 'OLLAMA_URL', None)),
+        'trip_active':trip_active,
          })
 
 @is_in_tribe
@@ -1760,11 +1796,15 @@ def trip_checklist(request,slug):
     if request.user.is_authenticated:
         tripper = Tripper.objects.filter(user=request.user).first()
 
+    trip_active = trip.date_to >= timezone.now().date()
+
     return render(request, 'tripapp/trip_checklist.html', {
         'trip': trip,
         'checklist': checklist,
         'items': checklist_items,
-        'tripper': tripper
+        'tripper': tripper,
+        "ollama_configured": bool(getattr(settings, 'OLLAMA_URL', None)),
+        'trip_active': trip_active
     })
 
 @require_POST
@@ -2024,6 +2064,23 @@ def generate_html_with_images(trip):
                     likes_list = [f"{like.tripper.name} {like.emoji}" for like in log.likes.select_related("tripper")]
                     likes_str = " [" + ", ".join(likes_list) + "]"
                 html_content += f"<p><strong>{log.tripper.name}:</strong> {log.logentry_text}{likes_str}</p>"
+
+
+        vibes = DayVibe.objects.filter(dayprogram=day).select_related('tripper')
+        if vibes.exists():
+            html_content += "<h4>✨ Vibes</h4>"
+            html_content += "<div style='display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;'>"
+            for vibe in vibes:
+                note_str = f" — <em>{vibe.note}</em>" if vibe.note else ""
+                html_content += f"""
+                <div style="display:inline-flex; align-items:center; gap:6px;
+                            background:#f5f5f5; border-radius:20px; padding:4px 12px;
+                            font-size:14px; border:1px solid #ddd;">
+                    <span style="font-size:18px;">{vibe.vibe}</span>
+                    <span style="color:#666; font-size:12px;">{vibe.tripper.name}{note_str}</span>
+                </div>"""
+            html_content += "</div>"
+
 
         if day.map_image:
             img_base64 = encode_image_to_base64(day.map_image.name)  
@@ -2448,14 +2505,10 @@ class TripOutlineCreateView(generics.CreateAPIView):
     queryset = TripOutline.objects.all()
     serializer_class = TripOutlineSerializer
 
-@login_required
-def create_itineraryidea_overnightlocations(request):
-    return render(request, 'tripapp/create_tripoutline.html')
 
 @login_required
 def create_itineraryidea_daylocations(request):
     tripper = get_object_or_404(Tripper, user=request.user)
-    #return render(request, 'tripapp/create_itineraryidea_daylocations.html')
     return render(request, 'tripapp/create_trip_brainstorm.html', {
         'tripper': tripper,
     })
@@ -3524,7 +3577,7 @@ def ask(request):
 
     job = OllamaJob.objects.create(prompt=prompt, model=model)
 
-    async_task("tripapp.utils.run_ollama", str(job.id)) 
+    async_task("tripapp.tasks.run_ollama", str(job.id)) 
 
     return JsonResponse({
         "job_id": str(job.id),
@@ -3741,6 +3794,77 @@ def ollama_job_status(request, job_id):
         })
     except OllamaJob.DoesNotExist:
         return JsonResponse({"status": "not found"}, status=404)
+
+
+@is_in_tribe
+def suggest_checklist_items(request, trip_id):
+
+    trip      = get_object_or_404(Trip, id=trip_id)
+    checklist = Checklist.objects.get_or_create(trip=trip)[0]
+
+    if checklist.suggestion_job and checklist.suggestion_job.status in ("pending", "running"):
+        return redirect("tripapp:checklist", trip_id=trip.id)
+
+    prompt = (
+        f"You are a helpful travel assistant. "
+        f"Suggest a practical packing list for the following trip.\n"
+        f"Description: {trip.name} {trip.description}\n"
+        f"Duration: {trip.date_from} to {trip.date_to}\n\n"
+        f"Return ONLY a JSON array of short strings, no explanation, no markdown. "
+        f'Example: ["Sunscreen", "Adapter plug", "Passport"]'
+    )
+
+    job = OllamaJob.objects.create(
+        model=getattr(settings, "OLLAMA_MODEL", "mistral-small"),
+        prompt=prompt,
+    )
+    checklist.suggestion_job = job
+    checklist.save(update_fields=["suggestion_job"])
+
+    async_task(
+        "tripapp.tasks.run_ollama",
+        str(job.id),
+        str(checklist.id),
+        hook="tripapp.tasks.process_checklist_suggestions",
+    )
+
+    return redirect("tripapp:checklist", trip_id=trip.id)
+
+@is_in_tribe
+def checklist(request, trip_id):
+    trip       = get_object_or_404(Trip, id=trip_id)
+    checklist  = Checklist.objects.get_or_create(trip=trip)[0]
+    items      = checklist.items.all()
+    job        = checklist.suggestion_job
+    job_status = job.status if job else "none"
+
+    return render(request, 'tripapp/trip_checklist.html', {
+        'trip':       trip,
+        'items':      items,
+        'job_status': job_status,
+    })
+
+@login_required
+def checklist_job_status(request, trip_id):
+    trip      = get_object_or_404(Trip, id=trip_id)
+    checklist = get_object_or_404(Checklist, trip=trip)
+    job       = checklist.suggestion_job
+
+    if not job:
+        return JsonResponse({"status": "none"})
+
+    return JsonResponse({
+        "status": job.status,
+        "items":  json.loads(job.answer) if job.status == "done" and job.answer else [],
+    })
+
+@login_required
+def dismiss_checklist_suggestions(request, trip_id):
+    trip      = get_object_or_404(Trip, id=trip_id)
+    checklist = get_object_or_404(Checklist, trip=trip)
+    checklist.suggestion_job = None
+    checklist.save(update_fields=["suggestion_job"])
+    return JsonResponse({"ok": True})
 
 def _save_gpx_route(dayprogram_id, description, gpx_string):
     from .models import DayProgram, Route
@@ -4185,3 +4309,52 @@ def copy_itinerary_idea(request, idea_pk):
         )
 
     return redirect('tripapp:edit_map_markers', idea_pk=new_idea.pk)
+
+
+@login_required
+def ollama_job_list(request):
+    seven_days_ago = timezone.now() - timedelta(days=7)
+    ollamajobs = OllamaJob.objects.filter(
+        created_at__gte=seven_days_ago
+    ).order_by('-created_at')
+    if not ollamajobs.exists():
+        ollamajobs = OllamaJob.objects.all().order_by('-created_at')[:10]
+
+    return render(request, 'tripapp/ollama_job_list.html', {
+        'ollamajobs': ollamajobs, 
+        })
+
+@login_required
+def ollama_job_detail(request,pk):
+    ollamajob   = get_object_or_404(OllamaJob, pk=pk)
+
+    return render(request, 'tripapp/ollama_job_detail.html', {
+        'ollamajob': ollamajob, 
+        })
+
+@login_required
+def set_day_vibe(request, dayprogram_id):
+    dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
+    tripper    = get_object_or_404(Tripper, user=request.user)
+
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        vibe = data.get('vibe', '').strip()
+        note = data.get('note', '').strip()
+
+        if not vibe:
+            return JsonResponse({'error': 'Vibe can not be empty'}, status=400)
+
+        obj, _ = DayVibe.objects.update_or_create(
+            dayprogram=dayprogram,
+            tripper=tripper,
+            defaults={'vibe': vibe, 'note': note},
+        )
+        return JsonResponse({
+            'ok':      True,
+            'vibe':    obj.vibe,
+            'note':    obj.note,
+            'tripper': tripper.name,
+        })
+
+    return JsonResponse({'error': 'POST only'}, status=405)

@@ -137,6 +137,7 @@ def generate_static_map(dayprogram):
         params.append(("markers", marker_values))
     if staticmaps_api_key:
         params.append(("api_key", staticmaps_api_key))
+    params.append(("basemap","carto-light"))
 
     request_url = f"{staticmaps_url}?{urlencode(params)}"
     
@@ -179,7 +180,7 @@ def generate_static_map_for_trip(trip):
     logger.info(f"StaticTripMap query_parts: {query_parts}") 
 
     if staticmaps_api_key:
-        request_url = f"{base_url}&api_key={staticmaps_api_key}"
+        request_url = f"{base_url}&api_key={staticmaps_api_key}&basemap=carto-light"
     else:
         request_url = base_url
 
@@ -195,6 +196,14 @@ def generate_static_map_for_trip(trip):
 
     return filepath
 
+def get_unique_slug(model, name_field, slug_field='slug'):
+    slug = slugify(name_field)
+    unique_slug = slug
+    num = 1
+    while model.objects.filter(slug=unique_slug).exists():
+        unique_slug = f"{slug}-{num}"
+        num += 1
+    return unique_slug
 
 def create_trip_from_itinerary(itinerary, tribe, start_date, user,
                                 excluded_pins=None, excluded_beds=None):
@@ -230,7 +239,7 @@ def create_trip_from_itinerary(itinerary, tribe, start_date, user,
         tribe=tribe,
         name=itinerary.name,
         description=itinerary.name,
-        slug=slugify(itinerary.name),
+        slug=get_unique_slug(Trip, itinerary.name),
         date_from=start_date,
         date_to=date_to,
         country_codes=country_codes,

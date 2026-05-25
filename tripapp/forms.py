@@ -460,27 +460,36 @@ class SuggestionForm(forms.Form):
 class TripExpenseForm(forms.ModelForm):
     class Meta:
         model = TripExpense
-        fields = ['description', 'amount', 'currency', 'date', 'receipt', 'category']
+        fields = ['description', 'amount', 'currency', 'date', 'receipt', 'category', 'split_among']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
+            'split_among': forms.CheckboxSelectMultiple,
         }
 
-    def __init__(self, *args, **kwargs):
-        initial = kwargs.get('initial', {})
-        if 'currency' not in initial:
-            initial['currency'] = settings.APP_CURRENCY
-        kwargs['initial'] = initial
-
+    def __init__(self, *args, trip=None, **kwargs):
         super().__init__(*args, **kwargs)
+
+        if trip:
+            self.fields['split_among'].queryset = trip.trippers.all()
+            self.fields['split_among'].required = False
+            self.fields['split_among'].help_text = "Select which trippers should share this expense."
+
+        if 'currency' not in self.data and not self.instance.pk:
+            self.fields['currency'].initial = settings.APP_CURRENCY
 
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
+            # Voeg een extra class toe voor CheckboxSelectMultiple
+            if isinstance(field.widget, forms.CheckboxSelectMultiple):
+                field.widget.attrs.update({'class': 'form-check-input'})
 
     def clean_currency(self):
         currency = self.cleaned_data.get('currency')
         if currency:
             return currency.upper()
         return currency
+
+
 
 
 
