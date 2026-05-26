@@ -1570,13 +1570,14 @@ def add_expense(request, trip_id, tripper_id):
     dayprogram_id = request.GET.get('dayprogram_id') 
 
     if request.method == 'POST':
-        form = TripExpenseForm(request.POST, request.FILES)
+        form = TripExpenseForm(request.POST, request.FILES, trip =trip)
         if form.is_valid():
             expense = form.save(commit=False)
             expense.trip = trip
             expense.tripper = tripper
             expense.save()
-
+            form.save_m2m()
+            
             if next_url == 'balance':
                 return redirect('tripapp:trip_balance', trip_id=trip.id)
             elif next_url == 'dayprogram_detail' and dayprogram_id:
@@ -1584,7 +1585,7 @@ def add_expense(request, trip_id, tripper_id):
     else:
         last_expense = TripExpense.objects.filter(tripper=tripper).order_by('-date').first()
         last_currency = last_expense.currency if last_expense else settings.APP_CURRENCY
-        form = TripExpenseForm(initial={'currency': last_currency})
+        form = TripExpenseForm(initial={'currency': last_currency},trip=trip)
     return render(request, 'tripapp/add_expense.html', {'form': form, 'trip': trip, 'tripper':tripper})
 
 @is_in_tribe
@@ -1717,16 +1718,20 @@ def trip_budget_analysis(request, trip_id):
 def trip_balance(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     balance = trip.calculate_balance()
+    for tripper, value in balance.items():
+        balance[tripper] = {
+            'value': value,
+            'abs_value': abs(value)
+        }
     all_zero = all(balance_value == 0 for balance_value in balance.values())
 
-    abs_balance = {tripper: {'balance': balance_value, 'abs_balance': abs(balance_value)} for tripper, balance_value in balance.items()}
     app_currency = settings.APP_CURRENCY
-    return render(request, 'tripapp/trip_balance.html', {'trip': trip, 'balance': abs_balance, 'app_currency':app_currency, 'all_zero':all_zero})
+    return render(request, 'tripapp/trip_balance.html', {'trip': trip, 'balance': balance, 'app_currency':app_currency, 'all_zero':all_zero})
 
 @tripper_required
 def trip_expenses_list(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
-    expenses = trip.expenses.all().order_by('date')
+    expenses = trip.expenses.all().order_by('date').prefetch_related('split_among')
     tripper = Tripper.objects.filter(name=request.user.username).first()
     app_currency = settings.APP_CURRENCY
     filter_date = request.GET.get('filter_date')

@@ -479,7 +479,6 @@ class TripExpenseForm(forms.ModelForm):
 
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
-            # Voeg een extra class toe voor CheckboxSelectMultiple
             if isinstance(field.widget, forms.CheckboxSelectMultiple):
                 field.widget.attrs.update({'class': 'form-check-input'})
 
