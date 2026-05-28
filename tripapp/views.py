@@ -1800,6 +1800,8 @@ def trip_checklist(request,slug):
     tripper = None
     if request.user.is_authenticated:
         tripper = Tripper.objects.filter(user=request.user).first()
+    job       = checklist.suggestion_job
+    job_status = job.status if job else "none"
 
     trip_active = trip.date_to >= timezone.now().date()
 
@@ -1808,6 +1810,7 @@ def trip_checklist(request,slug):
         'checklist': checklist,
         'items': checklist_items,
         'tripper': tripper,
+        'job_status':        job_status,
         "ollama_configured": bool(getattr(settings, 'OLLAMA_URL', None)),
         'trip_active': trip_active
     })
