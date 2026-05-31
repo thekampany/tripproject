@@ -1795,7 +1795,7 @@ def update_profile(request):
 def trip_checklist(request,slug):
     trip = get_object_or_404(Trip, slug=slug)
     checklist = Checklist.objects.get_or_create(trip=trip)[0]
-    checklist_items = ChecklistItem.objects.filter(checklist=checklist).order_by('is_completed', 'id')  # Sorteer op is_completed en vervolgens op id
+    checklist_items = ChecklistItem.objects.filter(checklist=checklist).order_by('is_completed', 'id')
     items = checklist.items.all()
     tripper = None
     if request.user.is_authenticated:
@@ -2698,7 +2698,7 @@ def itineraryidea_list(request):
     itineraryideas = ItineraryIdea.objects.prefetch_related("itineraryidea_days", "notes").all().order_by("-created_at")
     category = "roadtrip"
     background_image_url = get_random_unsplash_image(category)
-
+    enable_admin = settings.ENABLE_ADMIN
     editable_idea_ids = set()
     if request.user.is_authenticated:
         try:
@@ -2718,6 +2718,7 @@ def itineraryidea_list(request):
         "editable_idea_ids": editable_idea_ids,
         "ollama_configured": bool(getattr(settings, 'OLLAMA_URL', None)),
         "background_image_url": background_image_url,
+        "enable_admin": enable_admin,
     })
 
 
@@ -3859,20 +3860,6 @@ def suggest_checklist_items(request, trip_id):
 
     return redirect("tripapp:checklist", trip_id=trip.id)
 
-#@is_in_tribe
-#def checklist(request, trip_id):
-#    trip       = get_object_or_404(Trip, id=trip_id)
-#    checklist  = Checklist.objects.get_or_create(trip=trip)[0]
-#    items      = checklist.items.all()
-#    job        = checklist.suggestion_job
-#    job_status = job.status if job else "none"
-#
-#    return render(request, 'tripapp/trip_checklist.html', {
-#        'trip':       trip,
-#        'items':      items,
-#        'job_status': job_status,
-#    })
-
 @login_required
 def checklist_job_status(request, trip_id):
     trip      = get_object_or_404(Trip, id=trip_id)
@@ -4297,9 +4284,8 @@ def address_search(request):
         )
         response.raise_for_status()
         
-        # log wat nominatim teruggeeft voor debugging
-        print(f"Nominatim status: {response.status_code}")
-        print(f"Nominatim response: {response.text[:200]}")
+        #print(f"Nominatim status: {response.status_code}")
+        #print(f"Nominatim response: {response.text[:200]}")
         
         data = response.json()
         return JsonResponse(data, safe=False)

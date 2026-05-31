@@ -1,7 +1,7 @@
 {% load static %}
 {% load i18n %}
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -352,7 +352,7 @@
     top: 100px;
     height: calc(100vh - 400px);
     width: 320px;
-    background: white;
+    background: var(--color-background);
     z-index: 999;
     box-shadow: -4px 0 16px rgba(0,0,0,.15);
     display: flex;
