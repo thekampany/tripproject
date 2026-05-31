@@ -1302,6 +1302,7 @@ def permission_denied(request, exception=None):
 @login_required
 def save_event(request):
     if request.method == 'POST':
+        print(json.loads(request.body))
         try:
             data = json.loads(request.body)
         except json.JSONDecodeError:

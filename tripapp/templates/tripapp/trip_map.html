@@ -296,14 +296,14 @@
                             method: 'POST',
                             contentType: 'application/json',
                             headers: {'X-CSRFToken': csrfToken },
-                            data: {
+                            data: JSON.stringify({
                                 'name': eventName,
                                 'type': eventType,
                                 'latitude': latLng.lat,
                                 'longitude': latLng.lng,
                                 'trip': tripId,
                                 'dayprogram': dayprogramId
-                            },
+                            }),
                             success: function () {
                                 console.log('Event saved successfully!');
                             },

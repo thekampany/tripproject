@@ -540,7 +540,6 @@
             alert(translations.selectStartEnd);
             return;
         }
-
         const calcBtn = document.getElementById('calc-route-btn');
         calcBtn.disabled = true;
         calcBtn.textContent = 'Calculating...';
@@ -867,7 +866,7 @@
     var visitedPhotoLocationIcon = uniformIcon(COLORS.activity, '📷', 24);
 
 
-    {% if country_coords and not points and not locations and not photolocations %}
+    {% if country_coords and not points and not locations and not photolocations and not dayprogram.routes.all %}
         var map = L.map('map').setView([{{ country_coords.0 }},{{ country_coords.1 }}], 7);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -1256,7 +1255,7 @@
 
     {% endif %}
 
-    {% if points or locations or photolocations or country_coords %}
+    {% if points or locations or photolocations or country_coords or dayprogram.routes.all %}
 
         // Function to handle double-clicks on the map
         function handleMapDoubleClick(map) {
@@ -1302,39 +1301,45 @@
                         saveBtn.onclick = function(e) {
                             e.preventDefault();
                             e.stopPropagation();
-                            
+
                             const nameInput = document.querySelector('.event-name');
                             const typeSelect = document.querySelector('.event-type');
                             const eventName = nameInput.value;
                             const eventType = typeSelect.value;
 
+                            console.log("Save button clicked!"); 
+                            console.log("Event name:", eventName); 
+                            console.log("Event type:", eventType);
+                            console.log("LatLng:", latLng.lat, latLng.lng);
+                            console.log("Trip ID:", tripId);
+                            console.log("Dayprogram ID:", dayprogramId);
+
                             $.ajax({
                                 url: '/save_event/',
                                 method: 'POST',
                                 contentType: 'application/json',
-                                headers: {'X-CSRFToken': csrfToken },
-                                data: {
+                                headers: {'X-CSRFToken': csrfToken},
+                                data: JSON.stringify({  
                                     'name': eventName,
                                     'type': eventType,
                                     'latitude': latLng.lat,
                                     'longitude': latLng.lng,
                                     'trip': tripId,
                                     'dayprogram': dayprogramId
-                                },
-                                success: function () {
-                                    console.log('Event saved successfully!');
-                                    clearRoutePoint('start');
-                                    clearRoutePoint('end');
+                                }),
+                                success: function(response) {
+                                    console.log("Success:", response); 
                                     map.closePopup();
                                 },
-                                error: function (xhr, status, error) {
-                                    console.error('Error saving event:', error);
+                                error: function(xhr, status, error) {
+                                    console.error("AJAX Error:", status, error);
+                                    console.error("Response:", xhr.responseText);
                                     map.closePopup();
                                 }
                             });
                         };
-                    }
-                    
+                    };
+
                     if (deleteBtn) {
                         deleteBtn.onclick = function(e) {
                             e.preventDefault();
