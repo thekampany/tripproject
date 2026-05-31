@@ -97,11 +97,60 @@
             </tr>
         {% endfor %}
     {% endif %}
+
+    <!-- Trip Notes and Documents Section -->
+    {% if trip_notes %}
+        {% for note in trip_notes %}
+        <tr>
+            <td>
+                <a href="#" onclick="showNotePopup('{{ note.title|escapejs }}', '{{ note.content|escapejs }}'); return false;">
+                    <img src="{% static 'icons/icon-doc.png' %}" class="doc-icon" width="16" height="16">
+                    {{ note.title }}
+                </a>
+            </td>
+            <td style="color:gray; padding-left:10px;">
+                {{ note.created_at|date:"d-M" }}
+            </td>
+            <td style="color:gray; padding-left:10px;">
+                {% trans "Notes" %}
+            </td>
+        </tr>
+        {% endfor %}
+    {% endif %}
     </table>
     <p>&nbsp;</p>
     <a href="{% url 'tripapp:trip_detail' slug=trip.slug %}">&larr;Trip</a>
     <p>&nbsp;</p>
 </div>
 </div>
+<!-- Note popup -->
+<div id="note-popup" style="position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:var(--color-background); color:var(--color-text) border-radius:12px; width:420px; max-height:70vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,.3); overflow:hidden;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid #eee;">
+            <strong id="note-popup-title" style="font-size:15px;"></strong>
+            <button onclick="closeNotePopup()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#999;">×</button>
+        </div>
+        <div id="note-popup-content" style="padding:16px 20px; overflow-y:auto; font-size:14px; white-space:pre-line; color:#333; line-height:1.6;"></div>
+    </div>
+</div>
+
+<style>
+#note-popup { display: none; }
+#note-popup.open { display: flex; }
+</style>
+
+<script>
+function showNotePopup(title, content) {
+    document.getElementById('note-popup-title').textContent  = title;
+    document.getElementById('note-popup-content').textContent = content;
+    document.getElementById('note-popup').classList.add('open');
+}
+function closeNotePopup() {
+    document.getElementById('note-popup').classList.remove('open');
+}
+document.getElementById('note-popup').addEventListener('click', function(e) {
+    if (e.target === this) closeNotePopup();
+});
+</script>
 </body>
 </html>

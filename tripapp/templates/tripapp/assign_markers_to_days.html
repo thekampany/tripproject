@@ -12,17 +12,22 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; overflow: hidden; }
 
-    #page { display: flex; height: 100vh; }
-    #map  { flex: 1; }
+    #page { display: flex; height: 100vh; align-items: flex-start;}
+    #map  { flex: 1; height: 100vh; }
 
     /* ── Sidebar ── */
     #sidebar {
       width: 230px;
+      height: 70vh;
+      margin-top: 15vh;
+      margin-bottom: 15vh;
       display: flex;
       flex-direction: column;
       background: #fff;
       border-left: 1px solid #e5e5e5;
+      border-radius: 12px 0 0 12px;
       z-index: 500;
+      overflow: hidden;
     }
     #sidebar-header {
       padding: 14px 16px 10px;

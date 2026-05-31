@@ -685,3 +685,38 @@ class DayVibe(models.Model):
 
     class Meta:
         unique_together = [('dayprogram', 'tripper')]
+
+class ItineraryNote(models.Model):
+    itinerary  = models.ForeignKey(
+        ItineraryIdea,
+        on_delete=models.CASCADE,
+        related_name='notes'
+    )
+    text       = models.TextField()
+    author     = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.author} — {self.text[:50]}"
+
+class TripDocument(models.Model):
+    trip        = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name='documents')
+    title       = models.CharField(max_length=200)
+    content     = models.TextField(blank=True)
+    document    = models.FileField(upload_to='trip_documents/', blank=True, null=True)
+    created_by  = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True
+    )
+    created_at  = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.trip.name} — {self.title}"

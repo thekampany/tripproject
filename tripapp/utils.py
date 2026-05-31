@@ -11,7 +11,7 @@ from django.utils.text import slugify
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
 
-from tripapp.models import Trip, DayProgram, Point, Tripper, Location
+from tripapp.models import Trip, DayProgram, Point, Tripper, Location, TripDocument
 from django.db import models
 
 from requests.exceptions import RequestException
@@ -283,6 +283,23 @@ def create_trip_from_itinerary(itinerary, tribe, start_date, user,
                 marker_type="bed",
             )
             point.dayprograms.add(dayprogram)
+
+    notes = itinerary.notes.select_related('author').all()
+    if notes.exists():
+        lines = []
+        for note in notes.order_by('created_at'):
+            author = note.author.username if note.author else '?'
+            date   = note.created_at.strftime('%d %b %Y, %H:%M')
+            lines.append(f"{author} ({date}):\n{note.text}")
+
+        content = "\n\n".join(lines)
+
+        TripDocument.objects.create(
+            trip=trip,
+            title=f"Notes from brainstorm: {itinerary.name}",
+            content=content,
+            created_by=user,
+        )
 
     return trip
 

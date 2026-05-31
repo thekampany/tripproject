@@ -199,41 +199,6 @@ a:active {
   color: var(--color-text);
 }
 
-a.nodec:link {
-  color: var(--color-text);
-  border-radius: 6px;
-  background-color: var(--dayprogram-background);
-  padding: 2px 12px;
-  text-decoration: none;
-}
-
-/* visited link */
-a.nodec:visited {
-  color: var(--color-text);
-  border-radius: 6px;
-  background-color: var(--dayprogram-background);
-  padding: 2px 12px;
-  text-decoration: none;
-}
-
-/* mouse over link */
-a.nodec:hover {
-  color: var(--color-text);
-  text-decoration: none;
-  border-radius: 6px;
-  background-color: var(--dayprogram-background);
-  padding: 2px 12px;
-}
-
-/* selected link */
-a.nodec:active {
-  color: var(--color-text);
-  text-decoration: none;
-  border-radius: 6px;
-  background-color: var(--dayprogram-background);
-  padding: 2px 12px;
-}
-
 a.tripdetail {
   color: var(--color-text);
   text-decoration: none;
@@ -266,44 +231,6 @@ a.btn {
              text-decoration: none;
         }
 a.btn:hover {background: var(--color-background);}
-
-a.btn-fixed-width {
-             border-radius: 6px;
-             background-color: var(--btn-background);
-             padding: 14px 28px;
-             font-size: 16px;
-             cursor: pointer;
-             display: inline-block;
-             text-decoration: none;
-             width: 250px;
-             margin: 2px;
-        }
-
-a.btn-fixed-width:hover {background: var(--color-background);}
-
-a.btn-less-padding {
-             border-radius: 6px;
-             background-color: var(--btn-background);
-             padding: 4px 4px;
-             font-size: 16px;
-             cursor: pointer;
-             display: inline-block;
-             text-decoration: none;
-        }
-
-a.btn-less-padding:hover {background: var(--color-background);}
-
-a.btn-more-padding {
-  border-radius: 6px;
-  background-color: var(--btn-background);
-  padding: 14px 28px;
-  font-size: 16px;
-  cursor: pointer;
-  display: inline-block;
-  text-decoration: none;
-}
-
-a.btn-more-padding:hover {background: var(--color-background);}
 
 
 .bingocard-container {

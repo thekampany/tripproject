@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-25 14:15+0200\n"
+"POT-Creation-Date: 2026-05-31 10:13+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -87,69 +87,70 @@ msgstr "Bewaar Selectie"
 msgid "Assign Markers to Days"
 msgstr "Wijs Markers toe aan Dagen"
 
-#: tripapp/templates/tripapp/assign_markers_to_days.html:272
+#: tripapp/templates/tripapp/assign_markers_to_days.html:277
 msgid "Assign markers to days"
 msgstr "Wijs markers toe aan dagen"
 
-#: tripapp/templates/tripapp/assign_markers_to_days.html:279
-#: tripapp/templates/tripapp/assign_markers_to_days.html:293
+#: tripapp/templates/tripapp/assign_markers_to_days.html:284
+#: tripapp/templates/tripapp/assign_markers_to_days.html:298
 msgid "Add day"
 msgstr "Dag Toevoegen"
 
-#: tripapp/templates/tripapp/assign_markers_to_days.html:283
+#: tripapp/templates/tripapp/assign_markers_to_days.html:288
 msgid "Save assignments"
 msgstr "Opslaan"
 
-#: tripapp/templates/tripapp/assign_markers_to_days.html:294
+#: tripapp/templates/tripapp/assign_markers_to_days.html:299
 msgid "Description (optional)"
 msgstr "Omschrijving (optioneel)"
 
-#: tripapp/templates/tripapp/assign_markers_to_days.html:295
+#: tripapp/templates/tripapp/assign_markers_to_days.html:300
 msgid "e.g. Arrival in Paris"
 msgstr "bijv. Aankomst in Parijs"
 
-#: tripapp/templates/tripapp/assign_markers_to_days.html:296
+#: tripapp/templates/tripapp/assign_markers_to_days.html:301
 msgid "Date (optional)"
 msgstr "Datum (optioneel)"
 
-#: tripapp/templates/tripapp/assign_markers_to_days.html:299
-#: tripapp/templates/tripapp/assign_markers_to_days.html:322
+#: tripapp/templates/tripapp/assign_markers_to_days.html:304
+#: tripapp/templates/tripapp/assign_markers_to_days.html:327
 #: tripapp/templates/tripapp/create_trip_brainstorm.html:208
 #: tripapp/templates/tripapp/itineraryidea_detail.html:483
 #: tripapp/templates/tripapp/map_markers_edit.html:227
 msgid "Cancel"
 msgstr "Annuleer"
 
-#: tripapp/templates/tripapp/assign_markers_to_days.html:300
+#: tripapp/templates/tripapp/assign_markers_to_days.html:305
 #: tripapp/templates/tripapp/dayprogram_detail.html:290
+#: tripapp/templates/tripapp/map_markers_edit.html:319
 #: tripapp/templates/tripapp/scheduled_item_form.html:66
 #: tripapp/templates/tripapp/trip_checklist.html:109
 #: tripapp/templates/tripapp/trip_dayprograms.html:11
 msgid "Add"
 msgstr "Invoegen"
 
-#: tripapp/templates/tripapp/assign_markers_to_days.html:308
+#: tripapp/templates/tripapp/assign_markers_to_days.html:313
 msgid "Assign to day"
 msgstr "Toewijzen aan dag"
 
-#: tripapp/templates/tripapp/assign_markers_to_days.html:309
+#: tripapp/templates/tripapp/assign_markers_to_days.html:314
 msgid "Choose a day"
 msgstr "Kies een dag"
 
-#: tripapp/templates/tripapp/assign_markers_to_days.html:311
+#: tripapp/templates/tripapp/assign_markers_to_days.html:316
 msgid "Remove assignment"
 msgstr "Verwijder toewijzing"
 
-#: tripapp/templates/tripapp/assign_markers_to_days.html:318
-#: tripapp/templates/tripapp/assign_markers_to_days.html:551
+#: tripapp/templates/tripapp/assign_markers_to_days.html:323
+#: tripapp/templates/tripapp/assign_markers_to_days.html:556
 msgid "Overnight stay"
 msgstr "Overnachtings Locatie"
 
-#: tripapp/templates/tripapp/assign_markers_to_days.html:319
+#: tripapp/templates/tripapp/assign_markers_to_days.html:324
 msgid "Select nights"
 msgstr "Selecteer nachten"
 
-#: tripapp/templates/tripapp/assign_markers_to_days.html:323
+#: tripapp/templates/tripapp/assign_markers_to_days.html:328
 #: tripapp/templates/tripapp/create_trip_brainstorm.html:209
 #: tripapp/templates/tripapp/create_trip_brainstorm.html:221
 #: tripapp/templates/tripapp/create_trip_brainstorm.html:232
@@ -161,41 +162,41 @@ msgstr "Selecteer nachten"
 msgid "Save"
 msgstr "Opslaan"
 
-#: tripapp/templates/tripapp/assign_markers_to_days.html:485
+#: tripapp/templates/tripapp/assign_markers_to_days.html:490
 msgid "Day added"
 msgstr "Dag toegevoegd"
 
-#: tripapp/templates/tripapp/assign_markers_to_days.html:490
-#: tripapp/templates/tripapp/assign_markers_to_days.html:520
-#: tripapp/templates/tripapp/assign_markers_to_days.html:654
+#: tripapp/templates/tripapp/assign_markers_to_days.html:495
+#: tripapp/templates/tripapp/assign_markers_to_days.html:525
+#: tripapp/templates/tripapp/assign_markers_to_days.html:659
 msgid "Network error."
 msgstr "Network error"
 
-#: tripapp/templates/tripapp/assign_markers_to_days.html:495
+#: tripapp/templates/tripapp/assign_markers_to_days.html:500
 msgid "Remove this day? Assignments to this day will be cleared."
 msgstr "Dage verwijderen? Toewijzing worden weggegooid."
 
-#: tripapp/templates/tripapp/assign_markers_to_days.html:515
+#: tripapp/templates/tripapp/assign_markers_to_days.html:520
 msgid "Day removed"
 msgstr "Dag verwijdered"
 
-#: tripapp/templates/tripapp/assign_markers_to_days.html:526
+#: tripapp/templates/tripapp/assign_markers_to_days.html:531
 msgid "Add a day first."
 msgstr "Eerst dag toevoegen"
 
-#: tripapp/templates/tripapp/assign_markers_to_days.html:536
+#: tripapp/templates/tripapp/assign_markers_to_days.html:541
 #: tripapp/templates/tripapp/create_trip_brainstorm.html:200
 #: tripapp/templates/tripapp/map_markers_edit.html:219
 msgid "Activity / Visit"
 msgstr "Activiteit / Bezoek"
 
-#: tripapp/templates/tripapp/assign_markers_to_days.html:652
+#: tripapp/templates/tripapp/assign_markers_to_days.html:657
 msgid "Something went wrong."
 msgstr "Iets ging mis"
 
 #: tripapp/templates/tripapp/budget_analysis.html:4
 #: tripapp/templates/tripapp/budget_analysis.html:42
-#: tripapp/templates/tripapp/trip_expenses_list.html:129
+#: tripapp/templates/tripapp/trip_expenses_list.html:144
 msgid "Budget Analysis"
 msgstr "Budget Analyse"
 
@@ -206,7 +207,7 @@ msgstr "Budget"
 
 #: tripapp/templates/tripapp/budget_analysis.html:46
 #: tripapp/templates/tripapp/trip_detail.html:228
-#: tripapp/templates/tripapp/trip_expenses_list.html:40
+#: tripapp/templates/tripapp/trip_expenses_list.html:43
 msgid "Expenses"
 msgstr "Uitgaven"
 
@@ -233,7 +234,7 @@ msgid "Category"
 msgstr "Categorie"
 
 #: tripapp/templates/tripapp/budget_list.html:13
-#: tripapp/templates/tripapp/trip_expenses_list.html:81
+#: tripapp/templates/tripapp/trip_expenses_list.html:84
 msgid "Amount"
 msgstr "Bedrag"
 
@@ -242,7 +243,7 @@ msgid "No budget items yet."
 msgstr "Nog geen Budget Items."
 
 #: tripapp/templates/tripapp/budget_list.html:30
-#: tripapp/templates/tripapp/trip_expenses_list.html:116
+#: tripapp/templates/tripapp/trip_expenses_list.html:131
 #: tripapp/templates/tripapp/trip_trippers.html:110
 msgid "Total"
 msgstr "Totaal"
@@ -252,8 +253,8 @@ msgid "to Organize Trip"
 msgstr "Organiseer Trip"
 
 #: tripapp/templates/tripapp/create_trip_brainstorm.html:8
-msgid "Map - Add Locations"
-msgstr "Kaart - Locaties toevoegen"
+msgid "Kaart - Locaties toevoegen"
+msgstr ""
 
 #: tripapp/templates/tripapp/create_trip_brainstorm.html:197
 #: tripapp/templates/tripapp/map_markers_edit.html:216
@@ -401,7 +402,7 @@ msgid "Add note… (optional)"
 msgstr "Notitie (optioneel)"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:591
-#: tripapp/templates/tripapp/map_markers_edit.html:532
+#: tripapp/templates/tripapp/map_markers_edit.html:692
 msgid "Saved"
 msgstr "Opgeslagen"
 
@@ -517,7 +518,7 @@ msgstr ""
 "starten mensen uit te nodigen en je Trip te organiseren."
 
 #: tripapp/templates/tripapp/index.html:148
-#: tripapp/templates/tripapp/itineraryidea_list.html:98
+#: tripapp/templates/tripapp/itineraryidea_list.html:74
 #: tripapp/templates/tripapp/tribe_map.html:44
 #: tripapp/templates/tripapp/tribe_trip_organize.html:108
 #: tripapp/templates/tripapp/tribe_trips.html:461
@@ -576,17 +577,15 @@ msgid "No days added yet."
 msgstr "Nog geen dagen toegevoegd"
 
 #: tripapp/templates/tripapp/itinerary_dragdrop.html:149
-#: tripapp/templates/tripapp/itineraryidea_list.html:40
+#: tripapp/templates/tripapp/itineraryidea_list.html:43
 #: tripapp/templates/tripapp/itineraryidea_update.html:58
 #: tripapp/templates/tripapp/tribe_trips.html:432
 msgid "Itinerary Ideas"
 msgstr "Reisschema Ideeen"
 
 #: tripapp/templates/tripapp/itineraryidea_detail.html:8
-#, fuzzy
-#| msgid "Itinerary Ideas"
 msgid "Itinerary Idea"
-msgstr "Reisschema Ideeen"
+msgstr "Reisschema Idee"
 
 #: tripapp/templates/tripapp/itineraryidea_detail.html:287
 msgid "Created"
@@ -687,45 +686,15 @@ msgstr ""
 msgid "Start date"
 msgstr "Startdatum"
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:45
-msgid "Brainstorm on Map"
-msgstr "Edit op de Kaart"
+#: tripapp/templates/tripapp/itineraryidea_list.html:55
+#: tripapp/templates/tripapp/tribe_map.html:42
+#: tripapp/templates/tripapp/trip_detail.html:192
+#: tripapp/templates/tripapp/trip_list.html:190
+msgid "Settings"
+msgstr "Instellingen"
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:46
-msgid "Import"
-msgstr "Importeer"
-
-#: tripapp/templates/tripapp/itineraryidea_list.html:47
-msgid "Generate via AI"
-msgstr "Genereer met AI"
-
-#: tripapp/templates/tripapp/itineraryidea_list.html:67
-msgid "Edit"
-msgstr "Bewerk"
-
-#: tripapp/templates/tripapp/itineraryidea_list.html:69
-msgid "View"
-msgstr "View"
-
-#: tripapp/templates/tripapp/itineraryidea_list.html:74
-msgid "Assign and Convert"
-msgstr "Converteren"
-
-#: tripapp/templates/tripapp/itineraryidea_list.html:83
-msgid "Are you sure?"
-msgstr "Weet je het zeker?"
-
-#: tripapp/templates/tripapp/itineraryidea_list.html:83
-#: tripapp/templates/tripapp/tripper_profile.html:55
-msgid "Delete"
-msgstr "Verwijder"
-
-#: tripapp/templates/tripapp/itineraryidea_list.html:91
-msgid "No itinerary ideas yet."
-msgstr "Nog geen Reisschema ideeen."
-
-#: tripapp/templates/tripapp/itineraryidea_list.html:94
-#: tripapp/templates/tripapp/itineraryidea_list.html:97
+#: tripapp/templates/tripapp/itineraryidea_list.html:73
+#: tripapp/templates/tripapp/itineraryidea_list.html:134
 #: tripapp/templates/tripapp/tribe_map.html:45
 #: tripapp/templates/tripapp/tribe_trip_organize.html:8
 #: tripapp/templates/tripapp/tribe_trip_organize.html:96
@@ -733,6 +702,47 @@ msgstr "Nog geen Reisschema ideeen."
 #: tripapp/templates/tripapp/tribe_trips.html:303
 msgid "Organize"
 msgstr "Organiseer"
+
+#: tripapp/templates/tripapp/itineraryidea_list.html:79
+msgid "New"
+msgstr "Nieuw"
+
+#: tripapp/templates/tripapp/itineraryidea_list.html:82
+msgid "Brainstorm on Map"
+msgstr "Edit op de Kaart"
+
+#: tripapp/templates/tripapp/itineraryidea_list.html:83
+msgid "Import"
+msgstr "Importeer"
+
+#: tripapp/templates/tripapp/itineraryidea_list.html:84
+msgid "Generate via AI"
+msgstr "Genereer met AI"
+
+#: tripapp/templates/tripapp/itineraryidea_list.html:107
+msgid "Edit"
+msgstr "Bewerk"
+
+#: tripapp/templates/tripapp/itineraryidea_list.html:109
+msgid "View"
+msgstr "View"
+
+#: tripapp/templates/tripapp/itineraryidea_list.html:114
+msgid "Assign and Convert"
+msgstr "Converteren"
+
+#: tripapp/templates/tripapp/itineraryidea_list.html:123
+msgid "Are you sure?"
+msgstr "Weet je het zeker?"
+
+#: tripapp/templates/tripapp/itineraryidea_list.html:123
+#: tripapp/templates/tripapp/tripper_profile.html:55
+msgid "Delete"
+msgstr "Verwijder"
+
+#: tripapp/templates/tripapp/itineraryidea_list.html:131
+msgid "No itinerary ideas yet."
+msgstr "Nog geen Reisschema ideeen."
 
 #: tripapp/templates/tripapp/itineraryidea_to_trip.html:4
 msgid "Convert Itinerary to Trip"
@@ -759,37 +769,49 @@ msgid "Edit Brainstorm Map"
 msgstr "Edit op de Kaart"
 
 #: tripapp/templates/tripapp/map_markers_edit.html:236
-#: tripapp/templates/tripapp/map_markers_edit.html:509
+#: tripapp/templates/tripapp/map_markers_edit.html:669
 msgid "Edit location"
 msgstr "Bewerk locatie"
 
 #: tripapp/templates/tripapp/map_markers_edit.html:265
-#: tripapp/templates/tripapp/map_markers_edit.html:279
+#: tripapp/templates/tripapp/map_markers_edit.html:280
 msgid "Copy this map as a new brainstorm map?"
 msgstr "Kopieer deze kaart als nieuwe brainstorm kaart?"
 
 #: tripapp/templates/tripapp/map_markers_edit.html:266
-#: tripapp/templates/tripapp/map_markers_edit.html:280
+#: tripapp/templates/tripapp/map_markers_edit.html:281
 msgid "Copy"
 msgstr ""
 
-#: tripapp/templates/tripapp/map_markers_edit.html:275
+#: tripapp/templates/tripapp/map_markers_edit.html:276
 msgid "You are viewing this map in read-only mode."
 msgstr "Je bekijkt deze kaart in read-only modus."
 
-#: tripapp/templates/tripapp/map_markers_edit.html:498
+#: tripapp/templates/tripapp/map_markers_edit.html:293
+msgid "Unlocated Notes"
+msgstr "Notities"
+
+#: tripapp/templates/tripapp/map_markers_edit.html:311
+msgid "No notes yet."
+msgstr "Nog geen Notities."
+
+#: tripapp/templates/tripapp/map_markers_edit.html:318
+msgid "Add a note…"
+msgstr "Notitie Toevoegen"
+
+#: tripapp/templates/tripapp/map_markers_edit.html:658
 msgid "Location saved"
 msgstr "Locatie opgeslagen"
 
-#: tripapp/templates/tripapp/map_markers_edit.html:513
+#: tripapp/templates/tripapp/map_markers_edit.html:673
 msgid "Location"
 msgstr "Locatie"
 
-#: tripapp/templates/tripapp/map_markers_edit.html:543
+#: tripapp/templates/tripapp/map_markers_edit.html:703
 msgid "Removed"
 msgstr "Verwijderd"
 
-#: tripapp/templates/tripapp/map_markers_edit.html:559
+#: tripapp/templates/tripapp/map_markers_edit.html:719
 msgid "Add at least one location before saving."
 msgstr "Voeg minstens één locatie toe voor je opslaat."
 
@@ -822,12 +844,6 @@ msgstr "Voor dag"
 #: tripapp/templates/tripapp/scheduled_item_form.html:66
 msgid "Update"
 msgstr "Bijwerken"
-
-#: tripapp/templates/tripapp/tribe_map.html:42
-#: tripapp/templates/tripapp/trip_detail.html:192
-#: tripapp/templates/tripapp/trip_list.html:190
-msgid "Settings"
-msgstr "Instellingen"
 
 #: tripapp/templates/tripapp/tribe_trip_organize.html:110
 msgid "Organize New.."
@@ -925,7 +941,7 @@ msgstr "Maak eerst Tribe aan"
 msgid "Balance for Trip"
 msgstr "Tripbalans"
 
-#: tripapp/templates/tripapp/trip_balance.html:36
+#: tripapp/templates/tripapp/trip_balance.html:38
 msgid "Balance"
 msgstr "Balans"
 
@@ -1103,12 +1119,12 @@ msgid "Route"
 msgstr "Wis Route"
 
 #: tripapp/templates/tripapp/trip_dayprograms.html:9
-#: tripapp/templates/tripapp/trip_expenses_list.html:82
+#: tripapp/templates/tripapp/trip_expenses_list.html:85
 msgid "Date"
 msgstr "Datum"
 
 #: tripapp/templates/tripapp/trip_dayprograms.html:10
-#: tripapp/templates/tripapp/trip_expenses_list.html:80
+#: tripapp/templates/tripapp/trip_expenses_list.html:83
 msgid "Description"
 msgstr "Omschrijving"
 
@@ -1135,23 +1151,23 @@ msgstr "vandaag"
 msgid "Expenses for Trip"
 msgstr "Uitgaven op Trip"
 
-#: tripapp/templates/tripapp/trip_expenses_list.html:44
+#: tripapp/templates/tripapp/trip_expenses_list.html:47
 msgid "Add New Expense"
 msgstr "Uitgave toevoegen"
 
-#: tripapp/templates/tripapp/trip_expenses_list.html:79
+#: tripapp/templates/tripapp/trip_expenses_list.html:82
 msgid "By"
 msgstr "Door"
 
-#: tripapp/templates/tripapp/trip_expenses_list.html:83
+#: tripapp/templates/tripapp/trip_expenses_list.html:86
 msgid "Receipt"
 msgstr "Bonnetje"
 
-#: tripapp/templates/tripapp/trip_expenses_list.html:123
+#: tripapp/templates/tripapp/trip_expenses_list.html:138
 msgid "No expenses recorded for this trip"
 msgstr "Geen uitgaven vastgelegd op deze trip"
 
-#: tripapp/templates/tripapp/trip_expenses_list.html:127
+#: tripapp/templates/tripapp/trip_expenses_list.html:142
 msgid "See Balance"
 msgstr "Bekijk Balans"
 
@@ -1226,21 +1242,24 @@ msgstr "Geen documenten ge-upload"
 msgid "Suggestion by %(username)s: %(suggestion)s"
 msgstr "Voorstel van %(username)s: %(suggestion)s"
 
-#: tripapp/views.py:2173
+#: tripapp/views.py:2181
 msgid "No Answers"
 msgstr "Geen Antwoorden"
 
-#: tripapp/views.py:2392 tripapp/views.py:2418
+#: tripapp/views.py:2400 tripapp/views.py:2426
 msgid "Tripper and emoji mandatory."
 msgstr "Tripper en emoji verplicht"
 
-#: tripapp/views.py:2403
+#: tripapp/views.py:2411
 msgid "You already liked this log with this emoji."
 msgstr "Je hebt deze log al een emoji gegeven."
 
-#: tripapp/views.py:2430
+#: tripapp/views.py:2438
 msgid "There is no like with this emoji that can be removed."
 msgstr "Er is geen like met deze emoji om te verwijderen"
+
+#~ msgid "Map - Add Locations"
+#~ msgstr "Kaart - Locaties toevoegen"
 
 #~ msgid "Create Itinerary Idea - by Day Locations"
 #~ msgstr "Maak Reisschema Idee door Dag activiteiten op de kaart te zetten"
@@ -1325,9 +1344,6 @@ msgstr "Er is geen like met deze emoji om te verwijderen"
 
 #~ msgid "Programme"
 #~ msgstr "Programma"
-
-#~ msgid "New"
-#~ msgstr "Nieuw"
 
 #~ msgid "Already joined"
 #~ msgstr "Al geregistreerd"

@@ -3,7 +3,7 @@ from .models import Trip, Tripper, Badge, DayProgram, Checklist, ChecklistItem, 
 from .models import BingoCard, BingoAnswer, BadgeAssignment
 from .models import Tribe, UserProfile, LogEntry, Link, Route, TripExpense, Location, ImmichPhotos, ScheduledItem
 from .models import TripperDocument, LogEntryLike, InviteCode, TripBudget
-from .models import TripOutline, MapMarkerDraft, OllamaJob, DayVibe
+from .models import TripOutline, MapMarkerDraft, OllamaJob, DayVibe, ItineraryNote, TripDocument
 from .forms import BadgeForm, TripForm, ChecklistItemForm, ImageForm, BingoAnswerForm
 from .forms import CustomUserCreationForm
 from .forms import AnswerForm, TripperForm, TripperAdminForm
@@ -1869,6 +1869,7 @@ def trip_documents_view(request, trip_id):
     trip = get_object_or_404(Trip.objects.prefetch_related('dayprograms__links'), id=trip_id)
     trip_documents = Link.objects.filter(dayprogram__trip=trip).order_by('dayprogram__tripdate')
     tripper_documents = TripperDocument.objects.filter(tripper__trips=trip)
+    trip_notes        = TripDocument.objects.filter(trip=trip).order_by('created_at')
 
     filter_date = request.GET.get('filter_date')
     filter_category = request.GET.get('filter_category')
@@ -1884,6 +1885,7 @@ def trip_documents_view(request, trip_id):
         'trip': trip,
         'trip_documents': trip_documents,
         'tripper_documents': tripper_documents,
+        'trip_notes':trip_notes,
     })
 
 @is_in_tribe
@@ -2693,10 +2695,29 @@ def import_itineraryidea(request):
 
 
 def itineraryidea_list(request):
-    itineraryideas = ItineraryIdea.objects.prefetch_related("itineraryidea_days").all().order_by("-created_at")
+    itineraryideas = ItineraryIdea.objects.prefetch_related("itineraryidea_days", "notes").all().order_by("-created_at")
+    category = "roadtrip"
+    background_image_url = get_random_unsplash_image(category)
+
+    editable_idea_ids = set()
+    if request.user.is_authenticated:
+        try:
+            user_tribes = set(request.user.userprofile.tribes.values_list('id', flat=True))
+            for idea in itineraryideas:
+                try:
+                    creator_tribes = set(idea.created_by.userprofile.tribes.values_list('id', flat=True))
+                    if user_tribes & creator_tribes:  # overlap
+                        editable_idea_ids.add(idea.id)
+                except UserProfile.DoesNotExist:
+                    pass
+        except UserProfile.DoesNotExist:
+            pass
+
     return render(request, "tripapp/itineraryidea_list.html", {
         "itineraryideas": itineraryideas,
+        "editable_idea_ids": editable_idea_ids,
         "ollama_configured": bool(getattr(settings, 'OLLAMA_URL', None)),
+        "background_image_url": background_image_url,
     })
 
 
@@ -3838,19 +3859,19 @@ def suggest_checklist_items(request, trip_id):
 
     return redirect("tripapp:checklist", trip_id=trip.id)
 
-@is_in_tribe
-def checklist(request, trip_id):
-    trip       = get_object_or_404(Trip, id=trip_id)
-    checklist  = Checklist.objects.get_or_create(trip=trip)[0]
-    items      = checklist.items.all()
-    job        = checklist.suggestion_job
-    job_status = job.status if job else "none"
-
-    return render(request, 'tripapp/trip_checklist.html', {
-        'trip':       trip,
-        'items':      items,
-        'job_status': job_status,
-    })
+#@is_in_tribe
+#def checklist(request, trip_id):
+#    trip       = get_object_or_404(Trip, id=trip_id)
+#    checklist  = Checklist.objects.get_or_create(trip=trip)[0]
+#    items      = checklist.items.all()
+#    job        = checklist.suggestion_job
+#    job_status = job.status if job else "none"
+#
+#    return render(request, 'tripapp/trip_checklist.html', {
+#        'trip':       trip,
+#        'items':      items,
+#        'job_status': job_status,
+#    })
 
 @login_required
 def checklist_job_status(request, trip_id):
@@ -3993,14 +4014,25 @@ def save_map_markers(request):
     messages.success(request, "Markers saved.")
     return redirect('tripapp:itineraryidea-list')
 
+def user_shares_tribe_with(user, other_user):
+    try:
+        user_tribes    = set(user.userprofile.tribes.values_list('id', flat=True))
+        creator_tribes = set(other_user.userprofile.tribes.values_list('id', flat=True))
+        return bool(user_tribes & creator_tribes)
+    except UserProfile.DoesNotExist:
+        return False
+
+
 @login_required
 def edit_map_markers(request, idea_pk):
     idea      = get_object_or_404(ItineraryIdea, pk=idea_pk)
     drafts    = MapMarkerDraft.objects.filter(itinerary_idea=idea)
-    can_edit  = idea.created_by == request.user
-
     day_locations       = DayLocation.objects.filter(day__itineraryidea=idea).select_related('day')
     overnight_locations = OvernightLocation.objects.filter(day__itineraryidea=idea).select_related('day')
+    can_edit = False
+    can_edit = user_shares_tribe_with(request.user, idea.created_by)
+    notes  = idea.notes.select_related('author').all()
+
 
     return render(request, 'tripapp/map_markers_edit.html', {
         'idea':                idea,
@@ -4008,6 +4040,7 @@ def edit_map_markers(request, idea_pk):
         'can_edit':            can_edit,
         'day_locations':       day_locations,
         'overnight_locations': overnight_locations,
+        'notes':               notes,
     })
 
 
@@ -4083,8 +4116,14 @@ def assign_markers_view(request, idea_pk):
     idea   = get_object_or_404(ItineraryIdea, pk=idea_pk)
     days   = idea.itineraryidea_days.all()
     drafts = MapMarkerDraft.objects.filter(itinerary_idea=idea)
-    can_edit = idea.created_by == request.user
-
+    can_edit = False
+    if request.user.is_authenticated:
+        try:
+            user_tribes    = set(request.user.userprofile.tribes.values_list('id', flat=True))
+            creator_tribes = set(idea.created_by.userprofile.tribes.values_list('id', flat=True))
+            can_edit = bool(user_tribes & creator_tribes)
+        except UserProfile.DoesNotExist:
+            pass
     pin_assignments = {}
     bed_assignments = {}
 
@@ -4203,6 +4242,9 @@ def itineraryidea_detail(request, pk):
     idea   = get_object_or_404(ItineraryIdea, pk=pk, created_by=request.user)
     days   = list(idea.itineraryidea_days.prefetch_related('day_locations', 'overnightlocations').all())
     drafts = MapMarkerDraft.objects.filter(itinerary_idea=idea)
+    notes  = idea.notes.select_related('author').all()
+    can_edit = user_shares_tribe_with(request.user, idea.created_by)
+
 
     for i, day in enumerate(days):
         day.color = PALETTE[i % len(PALETTE)]
@@ -4236,6 +4278,8 @@ def itineraryidea_detail(request, pk):
         'total_days':        len(days),
         'has_days':          len(days) > 0,
         'form': form,
+        'notes':notes,
+        'can_edit':can_edit,
     })
 
 
@@ -4366,3 +4410,62 @@ def set_day_vibe(request, dayprogram_id):
         })
 
     return JsonResponse({'error': 'POST only'}, status=405)
+
+    
+@login_required
+def add_itinerary_note(request, pk):
+    idea = get_object_or_404(ItineraryIdea, pk=pk)
+
+    if not user_shares_tribe_with(request.user, idea.created_by):
+        return JsonResponse({'error': 'Not allowed'}, status=403)
+
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        text = data.get('text', '').strip()
+        if not text:
+            return JsonResponse({'error': 'Text required'}, status=400)
+
+        note = ItineraryNote.objects.create(
+            itinerary=idea,
+            text=text,
+            author=request.user,
+        )
+        return JsonResponse({
+            'id':         note.id,
+            'text':       note.text,
+            'author':     note.author.username,
+            'created_at': note.created_at.strftime('%d %b, %H:%M'),
+        })
+
+    return JsonResponse({'error': 'POST only'}, status=405)
+
+
+@login_required
+def delete_itinerary_note(request, note_pk):
+    note = get_object_or_404(ItineraryNote, pk=note_pk)
+
+    if request.user != note.author and not user_shares_tribe_with(request.user, note.itinerary.created_by):
+        return JsonResponse({'error': 'Not allowed'}, status=403)
+
+    if request.method == 'POST':
+        note.delete()
+        return JsonResponse({'deleted': True})
+
+    return JsonResponse({'error': 'POST only'}, status=405)
+
+@login_required
+def itinerary_notes_list(request, pk):
+    idea  = get_object_or_404(ItineraryIdea, pk=pk)
+    notes = idea.notes.select_related('author').all()
+    return JsonResponse({
+        'notes': [
+            {
+                'id':         n.id,
+                'text':       n.text,
+                'author':     n.author.username if n.author else '?',
+                'created_at': n.created_at.strftime('%d %b, %H:%M'),
+                'can_delete': request.user == n.author,
+            }
+            for n in notes
+        ]
+    })

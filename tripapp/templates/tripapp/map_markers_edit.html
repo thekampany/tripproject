@@ -269,6 +269,7 @@
   </form>
 </div>
 
+
 {% else %}
 <div id="bottom-bar" style="border-radius:12px 0 0 12px;">
   <div id="save-bar" style="background:rgba(255,255,255,0);backdrop-filter:blur(8px);flex:1;display:flex;align-items:center;gap:12px;padding:10px 16px;justify-content: space-between;">
@@ -283,6 +284,165 @@
   </div>
 </div>
 {% endif %}
+
+<!-- ── Notes sidebar ── -->
+<div id="notes-toggle" onclick="toggleNotes()">📝 <span id="notes-count">{{ notes|length }}</span></div>
+
+<div id="notes-sidebar">
+    <div id="notes-sidebar-header">
+        <span>{% trans "Unlocated Notes" %}</span>
+        <button onclick="toggleNotes()" style="background:none;border:none;font-size:18px;cursor:pointer;">×</button>
+    </div>
+
+    <ul id="notes-list" class="list-unstyled mb-3" style="flex:1;overflow-y:auto;padding:12px;margin:0;">
+        {% for note in notes %}
+        <li class="note-item" data-id="{{ note.id }}">
+            <div class="note-body">
+                <span class="note-text">{{ note.text }}</span>
+                <span class="note-meta">— {{ note.author.username }}, {{ note.created_at|date:"d M, H:i" }}</span>
+            </div>
+            {% if can_edit or request.user == note.author %}
+            <button class="delete-note-btn"
+                    data-delete-url="{% url 'tripapp:delete_itinerary_note' note.id %}"
+                    title="Remove">×</button>
+            {% endif %}
+        </li>
+        {% empty %}
+        <li id="notes-empty" class="hint" style="padding:12px;color:#999;">{% trans "No notes yet." %}</li>
+        {% endfor %}
+    </ul>
+
+    {% if can_edit %}
+    <div style="padding:12px;border-top:1px solid rgba(0,0,0,.08);">
+        <textarea id="note-input" class="form-control form-control-sm" rows="2"
+                  placeholder="{% trans 'Add a note…' %}"></textarea>
+        <button id="note-add-btn" class="btn btn-sm btn-dark mt-2 w-100">+ {% trans "Add" %}</button>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+#notes-toggle {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1000;
+    background: white;
+    border: 1px solid rgba(0,0,0,.15);
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    padding: 12px 8px;
+    cursor: pointer;
+    font-size: 13px;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    box-shadow: -2px 0 8px rgba(0,0,0,.1);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: right .3s;
+}
+#notes-toggle.open { right: 320px; }
+#notes-toggle:hover { background: #f5f5f5; }
+
+#notes-sidebar {
+    position: fixed;
+    right: -320px;
+    top: 100px;
+    height: calc(100vh - 400px);
+    width: 320px;
+    background: white;
+    z-index: 999;
+    box-shadow: -4px 0 16px rgba(0,0,0,.15);
+    display: flex;
+    flex-direction: column;
+    transition: right .3s ease;
+    border-radius: 12px 0 0 12px;
+}
+#notes-sidebar.open { right: 0; }
+
+#notes-sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid rgba(0,0,0,.08);
+    font-weight: 500;
+}
+
+.note-item { display: flex; align-items: flex-start; gap: 8px; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,.06); }
+.note-body { flex: 1; font-size: 14px; }
+.note-text { display: block; }
+.note-meta { font-size: 12px; color: #999; }
+.delete-note-btn { background: none; border: none; color: #ccc; font-size: 16px; cursor: pointer; flex-shrink: 0; padding: 0 4px; transition: color .15s; }
+.delete-note-btn:hover { color: #e74c3c; }
+</style>
+
+<script>
+const NOTE_ADD_URL = "{% url 'tripapp:add_itinerary_note' idea.id %}";
+const CSRF         = "{{ csrf_token }}";
+
+function toggleNotes() {
+    document.getElementById('notes-sidebar').classList.toggle('open');
+    document.getElementById('notes-toggle').classList.toggle('open');
+}
+
+{% if can_edit %}
+document.getElementById('note-add-btn').onclick = async () => {
+    const input = document.getElementById('note-input');
+    const text  = input.value.trim();
+    if (!text) return;
+
+    const res  = await fetch(NOTE_ADD_URL, {
+        method:  'POST',
+        headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ text })
+    });
+    const note = await res.json();
+    if (!note.id) return;
+
+    const empty = document.getElementById('notes-empty');
+    if (empty) empty.remove();
+
+    const li = document.createElement('li');
+    li.className  = 'note-item';
+    li.dataset.id = note.id;
+    li.innerHTML  = `
+        <div class="note-body">
+            <span class="note-text">${note.text}</span>
+            <span class="note-meta">— ${note.author}, ${note.created_at}</span>
+        </div>
+        <button class="delete-note-btn" title="Remove"
+                data-delete-url="/itineraryidea/notes/${note.id}/delete/">×</button>`;
+    document.getElementById('notes-list').prepend(li);
+    input.value = '';
+
+    document.getElementById('notes-count').textContent =
+        document.querySelectorAll('.note-item').length;
+};
+{% endif %}
+
+document.getElementById('notes-list').addEventListener('click', async e => {
+    if (!e.target.matches('.delete-note-btn')) return;
+    const li  = e.target.closest('.note-item');
+    const url = e.target.dataset.deleteUrl;
+    const res = await fetch(url, {
+        method: 'POST', headers: { 'X-CSRFToken': CSRF }
+    });
+    if (!res.ok) return;
+    li.remove();
+    document.getElementById('notes-count').textContent =
+        document.querySelectorAll('.note-item').length;
+    if (!document.querySelectorAll('.note-item').length) {
+        document.getElementById('notes-list').innerHTML =
+            '<li id="notes-empty" class="hint" style="padding:12px;color:#999;">No notes yet.</li>';
+    }
+});
+</script>
+
+
+
 
 <script>
   const CAN_EDIT = {{ can_edit|yesno:"true,false" }};

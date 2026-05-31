@@ -1,101 +1,328 @@
-{% extends "base_generic.html" %}
+{% load static %}
 {% load i18n %}
-{% block content %}
-<style>
-    .btn {
-      flex: 0 0 auto;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 400;
-      padding: 14px 12px;
-      cursor: pointer;
-      font-family: sans-serif;
-      transition: opacity .15s, transform .1s;
-    }
-    .btn:active { transform: scale(.97); }
-    .btn-primary   { background: #6c63ff; color: #fff; }
-    .btn-primary:hover  { opacity: .88; }
-    .btn-secondary { background: #f0f0f0; color: #555; }
-    .btn-secondary:hover { background: #e4e4e4; }
-    .btn-danger    { background: #ff4757; color: #fff; }
-    .btn-danger:hover   { opacity: .88; }
 
-  #bottom-bar {
-    position: fixed;
-    bottom: 20px;
-    left: 20%;
-    right: 0;
-    backdrop-filter: blur(8px);
-    padding: 12px 20px;
-    display: flex;
-    align-items: center;
-    z-index: 1000;
-    box-shadow: 0 -4px 20px rgba(0,0,0,.1);
-    border-radius: 12px 0 0 12px;
-
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{ trips.tribe.name }}Trips</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon/favicon-16x16.png' %}">
+  <link rel="manifest" href="{% static 'favicon/site.webmanifest' %}">
+  <link rel="mask-icon" href="{% static 'favicon/safari-pinned-tab.svg' %}" color="#5bbad5">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+  
+  <style>
+  body, html {
+    background: url('{{ background_image_url }}') no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
   }
-</style>
-<h2>{% trans "Itinerary Ideas" %}</h2>
+  a.btn {
+    --bs-btn-padding-x: 0.75rem;
+    --bs-btn-padding-y: 0.375rem;
+    --bs-btn-font-family: ;
+    --bs-btn-font-size: 1rem;
+    --bs-btn-font-weight: 400;
+    --bs-btn-line-height: 1.5;
+    --bs-btn-border-width: var(--bs-border-width);
+    --bs-btn-border-color: transparent;
+    --bs-btn-border-radius: var(--bs-border-radius);
+    --bs-btn-hover-border-color: transparent;
+    --bs-btn-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 1px rgba(0, 0, 0, 0.075);
+    --bs-btn-disabled-opacity: 0.65;
+    --bs-btn-focus-box-shadow: 0 0 0 0.25rem rgba(var(--bs-btn-focus-shadow-rgb), .5);
+    display: inline-block;
+    padding: var(--bs-btn-padding-y) var(--bs-btn-padding-x);
+    font-family: var(--bs-btn-font-family);
+    font-size: var(--bs-btn-font-size);
+    font-weight: var(--bs-btn-font-weight);
+    line-height: var(--bs-btn-line-height);
+    color: var(--bs-btn-color);
+    text-align: center;
+    text-decoration: none;
+    vertical-align: middle;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    border: var(--bs-btn-border-width) solid var(--bs-btn-border-color);
+    border-radius: var(--bs-btn-border-radius);
+    background-color: var(--bs-btn-bg);
+    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+  }
+  a.btn:hover {background: var(--bs-btn-bg);}
+  </style>
 
-<p>&nbsp;</p>
-<div class="tripmenucontainer">
+</head>
+<body>
+<div class="card">
+<div class="container">
 
-  <div class="tripmenuitem"><a href="{% url 'tripapp:create_itineraryidea_daylocations'  %}" class="btn"><span>{% trans "Brainstorm on Map" %}</span></a></div>
-  <div class="tripmenuitem"><a href="{% url 'tripapp:pastecreate_itineraryidea' %}" class="btn"><span>{% trans "Import" %}</span></a></div>
-  {% if ollama_configured %}<div class="tripmenuitem"><a href="{% url 'tripapp:generate_itineraryidea' %}" class="btn"><span>{% trans "Generate via AI" %}</span></a></div>{% endif %}
-</div>  
 
-<p>&nbsp;</p>
+    <div class="topcontainer">
+        <div class="titlecontainer">
+          <h2>{% trans "Itinerary Ideas" %}</h2>
+        </div>
 
-{% for idea in itineraryideas %}
-  <div class="itinerary-idea" style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:12px;">
-    <strong>{{ idea.name }}</strong>
-    <span style="float:right; color:gray; font-style:italic;">
-      {% if idea.updated_at %}
-        {{ idea.created_by.username }} - Last update: {{ idea.updated_by.username }}&nbsp;{{ idea.updated_at|date:"Y-m-d H:i" }}
-      {% else %}
-        {{ idea.created_by.username }} - Created: {{ idea.created_at|date:"Y-m-d H:i" }}
-      {% endif %}
-    </span>
-    <br><br>
 
-    <div style="float:left;">
-      <a href="{% url 'tripapp:edit_map_markers' idea.pk %}">
+        <div class="menucontainer">
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="{% static 'icons/usericonreverse.png' %}" alt="{{ user.username }}" class="rounded-circle user-icon" width="20" height="20">
+                    <span class="ms-2">{{ user.username }}</span>
+                </a>
+                <ul class="dropdown-menu custom-dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                <li><a class="dropdown-item" href="{% url 'tripapp:update_profile' %}">Account</a></li>
+                {% if tripper %}<li><a class="dropdown-item" href="{% url 'tripapp:tripper_profile' tripper.id %}">{% trans "Settings" %}</a></li>{% endif %}
+                <li><hr class="dropdown-divider"></li>
+                {% if user.is_staff and enable_admin %}<li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>{% endif %}
+                {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'tripapp:task_manager' %}">Background Tasks</a></li>{% endif %}
+                {% if user.is_staff %}
+                    <li><a class="dropdown-item" href="{% url 'tripapp:ollama_job_list' %}">Stupid AI</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                {% endif %}
+                {% if user.is_authenticated %} <li><a class="dropdown-item" href="{% url 'tripapp:logout' %}">Logout</a></li>{% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+
+
+    <p>&nbsp;</p>
+    <div class="tripmenucontainer">
+      <div class="tripmenuitem"><a href="{% url 'tripapp:tribe_trips' %}" class="btn"><i class="bi bi-arrow-90deg-up"></i><span>{% trans "Organize" %}</span></a></div>
+      <div class="tripmenuitem"><a href="{% url 'tripapp:trip_list' %}" class="btn"><i class="bi bi-arrow-up"></i><span>{% trans "My Trips" %}</span></a></div>
+
+      <div class="tripmenuitem">
+        <div class="dropdown">
+            <a class="btn" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-three-dots"></i><span style="font-size: 12px;">{% trans "New" %}..</span>
+            </a>
+            <ul class="dropdown-menu custom-dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                <li><a class="dropdown-item" href="{% url 'tripapp:create_itineraryidea_daylocations'  %}">{% trans "Brainstorm on Map" %}</a></li>
+                <li><a class="dropdown-item" href="{% url 'tripapp:pastecreate_itineraryidea' %}">{% trans "Import" %}</a></li>
+                {% if ollama_configured %}<li><a class="dropdown-item" href="{% url 'tripapp:generate_itineraryidea' %}">{% trans "Generate via AI" %}</a></li>{% endif %}
+            </ul>
+        </div>
+      </div>
+    </div>
+
+    <p>&nbsp;</p>
+
+    {% for idea in itineraryideas %}
+      <div class="itinerary-idea" style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:12px;">
+        <strong>{{ idea.name }}</strong>
+        <span style="float:right; color:gray; font-style:italic;">
+          {% if idea.updated_at %}
+            {{ idea.created_by.username }} - Last update: {{ idea.updated_by.username }}&nbsp;{{ idea.updated_at|date:"Y-m-d H:i" }}
+          {% else %}
+            {{ idea.created_by.username }} - Created: {{ idea.created_at|date:"Y-m-d H:i" }}
+          {% endif %}
+
+        </span>
+        <br><br>
+
+        <div style="float:left;">
+          <a href="{% url 'tripapp:edit_map_markers' idea.pk %}" class="btn btn-secondary">
+            {% if idea.id in editable_idea_ids %}
+              {% trans "Edit" %}
+            {% else %}
+              {% trans "View" %}
+            {% endif %}
+          </a>
+          {% if request.user == idea.created_by %}
+          <a href="{% url 'tripapp:itineraryidea-detail' idea.pk %}" class="btn btn-secondary">
+            {% trans "Assign and Convert" %}
+          </a>
+          {% endif %}
+          {% if idea.notes.all %}
+            <button class="btn btn-secondary notes-btn"
+                    data-idea-id="{{ idea.id }}"
+                    data-idea-name="{{ idea.name }}"
+                    data-can-edit="{% if idea.id in editable_idea_ids %}1{% else %}0{% endif %}"
+                    data-notes-url="{% url 'tripapp:itinerary_notes_list' idea.id %}"
+                    data-add-url="{% url 'tripapp:add_itinerary_note' idea.id %}"
+                    data-delete-url-base="/itineraryidea/notes/">
+                Notes ({{ idea.notes.all|length }})
+            </button>
+            {% elif idea.id in editable_idea_ids %}
+            <button class="btn btn-secondary notes-btn"
+                    data-idea-id="{{ idea.id }}"
+                    data-idea-name="{{ idea.name }}"
+                    data-can-edit="1"
+                    data-notes-url="{% url 'tripapp:itinerary_notes_list' idea.id %}"
+                    data-add-url="{% url 'tripapp:add_itinerary_note' idea.id %}"
+                    data-delete-url-base="/itineraryidea/notes/">
+                Notes
+            </button>
+            {% endif %}
+
+        </div>
+
         {% if request.user == idea.created_by %}
-           <button type="button" class="btn">{% trans "Edit" %}</button>
-        {% else %}
-           <button type="button" class="btn">{% trans "View" %}</button>
+        <div style="float:right;">
+          <form method="post" action="{% url 'tripapp:itineraryidea-delete' idea.pk %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary" onclick="return confirm('{% trans "Are you sure?" %}')"><i class="bi bi-trash"></i>&nbsp;<span>{% trans "Delete" %}</span></button>
+          </form>
+        </div>
         {% endif %}
-      </a>
-      {% if request.user == idea.created_by %}
-      <a href="{% url 'tripapp:itineraryidea-detail' idea.pk %}">
-        <button type="button" class="btn">{% trans "Assign and Convert" %}</button>
-      </a>
-      {% endif %}
-    </div>
 
-    {% if request.user == idea.created_by %}
-    <div style="float:right;">
-      <form method="post" action="{% url 'tripapp:itineraryidea-delete' idea.pk %}" style="display:inline;">
-        {% csrf_token %}
-        <button type="submit" class="btn" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Delete" %}</button>
-      </form>
-    </div>
-    {% endif %}
+        <div style="clear:both;"></div>
+      </div>
+    {% empty %}
+      <p>{% trans "No itinerary ideas yet." %}</p>
+    {% endfor %}
+    <p>&nbsp;</p>
+    <a href="{% url 'tripapp:tribe_trips' %}">&larr;{% trans "Organize" %}</a>
+    <p>&nbsp;</p>
 
-    <div style="clear:both;"></div>
+    <div style="height: 60px;"></div>
+
   </div>
-{% empty %}
-  <p>{% trans "No itinerary ideas yet." %}</p>
-{% endfor %}
-<p>&nbsp;</p>
-<a href="{% url 'tripapp:tribe_trips' %}">&larr;{% trans "Organize" %}</a>
-<p>&nbsp;</p>
-<div id="bottom-bar">
-  <a href="{% url 'tripapp:tribe_trips' %}" class="btn btn-primary">&larr;{% trans "Organize" %}</a>&nbsp;
-  <a href="{% url 'tripapp:trip_list' %}" class="btn btn-primary">{% trans "My Trips" %}</a>
 </div>
-<div style="height: 60px;"></div>
-{% endblock %}
+
+
+<!-- Notes modal -->
+<div id="notes-modal" style="position:fixed; inset:0; background:rgba(0,0,0,.65); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:var(--color-background); color:var(--color-text);border-radius:14px; width:380px; max-height:80vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,.3);">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid #eee;">
+            <strong id="notes-modal-title" style="font-size:15px;"></strong>
+            <button onclick="closeNotesModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#999;">×</button>
+        </div>
+        <ul id="notes-modal-list" class="list-unstyled" style="flex:1; overflow-y:auto; padding:12px 20px; margin:0;"></ul>
+        <div id="notes-modal-add" style="padding:12px 20px; border-top:1px solid #eee; display:none;">
+            <textarea id="notes-modal-input" class="form-control form-control-sm" rows="2" placeholder="Add a note…"></textarea>
+            <button id="notes-modal-submit" class="btn btn-sm btn-dark mt-2 w-100">+ Add</button>
+        </div>
+    </div>
+</div>
+
+<style>
+#notes-modal { display: none; }
+#notes-modal.open { display: flex; }
+.modal-note-item { display:flex; align-items:flex-start; gap:8px; padding:8px 0; border-bottom:1px solid #f0f0f0; font-size:14px; }
+.modal-note-body { flex:1; }
+.modal-note-meta { font-size:12px; color:#999; }
+.modal-note-delete { background:none; border:none; color:#ccc; cursor:pointer; font-size:15px; padding:0 4px; }
+.modal-note-delete:hover { color:#e74c3c; }
+</style>
+
+<script>
+const CSRF = "{{ csrf_token }}";
+let activeNotesAddUrl    = null;
+let activeNotesDeleteBase = null;
+
+document.querySelectorAll('.notes-btn').forEach(btn => {
+    btn.addEventListener('click', () => openNotesModal(btn));
+});
+
+function openNotesModal(btn) {
+    const notesUrl   = btn.dataset.notesUrl;
+    activeNotesAddUrl     = btn.dataset.addUrl;
+    activeNotesDeleteBase = btn.dataset.deleteUrlBase;
+    const canEdit    = btn.dataset.canEdit === '1';
+
+    document.getElementById('notes-modal-title').textContent = btn.dataset.ideaName;
+    document.getElementById('notes-modal-add').style.display = canEdit ? 'block' : 'none';
+    document.getElementById('notes-modal-list').innerHTML = '<li style="color:#999;font-size:13px;">Loading…</li>';
+    document.getElementById('notes-modal').classList.add('open');
+
+    fetch(notesUrl).then(r => r.json()).then(data => renderModalNotes(data.notes, canEdit));
+}
+
+function renderModalNotes(notes, canEdit) {
+    const list = document.getElementById('notes-modal-list');
+    if (!notes.length) {
+        list.innerHTML = '<li style="color:#999;font-size:13px;padding:8px 0;">No notes yet.</li>';
+        return;
+    }
+    list.innerHTML = '';
+    notes.forEach(note => {
+        const li = document.createElement('li');
+        li.className  = 'modal-note-item';
+        li.dataset.id = note.id;
+        li.innerHTML  = `
+            <div class="modal-note-body">
+                <span style="display:block;">${note.text}</span>
+                <span class="modal-note-meta">— ${note.author}, ${note.created_at}</span>
+            </div>
+            ${note.can_delete ? `<button class="modal-note-delete" onclick="deleteModalNote(${note.id}, this)">×</button>` : ''}`;
+        list.appendChild(li);
+    });
+}
+
+function closeNotesModal() {
+    document.getElementById('notes-modal').classList.remove('open');
+    activeNotesAddUrl = null;
+}
+
+document.getElementById('notes-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeNotesModal();
+});
+
+document.getElementById('notes-modal-submit').onclick = async () => {
+    const input = document.getElementById('notes-modal-input');
+    const text  = input.value.trim();
+    if (!text || !activeNotesAddUrl) return;
+
+    const res  = await fetch(activeNotesAddUrl, {
+        method:  'POST',
+        headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ text })
+    });
+    const note = await res.json();
+    if (!note.id) return;
+
+    const list  = document.getElementById('notes-modal-list');
+    const empty = list.querySelector('li:only-child');
+    if (empty) empty.remove();
+
+    const li = document.createElement('li');
+    li.className  = 'modal-note-item';
+    li.dataset.id = note.id;
+    li.innerHTML  = `
+        <div class="modal-note-body">
+            <span style="display:block;">${note.text}</span>
+            <span class="modal-note-meta">— ${note.author}, ${note.created_at}</span>
+        </div>
+        <button class="modal-note-delete" onclick="deleteModalNote(${note.id}, this)">×</button>`;
+    list.prepend(li);
+    input.value = '';
+
+    // Update teller op de knop
+    document.querySelectorAll('.notes-btn').forEach(btn => {
+        if (btn.dataset.addUrl === activeNotesAddUrl) {
+            btn.textContent = '📝 ' + list.querySelectorAll('.modal-note-item').length;
+        }
+    });
+};
+
+async function deleteModalNote(noteId, btn) {
+    const url = activeNotesDeleteBase + noteId + '/delete/';
+    const res = await fetch(url, {
+        method: 'POST', headers: { 'X-CSRFToken': CSRF }
+    });
+    if (!res.ok) return;
+    const li = btn.closest('.modal-note-item');
+    li.remove();
+    if (!document.querySelectorAll('.modal-note-item').length) {
+        document.getElementById('notes-modal-list').innerHTML =
+            '<li style="color:#999;font-size:13px;padding:8px 0;">No notes yet.</li>';
+    }
+}
+</script>
+
+</body>
+</html>
