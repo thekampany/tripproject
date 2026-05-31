@@ -18,7 +18,7 @@ from requests.exceptions import RequestException
 from django.core.cache import cache
 from urllib.parse import urlencode, quote
 
-geolocator = Nominatim(user_agent="tripapp")
+geolocator = Nominatim(user_agent="Trippanion")
 
 logger = logging.getLogger(__name__)
 
@@ -210,8 +210,6 @@ def create_trip_from_itinerary(itinerary, tribe, start_date, user,
     excluded_pins = set(int(pk) for pk in (excluded_pins or []))
     excluded_beds = set(int(pk) for pk in (excluded_beds or []))
 
-    geolocator = Nominatim(user_agent="Trippanion")
-
     all_locations = []
     for day in itinerary.itineraryidea_days.all():
         for loc in day.day_locations.all():
@@ -346,7 +344,6 @@ def country_code_to_name(code: str):
 
 def reverse_geocode_area(latitude, longitude) -> str:
     try:
-        geolocator = Nominatim(user_agent="tripapp")
         location   = geolocator.reverse((latitude, longitude), language="en", timeout=5)
         if not location:
             return f"{latitude:.2f}, {longitude:.2f}"
