@@ -12,15 +12,19 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; overflow: hidden; }
 
-    #page { display: flex; height: 100vh; align-items: flex-start;}
-    #map  { flex: 1; height: 100vh; }
-
+    #page { display: flex; height: 100vh; align-items: flex-start; position:relative;}
+    #map { 
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+    }
     /* ── Sidebar ── */
     #sidebar {
       width: 230px;
       height: 70vh;
-      margin-top: 15vh;
-      margin-bottom: 15vh;
+      margin-top: 10vh;
+      margin-bottom: 20vh;
+      margin-left:auto;
       display: flex;
       flex-direction: column;
       background: #fff;

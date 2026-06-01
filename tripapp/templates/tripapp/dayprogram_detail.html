@@ -25,28 +25,6 @@
       background-size: cover;
       {% endif %}
     }
-.navigation-bar {
-    display: flex;
-    justify-content: space-between; 
-    align-items: center; 
-    width: 100%; 
-    padding: 10px 0; 
-}
-
-.nav-link {
-    font-size: 28px; 
-    text-decoration: none; 
-}
-
-.nav-link:hover {
-    color: gray; 
-}
-
-.nav-date h1 {
-    margin: 0; 
-    font-size: 24px; 
-    text-align: center;
-}
 
     .dayprogramcard-container {
         display: flex;
@@ -207,7 +185,6 @@
       pointer-events: auto;
     }
 
-    /* Inhoud box */
     #badge-overlay .overlay-content {
       background: #fff;
       padding: 2rem;
@@ -252,21 +229,21 @@
     <div class="navigation-bar">
         <div class="nav-element">
             {% if previous_dayprogram %}
-                <a href="{% url 'tripapp:dayprogram_detail' previous_dayprogram.id %}" class="nav-link">&larr;</a>
+                <a href="{% url 'tripapp:dayprogram_detail' previous_dayprogram.id %}" class="navigation-link">&larr;</a>
             {% else %}
-                <a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug %}" class="nav-link">&larr;</a>
+                <a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug %}" class="navigation-link">&larr;</a>
             {% endif %}
         </div>
     
-        <div class="nav-element nav-date">
+        <div class="nav-element navigation-date">
             <h1>{{ dayprogram.tripdate|date:'l j M' }}</h1>
         </div>
     
         <div class="nav-element">
             {% if next_dayprogram %}
-                <a href="{% url 'tripapp:dayprogram_detail' next_dayprogram.id %}" class="nav-link">&rarr;</a>
+                <a href="{% url 'tripapp:dayprogram_detail' next_dayprogram.id %}" class="navigation-link">&rarr;</a>
             {% else %}
-                <a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug %}" class="nav-link">&rarr;</a>
+                <a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug %}" class="navigation-link">&rarr;</a>
             {% endif %}
         </div>
     </div>
@@ -724,7 +701,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (resp.ok) {
                     location.reload(); 
                 } else {
-                    alert("Kon like niet toevoegen");
+                    alert("Could not submit like. Please try again.");
                 }
             });
         });
