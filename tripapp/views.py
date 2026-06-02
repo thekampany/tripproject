@@ -4,6 +4,7 @@ from .models import BingoCard, BingoAnswer, BadgeAssignment
 from .models import Tribe, UserProfile, LogEntry, Link, Route, TripExpense, Location, ImmichPhotos, ScheduledItem
 from .models import TripperDocument, LogEntryLike, InviteCode, TripBudget
 from .models import TripOutline, MapMarkerDraft, OllamaJob, DayVibe, ItineraryNote, TripDocument
+from .models import Poll, PollOption, PollVote
 from .forms import BadgeForm, TripForm, ChecklistItemForm, ImageForm, BingoAnswerForm
 from .forms import CustomUserCreationForm
 from .forms import AnswerForm, TripperForm, TripperAdminForm
@@ -441,7 +442,8 @@ def dayprogram_detail(request, dayprogram_id):
     day_state = None
 
     if dayprogram.tripdate > timezone.now().date():
-       is_day_in_future = True    
+        is_day_in_future = True    
+        day_state = "future"
 
     if dayprogram.tripdate == timezone.now().date():
         day_state = "today"
@@ -541,6 +543,18 @@ def dayprogram_detail(request, dayprogram_id):
     my_vibe   = DayVibe.objects.filter(dayprogram=dayprogram, tripper=tripper).first() if tripper else None
     other_vibes = DayVibe.objects.filter(dayprogram=dayprogram).exclude(tripper=tripper).select_related('tripper') if tripper else []
 
+    polls    = Poll.objects.filter(dayprogram=dayprogram).prefetch_related(
+        'options__votes__tripper'
+    )
+    my_vote_ids = set()
+    if tripper:
+        my_vote_ids = set(
+            PollVote.objects.filter(
+                option__poll__dayprogram=dayprogram,
+                tripper=tripper
+            ).values_list('option_id', flat=True)
+        )
+
     return render(request, 'tripapp/dayprogram_detail.html', 
          {'dayprogram': dayprogram, 
           'images': images, 
@@ -570,6 +584,8 @@ def dayprogram_detail(request, dayprogram_id):
           'other_vibes':  other_vibes,
           'default_vibes': DEFAULT_VIBES,
           'day_state': day_state,
+          'polls':       polls,
+          'my_vote_ids': my_vote_ids,
          })
 
 
@@ -4456,3 +4472,98 @@ def itinerary_notes_list(request, pk):
             for n in notes
         ]
     })
+
+@login_required
+def create_poll(request, trip_id, dayprogram_id=None):
+    trip = get_object_or_404(Trip, id=trip_id)
+    dayprogram = get_object_or_404(DayProgram, id=dayprogram_id) if dayprogram_id else None
+
+    if request.method == 'POST':
+        data     = json.loads(request.body)
+        question = data.get('question', '').strip()
+        options  = [o.strip() for o in data.get('options', []) if o.strip()]
+
+        if not question or len(options) < 2:
+            return JsonResponse({'error': 'Need a question and at least 2 options'}, status=400)
+
+        poll = Poll.objects.create(
+            trip=trip,
+            dayprogram=dayprogram,
+            question=question,
+            created_by=request.user,
+        )
+        for text in options:
+            PollOption.objects.create(poll=poll, text=text)
+
+        return JsonResponse({'id': poll.id, 'question': poll.question})
+
+    return JsonResponse({'error': 'POST only'}, status=405)
+
+
+@login_required
+def vote_poll(request, poll_id):
+    poll    = get_object_or_404(Poll, id=poll_id)
+    tripper = get_object_or_404(Tripper, user=request.user)
+
+    if not poll.is_open:
+        return JsonResponse({'error': 'Poll is closed'}, status=400)
+
+    if request.method == 'POST':
+        data       = json.loads(request.body)
+        option_ids = data.get('option_ids', [])
+
+        PollVote.objects.filter(option__poll=poll, tripper=tripper).delete()
+
+        for option_id in option_ids:
+            option = get_object_or_404(PollOption, id=option_id, poll=poll)
+            PollVote.objects.create(option=option, tripper=tripper)
+
+        return JsonResponse(poll_results(poll, tripper))
+
+    return JsonResponse({'error': 'POST only'}, status=405)
+
+
+@login_required
+def close_poll(request, poll_id):
+    poll = get_object_or_404(Poll, id=poll_id)
+    if request.user != poll.created_by:
+        return JsonResponse({'error': 'Not allowed'}, status=403)
+    poll.is_open = False
+    poll.save(update_fields=['is_open'])
+    return JsonResponse({'ok': True})
+
+
+def poll_results(poll, tripper):
+    total_voters = PollVote.objects.filter(
+        option__poll=poll
+    ).values('tripper').distinct().count()
+
+    options = []
+    my_votes = set(
+        PollVote.objects.filter(option__poll=poll, tripper=tripper)
+        .values_list('option_id', flat=True)
+    )
+    for option in poll.options.all():
+        voters = list(option.votes.select_related('tripper').values_list('tripper__name', flat=True))
+        options.append({
+            'id':       option.id,
+            'text':     option.text,
+            'count':    len(voters),
+            'voters':   voters,
+            'voted':    option.id in my_votes,
+        })
+    return {
+        'poll_id':      poll.id,
+        'question':     poll.question,
+        'is_open':      poll.is_open,
+        'total_voters': total_voters,
+        'options':      options,
+        'is_creator':   poll.created_by_id is not None,
+    }
+
+
+@login_required
+def get_poll(request, poll_id):
+    poll    = get_object_or_404(Poll, id=poll_id)
+    tripper = get_object_or_404(Tripper, user=request.user)
+    return JsonResponse(poll_results(poll, tripper))

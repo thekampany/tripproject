@@ -720,3 +720,35 @@ class TripDocument(models.Model):
 
     def __str__(self):
         return f"{self.trip.name} — {self.title}"
+
+
+class Poll(models.Model):
+    trip       = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name='polls')
+    dayprogram = models.ForeignKey(DayProgram, on_delete=models.SET_NULL,
+                                   null=True, blank=True, related_name='polls')
+    question   = models.CharField(max_length=200)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_open    = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.question
+
+
+class PollOption(models.Model):
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name='options')
+    text = models.CharField(max_length=200)
+
+    def __str__(self):
+        return f"{self.poll.question} — {self.text}"
+
+
+class PollVote(models.Model):
+    option  = models.ForeignKey(PollOption, on_delete=models.CASCADE, related_name='votes')
+    tripper = models.ForeignKey(Tripper, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = [('option', 'tripper')]  # één stem per optie per tripper
+
+    def __str__(self):
+        return f"{self.tripper.name} → {self.option.text}"

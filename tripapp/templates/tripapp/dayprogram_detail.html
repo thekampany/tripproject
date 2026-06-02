@@ -314,7 +314,7 @@
             </p>
         </div>
         {% else %}
-            {% if is_day_in_future %}
+            {% if day_state == "future" %}
                 {% if ollama_configured %}
                     {% if user.username in trippers_names %}
                     <div class="dayprogramcard">
@@ -395,7 +395,7 @@
         </div>
         {% endif %}
 
-        {% if is_day_in_future %}
+        {% if day_state == "future" %}
             {% if routes %}
             <div class="dayprogramcard">
                 <p><span class="dayprogramcard-title">{% trans "Planned Routes for Today" %}</span></p>
@@ -447,11 +447,10 @@
     </div>
     {% endif %}
 
-
-
-    <p>
+    <div class="dayprogramcard-container">
     {% if today >= dayprogram.tripdate %}
       {% if questions %}
+        <p>
         {% if user.is_authenticated %}
 
           {% for question_with_info in questions_with_badge_info %}
@@ -481,12 +480,11 @@
         {% else %}
             <p>You need to <a href="{% url 'tripapp:login' %}">login</a>{% trans "to see and answer the question(s)." %}</p>
         {% endif %}
+        </p>
       {% endif %}
     {% endif %}
-    </p>
 
-    <div class="dayprogramcard-container">
-        {% if log_entries %}
+    {% if log_entries %}
         <div class="dayprogramcard">
             <p>
                 <span class="dayprogramcard-title">Log</span>
@@ -529,25 +527,21 @@
            </p>
         </div>
         {% endif %}
-    </div>
+
 
     {% if tracked_distance or dayprogram.recorded_weather_text %}
-    <p>&nbsp;</p>
-    <div class="dayprogramcard">
-        <p>
-            {% if tracked_distance %}
-                {% trans "Tracked Distance:" %} {{ tracked_distance }}{{ distance_unit }}
-            {% endif %}
-        </p>
-        <p>
-            {% if dayprogram.recorded_weather_text %}
-               {{ dayprogram.recorded_weather_text|get_recorded_weather_summary  }}
-            {% endif %}
-    </div>
+        <div class="dayprogramcard">
+            <p>
+                {% if tracked_distance %}
+                    {% trans "Tracked Distance:" %} {{ tracked_distance }}{{ distance_unit }}
+                {% endif %}
+            </p>
+            <p>
+                {% if dayprogram.recorded_weather_text %}
+                {{ dayprogram.recorded_weather_text|get_recorded_weather_summary  }}
+                {% endif %}
+        </div>
     {% endif %}
-
-    <p>&nbsp;</p>
-
 
     {% if day_state == "today" %}
         <div class="vibe-section mt-4 pt-3 border-top">
@@ -582,6 +576,7 @@
 
     {% elif day_state == "past" %}
         {% if my_vibe or other_vibes %}
+        <p></p>
         <div class="vibe-section mt-4 pt-3 border-top">
             <p class="hint mb-1">{% trans "Vibes this day:" %}</p>
             {% if my_vibe %}
@@ -600,7 +595,6 @@
         {% endif %}
 
     {% endif %}
-    <p>&nbsp;</p>
     <style>
     .vibe-picker { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     .vibe-btn { background: #f5f5f5; border: 2px solid transparent; border-radius: 20px; padding: 6px 12px; font-size: 20px; cursor: pointer; transition: all .15s; line-height: 1; }
@@ -609,6 +603,88 @@
     .vibe-custom { width: 48px; height: 38px; text-align: center; font-size: 20px; border: 2px solid #ddd; border-radius: 20px; padding: 0; background: #f5f5f5; cursor: pointer; }
     .vibe-custom:focus { outline: none; border-color: #333; background: #fff; }
     .other-vibe-chip { display: inline-block; background: rgba(0,0,0,.05); border-radius: 16px; padding: 4px 12px; font-size: 13px; margin: 2px; }
+    </style>
+
+    {% if polls %}
+        {% for poll in polls %}
+        <div class="dayprogramcard">
+        <div class="poll-card" id="poll-{{ poll.id }}">
+            <p class="hint mb-1"><span class="dayprogramcard-title">{{ poll.question }}</span>
+                {% if poll.is_open %}<span style="color:#2a7a4b;font-size:11px;">● open</span>
+                {% else %}<span style="color:#999;font-size:11px;">● gesloten</span>{% endif %}
+            </p>
+            <div class="poll-options" id="poll-options-{{ poll.id }}">
+                {% for option in poll.options.all %}
+                {% with vote_count=option.votes.count %}
+                <div class="poll-option {% if request.user in option.voters %}voted{% endif %}"
+                    id="poll-option-{{ option.id }}">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                        {% if poll.is_open %}
+                        <input type="checkbox" class="poll-checkbox"
+                            data-poll="{{ poll.id }}"
+                            data-option="{{ option.id }}"
+                            {% if option.id in my_vote_ids %}checked{% endif %}>
+                        {% endif %}
+                        <span class="poll-option-text">{{ option.text }}</span>
+                    </label>
+                    <div class="poll-bar-wrap">
+                        <div class="poll-bar"
+                            style="width:{% if poll.total_votes > 0 %}{{ vote_count|floatformat:0 }}%{% else %}0%{% endif %}">
+                        </div>
+                        <span class="poll-voters">
+                            {% for v in option.votes.all %}{{ v.tripper.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                            ({{ vote_count }})
+                        </span>
+                    </div>
+                </div>
+                {% endwith %}
+                {% endfor %}
+            </div>
+            {% if poll.is_open %}
+            <button class="poll-vote-btn btn btn-sm btn-dark mt-2"
+                    onclick="submitVote({{ poll.id }})">{% trans "Vote" %}</button>
+            {% endif %}
+            {% if request.user == poll.created_by and poll.is_open %}
+            <button class="btn btn-sm mt-2" style="color:#999;"
+                    onclick="closePoll({{ poll.id }})">{% trans "Close poll" %}</button>
+            {% endif %}
+        </div>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if day_state == "today" or day_state == "future" %}
+        {% if logged_on_tripper %}
+        <div class="dayprogramcard">
+        <div>
+            <a href="#" id="create-poll-link-{{ dayprogram.id }}"
+            onclick="openCreatePoll({{ dayprogram.id }}); return false;"
+            style="font-size:13px;color:#999;">{% trans "Add poll" %}</a>
+        </div>
+
+        <div id="create-poll-form-{{ dayprogram.id }}" style="display:none; margin-top:12px;">
+            <input id="poll-question-{{ dayprogram.id }}" type="text" class="form-control form-control-sm mb-2"
+                placeholder="{% trans 'Question…' %}">
+            <div id="poll-options-inputs-{{ dayprogram.id }}">
+                <input type="text" class="form-control form-control-sm mb-1 poll-opt-input" placeholder="{% trans 'Option 1' %}">
+                <input type="text" class="form-control form-control-sm mb-1 poll-opt-input" placeholder="{% trans 'Option 2' %}">
+            </div>
+            <button onclick="addPollOptionInput({{ dayprogram.id }})"
+                    class="btn btn-sm mt-1" style="color:#999;">+ {% trans "Add option" %}</button>
+            <button onclick="submitCreatePoll({{ dayprogram.id }})"
+                    class="btn btn-sm btn-dark mt-1 ml-2">{% trans "Create poll" %}</button>
+        </div>
+        </div>
+        {% endif %}
+    {% endif %}
+    </div>
+    <p>&nbsp;</p>
+    <style>
+    .poll-card { padding: 0px 0; border-top: 1px solid rgba(0,0,0,.06); margin-top: 0px; }
+    .poll-option { margin-bottom: 8px; }
+    .poll-bar-wrap { display:flex; align-items:center; gap:8px; margin-top:3px; }
+    .poll-bar { height: 6px; background: #1a1a2e; border-radius: 99px; min-width: 2px; transition: width .3s; }
+    .poll-voters { font-size: 12px; color: #999; }
     </style>
 
 
@@ -803,6 +879,64 @@ if (document.getElementById('vibe-note')) {
             setTimeout(() => saved.style.display = 'none', 2000);
         }
     }
+}
+</script>
+
+<script>
+const VOTE_URL_BASE   = "/poll/";
+const CREATE_POLL_URL = "{% url 'tripapp:create_poll_day' dayprogram.trip.id dayprogram.id %}";
+
+
+function openCreatePoll(dayprogramId) {
+    const form = document.getElementById('create-poll-form-' + dayprogramId);
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+function addPollOptionInput(dayprogramId) {
+    const container = document.getElementById('poll-options-inputs-' + dayprogramId);
+    const count     = container.querySelectorAll('.poll-opt-input').length + 1;
+    const input     = document.createElement('input');
+    input.type      = 'text';
+    input.className = 'form-control form-control-sm mb-1 poll-opt-input';
+    input.placeholder = `Option ${count}`;
+    container.appendChild(input);
+}
+
+async function submitCreatePoll(dayprogramId) {
+    const question = document.getElementById('poll-question-' + dayprogramId).value.trim();
+    const options  = [...document.querySelectorAll('#poll-options-inputs-' + dayprogramId + ' .poll-opt-input')]
+                    .map(i => i.value.trim()).filter(Boolean);
+
+    if (!question || options.length < 2) {
+        alert('{% trans "Add a question and at least 2 options." %}');
+        return;
+    }
+
+    const res  = await fetch(CREATE_POLL_URL, {
+        method:  'POST',
+        headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ question, options })
+    });
+    if (res.ok) location.reload();
+}
+
+async function submitVote(pollId) {
+    const checked = [...document.querySelectorAll(`#poll-options-${pollId} .poll-checkbox:checked`)]
+                    .map(cb => parseInt(cb.dataset.option));
+
+    const res  = await fetch(VOTE_URL_BASE + pollId + '/vote/', {
+        method:  'POST',
+        headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ option_ids: checked })
+    });
+    if (res.ok) location.reload();
+}
+
+async function closePoll(pollId) {
+    const res = await fetch(VOTE_URL_BASE + pollId + '/close/', {
+        method: 'POST', headers: { 'X-CSRFToken': CSRF }
+    });
+    if (res.ok) location.reload();
 }
 </script>
 

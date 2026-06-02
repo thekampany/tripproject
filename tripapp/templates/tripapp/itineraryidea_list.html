@@ -135,6 +135,7 @@
 
         <div style="float:left;">
           <a href="{% url 'tripapp:edit_map_markers' idea.pk %}" class="btn btn-secondary">
+            <i class="bi bi-pin-map"></i>
             {% if idea.id in editable_idea_ids %}
               {% trans "Edit" %}
             {% else %}
@@ -143,7 +144,8 @@
           </a>
           {% if request.user == idea.created_by %}
           <a href="{% url 'tripapp:itineraryidea-detail' idea.pk %}" class="btn btn-secondary">
-            {% trans "Assign and Convert" %}
+            <i class="bi bi-calendar-range"></i>
+            {% trans "Arrange" %}
           </a>
           {% endif %}
           {% if idea.notes.all %}

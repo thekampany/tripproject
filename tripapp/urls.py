@@ -153,4 +153,9 @@ urlpatterns = [
     path('ollamajobs/<uuid:pk>/', views.ollama_job_detail, name='ollama_job_detail'),
     path('save_scheduled_route/', views.save_scheduled_route, name='save_scheduled_route'),
     path('address-search/', views.address_search, name='address_search'),
+    path('trip/<int:trip_id>/poll/create/', views.create_poll, name='create_poll'),
+    path('trip/<int:trip_id>/day/<int:dayprogram_id>/poll/create/', views.create_poll, name='create_poll_day'),
+    path('poll/<int:poll_id>/vote/', views.vote_poll,   name='vote_poll'),
+    path('poll/<int:poll_id>/close/', views.close_poll,  name='close_poll'),
+    path('poll/<int:poll_id>/', views.get_poll,    name='get_poll'),
     ]
