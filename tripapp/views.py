@@ -33,6 +33,7 @@ from .utils import reverse_geocode_area
 from .utils import distance_per_day
 from .utils import get_latest_github_version
 from .utils import is_update_available
+from .utils import get_response_language
 
 from django.db.models import Count, Q
 from django.db.models import Prefetch
@@ -3041,7 +3042,6 @@ def export_trip(request, trip_id):
 
 
 
-
 def decode_polyline(encoded, precision=6):
     coords = polyline_decoder.decode(encoded, precision)
     return [[lng, lat] for lat, lng in coords]  
@@ -3049,8 +3049,8 @@ def decode_polyline(encoded, precision=6):
 
 def transitous_legs_to_gpx(itinerary):
     """
-    Converteer een Transitous itinerary naar GPX XML string.
-    Alle legs worden samengevoegd tot één doorlopende route.
+    Convert a Transitous itinerary to GPX XML string.
+    All legs combined to one route.
     """
     legs = itinerary.get('legs', [])
     
@@ -3069,14 +3069,13 @@ def transitous_legs_to_gpx(itinerary):
         except Exception:
             continue
         
-        # Voorkom dubbele punten op aansluitpunten tussen legs
         if all_trkpts and coords:
             coords = coords[1:]
         
         for lat, lng in coords:
             all_trkpts.append(f'      <trkpt lat="{lat}" lon="{lng}"></trkpt>')
     
-    # Route naam op basis van begin en eindpunt
+    # Route name based on start and endpoint
     from_name = legs[0].get('from', {}).get('name', 'Start') if legs else 'Start'
     to_name = legs[-1].get('to', {}).get('name', 'End') if legs else 'End'
     duration_min = round(itinerary.get('duration', 0) / 60)
@@ -3087,7 +3086,7 @@ def transitous_legs_to_gpx(itinerary):
   xmlns="http://www.topografix.com/GPX/1/1">
   <metadata>
     <name>{from_name} → {to_name}</name>
-    <desc>Reistijd: {duration_min} min, Overstappen: {transfers}</desc>
+    <desc>Duration: {duration_min} min, Transfers: {transfers}</desc>
   </metadata>
   <trk>
     <name>{from_name} → {to_name}</name>
@@ -3100,8 +3099,8 @@ def transitous_legs_to_gpx(itinerary):
 
 def transitous_legs_to_geojson_coordinates(itinerary):
     """
-    Combineer alle leg-coördinaten tot één lijst voor de kaart.
-    Geeft [lng, lat] coördinaten terug (zelfde formaat als ORS).
+    Combine all leg-coördinates to one list for the map.
+    Returns [lng, lat] coördinates (same format as ORS).
     """
     all_coords = []
     legs = itinerary.get('legs', [])
@@ -3118,7 +3117,6 @@ def transitous_legs_to_geojson_coordinates(itinerary):
             coords = polyline_decoder.decode(encoded, precision)  # (lat, lng) tuples
             leg_coords = [[lng, lat] for lat, lng in coords]
             
-            # Voorkom dubbele punten op aansluitpunten
             if all_coords and leg_coords:
                 all_coords.extend(leg_coords[1:])
             else:
@@ -3129,7 +3127,7 @@ def transitous_legs_to_geojson_coordinates(itinerary):
     return all_coords
 
 def summarize_itinerary(itinerary):
-    """Haal alleen de relevante velden op uit een itinerary."""
+    """Get relevant fields from an itinerary."""
     legs = itinerary.get('legs', [])
     summary = []
     
@@ -3184,7 +3182,7 @@ def short_summary(itinerary):
 
 def calculate_route(request):
     """
-    Bereken route via OpenRouteService API of Transitous (public transport)
+    Calculate route via OpenRouteService API or Transitous (public transport)
     
     Expected JSON body:
     {
@@ -3229,7 +3227,7 @@ def calculate_route(request):
 
         # ─── PUBLIC TRANSPORT via Transitous ────────────────────────────────────
         if mode == 'publictransport':
-            # start/end zijn [lng, lat], Transitous wil lat,lng
+            # start/end are [lng, lat], Transitous needs lat,lng
             start_lat, start_lng = start[1], start[0]
             end_lat, end_lng = end[1], end[0]
 
@@ -3237,7 +3235,7 @@ def calculate_route(request):
             route_time = data.get('time')  # 'HH:MM'
             
             if route_date and route_time:
-                datetime_str = f"{route_date}T{route_time}:00Z"  # Z toegevoegd
+                datetime_str = f"{route_date}T{route_time}:00Z"
             else:
                 from datetime import datetime, timezone
                 datetime_str = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -3298,9 +3296,9 @@ def calculate_route(request):
                 'coordinates': coordinates,
                 'transfers': transfers,
                 'legs': legs_summary,
-                'gpx': gpx_string,           # GPX als string, frontend kan dit opslaan
-                'raw_itinerary': best,        # Volledige data indien nodig
-                'itinerary_summary': summarize_itinerary(best),  # in plaats van raw_itinerary
+                'gpx': gpx_string,      
+                'raw_itinerary': best,  
+                'itinerary_summary': summarize_itinerary(best), 
                 'itinerary_short': short_summary(best),
                 'itineraries_all': itineraries,
             })
@@ -3652,6 +3650,7 @@ def result(request, job_id):
 def generate_bingocards_view(request, trip_id):
     trip = Trip.objects.get(id=trip_id)
     countrylist = country_code_to_name(trip.country_codes)
+    language_name = get_response_language()
 
     prompt = f"""
     Generate road trip bingo items for a trip called "{trip.name}" in {countrylist}.
@@ -3665,6 +3664,7 @@ def generate_bingocards_view(request, trip_id):
     - 3-8 words each
     - no duplicates
     - optionally add emoji to the bingodescription
+    - Respond in {language_name}
 
     The response must contain ONLY valid JSON without any text before or after the array.
     Example:
@@ -3707,6 +3707,8 @@ def generate_dayprogram_suggestions_view(request, dayprogram_id):
     if extra_section:
         extra_section = f"\nAdditional context:\n{extra_section}\n"
 
+    language_name = get_response_language()
+
     prompt = f"""
     Suggest possible activities for day {dayprogram.dayprogramnumber} of a road trip called "{trip.name}" in {countrylist}.
 
@@ -3719,6 +3721,7 @@ def generate_dayprogram_suggestions_view(request, dayprogram_id):
     - 2 to 4 suggestions
     - Keep each suggestion to 1-2 sentences
     - Add an emoji per suggestion
+    - Respond in {language_name}
 
     Return plain text, one suggestion per line. No JSON, no numbering.
     """
@@ -3848,9 +3851,10 @@ def suggest_checklist_items(request, trip_id):
 
     trip      = get_object_or_404(Trip, id=trip_id)
     checklist = Checklist.objects.get_or_create(trip=trip)[0]
+    language_name = get_response_language()
 
     if checklist.suggestion_job and checklist.suggestion_job.status in ("pending", "running"):
-        return redirect("tripapp:checklist", trip_id=trip.id)
+        return redirect("tripapp:trip_checklist", slug=trip.slug)
 
     prompt = (
         f"You are a helpful travel assistant. "
@@ -3859,6 +3863,7 @@ def suggest_checklist_items(request, trip_id):
         f"Duration: {trip.date_from} to {trip.date_to}\n\n"
         f"Return ONLY a JSON array of short strings, no explanation, no markdown. "
         f'Example: ["Sunscreen", "Adapter plug", "Passport"]'
+        f'Respond in {language_name}'
     )
 
     job = OllamaJob.objects.create(
@@ -3875,7 +3880,7 @@ def suggest_checklist_items(request, trip_id):
         hook="tripapp.tasks.process_checklist_suggestions",
     )
 
-    return redirect("tripapp:checklist", trip_id=trip.id)
+    return redirect("tripapp:trip_checklist", slug=trip.slug)
 
 @login_required
 def checklist_job_status(request, trip_id):

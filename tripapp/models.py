@@ -748,7 +748,7 @@ class PollVote(models.Model):
     tripper = models.ForeignKey(Tripper, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = [('option', 'tripper')]  # één stem per optie per tripper
+        unique_together = [('option', 'tripper')] 
 
     def __str__(self):
         return f"{self.tripper.name} → {self.option.text}"

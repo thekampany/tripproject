@@ -426,3 +426,14 @@ def is_update_available(current_version, latest_version):
         return latest > current
     except (ValueError, AttributeError):
         return False
+
+
+LANGUAGE_NAMES = {
+    'en': 'English',
+    'nl': 'Dutch',
+    'de': 'German',
+}
+
+def get_response_language():
+    code = getattr(settings, 'LANGUAGE_CODE', 'en')
+    return LANGUAGE_NAMES.get(code, 'English')

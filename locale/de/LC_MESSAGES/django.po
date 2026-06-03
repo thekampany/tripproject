@@ -1,14 +1,14 @@
-# SOME DESCRIPTIVE TITLE.
+# TRIPPANION TRANSLATION.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Marc de Kam.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-23 21:48+0100\n"
+"POT-Creation-Date: 2026-06-02 22:35+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: German <LL@li.org>\n"
@@ -35,8 +35,11 @@ msgstr "Diese Reise konnten wir leider nicht finden"
 msgid "Go back the route you came or go"
 msgstr "Gehe zurück zu der Seite, von der du gekommen bist, oder gehe zu"
 
+#: tripapp/templates/404.html:12
+msgid "Home"
+msgstr "Startseite"
+
 #: tripapp/templates/tripapp/add_checklist_item.html:16
-#: tripapp/templates/tripapp/trip_checklist.html:61
 msgid "Add Checklist Item"
 msgstr "Checkliste hinzufügen"
 
@@ -60,6 +63,18 @@ msgstr "Log hinzufügen"
 msgid "Save Log Entry"
 msgstr "Log speichern"
 
+#: tripapp/templates/tripapp/add_point.html:41
+msgid "Lookup via address"
+msgstr "Suchen via Adresse"
+
+#: tripapp/templates/tripapp/add_point.html:44
+msgid "Enter address..."
+msgstr "Adresse eingeben"
+
+#: tripapp/templates/tripapp/add_point.html:53
+msgid "Save Point"
+msgstr "Punkt speichern"
+
 #: tripapp/templates/tripapp/add_trippers.html:13
 msgid "Add someone else? Invite them"
 msgstr "Noch jemanden hinzufügen? Lade ihn oder sie ein"
@@ -68,9 +83,121 @@ msgstr "Noch jemanden hinzufügen? Lade ihn oder sie ein"
 msgid "Save Selected"
 msgstr "Auswahl speichern"
 
+#: tripapp/templates/tripapp/assign_markers_to_days.html:8
+msgid "Assign Markers to Days"
+msgstr "Markierungen Tagen zuweisen"
+
+#: tripapp/templates/tripapp/assign_markers_to_days.html:281
+msgid "Assign markers to days"
+msgstr "Markierungen Tagen zuweisen"
+
+#: tripapp/templates/tripapp/assign_markers_to_days.html:288
+#: tripapp/templates/tripapp/assign_markers_to_days.html:302
+msgid "Add day"
+msgstr "Tag hinzufügen"
+
+#: tripapp/templates/tripapp/assign_markers_to_days.html:292
+msgid "Save assignments"
+msgstr "Speichern"
+
+#: tripapp/templates/tripapp/assign_markers_to_days.html:303
+msgid "Description (optional)"
+msgstr "Beschreibung"
+
+#: tripapp/templates/tripapp/assign_markers_to_days.html:304
+msgid "e.g. Arrival in Paris"
+msgstr "z.b. Ankunft in Paris"
+
+#: tripapp/templates/tripapp/assign_markers_to_days.html:305
+msgid "Date (optional)"
+msgstr "Datum (optional)"
+
+#: tripapp/templates/tripapp/assign_markers_to_days.html:308
+#: tripapp/templates/tripapp/assign_markers_to_days.html:331
+#: tripapp/templates/tripapp/create_trip_brainstorm.html:208
+#: tripapp/templates/tripapp/itineraryidea_detail.html:641
+#: tripapp/templates/tripapp/map_markers_edit.html:227
+msgid "Cancel"
+msgstr "Bilanz"
+
+#: tripapp/templates/tripapp/assign_markers_to_days.html:309
+#: tripapp/templates/tripapp/dayprogram_detail.html:267
+#: tripapp/templates/tripapp/itineraryidea_detail.html:434
+#: tripapp/templates/tripapp/map_markers_edit.html:319
+#: tripapp/templates/tripapp/scheduled_item_form.html:66
+#: tripapp/templates/tripapp/trip_checklist.html:109
+#: tripapp/templates/tripapp/trip_dayprograms.html:11
+msgid "Add"
+msgstr "Hinzufügen"
+
+#: tripapp/templates/tripapp/assign_markers_to_days.html:317
+msgid "Assign to day"
+msgstr "Badges zuweisen"
+
+#: tripapp/templates/tripapp/assign_markers_to_days.html:318
+msgid "Choose a day"
+msgstr "Tag wählen"
+
+#: tripapp/templates/tripapp/assign_markers_to_days.html:320
+msgid "Remove assignment"
+msgstr "Zuweisung entfernen"
+
+#: tripapp/templates/tripapp/assign_markers_to_days.html:327
+#: tripapp/templates/tripapp/assign_markers_to_days.html:560
+msgid "Overnight stay"
+msgstr "Übernachtungsorte:"
+
+#: tripapp/templates/tripapp/assign_markers_to_days.html:328
+msgid "Select nights"
+msgstr "Nachte auswählen:"
+
+#: tripapp/templates/tripapp/assign_markers_to_days.html:332
+#: tripapp/templates/tripapp/create_trip_brainstorm.html:209
+#: tripapp/templates/tripapp/create_trip_brainstorm.html:221
+#: tripapp/templates/tripapp/create_trip_brainstorm.html:232
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:144
+#: tripapp/templates/tripapp/itineraryidea_update.html:56
+#: tripapp/templates/tripapp/map_markers_edit.html:228
+#: tripapp/templates/tripapp/map_markers_edit.html:240
+#: tripapp/templates/tripapp/map_markers_edit.html:257
+msgid "Save"
+msgstr "Speichern"
+
+#: tripapp/templates/tripapp/assign_markers_to_days.html:494
+msgid "Day added"
+msgstr "Tag hinzugefügt"
+
+#: tripapp/templates/tripapp/assign_markers_to_days.html:499
+#: tripapp/templates/tripapp/assign_markers_to_days.html:529
+#: tripapp/templates/tripapp/assign_markers_to_days.html:663
+msgid "Network error."
+msgstr "Netzwerkfehler."
+
+#: tripapp/templates/tripapp/assign_markers_to_days.html:504
+msgid "Remove this day? Assignments to this day will be cleared."
+msgstr "Diesen Tag entfernen? Zuweisungen zu diesem Tag werden gelöscht."
+
+#: tripapp/templates/tripapp/assign_markers_to_days.html:524
+msgid "Day removed"
+msgstr "Tag entfernt"
+
+#: tripapp/templates/tripapp/assign_markers_to_days.html:535
+msgid "Add a day first."
+msgstr "Füge zuerst einen Tag hinzu."
+
+#: tripapp/templates/tripapp/assign_markers_to_days.html:545
+#: tripapp/templates/tripapp/create_trip_brainstorm.html:200
+#: tripapp/templates/tripapp/map_markers_edit.html:219
+msgid "Activity / Visit"
+msgstr "Aktivität / Besuch"
+
+#: tripapp/templates/tripapp/assign_markers_to_days.html:661
+msgid "Something went wrong."
+msgstr "Etwas ist schiefgelaufen."
+
 #: tripapp/templates/tripapp/budget_analysis.html:4
 #: tripapp/templates/tripapp/budget_analysis.html:42
-#: tripapp/templates/tripapp/trip_expenses_list.html:129
+#: tripapp/templates/tripapp/trip_expenses_list.html:144
 msgid "Budget Analysis"
 msgstr "Budgetanalyse"
 
@@ -80,8 +207,8 @@ msgid "Budget"
 msgstr "Budget"
 
 #: tripapp/templates/tripapp/budget_analysis.html:46
-#: tripapp/templates/tripapp/trip_detail.html:270
-#: tripapp/templates/tripapp/trip_expenses_list.html:40
+#: tripapp/templates/tripapp/trip_detail.html:228
+#: tripapp/templates/tripapp/trip_expenses_list.html:43
 msgid "Expenses"
 msgstr "Ausgaben"
 
@@ -106,7 +233,7 @@ msgid "Category"
 msgstr "Kategorie"
 
 #: tripapp/templates/tripapp/budget_list.html:13
-#: tripapp/templates/tripapp/trip_expenses_list.html:81
+#: tripapp/templates/tripapp/trip_expenses_list.html:84
 msgid "Amount"
 msgstr "Betrag"
 
@@ -115,8 +242,8 @@ msgid "No budget items yet."
 msgstr "Es gibt noch keine Budgetposten."
 
 #: tripapp/templates/tripapp/budget_list.html:30
-#: tripapp/templates/tripapp/trip_expenses_list.html:116
-#: tripapp/templates/tripapp/trip_trippers.html:115
+#: tripapp/templates/tripapp/trip_expenses_list.html:131
+#: tripapp/templates/tripapp/trip_trippers.html:110
 msgid "Total"
 msgstr "Gesamt"
 
@@ -124,199 +251,220 @@ msgstr "Gesamt"
 msgid "to Organize Trip"
 msgstr "Reise organisieren"
 
-#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:6
-msgid "Create Itinerary Idea - by Day Locations"
-msgstr "Reiseidee erstellen – nach Tagesorten"
+#: tripapp/templates/tripapp/create_trip_brainstorm.html:8
+msgid "Map - Add Locations"
+msgstr "Karte - Punkte hinzufügen"
 
-#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:25
-msgid "Create Itinerary Idea by indicating day locations"
-msgstr "Erstellen Sie eine Reiseidee, indem Sie Tagesorte markieren"
+#: tripapp/templates/tripapp/create_trip_brainstorm.html:197
+#: tripapp/templates/tripapp/map_markers_edit.html:216
+msgid "New location"
+msgstr "Neue "
 
-#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:26
-msgid "Step 1 - Put markers on locations or areas that you want to visit"
-msgstr "Schritt 1 – Markieren Sie Orte oder Bereiche, die Sie besuchen möchten"
-
-#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:30
-msgid "Day Locations:"
-msgstr "Tagesorte:"
-
-#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:35
-msgid "Name of this Itinerary Idea"
-msgstr "Name dieser Reiseidee"
-
-#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:37
-msgid "Save Itinerary Idea"
-msgstr "Reiseidee speichern"
-
-#: tripapp/templates/tripapp/create_itineraryidea_daylocations.html:213
-#: tripapp/templates/tripapp/create_tripoutline.html:228
-#: tripapp/templates/tripapp/itinerary_dragdrop.html:124
-#: tripapp/templates/tripapp/itineraryidea_list.html:4
-#: tripapp/templates/tripapp/itineraryidea_update.html:58
-#: tripapp/templates/tripapp/tribe_trips.html:439
-msgid "Itinerary Ideas"
-msgstr "Reiseideen"
-
-#: tripapp/templates/tripapp/create_tripoutline.html:6
-msgid "Create Tripoutline"
-msgstr "Reiseübersicht erstellen"
-
-#: tripapp/templates/tripapp/create_tripoutline.html:24
-msgid ""
-"Create a Itinerary Idea by indicating OVERNIGHT locations / areas on this map"
-msgstr ""
-"Erstellen Sie eine Reiseidee, indem Sie Übernachtungsorte/-bereiche auf "
-"dieser Karte markieren"
-
-#: tripapp/templates/tripapp/create_tripoutline.html:28
-msgid "Overnight Locations:"
+#: tripapp/templates/tripapp/create_trip_brainstorm.html:203
+#: tripapp/templates/tripapp/map_markers_edit.html:222
+#, fuzzy
+#| msgid "Overnight Locations:"
+msgid "Overnight Location"
 msgstr "Übernachtungsorte:"
 
-#: tripapp/templates/tripapp/create_tripoutline.html:31
-msgid "Name of this Overnight Itinerary Idea"
-msgstr "Name dieser Übernachtungs-Reiseidee"
+#: tripapp/templates/tripapp/create_trip_brainstorm.html:206
+#: tripapp/templates/tripapp/map_markers_edit.html:225
+#, fuzzy
+#| msgid "Description"
+msgid "Description (optional)..."
+msgstr "Beschreibung"
 
-#: tripapp/templates/tripapp/create_tripoutline.html:32
-msgid "Save Overnight Outline"
-msgstr "Übernachtungsplan speichern"
+#: tripapp/templates/tripapp/create_trip_brainstorm.html:217
+msgid "Edit Location"
+msgstr "Ort bearbeiten"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:302
-#: tripapp/templates/tripapp/trip_detail.html:282
+#: tripapp/templates/tripapp/create_trip_brainstorm.html:218
+#: tripapp/templates/tripapp/map_markers_edit.html:237
+msgid "Description..."
+msgstr "Beschreibung"
+
+#: tripapp/templates/tripapp/create_trip_brainstorm.html:220
+#: tripapp/templates/tripapp/map_markers_edit.html:239
+#: tripapp/templates/tripapp/trip_checklist.html:102
+msgid "Remove"
+msgstr "Entfernen"
+
+#: tripapp/templates/tripapp/create_trip_brainstorm.html:230
+#: tripapp/templates/tripapp/map_markers_edit.html:256
+msgid "Name of brainstorm map..."
+msgstr "Name der Brainstorming-Karte..."
+
+#: tripapp/templates/tripapp/create_trip_brainstorm.html:344
+msgid "Locatie opgeslagen"
+msgstr "Ort gespeichert"
+
+#: tripapp/templates/tripapp/create_trip_brainstorm.html:362
+msgid "Opgeslagen"
+msgstr "Gespeichert"
+
+#: tripapp/templates/tripapp/create_trip_brainstorm.html:373
+msgid "Verwijderd"
+msgstr "Gelöscht"
+
+#: tripapp/templates/tripapp/create_trip_brainstorm.html:390
+msgid "Voeg minstens één locatie toe voor je opslaat."
+msgstr "Füge mindestens einen Ort hinzu, bevor du speicherst."
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:254
+#: tripapp/templates/tripapp/trip_detail.html:240
 msgid "Itinerary"
 msgstr "Reiseplan"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:308
-#: tripapp/templates/tripapp/scheduled_item_form.html:66
-#: tripapp/templates/tripapp/trip_dayprograms.html:11
-msgid "Add"
-msgstr "Hinzufügen"
-
-#: tripapp/templates/tripapp/dayprogram_detail.html:315
+#: tripapp/templates/tripapp/dayprogram_detail.html:274
 msgid "Expense"
 msgstr "Ausgabe"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:318
+#: tripapp/templates/tripapp/dayprogram_detail.html:277
 msgid "Suggestion"
 msgstr "Vorschlag"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:321
-#: tripapp/templates/tripapp/dayprogram_detail.html:491
+#: tripapp/templates/tripapp/dayprogram_detail.html:280
+#: tripapp/templates/tripapp/dayprogram_detail.html:459
 msgid "Question"
 msgstr "Frage"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:322
+#: tripapp/templates/tripapp/dayprogram_detail.html:281
 msgid "Scheduled Item"
 msgstr "Geplanter Punkt"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:323
+#: tripapp/templates/tripapp/dayprogram_detail.html:282
 msgid "Link"
 msgstr "Link"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:349
+#: tripapp/templates/tripapp/dayprogram_detail.html:304
 msgid "Information for Today"
 msgstr "Informationen für heute"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:357
-#: tripapp/templates/tripapp/dayprogram_detail.html:366
+#: tripapp/templates/tripapp/dayprogram_detail.html:312
+#: tripapp/templates/tripapp/dayprogram_detail.html:322
 msgid "Ideas for Today"
 msgstr "Ideen für heute"
 
-#: tripapp/templates/tripapp/import_itinerary.html:5
-msgid "Put your Itinerary into a JSON and import it."
-msgstr "Gib dein Reiseprogramm als JSON ein und importiere es."
-
-#: tripapp/templates/tripapp/dayprogram_detail.html:367
+#: tripapp/templates/tripapp/dayprogram_detail.html:323
 msgid "Generate suggestions for me"
 msgstr "Vorschläge für mich generieren"
 
-#: tripapp/templates/tripapp/tribe_trip_organize.html:147
-msgid "For and by Trippers"
-msgstr "Von und für Reisende"
-
-#: tripapp/templates/tripapp/tribe_trip_organize.html:178
-msgid "Are you sure you want to delete this trip?"
-msgstr "Bist du sicher, dass du diese Reise löschen möchtest?"
-
-#: tripapp/templates/tripapp/tribe_trips.html:338
-msgid "Create from scratch"
-msgstr "Von Grund auf neu erstellen"
-
-#: tripapp/templates/tripapp/trip_detail.html:275
-msgid "Export"
-msgstr "Exportieren"
-
-#: tripapp/templates/tripapp/trip_export.html:97
-msgid "A zip with everything of the trip."
-msgstr "Ein ZIP mit allem zur Reise."
-
-#: tripapp/templates/tripapp/trip_export.html:105
-msgid "De-personalized, no photos, no logs. Just share your itinerary."
-msgstr "Anonymisiert, ohne Fotos und Protokolle. Nur dein Reiseprogramm teilen."
-
-#: tripapp/templates/tripapp/trip_export.html:113
-msgid ""
-"Export as JSON. Other Trippanion user can import your trip as startingpoint "
-"for his own trip."
-msgstr ""
-"Als JSON exportieren. Andere Trippanion-Nutzer können deine Reise als "
-"Ausgangspunkt für ihre eigene Reise importieren."
-
-#: tripapp/templates/tripapp/tripper_profile.html:22
-msgid ""
-"Put documents that you can use on multiple trips here, eg scan of passport."
-msgstr ""
-"Lege hier Dokumente ab, die du auf mehreren Reisen verwenden kannst, "
-"z. B. einen Passscan."
-
-#: tripapp/templates/tripapp/tripper_profile.html:33
-msgid "Are you sure that you want to delete this?"
-msgstr "Bist du sicher, dass du das löschen möchtest?"
-#: tripapp/templates/tripapp/dayprogram_detail.html:376
+#: tripapp/templates/tripapp/dayprogram_detail.html:333
 msgid "Scheduled Items for Today"
 msgstr "Geplante Punkte für heute"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:418
-#: tripapp/templates/tripapp/dayprogram_detail.html:452
+#: tripapp/templates/tripapp/dayprogram_detail.html:375
+#: tripapp/templates/tripapp/dayprogram_detail.html:421
 msgid "Link to travel document"
 msgstr "Link zum Reisedokument"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:445
+#: tripapp/templates/tripapp/dayprogram_detail.html:401
+msgid "Planned Routes for Today"
+msgstr "Geplante Routes für heute"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:414
 #: tripapp/templates/tripapp/trip_documents.html:25
 msgid "Documents and Links"
 msgstr "Dokumente und Links"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:456
+#: tripapp/templates/tripapp/dayprogram_detail.html:425
 msgid "Download Document"
 msgstr "Dokument herunterladen"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:500
+#: tripapp/templates/tripapp/dayprogram_detail.html:468
 msgid "You have the badge for this question!"
 msgstr "Sie haben das Abzeichen für diese Frage!"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:505
+#: tripapp/templates/tripapp/dayprogram_detail.html:473
 msgid "Check Answer"
 msgstr "Antwort prüfen"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:513
+#: tripapp/templates/tripapp/dayprogram_detail.html:481
 msgid "to see and answer the question(s)."
 msgstr "um die Frage(n) zu sehen und zu beantworten."
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:568
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:278
+#: tripapp/templates/tripapp/dayprogram_detail.html:536
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:395
 msgid "Tracked Distance:"
 msgstr "Entfernung:"
 
+#: tripapp/templates/tripapp/dayprogram_detail.html:548
+msgid "Vibe of the day?"
+msgstr "Stimmung des Tages?"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:554
+msgid "Choose your emoji"
+msgstr "Wähle dein Emoji"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:560
+msgid "Add note… (optional)"
+msgstr "Notiz hinzufügen… (optional)"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:562
+#: tripapp/templates/tripapp/map_markers_edit.html:692
+msgid "Saved"
+msgstr "Speichern"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:566
+msgid "According to others:"
+msgstr "Laut anderen:"
+
 #: tripapp/templates/tripapp/dayprogram_detail.html:581
+msgid "Vibes this day:"
+msgstr "Stimmungen dieses Tages:"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:584
+msgid "You"
+msgstr "Du"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:645
+msgid "Vote"
+msgstr "Abstimmen"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:649
+msgid "Close poll"
+msgstr "Schließen"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:662
+msgid "Add poll"
+msgstr "Umfrage hinzufügen"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:667
+msgid "Question…"
+msgstr "Frage"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:669
+msgid "Option 1"
+msgstr "Option 1"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:670
+msgid "Option 2"
+msgstr "Option 2"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:673
+msgid "Add option"
+msgstr "Option hinzufügen"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:675
+msgid "Create poll"
+msgstr "Umfrage erstellen"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:698
 msgid "Badge Claimed!"
 msgstr "Badge beansprucht!"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:590
+#: tripapp/templates/tripapp/dayprogram_detail.html:707
+#: tripapp/templates/tripapp/map_markers_edit.html:243
 msgid "Close"
 msgstr "Schließen"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:602
+#: tripapp/templates/tripapp/dayprogram_detail.html:719
 msgid "Your Suggestion for this Day:"
 msgstr "Ihr Vorschlag für diesen Tag:"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:911
+msgid "Add a question and at least 2 options."
+msgstr "Füge eine Frage und mindestens 2 Optionen hinzu."
 
 #: tripapp/templates/tripapp/generate_itinerary.html:4
 msgid "Generate an Itinerary"
@@ -324,7 +472,8 @@ msgstr "Reiseroute erstellen"
 
 #: tripapp/templates/tripapp/generate_itinerary.html:15
 msgid "Describe your trip, e.g. 3 days in Paris, starting at the Eiffel Tower"
-msgstr "Beschreiben Sie Ihre Reise, z. B. 3 Tage in Paris, beginnend am Eiffelturm"
+msgstr ""
+"Beschreiben Sie Ihre Reise, z. B. 3 Tage in Paris, beginnend am Eiffelturm"
 
 #: tripapp/templates/tripapp/generate_itinerary.html:21
 msgid "Generate itinerary"
@@ -344,7 +493,8 @@ msgstr "Zu Ihren Reiserouten"
 
 #: tripapp/templates/tripapp/generate_itinerary.html:31
 msgid "— your new itinerary will appear there automatically when ready."
-msgstr "— Ihre neue Reiseroute erscheint dort automatisch, sobald sie fertig ist."
+msgstr ""
+"— Ihre neue Reiseroute erscheint dort automatisch, sobald sie fertig ist."
 
 #: tripapp/templates/tripapp/generate_itinerary.html:63
 msgid "Itinerary generated! Redirecting..."
@@ -357,6 +507,10 @@ msgstr "Fehler: "
 #: tripapp/templates/tripapp/import_itinerary.html:4
 msgid "Import Itinerary JSON"
 msgstr "Reiseplan JSON importieren"
+
+#: tripapp/templates/tripapp/import_itinerary.html:5
+msgid "Put your Itinerary into a JSON and import it."
+msgstr "Gib dein Reiseprogramm als JSON ein en importiere es."
 
 #: tripapp/templates/tripapp/import_itinerary.html:6
 msgid "Ask your favourite AI to create an itinerary idea."
@@ -374,11 +528,11 @@ msgstr ""
 msgid "Paste JSON here"
 msgstr "JSON hier einfügen"
 
-#: tripapp/templates/tripapp/index.html:126
+#: tripapp/templates/tripapp/index.html:135
 msgid "Welcome"
 msgstr "Willkommen"
 
-#: tripapp/templates/tripapp/index.html:128
+#: tripapp/templates/tripapp/index.html:137
 msgid ""
 "You and your friends go on a trip. Here you can share all the details of the "
 "trip with the people going on the trip (the Trippers), and share it with "
@@ -388,11 +542,12 @@ msgstr ""
 "Reise mit den Mitreisenden (den Trippers) teilen und auch mit Familie und "
 "Freunden anderswo (dem Stamm)."
 
-#: tripapp/templates/tripapp/index.html:132
+#: tripapp/templates/tripapp/index.html:141
 msgid "Click My Trips to see and organize your trips"
-msgstr "Klicken Sie auf 'Meine Reisen', um Ihre Reisen anzusehen und zu organisieren"
+msgstr ""
+"Klicken Sie auf 'Meine Reisen', um Ihre Reisen anzusehen und zu organisieren"
 
-#: tripapp/templates/tripapp/index.html:134
+#: tripapp/templates/tripapp/index.html:143
 msgid ""
 "Click Register to join, or click Login to start a Tribe, invite people and "
 "lay out the trip."
@@ -400,20 +555,20 @@ msgstr ""
 "Klicken Sie auf 'Registrieren', um beizutreten, oder auf 'Login', um einen "
 "Stamm zu starten, Leute einzuladen und die Reise zu planen"
 
-#: tripapp/templates/tripapp/index.html:139
-#: tripapp/templates/tripapp/tribe_map.html:69
+#: tripapp/templates/tripapp/index.html:148
+#: tripapp/templates/tripapp/itineraryidea_list.html:105
+#: tripapp/templates/tripapp/tribe_map.html:44
 #: tripapp/templates/tripapp/tribe_trip_organize.html:108
-#: tripapp/templates/tripapp/tribe_trips.html:315
-#: tripapp/templates/tripapp/trip_detail.html:238
-#: tripapp/templates/tripapp/trip_list.html:192
+#: tripapp/templates/tripapp/tribe_trips.html:461
+#: tripapp/templates/tripapp/trip_detail.html:209
 msgid "My Trips"
 msgstr "Meine Reisen"
 
-#: tripapp/templates/tripapp/index.html:142
+#: tripapp/templates/tripapp/index.html:151
 msgid "Register"
 msgstr "Registrieren"
 
-#: tripapp/templates/tripapp/index.html:144
+#: tripapp/templates/tripapp/index.html:153
 msgid "Login"
 msgstr "Anmelden"
 
@@ -427,84 +582,225 @@ msgstr "Diesen Link teilen"
 
 #: tripapp/templates/tripapp/invite_code_success.html:21
 msgid "Have it scanned by the person you want to invite to the tribe."
-msgstr "Lassen Sie es von der Person scannen, die Sie zum Stamm einladen möchten."
+msgstr ""
+"Lassen Sie es von der Person scannen, die Sie zum Stamm einladen möchten."
 
-#: tripapp/templates/tripapp/itinerary_dragdrop.html:54
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:79
 msgid "Create a Itinerary Idea by indicating day locations"
 msgstr "Erstellen Sie eine Reiseidee, indem Sie Tagesorte markieren"
 
-#: tripapp/templates/tripapp/itinerary_dragdrop.html:55
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:80
 msgid "Step 2 - Cluster the activities into days"
 msgstr "Schritt 2 – Aktivitäten in Tage gruppieren"
 
-#: tripapp/templates/tripapp/itinerary_dragdrop.html:64
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:88
 msgid "List of Activities / Locations"
 msgstr "Liste der Aktivitäten / Orte"
 
-#: tripapp/templates/tripapp/itinerary_dragdrop.html:77
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:101
 msgid "No unassigned daylocations"
 msgstr "Keine nicht zugewiesenen Tagesorte"
 
-#: tripapp/templates/tripapp/itinerary_dragdrop.html:86
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:110
 msgid "Projected Tripdays"
 msgstr "Geplante Reisetage"
 
-#: tripapp/templates/tripapp/itinerary_dragdrop.html:87
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:111
 msgid "Add Day"
 msgstr "Tag hinzufügen"
 
-#: tripapp/templates/tripapp/itinerary_dragdrop.html:112
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:136
 msgid "No days added yet."
 msgstr "Noch keine Tage hinzugefügt."
 
-#: tripapp/templates/tripapp/itinerary_dragdrop.html:119
-#: tripapp/templates/tripapp/itineraryidea_update.html:56
-#: tripapp/templates/tripapp/tripper_profile.html:17
-msgid "Save"
-msgstr "Speichern"
+#: tripapp/templates/tripapp/itinerary_dragdrop.html:149
+#: tripapp/templates/tripapp/itineraryidea_list.html:74
+#: tripapp/templates/tripapp/itineraryidea_update.html:58
+#: tripapp/templates/tripapp/tribe_trips.html:432
+msgid "Itinerary Ideas"
+msgstr "Reiseideen"
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:50
-msgid "Create New"
-msgstr "Neu erstellen"
-
-#: tripapp/templates/tripapp/itineraryidea_list.html:52
-msgid "on Map via OvernightLocations"
-msgstr "Auf Karte über Übernachtungsorte"
-
-#: tripapp/templates/tripapp/itineraryidea_list.html:53
-msgid "on Map via DayLocations"
-msgstr "Auf Karte über Tagesorte"
-
-#: tripapp/templates/tripapp/itineraryidea_list.html:55
+#: tripapp/templates/tripapp/itineraryidea_detail.html:8
 #, fuzzy
-#| msgid "Invite Code Generated"
-msgid "AI Generated"
-msgstr "Einladungscode generiert"
+#| msgid "Itinerary Ideas"
+msgid "Itinerary Idea"
+msgstr "Reiseideen"
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:91
-msgid "Edit on Map"
+#: tripapp/templates/tripapp/itineraryidea_detail.html:287
+#, fuzzy
+#| msgid "Create Badge"
+msgid "Created"
+msgstr "Badge erstellen"
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:287
+msgid "by"
+msgstr "von"
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:290
+#: tripapp/templates/tripapp/itineraryidea_detail.html:391
+#, fuzzy
+#| msgid "Edit Dayprograms"
+msgid "Edit markers"
+msgstr "Tagesprogramme bearbeiten"
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:291
+#: tripapp/templates/tripapp/itineraryidea_detail.html:379
+#: tripapp/templates/tripapp/itineraryidea_detail.html:392
+#, fuzzy
+#| msgid "Assign Badges"
+msgid "Assign days"
+msgstr "Badges zuweisen"
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:294
+#: tripapp/templates/tripapp/itineraryidea_detail.html:394
+#: tripapp/templates/tripapp/itineraryidea_detail.html:649
+msgid "Create trip"
+msgstr "Reise erstellen"
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:303
+msgid "activities"
+msgstr "Aktivitäten"
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:304
+msgid "overnight locations"
+msgstr "Übernachtungsorte"
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:305
+msgid "days"
+msgstr "Tage"
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:308
+msgid "unassigned markers"
+msgstr "Nicht zugewiesene Marker"
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:315
+msgid "Not yet assigned to a day"
+msgstr "Noch keinem Tag zugewiesen"
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:334
+#: tripapp/templates/tripapp/trip_dayprograms.html:9
+msgid "Day"
+msgstr "Tag"
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:348
+msgid "Activity"
+msgstr "Aktivität"
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:350
+#: tripapp/templates/tripapp/itineraryidea_detail.html:362
+#: tripapp/templates/tripapp/itineraryidea_detail.html:568
+msgid "Exclude from trip"
+msgstr "Von der Reise ausschließen"
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:360
+msgid "Overnight"
+msgstr "Übernachtung"
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:367
+msgid "No locations assigned to this day yet."
+msgstr "Für diesen Tag sind noch keine Orte zugewiesen."
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:377
+msgid "No days yet"
+msgstr "Noch keine Tage hinzugefügt."
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:378
+msgid "Go to 'Assign days' to create days and assign your markers."
+msgstr "Gehe zu 'Tagen zuweisen', um Tage zu erstellen und deine Marker zuzuweisen."
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:388
+msgid "All ideas"
+msgstr "Alle Ideen"
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:406
+#: tripapp/templates/tripapp/trip_documents.html:115
+msgid "Notes"
+msgstr "Notizen"
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:424
+#: tripapp/templates/tripapp/map_markers_edit.html:311
+msgid "No notes yet."
+msgstr "Es gibt noch keine Notizen."
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:430
+#: tripapp/templates/tripapp/map_markers_edit.html:318
+msgid "Add a note…"
+msgstr "Notiz hinzufügen…"
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:572
+msgid "Include again"
+msgstr "Erneut einschließen"
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:612
+#: tripapp/templates/tripapp/itineraryidea_to_trip.html:18
+msgid "Create Trip"
+msgstr "Reise erstellen"
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:624
+msgid "Tribe"
+msgstr "Stamm"
+
+#: tripapp/templates/tripapp/itineraryidea_detail.html:632
+msgid "Start date"
+msgstr "Startdatum"
+
+#: tripapp/templates/tripapp/itineraryidea_list.html:86
+#: tripapp/templates/tripapp/tribe_map.html:42
+#: tripapp/templates/tripapp/trip_detail.html:192
+#: tripapp/templates/tripapp/trip_list.html:190
+msgid "Settings"
+msgstr "Einstellungen"
+
+#: tripapp/templates/tripapp/itineraryidea_list.html:104
+#: tripapp/templates/tripapp/itineraryidea_list.html:190
+#: tripapp/templates/tripapp/tribe_map.html:45
+#: tripapp/templates/tripapp/tribe_trip_organize.html:8
+#: tripapp/templates/tripapp/tribe_trip_organize.html:96
+#: tripapp/templates/tripapp/tribe_trips.html:8
+msgid "Organize"
+msgstr "Organisieren"
+
+#: tripapp/templates/tripapp/itineraryidea_list.html:110
+msgid "New"
+msgstr "Neu"
+
+#: tripapp/templates/tripapp/itineraryidea_list.html:113
+
+msgid "Brainstorm on Map"
 msgstr "Auf Karte bearbeiten"
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:94
-msgid "Convert to Trip"
-msgstr "In Reise umwandeln"
+#: tripapp/templates/tripapp/itineraryidea_list.html:114
+msgid "Import"
+msgstr "Importieren"
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:102
+#: tripapp/templates/tripapp/itineraryidea_list.html:115
+msgid "Generate via AI"
+msgstr "Reiseroute generieren"
+
+#: tripapp/templates/tripapp/itineraryidea_list.html:140
+msgid "Edit"
+msgstr "Bearbeiten"
+
+#: tripapp/templates/tripapp/itineraryidea_list.html:142
+msgid "View"
+msgstr "Ansehen"
+
+#: tripapp/templates/tripapp/itineraryidea_list.html:148
+msgid "Arrange"
+msgstr "Anordnen"
+
+#: tripapp/templates/tripapp/itineraryidea_list.html:179
 msgid "Are you sure?"
 msgstr "Sind Sie sicher?"
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:102
-#: tripapp/templates/tripapp/tripper_profile.html:32
+#: tripapp/templates/tripapp/itineraryidea_list.html:179
+#: tripapp/templates/tripapp/tripper_profile.html:55
 msgid "Delete"
 msgstr "Löschen"
 
-#: tripapp/templates/tripapp/itineraryidea_list.html:110
+#: tripapp/templates/tripapp/itineraryidea_list.html:187
 msgid "No itinerary ideas yet."
 msgstr "Noch keine Reiseideen vorhanden."
-
-#: tripapp/templates/tripapp/itineraryidea_list.html:113
-msgid "Organize New"
-msgstr "Organisieren Neu"
 
 #: tripapp/templates/tripapp/itineraryidea_to_trip.html:4
 msgid "Convert Itinerary to Trip"
@@ -522,13 +818,52 @@ msgstr "Stamm auswählen:"
 msgid "Startdate:"
 msgstr "Startdatum:"
 
-#: tripapp/templates/tripapp/itineraryidea_to_trip.html:18
-msgid "Create Trip"
-msgstr "Reise erstellen"
-
 #: tripapp/templates/tripapp/itineraryidea_update.html:25
 msgid "Edit Itinerary Idea:"
 msgstr "Reiseidee bearbeiten:"
+
+#: tripapp/templates/tripapp/map_markers_edit.html:8
+msgid "Edit Brainstorm Map"
+msgstr "Auf Karte bearbeiten"
+
+#: tripapp/templates/tripapp/map_markers_edit.html:236
+#: tripapp/templates/tripapp/map_markers_edit.html:669
+msgid "Edit location"
+msgstr "Tagesorte bearbeiten"
+
+#: tripapp/templates/tripapp/map_markers_edit.html:265
+#: tripapp/templates/tripapp/map_markers_edit.html:280
+msgid "Copy this map as a new brainstorm map?"
+msgstr "Diese Karte als neue Brainstorming-Karte kopieren?"
+
+#: tripapp/templates/tripapp/map_markers_edit.html:266
+#: tripapp/templates/tripapp/map_markers_edit.html:281
+msgid "Copy"
+msgstr "Kopieren"
+
+#: tripapp/templates/tripapp/map_markers_edit.html:276
+msgid "You are viewing this map in read-only mode."
+msgstr "Sie sehen diese Karte im Nur-Lese-Modus."
+
+#: tripapp/templates/tripapp/map_markers_edit.html:293
+msgid "Unlocated Notes"
+msgstr "Nicht verortete Notizen"
+
+#: tripapp/templates/tripapp/map_markers_edit.html:658
+msgid "Location saved"
+msgstr "Tagesorte gespeichert"
+
+#: tripapp/templates/tripapp/map_markers_edit.html:673
+msgid "Location"
+msgstr "Tagesorte"
+
+#: tripapp/templates/tripapp/map_markers_edit.html:703
+msgid "Removed"
+msgstr "Entfernt"
+
+#: tripapp/templates/tripapp/map_markers_edit.html:719
+msgid "Add at least one location before saving."
+msgstr "Füge mindestens einen Ort hinzu, bevor du speicherst."
 
 #: tripapp/templates/tripapp/permission_denied.html:5
 msgid "Permission Denied"
@@ -537,6 +872,10 @@ msgstr "Zugriff verweigert"
 #: tripapp/templates/tripapp/permission_denied.html:10
 msgid "No access to this part of the Trip"
 msgstr "Kein Zugriff auf diesen Teil der Reise"
+
+#: tripapp/templates/tripapp/permission_denied.html:13
+msgid "to My Trips"
+msgstr "zu Meine Reisen"
 
 #: tripapp/templates/tripapp/scheduled_item_form.html:9
 msgid "Edit Scheduled Item"
@@ -554,32 +893,13 @@ msgstr "Für Tag:"
 msgid "Update"
 msgstr "Aktualisieren"
 
-#: tripapp/templates/tripapp/tribe_map.html:67
-#: tripapp/templates/tripapp/trip_detail.html:236
-#: tripapp/templates/tripapp/trip_list.html:190
-msgid "Settings"
-msgstr "Einstellungen"
-
-#: tripapp/templates/tripapp/tribe_map.html:70
-#: tripapp/templates/tripapp/tribe_trip_organize.html:8
-#: tripapp/templates/tripapp/tribe_trip_organize.html:96
-#: tripapp/templates/tripapp/tribe_trips.html:8
-#: tripapp/templates/tripapp/tribe_trips.html:303
-msgid "Organize"
-msgstr "Organisieren"
-
 #: tripapp/templates/tripapp/tribe_trip_organize.html:110
-#: tripapp/templates/tripapp/tribe_trips.html:316
-#: tripapp/templates/tripapp/trip_detail.html:240
-#: tripapp/templates/tripapp/trip_list.html:193
 msgid "Organize New.."
 msgstr "Organisieren neue.."
 
 #: tripapp/templates/tripapp/tribe_trip_organize.html:129
-#, fuzzy
-#| msgid "Edit Trip Settings"
 msgid "Trip Admin Settings"
-msgstr "Reiseeinstellungen bearbeiten"
+msgstr "Admin Reiseeinstellungen bearbeiten"
 
 #: tripapp/templates/tripapp/tribe_trip_organize.html:131
 msgid "Edit Trip Settings"
@@ -590,10 +910,12 @@ msgid "Add or Remove Trippers"
 msgstr "Tripper hinzufügen oder entfernen"
 
 #: tripapp/templates/tripapp/tribe_trip_organize.html:137
-#, fuzzy
-#| msgid "Create Trip"
 msgid "Delete Trip"
-msgstr "Reise erstellen"
+msgstr "Reise löschen"
+
+#: tripapp/templates/tripapp/tribe_trip_organize.html:147
+msgid "For and by Trippers"
+msgstr "Von und für Reisende"
 
 #: tripapp/templates/tripapp/tribe_trip_organize.html:149
 msgid "Edit Dayprograms"
@@ -623,39 +945,43 @@ msgstr "Badge hochladen"
 msgid "Assign Badges"
 msgstr "Badges zuweisen"
 
-#: tripapp/templates/tripapp/tribe_trips.html:333
+#: tripapp/templates/tripapp/tribe_trip_organize.html:178
+msgid "Are you sure you want to delete this trip?"
+msgstr "Bist du sicher, dass du diese Reise löschen möchtest?"
+
+#: tripapp/templates/tripapp/tribe_trips.html:330
 msgid "New Trip"
 msgstr "Neue Reise"
 
-#: tripapp/templates/tripapp/tribe_trips.html:345
+#: tripapp/templates/tripapp/tribe_trips.html:335
+msgid "Create from scratch"
+msgstr "Von Grund auf neu erstellen"
+
+#: tripapp/templates/tripapp/tribe_trips.html:342
 msgid "Generate with AI"
 msgstr "Reiseroute generieren"
 
-#: tripapp/templates/tripapp/tribe_trips.html:352
+#: tripapp/templates/tripapp/tribe_trips.html:349
 msgid "Import JSON itinerary"
 msgstr "Reiseplan JSON importieren"
 
-#: tripapp/templates/tripapp/tribe_trips.html:358
-msgid "Map overnight locations"
-msgstr "Auf Karte Übernachtungsorte"
+#: tripapp/templates/tripapp/tribe_trips.html:355
+msgid "Brainstorm on map"
+msgstr "Brainstorming auf Karte"
 
-#: tripapp/templates/tripapp/tribe_trips.html:364
-msgid "Map activity locations"
-msgstr "Auf Karte über Tagesorte"
-
-#: tripapp/templates/tripapp/tribe_trips.html:422
+#: tripapp/templates/tripapp/tribe_trips.html:414
 msgid "Delete trip"
 msgstr "Löschen"
 
-#: tripapp/templates/tripapp/tribe_trips.html:444
+#: tripapp/templates/tripapp/tribe_trips.html:437
 msgid "Create a New Tribe"
 msgstr "Neuen Stamm erstellen"
 
-#: tripapp/templates/tripapp/tribe_trips.html:450
+#: tripapp/templates/tripapp/tribe_trips.html:443
 msgid "Invite People to the Tribe"
 msgstr "Personen zum Stamm einladen"
 
-#: tripapp/templates/tripapp/tribe_trips.html:460
+#: tripapp/templates/tripapp/tribe_trips.html:453
 msgid "First Create a New Tribe"
 msgstr "Zuerst neuen Stamm erstellen"
 
@@ -663,7 +989,7 @@ msgstr "Zuerst neuen Stamm erstellen"
 msgid "Balance for Trip"
 msgstr "Bilanz der Reise"
 
-#: tripapp/templates/tripapp/trip_balance.html:36
+#: tripapp/templates/tripapp/trip_balance.html:38
 msgid "Balance"
 msgstr "Bilanz"
 
@@ -687,172 +1013,245 @@ msgstr "Antworten aller Tripper ansehen"
 msgid "No Bingo created for this trip"
 msgstr "Für diese Reise wurde kein Bingo erstellt"
 
-#: tripapp/templates/tripapp/trip_bingocard.html:155
+#: tripapp/templates/tripapp/trip_bingocard.html:156
 msgid "add bingocards"
 msgstr "Bingokarten hinzufügen"
 
-#: tripapp/templates/tripapp/trip_bingocard.html:157
+#: tripapp/templates/tripapp/trip_bingocard.html:158
 msgid "generate 6 bingocards for me"
 msgstr "6 Bingokarten für mich generieren"
 
-#: tripapp/templates/tripapp/trip_checklist.html:47
+#: tripapp/templates/tripapp/trip_checklist.html:50
+msgid "Pack Check Wish"
+msgstr "Packwunsch"
+
+#: tripapp/templates/tripapp/trip_checklist.html:59
+msgid "Generating suggestions… check back in a moment."
+msgstr "Vorschläge generierend.. komme zuruck spater"
+
+#: tripapp/templates/tripapp/trip_checklist.html:64
+msgid "Suggestions ready!"
+msgstr "Vorschlag"
+
+#: tripapp/templates/tripapp/trip_checklist.html:65
+#: tripapp/templates/tripapp/trip_checklist.html:236
+msgid "Show"
+msgstr "Anzeigen"
+
+#: tripapp/templates/tripapp/trip_checklist.html:68
+msgid "Suggested items — click + to add"
+msgstr "Vorgeschlagene Elemente — klicke +, um hinzuzufügen"
+
+#: tripapp/templates/tripapp/trip_checklist.html:70
+msgid "Dismiss"
+msgstr "Verwerfen"
+
+#: tripapp/templates/tripapp/trip_checklist.html:75
+msgid "Suggestion generation failed."
+msgstr "Vorschlagserstellung fehlgeschlagen."
+
+#: tripapp/templates/tripapp/trip_checklist.html:77
+msgid "Retry"
+msgstr "Erneut versuchen"
+
+#: tripapp/templates/tripapp/trip_checklist.html:82
+msgid "Suggest items"
+msgstr "Vorschlag"
+
+#: tripapp/templates/tripapp/trip_checklist.html:108
+msgid "Add item…"
+msgstr "Element hinzufügen"
+
+#: tripapp/templates/tripapp/trip_checklist.html:111
+msgid "Enter for next item · Shift+Enter to stop"
+msgstr "Enter für nächsten Eintrag · Shift+Enter zum Stoppen"
+
+#: tripapp/templates/tripapp/trip_checklist.html:113
 msgid "Trip"
 msgstr "Reise"
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:301
+#: tripapp/templates/tripapp/trip_checklist.html:214
+msgid "All suggestions already in your list."
+msgstr "Alle Vorschläge bereits in deiner Liste."
+
+#: tripapp/templates/tripapp/trip_checklist.html:237
+msgid "Hide"
+msgstr "Verbergen"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:326
 msgid "Select starting location on map"
 msgstr "Startpunkt auf der Karte auswählen"
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:307
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:332
 msgid "Select ending location on map"
 msgstr "Endpunkt auf der Karte auswählen"
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:313
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:508
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:351
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:600
 msgid "Car"
 msgstr "Auto"
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:316
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:509
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:352
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:601
 msgid "Walk"
 msgstr "Zu Fuß"
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:319
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:510
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:353
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:602
 msgid "Bicycle"
 msgstr "Fahrrad"
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:325
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:356
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:355
+msgid "Public Transport"
+msgstr "Öffentliche Verkehrsmittel"
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:359
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:414
 msgid "Calculate Route"
 msgstr "Route berechnen"
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:328
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:360
 msgid "Clear Route"
 msgstr "Route löschen"
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:333
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:364
 msgid "Distance:"
 msgstr "Entfernung:"
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:334
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:365
 msgid "Duration:"
 msgstr "Dauer:"
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:338
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:381
 msgid "Route Description"
 msgstr "Routenbeschreibung"
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:340
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:382
 msgid "Save as Route"
 msgstr "Als Route speichern"
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:351
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:386
+msgid "Route planning is only available for today or future days."
+msgstr "Routenplanung ist nur für heute oder zukünftige Tage verfügbar."
+
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:409
 msgid "Select a start and end location on the map"
 msgstr "Wählen Sie einen Start- und Endpunkt auf der Karte"
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:352
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:410
 msgid "Calculating..."
 msgstr "Berechne..."
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:353
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:411
 msgid "Route saved!"
 msgstr "Route gespeichert!"
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:354
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:412
 msgid "Error calculating route:"
 msgstr "Fehler beim Berechnen der Route:"
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:355
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:413
 msgid "Calculate a Route first"
 msgstr "Berechnen Sie zuerst eine Route"
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:357
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:415
 msgid "Enter Description"
 msgstr "Beschreibung eingeben"
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:358
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:416
 msgid "Error Saving Route"
 msgstr "Fehler beim Speichern der Route"
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:359
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:417
 msgid "Unknown error"
 msgstr "Unbekannter Fehler"
 
-#: tripapp/templates/tripapp/trip_dayprogram_points.html:511
+#: tripapp/templates/tripapp/trip_dayprogram_points.html:603
 msgid "Route"
 msgstr "Route"
 
 #: tripapp/templates/tripapp/trip_dayprograms.html:9
-msgid "Day"
-msgstr "Tag"
-
-#: tripapp/templates/tripapp/trip_dayprograms.html:9
-#: tripapp/templates/tripapp/trip_expenses_list.html:82
+#: tripapp/templates/tripapp/trip_expenses_list.html:85
 msgid "Date"
 msgstr "Datum"
 
 #: tripapp/templates/tripapp/trip_dayprograms.html:10
-#: tripapp/templates/tripapp/trip_expenses_list.html:80
+#: tripapp/templates/tripapp/trip_expenses_list.html:83
 msgid "Description"
 msgstr "Beschreibung"
 
-#: tripapp/templates/tripapp/trip_detail.html:239
-msgid "Organize this Trip"
-msgstr "Diese Reise organisieren"
-
-#: tripapp/templates/tripapp/trip_detail.html:264
+#: tripapp/templates/tripapp/trip_detail.html:222
 msgid "More"
 msgstr "Mehr"
 
-#: tripapp/templates/tripapp/trip_detail.html:272
-#: tripapp/templates/tripapp/tripper_profile.html:21
+#: tripapp/templates/tripapp/trip_detail.html:230
+#: tripapp/templates/tripapp/tripper_profile.html:44
 msgid "Documents"
 msgstr "Dokumente"
+
+#: tripapp/templates/tripapp/trip_detail.html:233
+msgid "Export"
+msgstr "Exportieren"
+
+#: tripapp/templates/tripapp/trip_detail.html:279
+msgid "today"
+msgstr "heute"
 
 #: tripapp/templates/tripapp/trip_expenses_list.html:8
 msgid "Expenses for Trip"
 msgstr "Ausgaben für die Reise"
 
-#: tripapp/templates/tripapp/trip_expenses_list.html:44
+#: tripapp/templates/tripapp/trip_expenses_list.html:47
 msgid "Add New Expense"
 msgstr "Neue Ausgabe hinzufügen"
 
-#: tripapp/templates/tripapp/trip_expenses_list.html:79
+#: tripapp/templates/tripapp/trip_expenses_list.html:82
 msgid "By"
 msgstr "Von"
 
-#: tripapp/templates/tripapp/trip_expenses_list.html:83
+#: tripapp/templates/tripapp/trip_expenses_list.html:86
 msgid "Receipt"
 msgstr "Beleg"
 
-#: tripapp/templates/tripapp/trip_expenses_list.html:123
+#: tripapp/templates/tripapp/trip_expenses_list.html:138
 msgid "No expenses recorded for this trip"
 msgstr "Für diese Reise wurden keine Ausgaben erfasst"
 
-#: tripapp/templates/tripapp/trip_expenses_list.html:127
-msgid "See Balance"
-msgstr "Bilanz anzeigen"
-
-#: tripapp/templates/tripapp/trip_export.html:96
+#: tripapp/templates/tripapp/trip_export.html:97
 msgid "Download Complete Trip"
 msgstr "Dokument herunterladen"
 
-#: tripapp/templates/tripapp/trip_export.html:104
+#: tripapp/templates/tripapp/trip_export.html:98
+msgid "A zip with everything of the trip."
+msgstr "Ein ZIP mit allem zur Reise."
+
+#: tripapp/templates/tripapp/trip_export.html:105
 msgid "Download Trip Outline"
 msgstr "Reiseplan herunterladen"
 
-#: tripapp/templates/tripapp/trip_export.html:112
+#: tripapp/templates/tripapp/trip_export.html:106
+msgid "De-personalized, no photos, no logs. Just share your itinerary."
+msgstr ""
+"Anonymisiert, ohne Fotos und Protokolle. Nur dein Reiseprogramm teilen."
+
+#: tripapp/templates/tripapp/trip_export.html:113
 msgid "Download Trip Outline JSON"
 msgstr "Reiseplan herunterladen"
 
-#: tripapp/templates/tripapp/trip_list.html:252
-#, fuzzy
-#| msgid "Create New"
-msgid "Create New.."
-msgstr "Neu .."
+#: tripapp/templates/tripapp/trip_export.html:114
+msgid ""
+"Export as JSON. Other Trippanion user can import your trip as startingpoint "
+"for his own trip."
+msgstr ""
+"Als JSON exportieren. Andere Trippanion-Nutzer können deine Reise als "
+"Ausgangspunkt für ihre eigene Reise importieren."
 
-#: tripapp/templates/tripapp/trip_list.html:262
+#: tripapp/templates/tripapp/trip_list.html:245
+#: tripapp/templates/tripapp/trip_list.html:295
+msgid "New Adventure.."
+msgstr "Neues Abenteuer.."
+
+#: tripapp/templates/tripapp/trip_list.html:305
 msgid "Show only trips on which I am a tripper"
 msgstr "Nur Reisen anzeigen, bei denen ich Tripper bin"
 
@@ -860,38 +1259,109 @@ msgstr "Nur Reisen anzeigen, bei denen ich Tripper bin"
 msgid "Point description"
 msgstr "Punktbeschreibung"
 
-#: tripapp/templates/tripapp/trip_trippers.html:111
+#: tripapp/templates/tripapp/trip_trippers.html:106
 msgid "Badges this trip"
 msgstr "Badges dieser Reise"
 
-#: tripapp/templates/tripapp/trip_trippers.html:126
+#: tripapp/templates/tripapp/trip_trippers.html:121
 msgid "Trippers owe Trippers"
 msgstr "Tripper schulden Trippern"
 
-#: tripapp/templates/tripapp/tripper_profile.html:39
+#: tripapp/templates/tripapp/tripper_profile.html:45
+msgid ""
+"Put documents that you can use on multiple trips here, eg scan of passport."
+msgstr ""
+"Lege hier Dokumente ab, die du auf mehreren Reisen verwenden kannst, z. B. "
+"einen Passscan."
+
+#: tripapp/templates/tripapp/tripper_profile.html:56
+msgid "Are you sure that you want to delete this?"
+msgstr "Bist du sicher, dass du das löschen möchtest?"
+
+#: tripapp/templates/tripapp/tripper_profile.html:62
 msgid "No documents uploaded yet"
 msgstr "Noch keine Dokumente hochgeladen"
 
-#: tripapp/views.py:1441
+#: tripapp/views.py:1563
 #, python-format
 msgid "Suggestion by %(username)s: %(suggestion)s"
 msgstr "Vorschlag von %(username)s: %(suggestion)s"
 
-#: tripapp/views.py:2020
+#: tripapp/views.py:2200
 msgid "No Answers"
 msgstr "Keine Antworten"
 
-#: tripapp/views.py:2238 tripapp/views.py:2264
+#: tripapp/views.py:2419 tripapp/views.py:2445
 msgid "Tripper and emoji mandatory."
 msgstr "Tripper und Emoji sind Pflicht."
 
-#: tripapp/views.py:2249
+#: tripapp/views.py:2430
 msgid "You already liked this log with this emoji."
 msgstr "Sie haben diesen Eintrag bereits mit diesem Emoji geliked."
 
-#: tripapp/views.py:2276
+#: tripapp/views.py:2457
 msgid "There is no like with this emoji that can be removed."
 msgstr "Es gibt kein Like mit diesem Emoji, das entfernt werden kann."
+
+#~ msgid "Create Itinerary Idea - by Day Locations"
+#~ msgstr "Reiseidee erstellen – nach Tagesorten"
+
+#~ msgid "Create Itinerary Idea by indicating day locations"
+#~ msgstr "Erstellen Sie eine Reiseidee, indem Sie Tagesorte markieren"
+
+#~ msgid "Step 1 - Put markers on locations or areas that you want to visit"
+#~ msgstr ""
+#~ "Schritt 1 – Markieren Sie Orte oder Bereiche, die Sie besuchen möchten"
+
+#~ msgid "Name of this Itinerary Idea"
+#~ msgstr "Name dieser Reiseidee"
+
+#~ msgid "Save Itinerary Idea"
+#~ msgstr "Reiseidee speichern"
+
+#~ msgid "Create Tripoutline"
+#~ msgstr "Reiseübersicht erstellen"
+
+#~ msgid ""
+#~ "Create a Itinerary Idea by indicating OVERNIGHT locations / areas on this "
+#~ "map"
+#~ msgstr ""
+#~ "Erstellen Sie eine Reiseidee, indem Sie Übernachtungsorte/-bereiche auf "
+#~ "dieser Karte markieren"
+
+#~ msgid "Name of this Overnight Itinerary Idea"
+#~ msgstr "Name dieser Übernachtungs-Reiseidee"
+
+#~ msgid "Save Overnight Outline"
+#~ msgstr "Übernachtungsplan speichern"
+
+#~ msgid "Create New"
+#~ msgstr "Neu erstellen"
+
+#~ msgid "on Map via OvernightLocations"
+#~ msgstr "Auf Karte über Übernachtungsorte"
+
+#~ msgid "on Map via DayLocations"
+#~ msgstr "Auf Karte über Tagesorte"
+
+#, fuzzy
+#~| msgid "Invite Code Generated"
+#~ msgid "AI Generated"
+#~ msgstr "Einladungscode generiert"
+
+#~ msgid "Convert to Trip"
+#~ msgstr "In Reise umwandeln"
+
+#~ msgid "Organize New"
+#~ msgstr "Organisieren Neu"
+
+#~ msgid "Organize this Trip"
+#~ msgstr "Diese Reise organisieren"
+
+#, fuzzy
+#~| msgid "Create New"
+#~ msgid "Create New.."
+#~ msgstr "Neu .."
 
 #~ msgid ""
 #~ "Tip: Consider plotting an itinerary on a map and turn your idea into a "

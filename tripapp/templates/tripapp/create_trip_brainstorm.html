@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% trans "Kaart - Locaties toevoegen" %}</title>
+  <title>{% trans "Brainstorm on a map" %}</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
   <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
@@ -387,7 +387,7 @@
   // ── Form submit ──────────────────────────────────────────────
   function prepareAndValidateForm() {
     if (markers.size === 0) {
-      alert("{% trans 'Voeg minstens één locatie toe voor je opslaat.' %}");
+      alert("{% trans 'Please add at least one location before saving.' %}");
       return false;
     }
 
