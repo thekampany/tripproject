@@ -2599,7 +2599,7 @@ def save_tripoutline(request):
 
     return JsonResponse({"error": "Method not allowed"}, status=405)
 
-@csrf_exempt
+""" @csrf_exempt
 def save_tripoutline_daylocations(request):
     if request.method == "POST":
         try:
@@ -2639,7 +2639,7 @@ def save_tripoutline_daylocations(request):
 
     return JsonResponse({"error": "Method not allowed"}, status=405)
 
-
+ """
 
 ### itinerary ideas
 
@@ -4572,3 +4572,22 @@ def get_poll(request, poll_id):
     poll    = get_object_or_404(Poll, id=poll_id)
     tripper = get_object_or_404(Tripper, user=request.user)
     return JsonResponse(poll_results(poll, tripper))
+
+
+@login_required
+def move_day_location(request, location_id):
+    location = get_object_or_404(DayLocation, id=location_id)
+
+    if not user_shares_tribe_with(request.user, location.day.itineraryidea.created_by):
+        return JsonResponse({'error': 'Not allowed'}, status=403)
+
+    if request.method == 'POST':
+        data   = json.loads(request.body)
+        day_pk = data.get('day_pk')
+        day    = get_object_or_404(ItineraryIdeaDay, pk=day_pk,
+                                   itineraryidea=location.day.itineraryidea)
+        location.day = day
+        location.save(update_fields=['day'])
+        return JsonResponse({'ok': True})
+
+    return JsonResponse({'error': 'POST only'}, status=405)

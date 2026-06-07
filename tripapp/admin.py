@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Trip, DayProgram, Tripper, Badge, Checklist, ChecklistItem, Image, Question, Point, BingoCard, BingoAnswer, BadgeAssignment, LogEntry, Link, Route
+from .models import Trip, DayProgram, Tripper, Badge, Checklist, ChecklistItem, Image, Question, Point, BingoCard, BingoAnswer, BadgeAssignment, LogEntry, Link, Route, MapMarkerDraft
 from django_q.tasks import async_task
 from .models import Tribe, UserProfile, TripExpense, TripBudget, Location, ImmichPhotos, ScheduledItem, TripperDocument, LogEntryLike, ItineraryIdea, ItineraryIdeaDay, DayLocation, OvernightLocation,OllamaJob
 from django.core.management import call_command
@@ -82,7 +82,7 @@ admin.site.register(DayLocation)
 admin.site.register(OvernightLocation)
 admin.site.register(TripBudget)
 admin.site.register(OllamaJob,OllamaJobAdmin)
-
+admin.site.register(MapMarkerDraft)
 
 try:
     admin.site.register(APIKey, APIKeyModelAdmin)

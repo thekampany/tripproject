@@ -338,9 +338,9 @@
         {% endif %}
       </div>
 
-      <div class="day-card">
+      <div class="day-card" data-day-pk="{{ day.pk }}">
         {% for loc in day.day_locations.all %}
-        <div class="location-row" id="loc-pin-{{ loc.pk }}">
+        <div class="location-row" id="loc-pin-{{ loc.pk }}" draggable="true" data-loc-id="{{ loc.pk }}">
           <div class="location-icon">📍</div>
           <div class="location-desc {% if not loc.description %}empty{% endif %}">
             {{ loc.description|default:"(no description)" }}
@@ -596,6 +596,52 @@ document.addEventListener('DOMContentLoaded', function() {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
   {% endif %}
+});
+
+
+const MOVE_URL_BASE = "{% url 'tripapp:move_day_location' 0 %}";
+let draggedLocId = null;
+
+document.querySelectorAll('.location-row[draggable]').forEach(row => {
+    row.addEventListener('dragstart', e => {
+        draggedLocId      = row.dataset.locId;
+        row.style.opacity = '0.4';
+        e.dataTransfer.effectAllowed = 'move';
+    });
+    row.addEventListener('dragend', () => {
+        document.querySelectorAll('.location-row[draggable]').forEach(r => r.style.opacity = '1');
+    });
+});
+
+document.querySelectorAll('.day-card').forEach(card => {
+    card.addEventListener('dragover', e => {
+        e.preventDefault();
+        card.style.outline = '2px dashed #6c63ff';
+    });
+    card.addEventListener('dragleave', () => {
+        card.style.outline = '';
+    });
+    card.addEventListener('drop', async e => {
+        e.preventDefault();
+        card.style.outline = '';
+        if (!draggedLocId) return;
+
+        const url = MOVE_URL_BASE.replace('0', draggedLocId);
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ day_pk: card.dataset.dayPk })
+        });        
+
+        if (res.ok) location.reload();
+        else {
+            const t = document.getElementById('toast');
+            t.textContent = '❌ Error moving location';
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+        draggedLocId = null;
+    });
 });
 </script>
 

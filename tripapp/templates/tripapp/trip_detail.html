@@ -13,7 +13,6 @@
     <link rel="mask-icon" href="{% static 'favicon/safari-pinned-tab.svg' %}" color="#5bbad5">
     <meta name="msapplication-TileColor" content="#da532c">
     <meta name="theme-color" content="#ffffff">
-    <!--<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">-->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
@@ -41,11 +40,11 @@
             {% endif %}
         }
         .today {
-        border: 2px solid #C70039; 
-        padding: 5px;
+            border: 2px solid #C70039; 
+            padding: 5px;
         }
         .gray {
-        color: gray;
+            color: gray;
         }
 
         .dayprogram-list {
@@ -55,7 +54,7 @@
         }
 
         .dayprogram-item {
-            padding: 10px;
+            padding: 0px;
             margin: 5px 0;
             border: 1px solid var(--border-color);
             border-radius: 12px;
@@ -64,6 +63,30 @@
 
         }
 
+        .dayprogram-item a.tripdetail {
+            flex: 1;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .dayprogram-item a.tripdetail:hover {
+            background: rgba(128,128,128,.12);
+            border-radius: 12px 0 0 12px;
+        }
+
+        .drag-handle {
+            cursor: grab;
+            font-size: 1.5rem;
+            color: #888;
+            user-select: none;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            border-left: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
         .dayprogram-item.today {
             border: 2px solid #C70039;
         }
@@ -98,6 +121,8 @@
             display: grid;
             grid-template-columns: 1fr;
             grid-auto-rows: 40px;
+            border-radius: 12px;
+            overflow: hidden;
         }
 
         .cell {
@@ -123,23 +148,23 @@
             color: white;
         }
 
-.tl-days { display: flex; flex-direction: column; }
-.tl-day { display: grid; grid-template-columns: 52px 1px 1fr; gap: 0 16px; position: relative; }
-.tl-date { text-align: right; padding: 0 0 1.5rem; }
-.tl-date-day { font-size: 20px; font-weight: 500; line-height: 1; }
-.tl-date-month { font-size: 11px; color: gray; margin-top: 2px; }
-.tl-line { background: var(--border-color); position: relative; }
-.tl-dot { width: 10px; height: 10px; border-radius: 50%; background: gray; position: absolute; left: -4.5px; top: 6px; }
-.tl-dot.today { background: #C70039; width: 12px; height: 12px; left: -5.5px; }
-.tl-content { padding: 0 0 1.5rem; }
-.tl-today-badge { display: inline-block; border: 1px solid #C70039; border-radius: 6px; font-size: 11px; padding: 1px 7px; color: #C70039; margin-bottom: 4px; }
-.tl-dest { font-size: 14px; margin-bottom: 6px; }
-.tl-vibes { display: flex; flex-wrap: wrap; gap: 6px; }
-.tl-vibe-chip { display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,.04); border: 1px solid var(--border-color); border-radius: 20px; padding: 3px 10px; font-size: 13px; }
-.tl-vibe-emoji { font-size: 15px; line-height: 1; }
-.tl-vibe-name { color: gray; font-size: 12px; }
-.tl-vibe-note { color: gray; font-size: 12px; font-style: italic; }
-.tl-future { font-size: 13px; color: gray; font-style: italic; }
+        .tl-days { display: flex; flex-direction: column; }
+        .tl-day { display: grid; grid-template-columns: 52px 1px 1fr; gap: 0 16px; position: relative; }
+        .tl-date { text-align: right; padding: 0 0 1.5rem; }
+        .tl-date-day { font-size: 20px; font-weight: 500; line-height: 1; }
+        .tl-date-month { font-size: 11px; color: gray; margin-top: 2px; }
+        .tl-line { background: var(--border-color); position: relative; }
+        .tl-dot { width: 10px; height: 10px; border-radius: 50%; background: gray; position: absolute; left: -4.5px; top: 6px; }
+        .tl-dot.today { background: #C70039; width: 12px; height: 12px; left: -5.5px; }
+        .tl-content { padding: 0 0 1.5rem; }
+        .tl-today-badge { display: inline-block; border: 1px solid #C70039; border-radius: 6px; font-size: 11px; padding: 1px 7px; color: #C70039; margin-bottom: 4px; }
+        .tl-dest { font-size: 14px; margin-bottom: 6px; }
+        .tl-vibes { display: flex; flex-wrap: wrap; gap: 6px; }
+        .tl-vibe-chip { display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,.04); border: 1px solid var(--border-color); border-radius: 20px; padding: 3px 10px; font-size: 13px; }
+        .tl-vibe-emoji { font-size: 15px; line-height: 1; }
+        .tl-vibe-name { color: gray; font-size: 12px; }
+        .tl-vibe-note { color: gray; font-size: 12px; font-style: italic; }
+        .tl-future { font-size: 13px; color: gray; font-style: italic; }
 
 </style>
 </head>
@@ -328,21 +353,14 @@
         {% endif %}  
 
         {% if view_mode == "grid" %}
-            <a href="?view=vibe" class="fab2" title="Vibe">&#127775;</a>
+            <a href="?view=vibe" class="fab" title="Vibe">&#127775;</a>
         {% elif view_mode == "vibe" %}
-            <a href="?view=list" class="fab2" title="List">&#9776;</a>
+            <a href="?view=list" class="fab" title="List">&#9776;</a>
         {% else %}
-            <a href="?view=grid" class="fab2" title="Grid">&#127769;</a>
+            <a href="?view=grid" class="fab" title="Grid">&#127769;</a>
 
-            {% if tripper.is_trip_admin %}
-                {% if trip.date_to|date:'Y-m-d' > today|date:'Y-m-d'  %}
-                <div align="right"><button id="save-order-btn" class="fab3">&#128190;</button></div>
-                {% endif %}
-            {% endif %}
         {% endif %}
-        
-        <a href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id  %}" class="fab" title="Organize">&#128221;</a>
-        
+                
         
         
     <br />
@@ -363,8 +381,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!list) return;
 
     function handleDragStart(e) {
-
- 
         draggingEl = e.target;
         e.target.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
@@ -383,6 +399,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function handleDragEnd(e) {
         e.target.classList.remove('dragging');
+        saveOrder(); 
     }
 
     function getDragAfterElement(container, y) {
@@ -398,11 +415,29 @@ document.addEventListener("DOMContentLoaded", function () {
         }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
+    function saveOrder() {
+        const newOrder = Array.from(list.children).map((li, index) => ({
+            id:        li.dataset.id,
+            new_order: index + 1
+        }));
+
+        fetch("{% url 'tripapp:reorder_dayprograms' trip.id %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken':  '{{ csrf_token }}',
+            },
+            body: JSON.stringify({ order: newOrder })
+        }).then(response => {
+            if (!response.ok) alert("Error saving order");
+        });
+    }
+
     // Enable drag events
     document.querySelectorAll('.dayprogram-item').forEach(item => {
         item.setAttribute('draggable', true);
         item.addEventListener('dragstart', handleDragStart);
-        item.addEventListener('dragend', handleDragEnd);
+        item.addEventListener('dragend',   handleDragEnd);
     });
 
     list.addEventListener('dragover', handleDragOver);
@@ -410,61 +445,34 @@ document.addEventListener("DOMContentLoaded", function () {
     // Touch support
     list.querySelectorAll('.dayprogram-item').forEach(item => {
         const handle = item.querySelector('.drag-handle');
-
         if (!handle) return;
 
         handle.addEventListener('touchstart', e => {
             e.stopPropagation();
             draggingEl = item;
             item.classList.add('dragging');
-            touchStartY = e.touches[0].clientY;
         });
 
         item.addEventListener('touchmove', e => {
             if (!draggingEl) return;
-
             e.preventDefault();
             const touchY = e.touches[0].clientY;
             const afterElement = getDragAfterElement(list, touchY);
-
-            if (afterElement == null) {
-                list.appendChild(draggingEl);
-            } else {
-                list.insertBefore(draggingEl, afterElement);
-            }
+            if (afterElement == null) list.appendChild(draggingEl);
+            else list.insertBefore(draggingEl, afterElement);
         });
 
-        item.addEventListener('touchend', e => {
-            if (draggingEl) draggingEl.classList.remove('dragging');
+        item.addEventListener('touchend', () => {
+            if (draggingEl) {
+                draggingEl.classList.remove('dragging');
+                saveOrder(); 
+            }
             draggingEl = null;
         });
     });
-    // Save
-    const saveBtn = document.getElementById('save-order-btn');
-    if (saveBtn) {
-        saveBtn.addEventListener('click', () => {
-            const newOrder = Array.from(list.children).map((li, index) => ({
-                id: li.dataset.id,
-                new_order: index + 1
-            }));
-
-            fetch("{% url 'tripapp:reorder_dayprograms' trip.id %}", {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}',
-                },
-                body: JSON.stringify({ order: newOrder })
-            }).then(response => {
-                if (response.ok) {
-                    location.reload();
-                } else {
-                    alert("Error when saving");
-                }
-            });
-        });
-    }
 });
+
+
 </script>
 
 <script src="{% static 'js/set_timezone.js' %}"></script>

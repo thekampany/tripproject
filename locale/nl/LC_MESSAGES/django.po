@@ -696,7 +696,7 @@ msgstr "Uitsluiten"
 
 #: tripapp/templates/tripapp/itineraryidea_detail.html:360
 msgid "Overnight"
-msgstr "Overnachtings Locaties:"
+msgstr "Overnachtings Locatie"
 
 #: tripapp/templates/tripapp/itineraryidea_detail.html:367
 msgid "No locations assigned to this day yet."
@@ -1136,7 +1136,7 @@ msgstr "Route opslaan"
 
 #: tripapp/templates/tripapp/trip_dayprogram_points.html:386
 msgid "Route planning is only available for today or future days."
-msgstr ""
+msgstr "Route planning is niet beschikbaar op tripdagen die in het verleden liggen"
 
 #: tripapp/templates/tripapp/trip_dayprogram_points.html:409
 msgid "Select a start and end location on the map"
@@ -1257,8 +1257,6 @@ msgstr ""
 
 #: tripapp/templates/tripapp/trip_list.html:245
 #: tripapp/templates/tripapp/trip_list.html:295
-#, fuzzy
-#| msgid "New Adventure"
 msgid "New Adventure.."
 msgstr "Nieuw Avontuur"
 

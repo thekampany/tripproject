@@ -1,6 +1,8 @@
 <!-- trip_bingocards.html -->
 
 {% load static %}
+{% load i18n %}
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -29,43 +31,47 @@
 <h1>{{ trip.name }} Bingo</h1>
 
 <div class="bingocard-container">
-    {% for card in bingocards %}
-    <div class="bingocard">
-        <div class="bingocard-content">
-            {% if card.bingoimage %}
-            <img src="{{ card.bingoimage.url }}" alt="Bingo Image" class="bingo-image" />
-            {% else %}
-            <h4>{{ card.description }}</h4>
-            {% endif %}
-            
-            <div class="answers">
-                {% for answer in bingo_answers %}
-                    {% if answer.bingocard == card %}
-                        <div class="answer">
+    {% if bingocards %}
+        {% for card in bingocards %}
+        <div class="bingocard">
+            <div class="bingocard-content">
+                {% if card.bingoimage %}
+                <img src="{{ card.bingoimage.url }}" alt="Bingo Image" class="bingo-image" />
+                {% else %}
+                <h4>{{ card.description }}</h4>
+                {% endif %}
+                
+                <div class="answers">
+                    {% for answer in bingo_answers %}
+                        {% if answer.bingocard == card %}
+                            <div class="answer">
 
-                            <div>
-                            <p>
-                            {% if answer.tripper.photo %}
-                             <img src="{{ answer.tripper.photo.url }}" alt="Profile" height="40px" width="40px" style="vertical-align:middle" >
-                            {% endif %}
-                            <span style="">
-                         
-                            {{ answer.tripper.name }}:</p>
-                            </span>
+                                <div>
+                                <p>
+                                {% if answer.tripper.photo %}
+                                <img src="{{ answer.tripper.photo.url }}" alt="Profile" height="40px" width="40px" style="vertical-align:middle" >
+                                {% endif %}
+                                <span style="">
+                            
+                                {{ answer.tripper.name }}:</p>
+                                </span>
+                                </div>
+
+                                {% if answer.answerimage %}
+                                <img src="{{ answer.answerimage.url }}" alt="Answer Image" class="answer-image" />
+                                {% else %}
+                                <p>No answer image uploaded yet.</p>
+                                {% endif %}
                             </div>
-
-                            {% if answer.answerimage %}
-                            <img src="{{ answer.answerimage.url }}" alt="Answer Image" class="answer-image" />
-                            {% else %}
-                            <p>No answer image uploaded yet.</p>
-                            {% endif %}
-                        </div>
-                    {% endif %}
-                {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
             </div>
         </div>
-    </div>
-    {% endfor %}
+        {% endfor %}
+    {% else %}
+        <p>{% trans "No Bingo created for this trip" %}</p>
+    {% endif %}
 </div>
 
 
