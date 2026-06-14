@@ -159,7 +159,7 @@
     <!-- LOGIN OVERLAY -->
     <div id="loginOverlay" class="overlay">
         <div class="overlay-content">
-            <span class="close-btn" onclick="closeLogin()">&times;</span>
+            <span class="close-btn" onclick="closeLogin()" style="color:white;">&times;</span>
             <h2>Login</h2>
             <form method="post" action="{% url 'tripapp:login' %}">
                 {% csrf_token %}
@@ -175,7 +175,7 @@
                 <input type="hidden" name="next" value="{% url 'tripapp:trip_list' %}">
             </form>
             <br />
-            <a href="{% url 'tripapp:password_reset' %}">Forgot Password?</a>
+            <a href="{% url 'tripapp:password_reset' %}"><span style="color:black;">Forgot Password?</span></a>
         </div>
     </div>
 

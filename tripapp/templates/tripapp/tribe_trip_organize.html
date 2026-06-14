@@ -149,6 +149,7 @@
                 <li><a href="{% url 'tripapp:trip_dayprograms' trip.id  %}"><i class="bi bi-card-heading"></i> {% trans "Edit Dayprograms" %}</a></li>
                 <li><a href="{% url 'tripapp:trip_points' trip.id  %}"><i class="bi bi-geo-alt"></i> {% trans "Add Points and Routes" %}</a></li>
                 <li><a href="{% url 'tripapp:tripadmin_bingocards' trip.id  %}"><i class="bi bi-grid-3x3"></i> {% trans "Organize Tripbingo" %}</a></li>
+                <li><a href="{% url 'tripapp:thing_to_do_list' trip.id %}"><i class="bi bi-pencil-square"></i> {% trans "Things to do" %}</a></li>
             </ul>
         </div>
         {% endif %}

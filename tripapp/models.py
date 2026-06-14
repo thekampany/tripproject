@@ -752,3 +752,20 @@ class PollVote(models.Model):
 
     def __str__(self):
         return f"{self.tripper.name} → {self.option.text}"
+
+class ThingToDo(models.Model):
+    trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name='things_to_do')
+    short_description = models.CharField(max_length=200)
+    more_info = models.TextField(blank=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    overnight_location = models.CharField(max_length=255, blank=True, null=True)
+    assigned_date = models.DateField(null=True, blank=True)
+    point = models.ForeignKey(Point, on_delete=models.SET_NULL, null=True, blank=True, related_name='thing_to_do')
+
+    def __str__(self):
+        return self.short_description
+
+    @property
+    def has_coordinates(self):
+        return self.latitude is not None and self.longitude is not None

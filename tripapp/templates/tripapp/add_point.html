@@ -34,39 +34,28 @@
     <h2>Add Point</h2><br>
     <b> for Trip {{ trip.name }}</b>
     <br><br>
-    <form method="post">
-        {% csrf_token %}
-        <div id="address-section" class="address-field">
-            <label>
-                <input type="checkbox" id="toggle-address" checked> {% trans "Lookup via address" %}
-            </label>
-            <div id="address-field-container">
-                <input type="text" id="id_address" name="address" placeholder="{% trans 'Enter address...' %}">
-                <div id="address-results"></div>
-            </div>
-        </div>
-        {% for field in form %}
-            {% if field.name != 'address' %}
-                {{ field|as_crispy_field }}
-            {% endif %}
-        {% endfor %}
-        <button type="submit" class="btn">{% trans "Save Point" %}</button>
-    </form>
+
+    {% crispy form %}
+
 {% endblock %}
 {% block extra_js %}
 {{ block.super }}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("Address field:", document.getElementById('id_address'));
     const addressField = document.getElementById('id_address');
     const latitudeField = document.getElementById('id_latitude');
     const longitudeField = document.getElementById('id_longitude');
-    const resultsContainer = document.getElementById('address-results');
+    const resultsContainer = document.createElement('div');
+    resultsContainer.id = 'address-results';
+    addressField.parentNode.style.position = 'relative';
+    addressField.parentNode.appendChild(resultsContainer);
+
+
     const toggleAddress = document.getElementById('toggle-address');
-    const addressFieldContainer = document.getElementById('address-field-container');
+    const addressFieldWrapper = addressField.closest('div');
 
     toggleAddress.addEventListener('change', function(e) {
-        addressFieldContainer.style.display = e.target.checked ? 'block' : 'none';
+        addressFieldWrapper.style.display = e.target.checked ? 'block' : 'none';
     });
 
     function searchAddress() {
@@ -87,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         data.forEach(item => {
                             const option = document.createElement('div');
                             option.textContent = item.display_name;
+                            option.style.cssText = 'padding:5px;cursor:pointer;background:white;color:black;';
                             option.addEventListener('click', function() {
                                 latitudeField.value = item.lat;
                                 longitudeField.value = item.lon;
@@ -94,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             });
                             resultsContainer.appendChild(option);
                         });
-                        resultsContainer.style.display = 'block';
+                        resultsContainer.style.cssText = 'display:block;position:absolute;z-index:1000;width:100%;border:1px solid #ccc;max-height:200px;overflow-y:auto;background:white;';
                     }
                 }
             })

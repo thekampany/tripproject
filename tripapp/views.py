@@ -4,7 +4,7 @@ from .models import BingoCard, BingoAnswer, BadgeAssignment
 from .models import Tribe, UserProfile, LogEntry, Link, Route, TripExpense, Location, ImmichPhotos, ScheduledItem
 from .models import TripperDocument, LogEntryLike, InviteCode, TripBudget
 from .models import TripOutline, MapMarkerDraft, OllamaJob, DayVibe, ItineraryNote, TripDocument
-from .models import Poll, PollOption, PollVote
+from .models import Poll, PollOption, PollVote, ThingToDo
 from .forms import BadgeForm, TripForm, ChecklistItemForm, ImageForm, BingoAnswerForm
 from .forms import CustomUserCreationForm
 from .forms import AnswerForm, TripperForm, TripperAdminForm
@@ -13,7 +13,7 @@ from .forms import QuestionForm, PointForm, BingoCardForm
 from .forms import BadgeAssignmentFormSet, LogEntryForm
 from .forms import BadgeplusQForm, QuestionplusBForm
 from .forms import LinkForm, RouteForm, SuggestionForm, TripExpenseForm, TripUpdateForm, UserUpdateForm, ScheduledItemForm
-from .forms import TripperDocumentForm, TripBudgetForm
+from .forms import TripperDocumentForm, TripBudgetForm, ThingToDoForm
 from .serializers import TripOutlineSerializer
 from .serializers import TripSerializer, TripMapDataSerializer, LogEntryLikeSerializer
 
@@ -556,6 +556,22 @@ def dayprogram_detail(request, dayprogram_id):
             ).values_list('option_id', flat=True)
         )
 
+    selected_things = ThingToDo.objects.filter(
+        trip=dayprogram.trip,
+        assigned_date=dayprogram.tripdate
+    )
+
+    available_things = ThingToDo.objects.filter(
+        trip=dayprogram.trip,
+        assigned_date__isnull=True
+    ).exclude(
+    ).filter(
+        Q(overnight_location__isnull=True) |
+        Q(overnight_location='') |
+        Q(overnight_location=dayprogram.overnight_location)
+    )
+
+
     return render(request, 'tripapp/dayprogram_detail.html', 
          {'dayprogram': dayprogram, 
           'images': images, 
@@ -587,6 +603,8 @@ def dayprogram_detail(request, dayprogram_id):
           'day_state': day_state,
           'polls':       polls,
           'my_vote_ids': my_vote_ids,
+          'selected_things':   selected_things,
+          'available_things':  available_things,
          })
 
 
@@ -2740,89 +2758,89 @@ def itineraryidea_list(request):
     })
 
 
-# show an itineraryidea on a map in order to have it edited
-def itineraryidea_edit(request, pk):
-    idea = get_object_or_404(ItineraryIdea, pk=pk)
+# # show an itineraryidea on a map in order to have it edited
+# def itineraryidea_edit(request, pk):
+#     idea = get_object_or_404(ItineraryIdea, pk=pk)
 
-    days = []
-    for day in idea.itineraryidea_days.all().order_by("day_sequence"):
-        day_locations = list(day.day_locations.all().order_by("sequence"))
-        overnight = getattr(day, 'overnightlocation', None)
+#     days = []
+#     for day in idea.itineraryidea_days.all().order_by("day_sequence"):
+#         day_locations = list(day.day_locations.all().order_by("sequence"))
+#         overnight = getattr(day, 'overnightlocation', None)
 
-        days.append({
-            'day_id': day.id,
-            'day_sequence': day.day_sequence,
-            'day_description': day.day_description,
-            'day_locations': day_locations,
-            'overnightlocation': overnight,
-        })
+#         days.append({
+#             'day_id': day.id,
+#             'day_sequence': day.day_sequence,
+#             'day_description': day.day_description,
+#             'day_locations': day_locations,
+#             'overnightlocation': overnight,
+#         })
 
-    return render(request, 'tripapp/itineraryidea_update.html', {
-        'idea': idea,
-        'days': days
-    })
+#     return render(request, 'tripapp/itineraryidea_update.html', {
+#         'idea': idea,
+#         'days': days
+#     })
 
-from collections import defaultdict
+# from collections import defaultdict
 
-@login_required
-def update_itineraryidea(request, pk):
-    idea = get_object_or_404(ItineraryIdea, pk=pk)
+# @login_required
+# def update_itineraryidea(request, pk):
+#     idea = get_object_or_404(ItineraryIdea, pk=pk)
 
-    if request.method != "POST":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
+#     if request.method != "POST":
+#         return JsonResponse({"error": "Method not allowed"}, status=405)
 
-    try:
-        payload = json.loads(request.body)
-        items = payload.get("items", [])
+#     try:
+#         payload = json.loads(request.body)
+#         items = payload.get("items", [])
 
-        # Update name
-        idea.name = payload.get("name", idea.name)
-        idea.updated_by = request.user
-        idea.save()
+#         # Update name
+#         idea.name = payload.get("name", idea.name)
+#         idea.updated_by = request.user
+#         idea.save()
 
-        # Delete existing days and locations
-        for day in idea.itineraryidea_days.all():
-            day.day_locations.all().delete()
-            if hasattr(day, "overnightlocation"):
-                day.overnightlocation.delete()
-        idea.itineraryidea_days.all().delete()
+#         # Delete existing days and locations
+#         for day in idea.itineraryidea_days.all():
+#             day.day_locations.all().delete()
+#             if hasattr(day, "overnightlocation"):
+#                 day.overnightlocation.delete()
+#         idea.itineraryidea_days.all().delete()
 
-        day_items = defaultdict(list)
-        for item in items:
-            day_seq = item.get("day_sequence", 1)
-            day_items[day_seq].append(item)
+#         day_items = defaultdict(list)
+#         for item in items:
+#             day_seq = item.get("day_sequence", 1)
+#             day_items[day_seq].append(item)
 
-        for day_seq in sorted(day_items.keys()):
-            day = ItineraryIdeaDay.objects.create(
-                itineraryidea=idea,
-                day_sequence=day_seq,
-                day_description=""  
-            )
+#         for day_seq in sorted(day_items.keys()):
+#             day = ItineraryIdeaDay.objects.create(
+#                 itineraryidea=idea,
+#                 day_sequence=day_seq,
+#                 day_description=""  
+#             )
 
-            for item in day_items[day_seq]:
-                if item.get("overnight", False):
-                    OvernightLocation.objects.create(
-                        day=day,
-                        latitude=item["latitude"],
-                        longitude=item["longitude"],
-                        radius=item.get("radius", 100),
-                        description=item.get("description", "")
-                    )
-                else:
-                    DayLocation.objects.create(
-                        day=day,
-                        sequence=item.get("sequence", 1),
-                        latitude=item["latitude"],
-                        longitude=item["longitude"],
-                        radius=item.get("radius", 100),
-                        description=item.get("description", "")
-                    )
+#             for item in day_items[day_seq]:
+#                 if item.get("overnight", False):
+#                     OvernightLocation.objects.create(
+#                         day=day,
+#                         latitude=item["latitude"],
+#                         longitude=item["longitude"],
+#                         radius=item.get("radius", 100),
+#                         description=item.get("description", "")
+#                     )
+#                 else:
+#                     DayLocation.objects.create(
+#                         day=day,
+#                         sequence=item.get("sequence", 1),
+#                         latitude=item["latitude"],
+#                         longitude=item["longitude"],
+#                         radius=item.get("radius", 100),
+#                         description=item.get("description", "")
+#                     )
 
-        return JsonResponse({"status": "ok", "itinerary_id": idea.id})
+#         return JsonResponse({"status": "ok", "itinerary_id": idea.id})
 
-    except Exception as e:
-        logger.error("Error Updating Itinerary Idea: %s", str(e), exc_info=True)
-        return JsonResponse({"error": "Error Updating Itinerary Idea"}, status=500)
+#     except Exception as e:
+#         logger.error("Error Updating Itinerary Idea: %s", str(e), exc_info=True)
+#         return JsonResponse({"error": "Error Updating Itinerary Idea"}, status=500)
 
 @login_required
 @require_POST
@@ -4392,7 +4410,7 @@ def ollama_job_detail(request,pk):
         'ollamajob': ollamajob, 
         })
 
-@login_required
+@is_in_tribe
 def set_day_vibe(request, dayprogram_id):
     dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
     tripper    = get_object_or_404(Tripper, user=request.user)
@@ -4478,7 +4496,7 @@ def itinerary_notes_list(request, pk):
         ]
     })
 
-@login_required
+@is_in_tribe
 def create_poll(request, trip_id, dayprogram_id=None):
     trip = get_object_or_404(Trip, id=trip_id)
     dayprogram = get_object_or_404(DayProgram, id=dayprogram_id) if dayprogram_id else None
@@ -4505,7 +4523,7 @@ def create_poll(request, trip_id, dayprogram_id=None):
     return JsonResponse({'error': 'POST only'}, status=405)
 
 
-@login_required
+@is_in_tribe
 def vote_poll(request, poll_id):
     poll    = get_object_or_404(Poll, id=poll_id)
     tripper = get_object_or_404(Tripper, user=request.user)
@@ -4528,7 +4546,7 @@ def vote_poll(request, poll_id):
     return JsonResponse({'error': 'POST only'}, status=405)
 
 
-@login_required
+@is_in_tribe
 def close_poll(request, poll_id):
     poll = get_object_or_404(Poll, id=poll_id)
     if request.user != poll.created_by:
@@ -4567,7 +4585,7 @@ def poll_results(poll, tripper):
     }
 
 
-@login_required
+@is_in_tribe
 def get_poll(request, poll_id):
     poll    = get_object_or_404(Poll, id=poll_id)
     tripper = get_object_or_404(Tripper, user=request.user)
@@ -4588,6 +4606,157 @@ def move_day_location(request, location_id):
                                    itineraryidea=location.day.itineraryidea)
         location.day = day
         location.save(update_fields=['day'])
+        return JsonResponse({'ok': True})
+
+    return JsonResponse({'error': 'POST only'}, status=405)
+
+@is_in_tribe
+def create_thing_to_do(request, trip_id, dayprogram_id=None):
+    trip = get_object_or_404(Trip, id=trip_id)
+    user_is_tripper = Tripper.objects.filter(name=request.user, trips=trip).exists()
+
+    if not user_is_tripper:
+        return redirect("tripapp:permission_denied")
+
+    dayprogram = None
+    if dayprogram_id:
+        dayprogram = get_object_or_404(DayProgram, id=dayprogram_id, trip=trip)
+
+    if request.method == 'POST':
+        form = ThingToDoForm(request.POST, trip=trip, dayprogram=dayprogram)
+        if form.is_valid():
+            thing = form.save(commit=False)
+            thing.trip = trip
+
+            if form.cleaned_data.get('assign_to_this_day') and dayprogram:
+                thing.assigned_date = dayprogram.tripdate
+
+            thing.save()
+
+            if thing.assigned_date and thing.has_coordinates:
+                point = Point.objects.create(
+                    name=thing.short_description,
+                    latitude=thing.latitude,
+                    longitude=thing.longitude,
+                    trip=trip,
+                    marker_type='default',
+                )
+                thing.point = point
+                thing.save(update_fields=['point'])
+                point.dayprograms.add(dayprogram)
+
+            if dayprogram:
+                return redirect("tripapp:dayprogram_detail", dayprogram_id=dayprogram.id)
+            return redirect("tripapp:trip_detail", slug=trip.slug)
+    else:
+        initial = {}
+        if dayprogram:
+            initial['assign_to_this_day'] = True
+            if dayprogram.overnight_location:
+                initial['overnight_location'] = dayprogram.overnight_location
+        form = ThingToDoForm(trip=trip, dayprogram=dayprogram, initial=initial)
+
+    return render(request, 'tripapp/create_thing_to_do.html', {
+        'trip': trip,
+        'dayprogram': dayprogram,
+        'form': form,
+    })
+
+@is_in_tribe
+def assign_thing_to_do(request, thing_id, dayprogram_id):
+    thing      = get_object_or_404(ThingToDo, id=thing_id)
+    dayprogram = get_object_or_404(DayProgram, id=dayprogram_id, trip=thing.trip)
+
+    if request.method == 'POST':
+        thing.assigned_date = dayprogram.tripdate
+        thing.save(update_fields=['assigned_date'])
+
+        # create Point in case of coordinates
+        if thing.has_coordinates and not thing.point:
+            point = Point.objects.create(
+                name=thing.short_description,
+                latitude=thing.latitude,
+                longitude=thing.longitude,
+                trip=thing.trip,
+                marker_type='default',
+            )
+            thing.point = point
+            thing.save(update_fields=['point'])
+
+        if thing.point:
+            thing.point.dayprograms.add(dayprogram)
+
+        return JsonResponse({'ok': True})
+
+    return JsonResponse({'error': 'POST only'}, status=405)
+
+
+@is_in_tribe
+def unassign_thing_to_do(request, thing_id):
+    thing = get_object_or_404(ThingToDo, id=thing_id)
+
+    if request.method == 'POST':
+        # Point delete
+        if thing.point:
+            thing.point.delete()
+            thing.point = None
+
+        thing.assigned_date = None
+        thing.save(update_fields=['assigned_date', 'point'])
+
+        return JsonResponse({'ok': True})
+
+    return JsonResponse({'error': 'POST only'}, status=405)
+
+from crispy_forms.utils import render_crispy_form
+
+@is_in_tribe
+def thing_to_do_list(request, trip_id):
+    trip = get_object_or_404(Trip, id=trip_id)
+    user_is_tripper = Tripper.objects.filter(name=request.user, trips=trip).exists()
+    if not user_is_tripper:
+        return redirect("tripapp:permission_denied")
+
+    things = ThingToDo.objects.filter(trip=trip).order_by('assigned_date', 'short_description')
+
+    return render(request, 'tripapp/thing_to_do_list.html', {
+        'trip': trip,
+        'things': things,
+    })
+
+
+@login_required
+def edit_thing_to_do(request, thing_id):
+    thing = get_object_or_404(ThingToDo, id=thing_id)
+    trip  = thing.trip
+    user_is_tripper = Tripper.objects.filter(name=request.user, trips=trip).exists()
+    if not user_is_tripper:
+        return JsonResponse({'error': 'Not allowed'}, status=403)
+
+    if request.method == 'POST':
+        form = ThingToDoForm(request.POST, instance=thing, trip=trip)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'ok': True})
+        return JsonResponse({'error': 'Invalid form', 'errors': form.errors}, status=400)
+
+    form = ThingToDoForm(instance=thing, trip=trip)
+    html = render_crispy_form(form)
+    return JsonResponse({'html': html})
+
+
+@login_required
+def delete_thing_to_do(request, thing_id):
+    thing = get_object_or_404(ThingToDo, id=thing_id)
+    trip  = thing.trip
+    user_is_tripper = Tripper.objects.filter(name=request.user, trips=trip).exists()
+    if not user_is_tripper:
+        return JsonResponse({'error': 'Not allowed'}, status=403)
+
+    if request.method == 'POST':
+        if thing.point:
+            thing.point.delete()
+        thing.delete()
         return JsonResponse({'ok': True})
 
     return JsonResponse({'error': 'POST only'}, status=405)

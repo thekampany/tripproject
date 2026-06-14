@@ -1,0 +1,150 @@
+{% extends "base_generic.html" %}
+{% load static %}
+{% load i18n %}
+{% block content %}
+
+<h2>{% trans "Things to do" %}</h2>
+<p><strong>{{ trip.name }}</strong></p>
+
+<a href="{% url 'tripapp:create_thing_to_do' trip.id %}" class="btn mb-3">+ {% trans "Add thing to do" %}</a>
+
+<ul id="things-list" class="things-list">
+    {% for thing in things %}
+    <li class="thing-row" data-thing-id="{{ thing.id }}">
+        <div class="thing-row-body" onclick="openEditPopup({{ thing.id }})">
+            <strong>{{ thing.short_description }}</strong>
+            {% if thing.assigned_date %}
+            <span class="thing-date">📅 {{ thing.assigned_date|date:"d M" }}</span>
+            {% else %}
+            <span class="thing-date hint">{% trans "Unassigned" %}</span>
+            {% endif %}
+            {% if thing.overnight_location %}
+            <span class="thing-overnight">🌙 {{ thing.overnight_location }}</span>
+            {% endif %}
+        </div>
+        <button class="thing-delete-btn" onclick="deleteThing({{ thing.id }}, this)" title="{% trans 'Delete' %}">×</button>
+    </li>
+    {% empty %}
+    <li class="hint">{% trans "No things to do yet." %}</li>
+    {% endfor %}
+</ul>
+
+<p class="mt-3"><a href="{% url 'tripapp:trip_detail' slug=trip.slug %}">&larr; {% trans "Trip" %}</a></p>
+
+<!-- Edit popup -->
+<div id="edit-popup-overlay" class="popup-overlay">
+    <div class="popup-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h3 style="margin:0;">{% trans "Edit thing to do" %}</h3>
+            <button onclick="closeEditPopup()" style="background:none;border:none;font-size:20px;cursor:pointer;">×</button>
+        </div>
+        <div id="edit-popup-form-container">
+            <p class="hint">{% trans "Loading…" %}</p>
+        </div>
+    </div>
+</div>
+
+<style>
+.things-list { list-style: none; padding: 0; margin: 0; }
+.thing-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px; margin-bottom: 6px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+.thing-row-body { flex: 1; cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
+.thing-row-body:hover { opacity: 0.8; }
+.thing-date { font-size: 12px; color: gray; }
+.thing-overnight { font-size: 12px; color: #a05000; }
+.thing-delete-btn {
+    background: none; border: none; color: #ccc; font-size: 18px;
+    cursor: pointer; padding: 0 6px; flex-shrink: 0;
+}
+.thing-delete-btn:hover { color: #e74c3c; }
+
+.popup-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(10,10,20,.45); backdrop-filter: blur(2px);
+    z-index: 9999; align-items: center; justify-content: center;
+}
+.popup-overlay.active { display: flex; }
+.popup-card {
+    background: var(--color-background, #fff);
+    border-radius: 14px; padding: 24px; width: 420px; max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 60px rgba(0,0,0,.3);
+}
+</style>
+
+<script>
+const CSRF = "{{ csrf_token }}";
+const EDIT_URL_BASE   = "/thing-to-do/";
+const DELETE_URL_BASE = "/thing-to-do/";
+
+async function openEditPopup(thingId) {
+    const overlay   = document.getElementById('edit-popup-overlay');
+    const container = document.getElementById('edit-popup-form-container');
+    overlay.classList.add('active');
+    container.innerHTML = '<p class="hint">{% trans "Loading…" %}</p>';
+
+    const res  = await fetch(`${EDIT_URL_BASE}${thingId}/edit/`);
+    const data = await res.json();
+    container.innerHTML = data.html;
+
+    const form = container.querySelector('form');
+    form.dataset.thingId = thingId;
+    form.addEventListener('submit', async e => {
+        e.preventDefault();
+        await saveEdit(form, thingId);
+    });
+
+    // Voeg save knop toe als die nog niet in de crispy layout zit
+    if (!form.querySelector('button[type=submit]')) {
+        const btn = document.createElement('button');
+        btn.type = 'submit';
+        btn.className = 'btn btn-dark mt-2';
+        btn.textContent = "{% trans 'Save' %}";
+        form.appendChild(btn);
+    }
+}
+
+async function saveEdit(form, thingId) {
+    const formData = new FormData(form);
+    formData.append('csrfmiddlewaretoken', CSRF);
+
+    const res  = await fetch(`${EDIT_URL_BASE}${thingId}/edit/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF },
+        body: formData
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+        location.reload();
+    } else {
+        alert('{% trans "Error saving — check the form." %}');
+    }
+}
+
+function closeEditPopup() {
+    document.getElementById('edit-popup-overlay').classList.remove('active');
+}
+document.getElementById('edit-popup-overlay').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeEditPopup();
+});
+
+async function deleteThing(thingId, btn) {
+    if (!confirm("{% trans 'Delete this thing to do?' %}")) return;
+
+    const res = await fetch(`${DELETE_URL_BASE}${thingId}/delete/`, {
+        method: 'POST', headers: { 'X-CSRFToken': CSRF }
+    });
+    if (res.ok) {
+        btn.closest('.thing-row').remove();
+    } else {
+        alert('{% trans "Error deleting." %}');
+    }
+}
+</script>
+
+{% endblock %}

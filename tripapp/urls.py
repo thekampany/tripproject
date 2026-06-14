@@ -159,4 +159,11 @@ urlpatterns = [
     path('poll/<int:poll_id>/close/', views.close_poll,  name='close_poll'),
     path('poll/<int:poll_id>/', views.get_poll,    name='get_poll'),
     path('daylocation/<int:location_id>/move/', views.move_day_location, name='move_day_location'),
+    path('trip/<int:trip_id>/thing-to-do/create/',  views.create_thing_to_do, name='create_thing_to_do'),
+    path('trip/<int:trip_id>/dayprogram/<int:dayprogram_id>/thing-to-do/create/', views.create_thing_to_do, name='create_thing_to_do_for_day'),
+    path('trip/<int:trip_id>/things-to-do/',           views.thing_to_do_list,    name='thing_to_do_list'),
+    path('thing-to-do/<int:thing_id>/assign/<int:dayprogram_id>/',  views.assign_thing_to_do,   name='assign_thing_to_do'),
+    path('thing-to-do/<int:thing_id>/unassign/',   views.unassign_thing_to_do, name='unassign_thing_to_do'),
+    path('thing-to-do/<int:thing_id>/edit/',           views.edit_thing_to_do,    name='edit_thing_to_do'),
+    path('thing-to-do/<int:thing_id>/delete/',         views.delete_thing_to_do,  name='delete_thing_to_do'),
     ]

@@ -18,6 +18,7 @@ from .models import TripExpense
 from .models import TripBudget
 from .models import ScheduledItem
 from .models import TripperDocument
+from .models import ThingToDo
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
@@ -294,6 +295,9 @@ class QuestionForm(forms.ModelForm):
                 models.Q(level='tribal', tribe=tribe)
             )
 
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Row, Column, Submit, HTML
+
 class PointForm(forms.ModelForm):
     MARKER_TYPE_CHOICES = [
         ('default', 'Default'),
@@ -316,16 +320,30 @@ class PointForm(forms.ModelForm):
 
     class Meta:
         model = Point
-        fields = ['name', 'latitude', 'longitude', 'dayprograms','marker_type']
+        fields = ['name', 'latitude', 'longitude', 'dayprograms', 'marker_type']
         widgets = {
             'dayprograms': forms.CheckboxSelectMultiple()
         }
+
     def __init__(self, *args, **kwargs):
         trip = kwargs.pop('trip', None)
         super(PointForm, self).__init__(*args, **kwargs)
         if trip:
             self.fields['dayprograms'].queryset = DayProgram.objects.filter(trip=trip).order_by('tripdate')
 
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            'name',
+            Row(
+                Column('latitude', css_class='col-md-6'),
+                Column('longitude', css_class='col-md-6'),
+            ),
+            HTML('<label><input type="checkbox" id="toggle-address" checked> {}</label>'.format(_("Lookup via address"))),
+            'address',
+            'marker_type',
+            'dayprograms',
+            Submit('submit', _('Save Point'), css_class='btn'),
+        )
 
 class BadgeAssignmentForm(forms.ModelForm):
     class Meta:
@@ -624,3 +642,57 @@ class TripBudgetForm(forms.ModelForm):
     class Meta:
         model = TripBudget
         fields = ['category', 'amount',  'currency']
+
+
+class ThingToDoForm(forms.ModelForm):
+    assign_to_this_day = forms.BooleanField(required=False, initial=False, label=_("Assign to this day"))
+
+    class Meta:
+        model = ThingToDo
+        fields = ['short_description', 'more_info', 'latitude', 'longitude', 'overnight_location']
+        widgets = {
+            'more_info': forms.Textarea(attrs={'rows': 4}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        trip = kwargs.pop('trip', None)
+        dayprogram = kwargs.pop('dayprogram', None)
+        super().__init__(*args, **kwargs)
+        self.fields['short_description'].validators.append(MaxLengthValidator(50))
+
+        if not dayprogram:
+            del self.fields['assign_to_this_day']
+
+        if trip:
+            locations = (
+                DayProgram.objects
+                .filter(trip=trip)
+                .exclude(overnight_location__isnull=True)
+                .exclude(overnight_location='')
+                .values_list('overnight_location', flat=True)
+                .distinct()
+                .order_by('overnight_location')
+            )
+            self.fields['overnight_location'] = forms.ChoiceField(
+                choices=[('', '---------')] + [(loc, loc) for loc in locations],
+                required=False
+            )
+
+        layout_fields = [
+            'short_description',
+            'more_info',
+            Row(
+                Column('latitude', css_class='form-group col-md-6 mb-0'),
+                Column('longitude', css_class='form-group col-md-6 mb-0'),
+                css_class='form-row'
+            ),
+            HTML('<div id="address-section" class="address-field"><label><input type="checkbox" id="toggle-address" checked> {}</label><div id="address-field-container"><input type="text" id="id_address" placeholder="Enter address..."><div id="address-results"></div></div></div>'.format(_("Lookup via address"))),
+            'overnight_location',
+        ]
+        if dayprogram:
+            layout_fields.append('assign_to_this_day')
+
+        layout_fields.append(Submit('submit', _('Save'), css_class='btn'))
+
+        self.helper = FormHelper()
+        self.helper.layout = Layout(*layout_fields)

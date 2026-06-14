@@ -248,6 +248,7 @@
             </a>
             <ul class="dropdown-menu custom-dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                 <li><a class="dropdown-item" href="{% url 'tripapp:trip_checklist' trip.slug  %}">CheckPackList</a></li>
+                <li><a class="dropdown-item" href="{% url 'tripapp:create_thing_to_do' trip.id %}">{% trans "Add thing to do" %}</a></li>
                 {% if tripper %}
                     {% if trip.use_expenses %}
                     <li><a class="dropdown-item" href="{% url 'tripapp:trip_expenses_list' trip.id %}">{% trans "Expenses" %}</a></li>

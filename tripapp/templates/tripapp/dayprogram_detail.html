@@ -38,7 +38,7 @@
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
         padding: 16px; 
         min-width: 300px;
-        max-width: 560px; 
+        max-width: 100%; 
         flex: 1; 
     }
 
@@ -274,8 +274,11 @@
                     <li><a class="dropdown-item" href="{% url 'tripapp:add_expense' dayprogram.trip.id logged_on_tripper.id %}?next=dayprogram_detail&dayprogram_id={{ dayprogram.id }}">...{% trans "Expense" %}</a></li>
                     {% endif %}
                 {% endif %}
-                <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#suggestionModal">...{% trans "Suggestion" %}</a></li>
+                {% if user.username not in trippers_names %}
+                    <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#suggestionModal">...{% trans "Suggestion" %}</a></li>
+                {% endif %}
                 {% if user.username in trippers_names %}
+                    <li><a class="dropdown-item" href="{% url 'tripapp:create_thing_to_do_for_day' dayprogram.trip.id dayprogram.id %}">...{% trans "Thing to do" %}</a></li>
                     <li><a class="dropdown-item" href="{% url 'tripapp:edit_dayprogram' dayprogram.id %}">...Info</a></li>
                     <li><a class="dropdown-item" href="{% url 'tripapp:dayprogram_questions' dayprogram.id %}">...{% trans "Question" %}</a></li>
                     <li><a class="dropdown-item" href="{% url 'tripapp:add_scheduled_item' dayprogram.id %}">...{% trans "Scheduled Item" %}</a></li>
@@ -298,11 +301,26 @@
 
     <div class="dayprogramcard-container">
 
-        {% if dayprogram.necessary_info %}
+        {% if dayprogram.necessary_info  or selected_things %}
         <div class="dayprogramcard">
             <p>
                 <span class="dayprogramcard-title">{% trans "Information for Today" %}</span>
                 {{ dayprogram.necessary_info|linebreaks }}
+            </p>
+            <p>
+                <ul id="selected-things" class="things-list" data-dayprogram="{{ dayprogram.id }}">
+                    {% for thing in selected_things %}
+                    <li class="thing-item selected" draggable="true" data-thing-id="{{ thing.id }}">
+                        <div class="thing-body">
+                            <strong>{{ thing.short_description }}</strong>
+                            {% if thing.more_info %}
+                            <div class="thing-info">{{ thing.more_info|safe }}</div>
+                            {% endif %}
+                        </div>
+                        <button class="thing-unassign-btn" data-thing-id="{{ thing.id }}" title="{% trans 'Unassign' %}">×</button>
+                    </li>
+                    {% endfor %}
+                </ul>
             </p>
         </div>
         {% endif %}
@@ -311,6 +329,28 @@
             <p>
                 <span class="dayprogramcard-title">{% trans "Ideas for Today" %}</span>
                 {{ dayprogram.possible_activities|linebreaks }}
+            </p>
+            <p>
+                {% if available_things %}
+                <hr>
+                <p class="hint mb-2">{% trans "Collected Things To Do:" %}</p>
+                <ul id="available-things" class="things-list things-pool">
+                    {% for thing in available_things %}
+                    <li class="thing-item" draggable="true" data-thing-id="{{ thing.id }}">
+                        <div class="thing-body">
+                            <strong>{{ thing.short_description }}</strong>
+                            {% if thing.more_info %}
+                            <div class="thing-info">{{ thing.more_info|safe }}</div>
+                            {% endif %}
+                            {% if thing.overnight_location %}
+                            <span class="thing-overnight">🌙 {{ thing.overnight_location }}</span>
+                            {% endif %}
+                        </div>
+                        <button class="thing-assign-btn" data-thing-id="{{ thing.id }}" title="{% trans 'Select for this day' %}">+</button>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
             </p>
         </div>
         {% else %}
@@ -322,11 +362,53 @@
                             <span class="dayprogramcard-title">{% trans "Ideas for Today" %}</span>
                             <a href="#" id="suggest-btn" data-url="{% url 'tripapp:dayprogram-suggestions-generate' dayprogram.id %}">✨ {% trans "Generate suggestions for me" %}</a>
                         </p>
+
+                        <p>
+                            {% if available_things %}
+                            <hr>
+                            <p class="hint mb-2">{% trans "Collected Things To Do:" %}</p>
+                            <ul id="available-things" class="things-list things-pool">
+                                {% for thing in available_things %}
+                                <li class="thing-item" draggable="true" data-thing-id="{{ thing.id }}">
+                                    <div class="thing-body">
+                                        <strong>{{ thing.short_description }}</strong>
+                                        {% if thing.more_info %}
+                                        <div class="thing-info">{{ thing.more_info|safe }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <button class="thing-assign-btn" data-thing-id="{{ thing.id }}" title="{% trans 'Select for this day' %}">+</button>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </p>
+
                     </div>
                     {% endif %}
                 {% endif %}
             {% endif %}
         {% endif %}
+
+        <style>
+        .things-list { list-style: none; padding: 0; margin: 0; }
+        .thing-item {
+            display: flex; align-items: flex-start; gap: 8px;
+            padding: 8px; margin-bottom: 6px;
+            border-radius: 6px; cursor: grab;
+        }
+        .thing-item.selected { background: rgba(34,197,94,.08); }
+        .things-pool .thing-item { border: 1px solid var(--border-color); }
+        .thing-body { flex: 1; font-size: 14px; }
+        .thing-info { font-size: 12px; color: gray; margin-top: 4px; }
+        .thing-overnight { font-size: 11px; color: #a05000; display: block; margin-top: 4px; }
+        .thing-assign-btn, .thing-unassign-btn {
+            background: none; border: none; cursor: pointer;
+            font-size: 16px; color: #999; flex-shrink: 0; padding: 0 4px;
+        }
+        .thing-assign-btn:hover { color: #2a7a4b; }
+        .thing-unassign-btn:hover { color: #e74c3c; }
+        .thing-item.dragging { opacity: 0.4; }
+        </style>
 
         {% if scheduled_items %}
         <div class="dayprogramcard">
@@ -938,6 +1020,59 @@ async function closePoll(pollId) {
     });
     if (res.ok) location.reload();
 }
+</script>
+
+<script>
+const ASSIGN_URL_BASE   = "/thing-to-do/";
+const UNASSIGN_URL_BASE = "/thing-to-do/";
+const DAYPROGRAM_ID     = "{{ dayprogram.id }}";
+
+async function assignThing(thingId) {
+    const res = await fetch(`${ASSIGN_URL_BASE}${thingId}/assign/${DAYPROGRAM_ID}/`, {
+        method: 'POST', headers: { 'X-CSRFToken': CSRF }
+    });
+    if (res.ok) location.reload();
+}
+
+async function unassignThing(thingId) {
+    const res = await fetch(`${UNASSIGN_URL_BASE}${thingId}/unassign/`, {
+        method: 'POST', headers: { 'X-CSRFToken': CSRF }
+    });
+    if (res.ok) location.reload();
+}
+
+document.querySelectorAll('.thing-assign-btn').forEach(btn => {
+    btn.addEventListener('click', () => assignThing(btn.dataset.thingId));
+});
+document.querySelectorAll('.thing-unassign-btn').forEach(btn => {
+    btn.addEventListener('click', () => unassignThing(btn.dataset.thingId));
+});
+
+// Drag & drop tussen de twee lijsten
+let draggedThingId = null;
+
+document.querySelectorAll('.thing-item').forEach(item => {
+    item.addEventListener('dragstart', () => {
+        draggedThingId = item.dataset.thingId;
+        item.classList.add('dragging');
+    });
+    item.addEventListener('dragend', () => item.classList.remove('dragging'));
+});
+
+const selectedList = document.getElementById('selected-things');
+const availableList = document.getElementById('available-things');
+
+[selectedList, availableList].forEach(list => {
+    if (!list) return;
+    list.addEventListener('dragover', e => e.preventDefault());
+    list.addEventListener('drop', e => {
+        e.preventDefault();
+        if (!draggedThingId) return;
+        if (list === selectedList) assignThing(draggedThingId);
+        else unassignThing(draggedThingId);
+        draggedThingId = null;
+    });
+});
 </script>
 
 </html>
