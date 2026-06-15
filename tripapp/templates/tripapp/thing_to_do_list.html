@@ -98,14 +98,6 @@ async function openEditPopup(thingId) {
         await saveEdit(form, thingId);
     });
 
-    // Voeg save knop toe als die nog niet in de crispy layout zit
-    if (!form.querySelector('button[type=submit]')) {
-        const btn = document.createElement('button');
-        btn.type = 'submit';
-        btn.className = 'btn btn-dark mt-2';
-        btn.textContent = "{% trans 'Save' %}";
-        form.appendChild(btn);
-    }
 }
 
 async function saveEdit(form, thingId) {

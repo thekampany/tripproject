@@ -468,8 +468,6 @@ msgid "Add poll"
 msgstr "Poll toevoegen"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:749
-#, fuzzy
-#| msgid "Question"
 msgid "Question…"
 msgstr "Vraag"
 
@@ -487,7 +485,7 @@ msgstr "Optie toevoegen"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:757
 msgid "Create poll"
-msgstr "Maak Trip aan"
+msgstr "Maak poll"
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:780
 msgid "Badge Claimed!"
@@ -897,7 +895,7 @@ msgstr "Ding om te doen"
 
 #: tripapp/templates/tripapp/thing_to_do_list.html:19
 msgid "Unassigned"
-msgstr "Losgekoppeld"
+msgstr "Niet aan een dag gekoppeld"
 
 #: tripapp/templates/tripapp/thing_to_do_list.html:28
 msgid "No things to do yet."
