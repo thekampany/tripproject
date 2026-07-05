@@ -1,7 +1,5 @@
 #!/bin/sh
 
-/usr/src/app/wait-for-it.sh db:5432 --timeout=30 --strict -- echo "Database is up"
-
 python manage.py migrate --noinput
 python manage.py collectstatic --noinput
 python manage.py seed_global_badges
@@ -49,14 +47,6 @@ for func, name in tasks:
     else:
         print(f"Scheduled task '{name}' already exists.")
 EOF
-
-
-if pgrep -f "python manage.py qcluster" > /dev/null; then
-    echo "qcluster is already running"
-else
-    echo "Starting qcluster..."
-    python manage.py qcluster &
-fi
 
 
 exec "$@"

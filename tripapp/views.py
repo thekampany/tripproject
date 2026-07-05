@@ -932,7 +932,7 @@ def trip_tripper_bingocard(request, trip_id):
         answer_count=Count('bingoanswer', filter=Q(bingoanswer__bingocard__trip=trip))
     ).order_by('-answer_count')
     trippers_names = [tripper.name for tripper in trippers_on_this_trip]
-    trip_active = trip.date_to >= timezone.now().date()
+    trip_active = trip.date_to is not None and trip.date_to >= timezone.now().date()
 
     return render(request, 'tripapp/trip_bingocard.html', {
         'trip': trip,
@@ -1839,7 +1839,7 @@ def trip_checklist(request,slug):
     job       = checklist.suggestion_job
     job_status = job.status if job else "none"
 
-    trip_active = trip.date_to >= timezone.now().date()
+    trip_active = trip.date_to is not None and trip.date_to >= timezone.now().date()
 
     return render(request, 'tripapp/trip_checklist.html', {
         'trip': trip,

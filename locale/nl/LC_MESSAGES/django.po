@@ -259,9 +259,12 @@ msgstr "Organiseer Trip"
 
 #: tripapp/templates/tripapp/create_thing_to_do.html:35
 #: tripapp/templates/tripapp/thing_to_do_list.html:9
-#: tripapp/templates/tripapp/trip_detail.html:251
 msgid "Add thing to do"
 msgstr "Ding om te doen toevoegen"
+
+#: tripapp/templates/tripapp/trip_detail.html:251
+msgid "Things to do"
+msgstr "Dingen om te doen"
 
 #: tripapp/templates/tripapp/create_thing_to_do.html:40
 #: tripapp/templates/tripapp/thing_to_do_list.html:32

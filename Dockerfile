@@ -9,8 +9,6 @@ COPY . .
 
 WORKDIR /usr/src/app
 
-ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /usr/src/app/wait-for-it.sh
-RUN chmod +x /usr/src/app/wait-for-it.sh
 COPY save_version.sh /usr/src/app/save_version.sh
 RUN chmod +x /usr/src/app/save_version.sh
 RUN mkdir -p /usr/src/app/media/exports /usr/src/app/staticfiles && chmod -R 777 /usr/src/app/media
@@ -18,7 +16,7 @@ RUN mkdir -p /usr/src/app/media/exports /usr/src/app/staticfiles && chmod -R 777
 ENV DJANGO_SETTINGS_MODULE=tripproject.settings
 ENV PYTHONUNBUFFERED=1
 
-RUN apt-get update && apt-get install -y procps
+RUN apt-get update && apt-get install -y procps wget && rm -rf /var/lib/apt/lists/*
 
 EXPOSE 8000
 

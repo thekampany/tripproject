@@ -200,8 +200,10 @@ Q_CLUSTER = {
     'workers': 4,
     'recycle': 500,
     'timeout': 60,
+    'retry': 90,
+    'max_attempts': 2,
     'scheduler': 'django_q.schedule.Schedule',
-    'orm': 'default'  # Gebruik de Django ORM als broker
+    'orm': 'default'
 }
 
 

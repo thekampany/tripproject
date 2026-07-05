@@ -9,8 +9,31 @@ services:
     env_file:
       - .env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     container_name: trippanion_web
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  qcluster:
+    image: thekampany/trippanion_web:latest
+    entrypoint: []
+    container_name: trippanion_qcluster
+    command: python manage.py qcluster
+    init: true
+    restart: unless-stopped
+    env_file:
+     - .env
+    volumes:
+     - media_volume:/usr/src/app/media
+    depends_on:
+      web:
+        condition: service_healthy
 
   nginx:
     image: thekampany/trippanion_nginx:latest
@@ -22,6 +45,7 @@ services:
       - media_volume:/usr/src/app/media
     depends_on:
       - web
+    restart: unless-stopped
 
   db:
     image: postgres:13
@@ -32,6 +56,13 @@ services:
       POSTGRES_DB: tripappdb
       POSTGRES_USER: tripappuser
       POSTGRES_PASSWORD: tripapppassword
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tripappuser -d tripappdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 
 volumes:
   static_volume:
