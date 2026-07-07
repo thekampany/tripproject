@@ -8,7 +8,12 @@
         {% csrf_token %}
         {{ form|crispy }}
         <button type="submit" class="btn">Save changes</button>
+        <input type="hidden" name="next" value="{{ next }}">
     </form>
     <br>
-    <a href="{% url 'tripapp:trip_points' trip.id %}">Cancel</a>
+    {% if next %}
+        <a href="{{ next }}">Cancel</a>
+    {% else %}
+        <a href="{% url 'tripapp:trip_points' trip.id %}">Cancel</a>
+    {% endif %}
 {% endblock %}

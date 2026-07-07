@@ -1269,6 +1269,7 @@ def add_point(request, trip_id):
 def edit_point(request, trip_id, point_id):
     trip = get_object_or_404(Trip, id=trip_id)
     point = get_object_or_404(Point, id=point_id)
+    next_url = request.GET.get("next") or request.POST.get("next")
 
     if request.method == 'POST':
         form = PointForm(request.POST, instance=point, trip=trip)
@@ -1278,28 +1279,32 @@ def edit_point(request, trip_id, point_id):
     else:
         form = PointForm(instance=point, trip=trip)
 
-    return render(request, 'tripapp/edit_point.html', {'form': form, 'trip': trip})
+    return render(request, 'tripapp/edit_point.html', {'form': form, 'trip': trip, 'next': next_url})
 
 @tripper_required
 def delete_point(request, trip_id, point_id):
-    if request.method == 'POST':
-       trip = get_object_or_404(Trip, id=trip_id)
-       point = get_object_or_404(Point, id=point_id)
-       point.delete()
-       return redirect('tripapp:trip_points', trip_id=trip.id)
-    else:
-       return redirect('tripapp:trip_points', trip_id=trip.id)
+    trip = get_object_or_404(Trip, id=trip_id)
 
+    next_url = request.POST.get("next") or request.GET.get("next")
+
+    if request.method == "POST":
+        point = get_object_or_404(Point, id=point_id)
+        point.delete()
+
+    return redirect(next_url or 'tripapp:trip_points', trip_id=trip.id)
 
 @is_in_tribe
 def trip_points(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
+    tripper = Tripper.objects.filter(name=request.user, trips=trip).first()
+    is_admin = tripper.is_trip_admin if tripper else False
     points = trip.points.all()
     routes = Route.objects.filter(dayprogram__trip=trip)
     return render(request, 'tripapp/trip_points.html', {
         'trip': trip,
         'points': points,
         'routes': routes,
+        'is_admin': is_admin,
     })
 
 @is_in_tribe

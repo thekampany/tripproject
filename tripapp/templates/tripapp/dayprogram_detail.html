@@ -301,11 +301,14 @@
 
     <div class="dayprogramcard-container">
 
-        {% if dayprogram.necessary_info  or selected_things %}
+        {% if dayprogram.necessary_info  or selected_things or dayprogram.overnight_location %}
         <div class="dayprogramcard">
-            <p>
+            {% if dayprogram.necessary_info %}
+                <p>
                 <span class="dayprogramcard-title">{% trans "Information for Today" %}</span>
                 {{ dayprogram.necessary_info|linebreaks }}
+                </p>
+            {% endif %}
             </p>
             <p>
                 <ul id="selected-things" class="things-list" data-dayprogram="{{ dayprogram.id }}">
@@ -322,6 +325,12 @@
                     {% endfor %}
                 </ul>
             </p>
+            {% if dayprogram.overnight_location %}
+                <p>
+                    <span class="dayprogramcard-title">{% trans "Overnight Location:" %}</span>
+                    {{ dayprogram.overnight_location }}
+                </p>
+            {% endif %}
         </div>
         {% endif %}
         {% if dayprogram.possible_activities %}

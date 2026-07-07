@@ -11,7 +11,7 @@
             <tr>
                 <th>{% trans "Point description" %}</th>
                 <th>Day Programs</th>
-                <th>Delete</th>
+                <th>{% if is_admin %}Delete{% endif %}</th>
             </tr>
         </thead>
         <tbody>
@@ -27,7 +27,7 @@
                         {% endfor %}
                     </td>
                     <td>
-                        {% if user.is_staff %}
+                        {% if is_admin %}
                         <form action="{% url 'tripapp:delete_point' trip.id point.id %}" method="post" style="display:inline;">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this point?');">Delete</button>
@@ -47,7 +47,7 @@
             <tr>
                 <th>Route Description</th>
                 <th>Day Program</th>
-                <th>Delete</th>
+                <th>{% if is_admin %}Delete{% endif %}</th>
             </tr>
         </thead>
         <tbody>
@@ -58,7 +58,7 @@
                         {{ route.dayprogram.tripdate|date:"d-M" }}
                     </td>
                     <td>
-                        {% if user.is_staff %}
+                        {% if is_admin %}
                         <form action="{% url 'tripapp:delete_route' trip.id route.id %}" method="post" style="display:inline;">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this point?');">Delete</button>

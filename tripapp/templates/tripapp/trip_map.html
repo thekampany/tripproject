@@ -82,12 +82,13 @@
         var points = [
             {% for point in points %}
                 {
-                    "name": "{{ point.name }}",
+                    "id": {{ point.id }},
+                    "name": "{{ point.name|escapejs }}",
                     "coords": [{{ point.latitude }}, {{ point.longitude }}],
                     "days": "{% for dayprogram in point.dayprograms.all %}{{ dayprogram.tripdate|date:'j F' }}{% if not forloop.last %}, {% endif %}{% endfor %}".trim(),
                     "marker_type": "{{ point.marker_type }}"
                 },
-  
+
             {% endfor %}
         ];
         var projected_itinerary_points = [
@@ -123,6 +124,16 @@
             {% endfor %}
         ];
 
+        const editPointUrlTemplate = "{% url 'tripapp:edit_point' trip_id=trip.id point_id=999999 %}";
+        const deletePointUrlTemplate = "{% url 'tripapp:delete_point' trip_id=trip.id point_id=999999 %}";
+        const currentPageUrl = encodeURIComponent(window.location.pathname);
+
+        function editPointUrl(id) {
+            return editPointUrlTemplate.replace('999999', id) + '?next=' + currentPageUrl;
+        }
+        function deletePointUrl(id) {
+            return deletePointUrlTemplate.replace('999999', id);
+        }
 
         
         // Create a feature group to store all the markers
@@ -132,8 +143,6 @@
 
         // Add markers to the feature group
         points.forEach(function(point) {
-            var popupContent = `<div class="custom-popup"><h4>${point.name}</h4></div>`;
-            var marker;
             console.log('marker_type:', point.marker_type);
             console.log('coords:', point.coords);
 
@@ -143,8 +152,23 @@
                 return; 
             }
 
+            var popupContent = `
+                <div class="custom-popup p-2 leaflet-custom-popup" style="min-width:220px;">
+                    <h4>${point.name}</h4>
+                    ${point.days ? `<p style="font-size:0.85em; color:#666;">${point.days}</p>` : ''}
+                    <div class="d-flex justify-content-between">
+                        <a href="${editPointUrl(point.id)}" class="btn btn-primary" style="padding:10px 20px; font-size:16px;">Edit</a>
+                        <form method="post" action="${deletePointUrl(point.id)}" onsubmit="return confirm('Weet je zeker dat je dit punt wilt verwijderen?');" style="display:inline;">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="${document.getElementById('map').dataset.csrf}">
+                            <input type="hidden" name="next" value="${window.location.pathname}">
+                            <button type="submit" class="btn btn-secondary" style="padding:10px 20px; font-size:16px;">Delete</button>
+                        </form>
+                    </div>
+                </div>`;
+
+            var marker;
             if (point.marker_type === 'bed') {
-               marker = L.marker(point.coords, {icon: bedIcon}).bindPopup(popupContent);
+            marker = L.marker(point.coords, {icon: bedIcon}).bindPopup(popupContent);
             } else if (point.marker_type === 'restaurant') {
                 marker = L.marker(point.coords, {icon: restaurantIcon}).bindPopup(popupContent);
             } else {
@@ -152,6 +176,7 @@
             }            
             markers.addLayer(marker);
         });
+
          // visited locations
         locations.forEach(function(location) {
             var popupContent = `<div class="custom-popup"><h4>${location.timestamp}</h4></div>`;

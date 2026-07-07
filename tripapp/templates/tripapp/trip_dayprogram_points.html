@@ -876,7 +876,7 @@
         // Add markers from Django context
         var points = [
             {% for point in points %}
-                { "name": "{{ point.name }}", "coords": [{{ point.latitude }}, {{ point.longitude }}], "marker_type": "{{ point.marker_type }}"  },
+                { "id": {{ point.id }}, "name": "{{ point.name|escapejs }}", "coords": [{{ point.latitude }}, {{ point.longitude }}], "marker_type": "{{ point.marker_type }}" },
             {% endfor %}
         ];
         var locations = [
@@ -901,6 +901,18 @@
             {% endfor %}
         ];
 
+        const editPointUrlTemplate = "{% url 'tripapp:edit_point' trip_id=dayprogram.trip.id point_id=999999 %}";
+        const deletePointUrlTemplate = "{% url 'tripapp:delete_point' trip_id=dayprogram.trip.id point_id=999999 %}";
+
+        function editPointUrl(id) {
+            return editPointUrlTemplate.replace('999999', id)
+            + '?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+        }
+        function deletePointUrl(id) {
+            return deletePointUrlTemplate.replace('999999', id);
+        }
+
+
         // Create a feature group to store all the markers
         var markers = L.featureGroup();
         var locationsLayer = L.featureGroup();
@@ -908,24 +920,40 @@
 
         // Add markers to the feature group
         points.forEach(function(point) {
-            var popupContent = `<div class="custom-popup"><h4>${point.name}</h4></div>`;
-            var marker;
-
-            if (!point.coords || !Array.isArray(point.coords) || point.coords.length !== 2 || 
+            if (!point.coords || !Array.isArray(point.coords) || point.coords.length !== 2 ||
                 typeof point.coords[0] !== 'number' || typeof point.coords[1] !== 'number') {
                 console.warn('Invalid coördinates for point:', point);
-                return; 
+                return;
             }
-            if (point.marker_type === 'bed') {
-               marker = L.marker(point.coords, {icon: bedIcon}).bindPopup(popupContent);
-            } else if (point.marker_type === 'restaurant') {
-                marker = L.marker(point.coords, {icon: restaurantIcon}).bindPopup(popupContent);
-            } else {
-                marker = L.marker(point.coords, {icon: defaultIcon}).bindPopup(popupContent);
-            }            
+
+            var icon = point.marker_type === 'bed' ? bedIcon
+                    : point.marker_type === 'restaurant' ? restaurantIcon
+                    : defaultIcon;
+
+            var popupContent = `
+                <div class="p-2 leaflet-custom-popup" style="min-width:250px;">
+                    <h4>${point.name}</h4>
+                    <div class="d-flex justify-content-between">
+                        <a href="${editPointUrl(point.id)}" class="btn btn-primary" style="padding:10px 20px; font-size:16px">Edit</a>
+                        <form method="post" action="${deletePointUrl(point.id)}" onsubmit="return confirm('Are you sure?');" style="display:inline;">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="${document.getElementById('map').dataset.csrf}">
+                            <input type="hidden" name="next" value="${window.location.pathname + window.location.search}">
+                            <button type="submit" class="btn btn-secondary" style="padding:10px 20px; font-size:16px;">Delete</button>
+                        </form>
+                    </div>
+                </div>`;
+
+            var marker = L.marker(point.coords, {icon: icon}).bindPopup(popupContent, {
+                maxWidth: 300,
+                closeButton: true,
+                autoClose: false,
+                closeOnClick: false
+            });
+
             markers.addLayer(marker);
-        });
-        
+        });        
+
+
         // visited locations
         locations.forEach(function(location) {
             var popupContent = `<div class="custom-popup"><h4>${location.timestamp}</h4></div>`;

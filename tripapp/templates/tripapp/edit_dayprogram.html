@@ -26,13 +26,54 @@
         {{ form.description|as_crispy_field }}
         {{ form.necessary_info|as_crispy_field }}
         {{ form.possible_activities|as_crispy_field }}
-        {{ form.overnight_point|as_crispy_field }}
-        {{ form.overnight_location|as_crispy_field }}
+        <div class="mb-3">
+            <label class="form-label"><strong>Overnight location</strong></label>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="overnight_mode" id="mode-point" value="point" checked>
+                <label class="form-check-label" for="mode-point">Existing point</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="overnight_mode" id="mode-text" value="text">
+                <label class="form-check-label" for="mode-text">Custom location</label>
+            </div>
+        </div>
+
+        <div id="overnight-point-field">
+            {{ form.overnight_point|as_crispy_field }}
+        </div>
+        <div id="overnight-location-field" style="display:none;">
+            {{ form.overnight_location|as_crispy_field }}
+        </div>
+
 
         <button type="submit" class="btn">Submit</button>
         <br><br>
     </form>
 
+<script>
+    function toggleOvernightFields() {
+        const isPoint = document.getElementById('mode-point').checked;
+        document.getElementById('overnight-point-field').style.display = isPoint ? 'block' : 'none';
+        document.getElementById('overnight-location-field').style.display = isPoint ? 'none' : 'block';
+        if (isPoint) {
+            document.querySelector('[name="overnight_location"]').value = '';
+        } else {
+            document.querySelector('[name="overnight_point"]').value = '';
+        }
+    }
+    document.getElementById('mode-point').addEventListener('change', toggleOvernightFields);
+    document.getElementById('mode-text').addEventListener('change', toggleOvernightFields);
+
+    // Bij laden: check welk veld al een waarde had (bij edit)
+    window.addEventListener('DOMContentLoaded', function() {
+        const pointField = document.querySelector('[name="overnight_point"]');
+        const textField = document.querySelector('[name="overnight_location"]');
+        if (textField && textField.value) {
+            document.getElementById('mode-text').checked = true;
+        }
+        toggleOvernightFields();
+    });
+</script>
 
 
     {% endblock %}

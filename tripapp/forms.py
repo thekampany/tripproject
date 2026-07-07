@@ -243,7 +243,7 @@ class DayProgramForm(forms.ModelForm):
     overnight_point = forms.ModelChoiceField(
         queryset=Point.objects.none(),
         required=False,
-        label='Choose optional overnight location',
+        label='Choose overnight location',
         help_text='Select existing location (type "bed")',
     )
 
@@ -254,7 +254,7 @@ class DayProgramForm(forms.ModelForm):
         widgets = {
             'tripdate': forms.DateInput(attrs={'type': 'date'}),
             'description': forms.TextInput(attrs={'maxlength': 50}),
-            'overnight_location': forms.TextInput(attrs={'placeholder': 'Or enter text'}),
+            'overnight_location': forms.TextInput(attrs={'placeholder': 'Enter description of your overnight stay'}),
         }
 
     def __init__(self, *args, **kwargs):
