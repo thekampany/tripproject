@@ -34,6 +34,10 @@ from .utils import distance_per_day
 from .utils import get_latest_github_version
 from .utils import is_update_available
 from .utils import get_response_language
+from .utils import reverse_geocode_country_code
+from .utils import get_travel_risk_alerts
+from .utils import alpha2_to_alpha3
+from .utils import haversine
 
 from django.db.models import Count, Q
 from django.db.models import Prefetch
@@ -539,6 +543,57 @@ def dayprogram_detail(request, dayprogram_id):
                 print(f"Error retrieving weather: {e}")
     # -------- End Weather --------
 
+    # -------- Travel risk --------
+    travel_risk_alerts = []
+    if dayprogram.tripdate in [date.today() + timedelta(days=i) for i in range(0, 2)]:
+        points = dayprogram.points.all()
+        if points.exists():
+            first_point = points.first()
+            alpha2_code = reverse_geocode_country_code(first_point.latitude, first_point.longitude)
+            # print(f"[travel_risk] geocode van point ({first_point.latitude}, {first_point.longitude}) -> {alpha2_code}")
+            if not alpha2_code:
+                alpha2_code = dayprogram.trip.get_first_country_code()
+                # print(f"[travel_risk] geocode leeg, fallback naar trip country: {alpha2_code}")
+        else:
+            alpha2_code = dayprogram.trip.get_first_country_code()
+            # print(f"[travel_risk] geen points, trip country: {alpha2_code}")
+
+        country_iso = alpha2_to_alpha3(alpha2_code)
+        # print(f"[travel_risk] alpha2 {alpha2_code} -> alpha3 {country_iso}")
+
+        if country_iso:
+            alerts_data = get_travel_risk_alerts(country_iso, "High")
+            if alerts_data and alerts_data.get('data'):
+                cutoff = timezone.now() - timedelta(days=14)
+                for alert in alerts_data['data']:
+                    event_date_str = alert.get('event_date')
+                    if not event_date_str:
+                        continue
+                    try:
+                        event_date = datetime.fromisoformat(event_date_str)
+                    except ValueError:
+                        continue
+                    if timezone.is_naive(event_date):
+                        event_date = timezone.make_aware(event_date, timezone.get_default_timezone())
+                    if event_date < cutoff:
+                        continue
+
+                    alert_lat = alert.get('latitude')
+                    alert_lon = alert.get('longitude')
+                    if alert_lat is None or alert_lon is None:
+                        continue
+                    if points:
+                        for point in points:
+                            distance = haversine(
+                                point.latitude, point.longitude, alert_lat, alert_lon
+                            )
+                            if distance <= 50:
+                                travel_risk_alerts.append(alert)
+                                break
+                    else:
+                        travel_risk_alerts.append(alert)
+    # -------- End Travel risk --------
+
     DEFAULT_VIBES = ['🏖️', '🏃', '🌧️', '🏛️', '🍽️', '🚗', '🎉']
     tripper   = Tripper.objects.filter(user=request.user).first()
     my_vibe   = DayVibe.objects.filter(dayprogram=dayprogram, tripper=tripper).first() if tripper else None
@@ -605,6 +660,7 @@ def dayprogram_detail(request, dayprogram_id):
           'my_vote_ids': my_vote_ids,
           'selected_things':   selected_things,
           'available_things':  available_things,
+          'travel_risk_alerts': travel_risk_alerts,
          })
 
 

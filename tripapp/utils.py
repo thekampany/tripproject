@@ -362,6 +362,24 @@ def reverse_geocode_area(latitude, longitude) -> str:
     except GeocoderTimedOut:
         return f"{latitude:.2f}, {longitude:.2f}"
 
+def reverse_geocode_country_code(latitude, longitude):
+    cache_key = f"geocode_country_{round(latitude, 3)}_{round(longitude, 3)}"
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached if cached != "NONE" else None
+
+    try:
+        location = geolocator.reverse((latitude, longitude), language="en", timeout=5)
+        if not location:
+            cache.set(cache_key, "NONE", 60 * 60 * 24 * 30)  # 30 dagen
+            return None
+        address = location.raw.get("address", {})
+        country_code = address.get("country_code")
+        result = country_code.upper() if country_code else None
+        cache.set(cache_key, result if result else "NONE", 60 * 60 * 24 * 30)  # 30 dagen
+        return result
+    except GeocoderTimedOut:
+        return None
 
 from math import radians, sin, cos, sqrt, atan2
 from django.db.models import Q
@@ -437,3 +455,39 @@ LANGUAGE_NAMES = {
 def get_response_language():
     code = getattr(settings, 'LANGUAGE_CODE', 'en')
     return LANGUAGE_NAMES.get(code, 'English')
+
+
+
+def get_travel_risk_alerts(country_iso, severity="High"):
+    cache_key = f"travel_risk_{country_iso}_{severity}"
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
+
+    url = (
+        "https://travelriskapi.com/api/v1/alerts"
+        f"?country_iso={country_iso}&severity={severity}"
+    )
+    headers = {
+        "x-api-key": settings.TRAVEL_RISK_API_KEY,
+    }
+    print(url)
+    try:
+        response = requests.get(url, headers=headers, timeout=5)
+        #print(response)
+        if response.status_code == 200:
+            data = response.json()
+            cache.set(cache_key, data, 1800) 
+            return data
+    except Exception as e:
+        print(f"Error retrieving travel risk alerts: {e}")
+    return None
+
+def alpha2_to_alpha3(alpha2_code):
+    if not alpha2_code:
+        return None
+    try:
+        country = pycountry.countries.get(alpha_2=alpha2_code.strip().upper())
+        return country.alpha_3 if country else None
+    except (KeyError, AttributeError):
+        return None

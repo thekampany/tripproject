@@ -35,6 +35,8 @@ OLLAMA_URL = os.getenv('OLLAMA_URL')
 OLLAMA_MODEL = os.getenv('OLLAMA_MODEL')
 OLLAMA_API_KEY = os.getenv('OLLAMA_API_KEY')
 
+TRAVEL_RISK_API_KEY = os.getenv('TRAVEL_RISK_API_KEY')
+
 TEMPERATURE_UNIT = os.getenv('TEMPERATURE_UNIT')
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
