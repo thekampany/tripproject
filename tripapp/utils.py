@@ -144,8 +144,9 @@ def generate_static_map(dayprogram):
     response = requests.get(request_url)
     if response.status_code == 200:
         filename = f"map_dayprogram_{dayprogram.id}.png"
-        dayprogram.map_image.save(filename, ContentFile(response.content)) 
-        dayprogram.save()
+        if dayprogram.map_image:
+            dayprogram.map_image.delete(save=False)
+        dayprogram.map_image.save(filename, ContentFile(response.content), save=True)
     else:
         logger.warning("Static map request failed with status %d", response.status_code)
 

@@ -430,16 +430,20 @@ if not Schedule.objects.filter(func='tripapp.tasks.fetch_and_store_immich_photos
 def update_dayprogram_maps():
     logs = []
     today = timezone.now().date()
-    relevant_dayprograms = DayProgram.objects.filter(tripdate__gte=today - timezone.timedelta(days=1))
+    horizon = today + timezone.timedelta(days=14)
+
+    relevant_dayprograms = DayProgram.objects.filter(
+        tripdate__gte=today - timezone.timedelta(days=1),
+        tripdate__lte=horizon,
+    )
     logs.append(f"Start generating static maps for {relevant_dayprograms.count()} relevant days")
 
     for dayprogram in relevant_dayprograms:
         logs.append(f"Generating map for DayProgram {dayprogram.id} on {dayprogram.tripdate}")
         generate_static_map(dayprogram)
 
-    logs.append(f"End Generating")
+    logs.append("End Generating")
     return "\n".join(logs)
-
 
 if not Schedule.objects.filter(func='tripapp.tasks.update_dayprogram_maps').exists():
     Schedule.objects.create(
