@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-14 20:36+0200\n"
+"POT-Creation-Date: 2026-07-14 22:00+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,15 +18,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: tripapp/forms.py:202
+#: tripapp/forms.py:203
 msgid "Your answer here..."
 msgstr "Typ hier je antwoord..."
 
-#: tripapp/forms.py:631
+#: tripapp/forms.py:342 tripapp/forms.py:690
+msgid "Lookup via address"
+msgstr "Zoek op adres"
+
+#: tripapp/forms.py:346
+msgid "Save Point"
+msgstr "Bewaar"
+
+#: tripapp/forms.py:649
 msgid "Assign to this day"
 msgstr "Toewijzen aan vandaagdag"
 
-#: tripapp/forms.py:688
+#: tripapp/forms.py:696
 #: tripapp/templates/tripapp/assign_markers_to_days.html:332
 #: tripapp/templates/tripapp/create_trip_brainstorm.html:211
 #: tripapp/templates/tripapp/create_trip_brainstorm.html:223
@@ -34,7 +42,6 @@ msgstr "Toewijzen aan vandaagdag"
 #: tripapp/templates/tripapp/map_markers_edit.html:231
 #: tripapp/templates/tripapp/map_markers_edit.html:243
 #: tripapp/templates/tripapp/map_markers_edit.html:260
-#: tripapp/templates/tripapp/thing_to_do_list.html:106
 msgid "Save"
 msgstr "Opslaan"
 
@@ -79,23 +86,19 @@ msgstr "Log Toevoegen"
 msgid "Save Log Entry"
 msgstr "Log Opslaan"
 
-#: tripapp/templates/tripapp/add_point.html:41
-msgid "Lookup via address"
-msgstr "Zoek op adres"
+#: tripapp/templates/tripapp/add_trippers.html:14
+msgid "Trippers on the trip"
+msgstr "Trippers op deze trip"
 
-#: tripapp/templates/tripapp/add_point.html:44
-msgid "Enter address..."
-msgstr "Vul hier adres in..."
+#: tripapp/templates/tripapp/add_trippers.html:35
+msgid "Tribe members"
+msgstr "Tribe leden"
 
-#: tripapp/templates/tripapp/add_point.html:53
-msgid "Save Point"
-msgstr "Bewaar"
+#: tripapp/templates/tripapp/add_trippers.html:54
+msgid "Invite members to the tribe"
+msgstr "Uitnodigen voor de Tribe"
 
-#: tripapp/templates/tripapp/add_trippers.html:13
-msgid "Add someone else? Invite them"
-msgstr "Iemand toevoegen? Nodig uit"
-
-#: tripapp/templates/tripapp/add_trippers.html:15
+#: tripapp/templates/tripapp/add_trippers.html:60
 msgid "Save Selected"
 msgstr "Bewaar Selectie"
 
@@ -262,10 +265,6 @@ msgstr "Organiseer Trip"
 msgid "Add thing to do"
 msgstr "Ding om te doen toevoegen"
 
-#: tripapp/templates/tripapp/trip_detail.html:251
-msgid "Things to do"
-msgstr "Dingen om te doen"
-
 #: tripapp/templates/tripapp/create_thing_to_do.html:40
 #: tripapp/templates/tripapp/thing_to_do_list.html:32
 #: tripapp/templates/tripapp/trip_checklist.html:113
@@ -349,7 +348,7 @@ msgid "Thing to do"
 msgstr ""
 
 #: tripapp/templates/tripapp/dayprogram_detail.html:283
-#: tripapp/templates/tripapp/dayprogram_detail.html:541
+#: tripapp/templates/tripapp/dayprogram_detail.html:570
 msgid "Question"
 msgstr "Vraag"
 
@@ -361,149 +360,151 @@ msgstr "Gepland Item"
 msgid "Link"
 msgstr "Koppeling"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:307
+#: tripapp/templates/tripapp/dayprogram_detail.html:328
 msgid "Information for Today"
 msgstr "Belangrijke Informatie"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:320
+#: tripapp/templates/tripapp/dayprogram_detail.html:343
 msgid "Unassign"
 msgstr "Loskoppelen"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:330
-#: tripapp/templates/tripapp/dayprogram_detail.html:362
+#: tripapp/templates/tripapp/dayprogram_detail.html:350
+msgid "Overnight Location:"
+msgstr "Overnachtings Locatie:"
+
+#: tripapp/templates/tripapp/dayprogram_detail.html:359
+#: tripapp/templates/tripapp/dayprogram_detail.html:391
 msgid "Ideas for Today"
 msgstr "Ideeen voor vandaag"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:336
-#: tripapp/templates/tripapp/dayprogram_detail.html:369
+#: tripapp/templates/tripapp/dayprogram_detail.html:365
+#: tripapp/templates/tripapp/dayprogram_detail.html:398
 msgid "Collected Things To Do:"
 msgstr "Verzamelde Dingen-om-te-doen:"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:349
-#: tripapp/templates/tripapp/dayprogram_detail.html:379
+#: tripapp/templates/tripapp/dayprogram_detail.html:378
+#: tripapp/templates/tripapp/dayprogram_detail.html:408
 msgid "Select for this day"
 msgstr "Jouw suggestie voor deze dag:"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:363
+#: tripapp/templates/tripapp/dayprogram_detail.html:392
 msgid "Generate suggestions for me"
 msgstr "genereer suggesties voor mij"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:415
+#: tripapp/templates/tripapp/dayprogram_detail.html:444
 msgid "Scheduled Items for Today"
 msgstr "Geplande Items"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:457
-#: tripapp/templates/tripapp/dayprogram_detail.html:503
+#: tripapp/templates/tripapp/dayprogram_detail.html:486
+#: tripapp/templates/tripapp/dayprogram_detail.html:532
 msgid "Link to travel document"
 msgstr "Koppeling naar document"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:483
-#, fuzzy
-#| msgid "Scheduled Items for Today"
+#: tripapp/templates/tripapp/dayprogram_detail.html:512
 msgid "Planned Routes for Today"
 msgstr "Geplande Routes"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:496
+#: tripapp/templates/tripapp/dayprogram_detail.html:525
 #: tripapp/templates/tripapp/trip_documents.html:25
 msgid "Documents and Links"
 msgstr "Documenten en Koppelingen"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:507
+#: tripapp/templates/tripapp/dayprogram_detail.html:536
 msgid "Download Document"
 msgstr "Download Document"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:550
+#: tripapp/templates/tripapp/dayprogram_detail.html:579
 msgid "You have the badge for this question!"
 msgstr "Je hebt de badge voor deze vraag!"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:555
+#: tripapp/templates/tripapp/dayprogram_detail.html:584
 msgid "Check Answer"
 msgstr "Controleer"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:563
+#: tripapp/templates/tripapp/dayprogram_detail.html:592
 msgid "to see and answer the question(s)."
 msgstr "om vraag te zien en te beantwoorden"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:618
+#: tripapp/templates/tripapp/dayprogram_detail.html:647
 #: tripapp/templates/tripapp/trip_dayprogram_points.html:395
 msgid "Tracked Distance:"
 msgstr "Tracked Afstand:"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:630
+#: tripapp/templates/tripapp/dayprogram_detail.html:659
 msgid "Vibe of the day?"
 msgstr "Vibe van de dag?"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:636
+#: tripapp/templates/tripapp/dayprogram_detail.html:665
 msgid "Choose your emoji"
 msgstr "Kies emoji"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:642
+#: tripapp/templates/tripapp/dayprogram_detail.html:671
 msgid "Add note… (optional)"
 msgstr "Notitie (optioneel)"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:644
+#: tripapp/templates/tripapp/dayprogram_detail.html:673
 #: tripapp/templates/tripapp/map_markers_edit.html:695
 msgid "Saved"
 msgstr "Opgeslagen"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:648
+#: tripapp/templates/tripapp/dayprogram_detail.html:677
 msgid "According to others:"
 msgstr "Volgens anderen"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:663
+#: tripapp/templates/tripapp/dayprogram_detail.html:692
 msgid "Vibes this day:"
 msgstr "Vibes deze dag"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:666
+#: tripapp/templates/tripapp/dayprogram_detail.html:695
 msgid "You"
 msgstr "Jij"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:727
+#: tripapp/templates/tripapp/dayprogram_detail.html:756
 msgid "Vote"
 msgstr "Stem"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:731
+#: tripapp/templates/tripapp/dayprogram_detail.html:760
 msgid "Close poll"
 msgstr "Sluit poll"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:744
+#: tripapp/templates/tripapp/dayprogram_detail.html:773
 msgid "Add poll"
 msgstr "Poll toevoegen"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:749
+#: tripapp/templates/tripapp/dayprogram_detail.html:778
 msgid "Question…"
 msgstr "Vraag"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:751
+#: tripapp/templates/tripapp/dayprogram_detail.html:780
 msgid "Option 1"
 msgstr ""
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:752
+#: tripapp/templates/tripapp/dayprogram_detail.html:781
 msgid "Option 2"
 msgstr ""
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:755
+#: tripapp/templates/tripapp/dayprogram_detail.html:784
 msgid "Add option"
 msgstr "Optie toevoegen"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:757
+#: tripapp/templates/tripapp/dayprogram_detail.html:786
 msgid "Create poll"
 msgstr "Maak poll"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:780
+#: tripapp/templates/tripapp/dayprogram_detail.html:809
 msgid "Badge Claimed!"
 msgstr "Badge Behaald!"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:789
+#: tripapp/templates/tripapp/dayprogram_detail.html:818
 #: tripapp/templates/tripapp/map_markers_edit.html:246
 msgid "Close"
 msgstr "Sluit"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:801
+#: tripapp/templates/tripapp/dayprogram_detail.html:830
 msgid "Your Suggestion for this Day:"
 msgstr "Jouw suggestie voor deze dag:"
 
-#: tripapp/templates/tripapp/dayprogram_detail.html:993
+#: tripapp/templates/tripapp/dayprogram_detail.html:1022
 msgid "Add a question and at least 2 options."
 msgstr "Type een vraag en minstens 2 opties"
 
@@ -621,6 +622,14 @@ msgstr "Deel deze link"
 #: tripapp/templates/tripapp/invite_code_success.html:21
 msgid "Have it scanned by the person you want to invite to the tribe."
 msgstr "Laat scannen door persoon die je wil toevoegen aan de tribe"
+
+#: tripapp/templates/tripapp/invite_to_tribe.html:22
+msgid "name@example.com"
+msgstr "maam@voorbeeld.com"
+
+#: tripapp/templates/tripapp/invite_to_tribe.html:28
+msgid "+ Add Person"
+msgstr "+ Nog iemand uitnodigen"
 
 #: tripapp/templates/tripapp/itineraryidea_detail.html:8
 msgid "Itinerary Idea"
@@ -893,6 +902,7 @@ msgstr "Bijwerken"
 
 #: tripapp/templates/tripapp/thing_to_do_list.html:6
 #: tripapp/templates/tripapp/tribe_trip_organize.html:152
+#: tripapp/templates/tripapp/trip_detail.html:251
 msgid "Things to do"
 msgstr "Ding om te doen"
 
@@ -913,15 +923,15 @@ msgstr "Ding om te doen bewerken"
 msgid "Loading…"
 msgstr ""
 
-#: tripapp/templates/tripapp/thing_to_do_list.html:125
+#: tripapp/templates/tripapp/thing_to_do_list.html:117
 msgid "Error saving — check the form."
 msgstr ""
 
-#: tripapp/templates/tripapp/thing_to_do_list.html:137
+#: tripapp/templates/tripapp/thing_to_do_list.html:129
 msgid "Delete this thing to do?"
 msgstr "Ding om te doen verwijderen?"
 
-#: tripapp/templates/tripapp/thing_to_do_list.html:145
+#: tripapp/templates/tripapp/thing_to_do_list.html:137
 msgid "Error deleting."
 msgstr ""
 
@@ -1315,26 +1325,32 @@ msgstr "Weet je zeker dat je deze wilt verwijderen?"
 msgid "No documents uploaded yet"
 msgstr "Geen documenten ge-upload"
 
-#: tripapp/views.py:1582
+#: tripapp/views.py:1673
 #, python-format
 msgid "Suggestion by %(username)s: %(suggestion)s"
 msgstr "Voorstel van %(username)s: %(suggestion)s"
 
-#: tripapp/views.py:2219
+#: tripapp/views.py:2310
 msgid "No Answers"
 msgstr "Geen Antwoorden"
 
-#: tripapp/views.py:2438 tripapp/views.py:2464
+#: tripapp/views.py:2529 tripapp/views.py:2555
 msgid "Tripper and emoji mandatory."
 msgstr "Tripper en emoji verplicht"
 
-#: tripapp/views.py:2449
+#: tripapp/views.py:2540
 msgid "You already liked this log with this emoji."
 msgstr "Je hebt deze log al een emoji gegeven."
 
-#: tripapp/views.py:2476
+#: tripapp/views.py:2567
 msgid "There is no like with this emoji that can be removed."
 msgstr "Er is geen like met deze emoji om te verwijderen"
+
+#~ msgid "Enter address..."
+#~ msgstr "Vul hier adres in..."
+
+#~ msgid "Add someone else? Invite them"
+#~ msgstr "Iemand toevoegen? Nodig uit"
 
 #~ msgid "Possible Things To Do:"
 #~ msgstr "Verzamelde Dingen-om-te-doen:"
@@ -1397,9 +1413,6 @@ msgstr "Er is geen like met deze emoji om te verwijderen"
 #~ "map"
 #~ msgstr ""
 #~ "Maak Reisschema Idee door Overnachtingslocaties op de kaart te zetten"
-
-#~ msgid "Overnight Locations:"
-#~ msgstr "Overnachtings Locaties:"
 
 #~ msgid "Name of this Overnight Itinerary Idea"
 #~ msgstr "Naam van dit Overnachtings Reisschema Idee"

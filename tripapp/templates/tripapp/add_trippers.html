@@ -1,19 +1,141 @@
 {% extends "base_generic.html" %}
-{% load crispy_forms_tags %}
 {% load i18n %}
+{% load dict_extras %}
 
 {% block content %}
   <h2>Add Trippers to {{ trip.name }}</h2>
   <br><br>
-  <form method="post">
+
+  <form method="post" id="trippers-form">
     {% csrf_token %}
-    {{ form|crispy }}
+
+    <div class="board">
+      <div class="column">
+        <h3>{% trans "Trippers on the trip" %}</h3>
+        <ul id="trippers-list" class="draglist" data-checked="true">
+          {% for checkbox in form.users %}
+            {% if checkbox.data.selected %}
+              <li class="drag-item">
+                <span class="hidden-checkbox">{{ checkbox.tag }}</span>
+                {% with photo_url=user_photos|get_item:checkbox.data.value %}
+                  {% if photo_url %}
+                    <img class="avatar" src="{{ photo_url }}" alt="">
+                  {% else %}
+                    <span class="avatar avatar-placeholder">{{ checkbox.choice_label|slice:":1" }}</span>
+                  {% endif %}
+                {% endwith %}
+                <label for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="column">
+        <h3>{% trans "Tribe members" %}</h3>
+        <ul id="tribemembers-list" class="draglist" data-checked="false">
+          {% for checkbox in form.users %}
+            {% if not checkbox.data.selected %}
+              <li class="drag-item">
+                <span class="hidden-checkbox">{{ checkbox.tag }}</span>
+                {% with photo_url=user_photos|get_item:checkbox.data.value %}
+                  {% if photo_url %}
+                    <img class="avatar" src="{{ photo_url }}" alt="">
+                  {% else %}
+                    <span class="avatar avatar-placeholder">{{ checkbox.choice_label|slice:":1" }}</span>
+                  {% endif %}
+                {% endwith %}
+                <label for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+        <br>
+        <a href="{% url 'tripapp:invite_to_tribe' %}">{% trans "Invite members to the tribe" %}</a>
+      </div>
+    </div>
+
     <input type="hidden" name="next" value="{{ next }}">
-    <br />
-    <a href="{% url 'tripapp:invite_to_tribe' %}">{% trans "Add someone else? Invite them" %}</a>
     <br /><br />
     <button type="submit" class="btn">{% trans "Save Selected" %}</button>
   </form>
 
   <br><br>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .board { display: flex; gap: 2rem; }
+  .column {
+    flex: 1;
+    min-height: 200px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 0.75rem;
+  }
+  .draglist { list-style: none; margin: 0; padding: 0; min-height: 150px; }
+  .drag-item {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.4rem;
+    cursor: grab;
+    user-select: none;
+    display:flex;
+    align-items:center;
+    gap: 0.5rem;
+  }
+  .drag-item.sortable-ghost { opacity: 0.4; }
+  .hidden-checkbox { display: none; }
+
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.avatar-placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ddd;
+  color: #555;
+  font-weight: bold;
+  font-size: 0.85rem;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const trippersList = document.getElementById('trippers-list');
+  const tribeList = document.getElementById('tribemembers-list');
+
+  function setChecked(item, checked) {
+    const checkbox = item.querySelector('input[type=checkbox]');
+    if (checkbox) checkbox.checked = checked;
+  }
+
+  new Sortable(trippersList, {
+    group: 'people',
+    animation: 150,
+    onAdd: function (evt) { setChecked(evt.item, true); },
+  });
+
+  new Sortable(tribeList, {
+    group: 'people',
+    animation: 150,
+    onAdd: function (evt) { setChecked(evt.item, false); },
+  });
+
+  document.getElementById('trippers-form').addEventListener('submit', function () {
+    trippersList.querySelectorAll('.drag-item').forEach(item => setChecked(item, true));
+    tribeList.querySelectorAll('.drag-item').forEach(item => setChecked(item, false));
+  });
+});
+</script>
 {% endblock %}

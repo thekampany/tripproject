@@ -176,6 +176,7 @@ class AddTrippersForm(forms.Form):
         required=False,
         label='Select Trippers'
     )
+
     def __init__(self, *args, **kwargs):
         tribe = kwargs.pop('tribe', None)
         trip = kwargs.pop('trip', None)
@@ -187,7 +188,7 @@ class AddTrippersForm(forms.Form):
             initial_trippers = trip.trippers.values_list('name', flat=True)
             initial_users = User.objects.filter(username__in=initial_trippers)
             self.initial['users'] = initial_users
-
+            
 class ChecklistItemForm(forms.ModelForm):
     class Meta:
         model = ChecklistItem
