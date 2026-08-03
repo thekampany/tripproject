@@ -430,7 +430,7 @@ if not Schedule.objects.filter(func='tripapp.tasks.fetch_and_store_immich_photos
 def update_dayprogram_maps():
     logs = []
     today = timezone.now().date()
-    horizon = today + timezone.timedelta(days=14)
+    horizon = today + timezone.timedelta(days=31)
 
     relevant_dayprograms = DayProgram.objects.filter(
         tripdate__gte=today - timezone.timedelta(days=1),

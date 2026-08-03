@@ -60,74 +60,84 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier-Leaflet/0.2.6/oms.min.js" integrity="sha384-TJqYy04hLgQlu6D/BNWm2MLdQ7Vgj7MK+rLjayduem+ZLTrt0uvYBsjAZ0aYb+U5" crossorigin="anonymous"></script>
 
 
+<script>
+// Initialize the map
+var map = L.map('map');
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19,
+}).addTo(map);
 
-    <script>
-    // Initialize the map
-    var map = L.map('map');
-    // Set up the OSM layer
-    //L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19,
-    }).addTo(map);
+var oms = new OverlappingMarkerSpiderfier(map);
 
-    var oms = new OverlappingMarkerSpiderfier(map);
+// Add markers from Django context
+var trippoints = [
+    {% for trip in trip_locations %}
+        {
+            "tripname": "{{ trip.name|escapejs }}",
+            "latitude": {{ trip.latitude }},
+            "longitude": {{ trip.longitude }},
+            "photo_url": {% if trip.photo_url %}"{{ trip.photo_url|escapejs }}"{% else %}null{% endif %},
+            "trip_url": "{{ trip.trip_url|escapejs }}"
+        },
+    {% endfor %}
+];
 
-    // Add markers from Django context
-    var trippoints = [
-        {% for trip in trip_locations %}
-            {
-                "tripname": "{{ trip.name|escapejs }}",
-                "latitude": {{ trip.latitude }},
-                "longitude": {{ trip.longitude }},
-                "photo_url": {% if trip.photo_url %}"{{ trip.photo_url|escapejs }}"{% else %}null{% endif %},
-                "trip_url": "{{ trip.trip_url|escapejs }}"            },
-        {% endfor %}
-    ];
+// Groepeer trippoints op coördinaat, zodat we weten welke iconen alleen staan
+// en welke overlappen.
+var groups = {};
+trippoints.forEach(function(point) {
+    var key = point.latitude + ',' + point.longitude;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(point);
+});
 
-    trippoints.forEach(function(point) {
+trippoints.forEach(function(point) {
+    if (!point.photo_url) return;
 
-        if (point.photo_url) {
-            var tripIcon = L.icon({
-                iconUrl: point.photo_url,
-                iconSize: [50, 50],
-                iconAnchor: [25, 25],
-                popupAnchor: [0, -25],
-                className: 'trip-photo-icon'
-            });
+    var key = point.latitude + ',' + point.longitude;
+    var isAlone = groups[key].length === 1;
 
-            var marker = L.marker([point.latitude, point.longitude], { icon: tripIcon }).addTo(map);
-            marker.trip_url = point.trip_url;
-            marker.tripname = point.tripname;
-    
-            oms.addMarker(marker);
-
-            marker.on('click', function() {
-                if (!spiderfiedMarkers.has(marker)) {
-                    window.location.href = marker.trip_url;
-                }
-            });
-
-         }
+    var tripIcon = L.icon({
+        iconUrl: point.photo_url,
+        iconSize: [50, 50],
+        iconAnchor: [25, 25],
+        popupAnchor: [0, -25],
+        className: 'trip-photo-icon'
     });
 
-    oms.addListener('click', function(marker) {
-        var popupContent = `<div class="custom-popup"><a href="${marker.trip_url}"><h4>${marker.tripname}</h4></a></div>`;
-        marker.bindPopup(popupContent).openPopup();
-    });
+    var marker = L.marker([point.latitude, point.longitude], { icon: tripIcon }).addTo(map);
+    marker.trip_url = point.trip_url;
+    marker.tripname = point.tripname;
 
-    if (trippoints.length === 1) {
-        window.location.href = trippoints[0].trip_url;
-    }
-
-    var allMarkers = oms.getMarkers();
-    if (allMarkers.length > 0) {
-        var bounds = L.latLngBounds(allMarkers.map(m => m.getLatLng()));
-        map.fitBounds(bounds);
+    if (isAlone) {
+        // Geen overlap: direct doorklikken, geen popup nodig.
+        marker.on('click', function() {
+            window.location.href = marker.trip_url;
+        });
     } else {
-        map.setView([52.0, 5.0], 6);
+        // Wel overlap: aan OMS toevoegen zodat spiderfy + popup werkt.
+        oms.addMarker(marker);
     }
-</script>
+});
+
+oms.addListener('click', function(marker) {
+    var popupContent = `<div class="custom-popup"><a href="${marker.trip_url}"><h4>${marker.tripname}</h4></a></div>`;
+    marker.bindPopup(popupContent).openPopup();
+});
+
+if (trippoints.length === 1) {
+    window.location.href = trippoints[0].trip_url;
+}
+
+// Bounds berekenen over alle markers (los + gespiderfied)
+var allLatLngs = trippoints.map(p => [p.latitude, p.longitude]);
+if (allLatLngs.length > 0) {
+    var bounds = L.latLngBounds(allLatLngs);
+    map.fitBounds(bounds);
+} else {
+    map.setView([52.0, 5.0], 6);
+}</script>
 <br /><br />
 <a href="{% url 'tripapp:trip_list' %}" class="fab" title="Switch to List View">📄</a>
 <br /><br />
