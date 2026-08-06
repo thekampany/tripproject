@@ -444,7 +444,7 @@ def update_dayprogram_maps():
 
     logs.append("End Generating")
     return "\n".join(logs)
-
+        
 if not Schedule.objects.filter(func='tripapp.tasks.update_dayprogram_maps').exists():
     Schedule.objects.create(
         func='tripapp.tasks.update_dayprogram_maps',

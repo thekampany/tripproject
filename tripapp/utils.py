@@ -145,7 +145,11 @@ def generate_static_map(dayprogram):
     if response.status_code == 200:
         filename = f"map_dayprogram_{dayprogram.id}.png"
         if dayprogram.map_image:
+            old_path = dayprogram.map_image.path
+            old_name = dayprogram.map_image.name
+            logger.info("Deleting old map image: %s (exists: %s)", old_path, os.path.exists(old_path))
             dayprogram.map_image.delete(save=False)
+            logger.info("After delete, still exists: %s", os.path.exists(old_path))
         dayprogram.map_image.save(filename, ContentFile(response.content), save=True)
     else:
         logger.warning("Static map request failed with status %d", response.status_code)

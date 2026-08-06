@@ -201,8 +201,8 @@ Q_CLUSTER = {
     'name': 'DjangoORM',
     'workers': 4,
     'recycle': 500,
-    'timeout': 60,
-    'retry': 90,
+    'timeout': 240,
+    'retry': 300,
     'max_attempts': 2,
     'scheduler': 'django_q.schedule.Schedule',
     'orm': 'default'
