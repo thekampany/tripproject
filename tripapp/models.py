@@ -25,6 +25,26 @@ class Tribe(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     tribes = models.ManyToManyField(Tribe, related_name='members')
+    preferred_itinerary_view= models.CharField(
+        max_length=20,
+        choices=[
+            ('day', 'Day and Destination'),
+            ('daynight', 'Day and Night location'),
+            ('dayvibe', 'Day Vibe'),
+            ('focus', 'Focus (Today & Upcoming)'),
+        ],
+        default='osm',
+        help_text="Preferred itinerary view"
+    )
+    preferred_map_view = models.CharField(
+        max_length=20,
+        choices=[
+            ('osm', 'OpenStreetMap (Standard)'),
+            ('satellite', 'Satellite (ESRI)'),
+        ],
+        default='osm',
+        help_text="Preferred map view: standard or satellite"
+    )
 
     def __str__(self):
         return self.user.username
@@ -142,6 +162,10 @@ class DayProgram(models.Model):
     def __str__(self):
         return f"{self.trip.name} - {self.dayprogramnumber} - {self.description[:50]}"
 
+    @property
+    def bed_point(self):
+        return self.points.filter(marker_type='bed').first()
+
 class Image(models.Model):
     day_program = models.ForeignKey(DayProgram, related_name='images', on_delete=models.CASCADE)
     image = models.ImageField(upload_to='day_program_images/')
@@ -177,6 +201,7 @@ class Tripper(models.Model):
     home_location = models.CharField(max_length=255, null=True, blank=True, help_text="Name/address of home location. Will be used as starting point for brainstorm map")
     home_location_lat = models.FloatField(null=True, blank=True)
     home_location_lon = models.FloatField(null=True, blank=True)
+    
     #def count_badges(self):
     #    return self.badges.count()
 
@@ -221,6 +246,9 @@ class Point(models.Model):
         ('restaurant', 'Restaurant')
     ]
     marker_type = models.CharField(max_length=20, choices=MARKER_TYPE, default='default')
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    address = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -297,26 +325,47 @@ class LogEntry(models.Model):
     def like_count(self):
         return self.likes.count()
 
-
 class LogEntryLike(models.Model):
     logentry = models.ForeignKey(
         LogEntry,
         related_name='likes',
         on_delete=models.CASCADE
     )
-    tripper = models.ForeignKey(
-        Tripper,
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
         related_name='logentry_likes',
         on_delete=models.CASCADE
     )
-    emoji = models.CharField(max_length=10)  
+    emoji = models.CharField(max_length=10)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('logentry', 'tripper', 'emoji')
+        unique_together = ('logentry', 'user', 'emoji')
 
     def __str__(self):
-        return f"{self.tripper.name} liked {self.logentry.id} with {self.emoji}"
+        return f"{self.display_name} liked {self.logentry.id} with {self.emoji}"
+
+    @property
+    def display_name(self):
+        tripper = getattr(self.user, "tripper", None)
+        return tripper.name if tripper else self.user.username
+
+class Comment(models.Model):
+    logentry = models.ForeignKey(LogEntry, related_name='comments', on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='comments', on_delete=models.CASCADE)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.display_name} - {self.text[:50]}"
+
+    @property
+    def display_name(self):
+        tripper = getattr(self.user, "tripper", None)
+        return tripper.name if tripper else self.user.username
 
 class Link(models.Model):
     CATEGORY_CHOICES = [
@@ -358,7 +407,9 @@ class Route(models.Model):
     dayprogram = models.ForeignKey(DayProgram, related_name='routes', on_delete=models.CASCADE)
     description = models.TextField()
     gpx_file = models.FileField(upload_to='gpx_files/')
-    #uploaded_by
+    uploaded_by = models.ForeignKey(Tripper, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     def __str__(self):
         return self.description
@@ -447,6 +498,8 @@ class Location(models.Model):
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
     timestamp = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
 class ImmichPhotos(models.Model):
     tripper = models.ForeignKey(Tripper, on_delete=models.CASCADE)
@@ -481,6 +534,7 @@ class ScheduledItem(models.Model):
 
     dayprogram = models.ForeignKey(DayProgram, on_delete=models.CASCADE, related_name='scheduled_items')
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    description = models.CharField(max_length=50, null=True, blank=True)
     start_time = models.TimeField()
     end_time = models.TimeField()
     start_address = models.CharField(max_length=255)

@@ -19,6 +19,7 @@ from .models import TripBudget
 from .models import ScheduledItem
 from .models import TripperDocument
 from .models import ThingToDo
+from .models import UserProfile
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
@@ -321,7 +322,7 @@ class PointForm(forms.ModelForm):
 
     class Meta:
         model = Point
-        fields = ['name', 'latitude', 'longitude', 'dayprograms', 'marker_type']
+        fields = ['name', 'latitude', 'longitude', 'dayprograms', 'marker_type', 'address']
         widgets = {
             'dayprograms': forms.CheckboxSelectMultiple()
         }
@@ -544,6 +545,7 @@ class ScheduledItemForm(forms.ModelForm):
     class Meta:
         model = ScheduledItem
         fields = [
+            'description',
             'category',
             'transportation_type',
             'start_time',
@@ -697,3 +699,14 @@ class ThingToDoForm(forms.ModelForm):
 
         self.helper = FormHelper()
         self.helper.layout = Layout(*layout_fields)
+
+
+
+class UserProfilePreferencesForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ['preferred_itinerary_view', 'preferred_map_view']
+        widgets = {
+            'preferred_itinerary_view': forms.RadioSelect,
+            'preferred_map_view': forms.RadioSelect,
+        }

@@ -13,6 +13,7 @@ import pytz
 import time
 from .utils import generate_static_map
 from django.conf import settings
+from django.utils.translation import gettext as _
 from collections import Counter
 from statistics import mean
 import httpx
@@ -158,13 +159,18 @@ def assign_badges():
                 for tripper in trippers:
                     logs.append(f"Checking for {tripper.name} ")
                     if tripper.dawarich_api_key or tripper.immich_api_key:
-                        if not BadgeAssignment.objects.filter(tripper=tripper, badge=api_key_badge).exists():
-                           BadgeAssignment.objects.create(tripper=tripper, badge=api_key_badge) 
-                           logs.append(f"Badge '{api_key_badge.name}' assigned to Tripper {tripper.name} for having an API key.")
+                        _, created = BadgeAssignment.objects.get_or_create(
+                            tripper=tripper, 
+                            badge=api_key_badge
+                        )
+                        if created:
+                            logs.append(f"Badge '{api_key_badge.name}' assigned to Tripper {tripper.name} for having an API key.")
                         else:
-                           logs.append(f"Badge was already assigned earlier.")
+                            logs.append(f"Badge was already assigned earlier.")
                     else:
                         logs.append(f"None found, no badge")
+
+
     else:
         logs.append(f"No active trip. No badges for trippers with api keys")
 
@@ -517,12 +523,24 @@ def fetch_and_store_yesterdays_weather():
             sunrise = daily["sunrise"][0][-5:]
             sunset = daily["sunset"][0][-5:]
 
-            description = (
-                f"On {yesterday.strftime('%-d %B')} we had this weather:{emoji_avg}{emoji_mode} \n"
-                f"Max: {t_max}{temp_symbol}, Min: {t_min}{temp_symbol}\n"
-                f"💧 {rain} mm\n"
-                f"Sunrise: {sunrise} – Sunset: {sunset}"
-            )
+            description = _(
+                "On %(date)s we had this weather:%(emoji_avg)s%(emoji_mode)s \n"
+                "Max: %(t_max)s%(temp_symbol)s, Min: %(t_min)s%(temp_symbol)s\n"
+                "💧 %(rain)s mm\n"
+                "Sunrise: %(sunrise)s – Sunset: %(sunset)s"
+            ) % {
+                "date": yesterday.strftime('%-d %B'),
+                "emoji_avg": emoji_avg,
+                "emoji_mode": emoji_mode,
+                "t_max": t_max,
+                "temp_symbol": temp_symbol,
+                "t_min": t_min,
+                "rain": rain,
+                "sunrise": sunrise,
+                "sunset": sunset,
+            }
+
+
 
             dp.recorded_weather = data  
             dp.recorded_weather_text = description

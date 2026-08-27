@@ -274,7 +274,10 @@
             overflow-y: auto;
             padding: 12px;
         }
-    </style>
+        .leaflet-popup-content-wrapper {
+            border-radius: 16px;
+        }
+        </style>
 </head>
 <body>
 <div class="tripappcard">
@@ -403,6 +406,8 @@
     {% endcomment %}
     
     <script src="{% static 'js/uniform_icons_for_leaflet.js' %}"></script>
+    <script src="{% static 'js/shorten_address.js' %}"></script>
+
     <script>
     const translations = {
     selectStartEnd: "{% trans 'Select a start and end location on the map' %}",
@@ -842,36 +847,194 @@
     var visitedLocationIcon = uniformIcon(COLORS.location, '•', 10);
     var visitedPhotoLocationIcon = uniformIcon(COLORS.activity, '📷', 24);
 
+    function createEventMarkerAt(map, latLng, address) {
+        const mapElement = document.getElementById('map');
+        const tripId = mapElement.dataset.tripId;
+        const dayprogramId = mapElement.dataset.dayprogramId;
+        const csrfToken = mapElement.dataset.csrf;
+
+        var newMarker = L.marker(latLng, {icon: defaultIcon}).addTo(map);
+        var addressHtml = address
+        ? `<div class="form-group mb-2" style="font-size:0.85em; color:#666;">${address}</div>`
+        : '';
+
+        newMarker.bindPopup(
+            `<div class="p-2 leaflet-custom-popup" style="min-width:250px;">
+                ${addressHtml}
+                <div class="form-group">
+                    <input type="text" class="form-control mb-2 event-name" placeholder="Point Description">
+                </div>
+                <div class="form-group">
+                    <select class="form-control mb-3 event-type">
+                        <option value="default" selected>📍 Default</option>
+                        <option value="bed">🛏️ Bed</option>
+                        <option value="restaurant">🍽️ Restaurant</option>
+                    </select>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <button class="btn btn-primary save-event" style="padding:10px 20px; font-size:16px;">Save</button>
+                    <button class="btn btn-secondary delete-event" style="padding:10px 20px; font-size:16px;">Delete</button>
+                </div>
+            </div>`,
+            {
+                maxWidth: 300,
+                closeButton: true,
+                autoClose: false,
+                closeOnClick: false
+            }
+        ).openPopup();
+
+        setTimeout(() => {
+            const saveBtn = document.querySelector('.save-event');
+            const deleteBtn = document.querySelector('.delete-event');
+
+            if (saveBtn) {
+                saveBtn.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const nameInput = document.querySelector('.event-name');
+                    const typeSelect = document.querySelector('.event-type');
+                    const eventName = nameInput.value;
+                    const eventType = typeSelect.value;
+
+                    $.ajax({
+                        url: '/save_event/',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        headers: {'X-CSRFToken': csrfToken},
+                        data: JSON.stringify({
+                            'name': eventName,
+                            'type': eventType,
+                            'address': address || '',
+                            'latitude': latLng.lat,
+                            'longitude': latLng.lng,
+                            'trip': tripId,
+                            'dayprogram': dayprogramId
+                        }),
+                        success: function(response) {
+                            map.closePopup();
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("AJAX Error:", status, error);
+                            map.closePopup();
+                        }
+                    });
+                };
+            }
+
+            if (deleteBtn) {
+                deleteBtn.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    map.removeLayer(newMarker);
+                    map.closePopup();
+                };
+            }
+        }, 100);
+
+        return newMarker;
+    }
+
+
 
     {% if country_coords and not points and not locations and not photolocations and not dayprogram.routes.all %}
         var map = L.map('map').setView([{{ country_coords.0 }},{{ country_coords.1 }}], 7);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+
+        {% if preferred_map_view == 'satellite' %}
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+            maxZoom: 18
+        }).addTo(map);
+        {% else %}
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key={{ CARTO_API_KEY }}', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 19,
         }).addTo(map);
+        {% endif %}
+
         var markers = L.featureGroup();
 
         var scaleControl = L.control.scale();
         scaleControl.setPosition('bottomleft');
         map.addControl(scaleControl);
 
-        new L.Control.Geocoder().addTo(map);
+        //new L.Control.Geocoder().addTo(map);
+        L.Control.geocoder({
+            defaultMarkGeocode: false
+        }).on('markgeocode', function(e) {
+            console.log("Geocode event:", e);
+            var latLng = e.geocode.center;
+            var address = e.geocode.name;
+            var shortAddr = shortenAddress(e.geocode);
+
+            if (!(latLng instanceof L.LatLng)) {
+                // If it's an array [lng, lat], convert it
+                if (Array.isArray(latLng) && latLng.length === 2) {
+                    latLng = L.latLng(latLng[1], latLng[0]);
+                } else {
+                    console.error("Unexpected latLng format:", latLng);
+                    return;
+                }
+            }
+
+            if (!latLng.lat || !latLng.lng) {
+                console.error("Invalid latLng:", latLng);
+                return;
+            }
+
+            map.setView(latLng, 16);
+            createEventMarkerAt(map, latLng, shortAddr);
+        }).addTo(map);
 
     {% else %}   
 
         var map = L.map('map');
 
-        //L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        {% if preferred_map_view == 'satellite' %}
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+            maxZoom: 18
+        }).addTo(map);
+        {% else %}
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key={{ CARTO_API_KEY }}', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 19,
         }).addTo(map);
+        {% endif %}
 
         var scaleControl = L.control.scale();
         scaleControl.setPosition('bottomleft');
         map.addControl(scaleControl);
 
-        new L.Control.Geocoder().addTo(map);
+        //new L.Control.Geocoder().addTo(map);
+        L.Control.geocoder({
+            defaultMarkGeocode: false
+        }).on('markgeocode', function(e) {
+            console.log("Geocode event:", e);
+            var latLng = e.geocode.center;
+            var address = e.geocode.name;
+            var shortAddr = shortenAddress(e.geocode);
+
+            if (!(latLng instanceof L.LatLng)) {
+                // If it's an array [lng, lat], convert it
+                if (Array.isArray(latLng) && latLng.length === 2) {
+                    latLng = L.latLng(latLng[1], latLng[0]);
+                } else {
+                    console.error("Unexpected latLng format:", latLng);
+                    return;
+                }
+            }
+
+            if (!latLng.lat || !latLng.lng) {
+                console.error("Invalid latLng:", latLng, address);
+                return;
+            }
+
+            map.setView(latLng, 16);
+            createEventMarkerAt(map, latLng,shortAddr);
+        }).addTo(map);
+
 
         // Add markers from Django context
         var points = [
@@ -1264,100 +1427,10 @@
 
         // Function to handle double-clicks on the map
         function handleMapDoubleClick(map) {
-            const mapElement = document.getElementById('map');
-            const tripId = mapElement.dataset.tripId;
-            const dayprogramId = mapElement.dataset.dayprogramId;
-            const csrfToken = mapElement.dataset.csrf;
-
             map.on('dblclick', function (e) {
-                var latLng = e.latlng;
-
-                var newMarker = L.marker(latLng, {icon: defaultIcon}).addTo(map);
-                newMarker.bindPopup(
-                    `<div class="p-2 leaflet-custom-popup" style="min-width:250px;">
-                        <div class="form-group">
-                            <input type="text" class="form-control mb-2 event-name" placeholder="Point Description">
-                        </div>
-                        <div class="form-group">
-                            <select class="form-control mb-3 event-type">
-                                <option value="default" selected>📍 Default</option>
-                                <option value="bed">🛏️ Bed</option>
-                                <option value="restaurant">🍽️ Restaurant</option>
-                            </select>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <button class="btn btn-primary save-event" style="padding:10px 20px; font-size:16px;">Save</button>
-                            <button class="btn btn-secondary delete-event" style="padding:10px 20px; font-size:16px;">Delete</button>
-                        </div>
-                    </div>`,
-                    {
-                        maxWidth: 300,
-                        closeButton: true,
-                        autoClose: false,
-                        closeOnClick: false
-                    }
-                ).openPopup();
-
-                setTimeout(() => {
-                    const saveBtn = document.querySelector('.save-event');
-                    const deleteBtn = document.querySelector('.delete-event');
-                    
-                    if (saveBtn) {
-                        saveBtn.onclick = function(e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-
-                            const nameInput = document.querySelector('.event-name');
-                            const typeSelect = document.querySelector('.event-type');
-                            const eventName = nameInput.value;
-                            const eventType = typeSelect.value;
-
-                            console.log("Save button clicked!"); 
-                            console.log("Event name:", eventName); 
-                            console.log("Event type:", eventType);
-                            console.log("LatLng:", latLng.lat, latLng.lng);
-                            console.log("Trip ID:", tripId);
-                            console.log("Dayprogram ID:", dayprogramId);
-
-                            $.ajax({
-                                url: '/save_event/',
-                                method: 'POST',
-                                contentType: 'application/json',
-                                headers: {'X-CSRFToken': csrfToken},
-                                data: JSON.stringify({  
-                                    'name': eventName,
-                                    'type': eventType,
-                                    'latitude': latLng.lat,
-                                    'longitude': latLng.lng,
-                                    'trip': tripId,
-                                    'dayprogram': dayprogramId
-                                }),
-                                success: function(response) {
-                                    console.log("Success:", response); 
-                                    map.closePopup();
-                                },
-                                error: function(xhr, status, error) {
-                                    console.error("AJAX Error:", status, error);
-                                    console.error("Response:", xhr.responseText);
-                                    map.closePopup();
-                                }
-                            });
-                        };
-                    };
-
-                    if (deleteBtn) {
-                        deleteBtn.onclick = function(e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            map.removeLayer(newMarker);
-                            map.closePopup();
-                        };
-                    }
-                }, 100);
+                createEventMarkerAt(map, e.latlng);
             });
-
         }
-
         handleMapDoubleClick(map);
         map.doubleClickZoom.disable();
 

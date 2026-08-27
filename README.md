@@ -94,6 +94,10 @@ OPENROUTESERVICE_API_KEY = 'xxxx' # get api key from openrouteservice.org in ord
 OLLAMA_URL= 'http://localhost:11434/api/generate'
 OLLAMA_API_KEY = 'xxxxxxx'  # api key from ollama.com in order to use cloud models, optional for running ollama models local
 OLLAMA_MODEL ='tinyllama'
+
+TRAVEL_RISK_API_KEY=trk_abcde12345 # api key from https://travelriskapi.com
+AIRLABS_API_KEY=1234-1234 # api key from https://airlabs.co/api/v9/flight
+
 ALLOW_REGISTRATION=False
 
 ```

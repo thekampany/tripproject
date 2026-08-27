@@ -7,6 +7,10 @@ from rdp import rdp
 import gpxpy
 
 import datetime
+from datetime import datetime, timedelta
+import time
+from django.utils import timezone
+
 from django.utils.text import slugify
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
@@ -59,10 +63,32 @@ def simplify_locations(locations, epsilon=0.0005):
     coords = [(loc.latitude, loc.longitude) for loc in locations]
     return rdp(coords, epsilon=epsilon)
 
+def dayprogram_has_new_mapdata(dayprogram, since):
+    if dayprogram.points.filter(updated_at__gt=since).exists():
+        return True
+
+    if Location.objects.filter(
+        timestamp__date=dayprogram.tripdate,
+        created_at__gt=since,
+    ).exists():
+        return True
+
+    if dayprogram.routes.filter(updated_at__gt=since).exists():
+        return True
+
+    return False
+
 def generate_static_map(dayprogram):
     #staticmaps still depends on GET, cant find the right POST spec
     #cant get strokeDasharray to work
-    
+    #replace yesterday by last successful run of the task
+
+    yesterday = timezone.now() - timedelta(days=1)
+    if not dayprogram_has_new_mapdata(dayprogram, yesterday):
+        logger.info("No new data since last run (%s), skipping map generation.", yesterday)
+        return
+
+
     staticmaps_url = settings.STATICMAPS_URL
     staticmaps_api_key = settings.STATICMAPS_API_KEY
 
@@ -84,23 +110,22 @@ def generate_static_map(dayprogram):
     tripdate = dayprogram.tripdate
     logger.info("Processing dayprogram for date: %s", tripdate)
 
-    locations = list(Location.objects.filter(timestamp__date=tripdate))
-    
+    locations = list(
+        Location.objects.filter(timestamp__date=tripdate).values_list("latitude", "longitude")
+    )    
     if locations:
         logger.info("Found %d locations for polyline.", len(locations))
         
-        coords = [(loc.latitude, loc.longitude) for loc in locations]
-
-        if len(coords) > 150:
-            simplified = rdp(coords, epsilon=0.0005)
+        if len(locations) > 150:
+            simplified = rdp(locations, epsilon=0.0005)
             if len(simplified) > 400:
                 step = len(simplified) // 400
                 simplified = simplified[::step]
                 simplified = rdp(simplified, epsilon=0.1)
 
-            logger.info("Reduced from %d to %d points using RDP.", len(coords), len(simplified))
+            logger.info("Reduced from %d to %d points using RDP.", len(locations), len(simplified))
         else:
-            simplified = coords        
+            simplified = locations        
 
                    
         polyline_str = "|".join([f"{lat},{lon}" for lat, lon in simplified])
@@ -109,8 +134,7 @@ def generate_static_map(dayprogram):
     for route in dayprogram.routes.all():
         if route.gpx_file:
             with route.gpx_file.open("r") as f:
-                gpx_data = f.read()
-                gpx = gpxpy.parse(gpx_data)
+                gpx = gpxpy.parse(f)
                 gpx_points = []
                 for track in gpx.tracks:
                     for segment in track.segments:
@@ -118,16 +142,15 @@ def generate_static_map(dayprogram):
                             gpx_points.append([point.latitude, point.longitude])
                     
                 if gpx_points:
-                    coords = list(gpx_points)
 
-                    if len(coords) > 150:
-                        simplified = rdp(coords, epsilon=0.0005)
+                    if len(gpx_points) > 150:
+                        simplified = rdp(gpx_points, epsilon=0.0005)
                         if len(simplified) > 400:
                             step = len(simplified) // 400
                             simplified = simplified[::step]
                             simplified = rdp(simplified, epsilon=0.1)
                     else:
-                        simplified = coords        
+                        simplified = gpx_points        
 
                     polyline_str = "|".join(f"{lat},{lon}" for lat, lon in simplified)
                     polyline_values.append(f"weight:1|color:green|{polyline_str}")
@@ -137,7 +160,7 @@ def generate_static_map(dayprogram):
         params.append(("markers", marker_values))
     if staticmaps_api_key:
         params.append(("api_key", staticmaps_api_key))
-    params.append(("basemap","carto-light"))
+    params.append(("basemap","osm"))
 
     request_url = f"{staticmaps_url}?{urlencode(params)}"
     
@@ -150,6 +173,8 @@ def generate_static_map(dayprogram):
             logger.info("Deleting old map image: %s (exists: %s)", old_path, os.path.exists(old_path))
             dayprogram.map_image.delete(save=False)
             logger.info("After delete, still exists: %s", os.path.exists(old_path))
+        else:
+            logger.info("map_image is falsy, skipping delete — huidige waarde: %r", dayprogram.map_image)
         dayprogram.map_image.save(filename, ContentFile(response.content), save=True)
     else:
         logger.warning("Static map request failed with status %d", response.status_code)
@@ -185,7 +210,7 @@ def generate_static_map_for_trip(trip):
     logger.info(f"StaticTripMap query_parts: {query_parts}") 
 
     if staticmaps_api_key:
-        request_url = f"{base_url}&api_key={staticmaps_api_key}&basemap=carto-light"
+        request_url = f"{base_url}&api_key={staticmaps_api_key}&basemap=osm"
     else:
         request_url = base_url
 
@@ -419,6 +444,27 @@ def distance_per_day(tripper, day: date) -> float:
 
     return round(total_km, 2)
 
+def distance_per_tripper(tripper, tripstartdate, tripenddate) -> float:
+    locations = (
+        Location.objects
+        .filter(
+            tripper=tripper,
+            timestamp__date__gte=tripstartdate,
+            timestamp__date__lte=tripenddate,
+        )
+        .order_by('timestamp')
+        .values_list('latitude', 'longitude')
+    )
+
+    total_km = 0.0
+    points = list(locations)
+
+    for i in range(len(points) - 1):
+        lat1, lon1 = points[i]
+        lat2, lon2 = points[i + 1]
+        total_km += haversine(lat1, lon1, lat2, lon2)
+
+    return round(total_km, 2)
 
 
 def get_latest_github_version(repo="thekampany/tripproject"):

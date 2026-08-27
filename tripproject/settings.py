@@ -37,6 +37,10 @@ OLLAMA_API_KEY = os.getenv('OLLAMA_API_KEY')
 
 TRAVEL_RISK_API_KEY = os.getenv('TRAVEL_RISK_API_KEY')
 
+AIRLABS_API_KEY = os.getenv('AIRLABS_API_KEY')
+
+CARTO_API_KEY = os.getenv('CARTO_API_KEY')
+
 TEMPERATURE_UNIT = os.getenv('TEMPERATURE_UNIT')
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -199,10 +203,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 Q_CLUSTER = {
     'name': 'DjangoORM',
-    'workers': 4,
-    'recycle': 500,
-    'timeout': 240,
-    'retry': 300,
+    'workers': 2,
+    'recycle': 50,
+    'timeout': 900,
+    'retry': 960,
     'max_attempts': 2,
     'scheduler': 'django_q.schedule.Schedule',
     'orm': 'default'

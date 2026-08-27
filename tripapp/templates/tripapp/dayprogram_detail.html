@@ -219,6 +219,56 @@
     width: auto;         
     object-fit: contain; 
     }
+
+    .log-comments {
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid #eee;
+}
+
+.log-comment {
+    margin-bottom: 4px;
+    font-size: 0.9em;
+}
+
+.log-comment-author {
+    font-weight: bold;
+    margin-right: 6px;
+    color: #999;
+}
+
+.log-comment-date {
+    color: #999;
+    font-size: 0.8em;
+}
+
+.log-comment-text {
+    margin: 2px 0 0 0;
+    color: #999;
+}
+
+.log-comment-form {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.log-comment-input {
+    flex: 1;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    padding: 4px 10px;
+    font-size: 0.9em;
+}
+
+.log-comment-submit {
+    border: none;
+    background: none;
+    color: #2563eb;
+    cursor: pointer;
+    font-size: 0.9em;
+    padding: 2px 6px;
+}
     </style>
 
 </head>
@@ -282,7 +332,9 @@
                     <li><a class="dropdown-item" href="{% url 'tripapp:edit_dayprogram' dayprogram.id %}">...Info</a></li>
                     <li><a class="dropdown-item" href="{% url 'tripapp:dayprogram_questions' dayprogram.id %}">...{% trans "Question" %}</a></li>
                     <li><a class="dropdown-item" href="{% url 'tripapp:add_scheduled_item' dayprogram.id %}">...{% trans "Scheduled Item" %}</a></li>
+                    {% if flight_api_configured %}<li><a class="dropdown-item" href="{% url 'tripapp:add_flight' dayprogram.id %}">...{% trans "Flight" %}</a></li>{% endif %}
                     <li><a class="dropdown-item" href="{% url 'tripapp:add_link' dayprogram.id %}">...{% trans "Link" %}</a></li>
+                    <li><a class="dropdown-item" href="{% url 'tripapp:add_link' dayprogram.id %}">...{% trans "Document" %}</a></li>
                 {% endif %}
 
             </ul>
@@ -349,6 +401,9 @@
                 <p>
                     <span class="dayprogramcard-title">{% trans "Overnight Location:" %}</span>
                     {{ dayprogram.overnight_location }}
+                    {% if dayprogram.bed_point.address %}
+                        <br>{{ dayprogram.bed_point.address }}
+                    {% endif %}
                 </p>
             {% endif %}
         </div>
@@ -383,7 +438,7 @@
             </p>
         </div>
         {% else %}
-            {% if day_state == "future" %}
+            {% if day_state == "future" or day_state == "today" %}
                 {% if ollama_configured %}
                     {% if user.username in trippers_names %}
                     <div class="dayprogramcard">
@@ -449,6 +504,9 @@
                             <div class="scheduled-item-card">
                                 <table style="width: 100%;">
                                     <tr>
+                                        <td colspan="4"><strong>{{ item.description }}</strong></td>
+                                    </tr>
+                                    <tr>
                                         <td width="140px" style="vertical-align: top;">
                                             {% if item.category == 'Transportation' %}
                                                 {% if item.transportation_type != 'Other' %}
@@ -462,7 +520,17 @@
                                         </td>
                                         <td style="vertical-align: top;">{{ item.start_time|time:"H:i" }}</td>
                                         <td width="200px">{{ item.start_address }}</td>
-                                        <td style="text-align:right;vertical-align: top;">{% if user.username in trippers_names %}
+                                        <td style="text-align:right;vertical-align: top;">
+                                            {% if item.category == 'Transportation' and item.transportation_type == 'Airplane' and item.description and flight_api_configured %}
+                                                <button class="flight-refresh-btn" data-item-id="{{ item.id }}"
+                                                        data-url="{% url 'tripapp:refresh_flight_status' item.id %}"
+                                                        title="{% trans 'Refresh flight status' %}"
+                                                        style="border:none;background:none;color:gray;font-size:14px;cursor:pointer;">
+                                                    <i class="bi bi-arrow-clockwise">Flight</i>
+                                                </button><br>
+                                            {% endif %}
+
+                                            {% if user.username in trippers_names %}
                                             <a style="color:gray;font-size:xx-small;" 
                                                href="{% url 'tripapp:edit_scheduled_item' dayprogram.id item.id %}">[Edit]</a>
                                             {% endif %}
@@ -473,6 +541,14 @@
                                         <td style="vertical-align: top;">{% if item.end_time %}{{ item.end_time|time:"H:i" }}{% endif %}</td>
                                         <td width="200px">{% if item.end_address %}{{ item.end_address }}{% endif %}</td>
                                         <td></td>
+                                    </tr>
+                                    <tr id="flight-status-row-{{ item.id }}" style="{% if not flight_status %}display:none;{% endif %}">
+                                        <td></td>
+                                        <td colspan="3">
+                                            <span id="flight-status-{{ item.id }}" style="font-size:11px;color:gray;">
+                                                ✈ {{ flight_status }}
+                                            </span>
+                                        </td>
                                     </tr>
                                     {% if item.links.all %}
                                         <tr>
@@ -633,6 +709,23 @@
                         </script>
 
                     </div>
+                    <div class="log-comments">
+                        {% for comment in log_entry.comments.all %}
+                            <div class="log-comment">
+                                <span class="log-comment-author">{{ comment.display_name }}</span>
+                                <span class="log-comment-date">{{ comment.created_at|date:"d-m H:i" }}</span>
+                                <p class="log-comment-text">{{ comment.text|linebreaksbr }}</p>
+                            </div>
+                        {% endfor %}
+
+                        {% if user.is_authenticated %}
+                        <form method="post" action="{% url 'tripapp:add_comment' log_entry.id %}" class="log-comment-form">
+                            {% csrf_token %}
+                            <input type="text" name="text" class="log-comment-input" placeholder="{% trans 'React...' %}" required maxlength="500">
+                            <button type="submit" class="log-comment-submit">{% trans "Post" %}</button>
+                        </form>
+                        {% endif %}
+                    </div>
 
                 {% endfor %}
            </p>
@@ -655,6 +748,7 @@
     {% endif %}
 
     {% if day_state == "today" %}
+        {% if user.username in trippers_names %}
         <div class="vibe-section mt-4 pt-3 border-top">
             <p class="hint mb-2">{% trans "Vibe of the day?" %}</p>
             <div class="vibe-picker mb-2">
@@ -684,7 +778,7 @@
             </div>
             {% endif %}
         </div>
-
+        {% endif %}
     {% elif day_state == "past" %}
         {% if my_vibe or other_vibes %}
         <p></p>
@@ -1103,5 +1197,45 @@ const availableList = document.getElementById('available-things');
     });
 });
 </script>
+<script>
+document.querySelectorAll('.flight-refresh-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const itemId = this.dataset.itemId;
+        this.disabled = true;
 
+        fetch(this.dataset.url, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': CSRF }
+        })
+        .then(resp => resp.json().then(data => ({ ok: resp.ok, data })))
+        .then(({ ok, data }) => {
+            if (!ok) {
+                alert(data.error || "Could not fetch flight status.");
+                return;
+            }
+
+            const statusRow = document.getElementById('flight-status-row-' + itemId);
+            const statusEl = document.getElementById('flight-status-' + itemId);
+            if (statusEl) statusEl.textContent = '✈ ' + data.flight_status;
+            if (statusRow) statusRow.style.display = '';
+
+            if (data.changed) {
+                const startTime = document.getElementById('start-time-' + itemId);
+                if (startTime && data.start_time) startTime.textContent = data.start_time;
+
+                const endTime = document.getElementById('end-time-' + itemId);
+                if (endTime && data.end_time) endTime.textContent = data.end_time;
+
+                const startAddr = document.getElementById('start-address-' + itemId);
+                if (startAddr) startAddr.textContent = data.start_address;
+
+                const endAddr = document.getElementById('end-address-' + itemId);
+                if (endAddr) endAddr.textContent = data.end_address;
+            }
+        })
+        .catch(() => alert("Could not fetch flight status."))
+        .finally(() => { this.disabled = false; });
+    });
+});
+</script>
 </html>

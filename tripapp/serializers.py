@@ -19,11 +19,12 @@ class TripMapDataSerializer(serializers.Serializer):
     trip_url = serializers.URLField()
 
 class LogEntryLikeSerializer(serializers.ModelSerializer):
+    display_name = serializers.ReadOnlyField()
+
     class Meta:
         model = LogEntryLike
-        fields = ['id', 'logentry', 'tripper', 'emoji', 'created_at']
+        fields = ['id', 'logentry', 'user', 'display_name', 'emoji', 'created_at']
         read_only_fields = ['created_at']
-
 
 class TripOutlineItemSerializer(serializers.ModelSerializer):
     class Meta:

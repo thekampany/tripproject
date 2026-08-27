@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Trip, Tripper, Tribe, DayProgram, UserProfile
+from .models import Trip, Tripper, Tribe, DayProgram, UserProfile, Poll, ThingToDo, LogEntry
 from functools import wraps
 
 def tripper_required(view_func):
@@ -45,6 +45,21 @@ def is_in_tribe(view_func):
     @login_required
     def _wrapped_view(request, *args, **kwargs):
         tribes = set()
+
+        poll_id = kwargs.get("poll_id")
+        if poll_id:
+            poll = get_object_or_404(Poll, pk=poll_id)
+            tribes.add(poll.trip.tribe)
+
+        thing_id = kwargs.get("thing_id")
+        if thing_id:
+            thing_to_do = get_object_or_404(ThingToDo, pk=thing_id)
+            tribes.add(thing_to_do.trip.tribe)
+
+        logentry_id = kwargs.get("logentry_id")
+        if logentry_id:
+            logentry = get_object_or_404(LogEntry, pk=logentry_id)
+            tribes.add(logentry.dayprogram.trip.tribe)
 
         dayprogram_id = kwargs.get("dayprogram_id")
         if dayprogram_id:

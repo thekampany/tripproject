@@ -1,0 +1,94 @@
+{% extends "base_generic.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load i18n %}
+{% block content %}
+
+    <h2>{% trans "Add Flight" %}</h2>
+    <b>{{ dayprogram.description }}&nbsp;{{ dayprogram.tripdate|date:'d-M' }}</b>
+    <br /><br />
+
+    <div class="mb-3">
+        <label for="flight_number_input">Flight</label>
+        <div class="input-group">
+            <input type="text" id="flight_number_input" class="form-control" placeholder="AK365">
+            <button type="button" id="flight_lookup_btn" class="btn btn-outline-secondary">Find flight</button>
+        </div>
+    </div>
+
+    <div id="flight_preview" class="alert alert-info d-none">
+        <h5 id="fp_title"></h5>
+        <p id="fp_details"></p>
+        <button type="button" id="flight_confirm_btn" class="btn btn-success btn-sm">Use this data</button>
+    </div>
+
+    <form method="post" id="flight_form">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary">{% trans "Save" %}</button>
+    </form>
+
+    <br />
+    <a href="{% url 'tripapp:dayprogram_detail' dayprogram.id %}">&larr; {{ dayprogram.description }}&nbsp;{{ dayprogram.tripdate|date:'d-M' }}</a>
+    <br /><br />
+
+    {{ dayprogram.id|json_script:"dayprogram-id" }}
+
+    <script>
+    document.getElementById('flight_lookup_btn').addEventListener('click', async () => {
+        const flightNumber = document.getElementById('flight_number_input').value.trim();
+        if (!flightNumber) return;
+
+        const previewBox = document.getElementById('flight_preview');
+        previewBox.classList.add('d-none');
+
+        try {
+            const resp = await fetch(`/api/flight-lookup/?flight_iata=${encodeURIComponent(flightNumber)}`);
+            const data = await resp.json();
+
+            if (!resp.ok) {
+                alert(data.error || 'Flight not found.');
+                return;
+            }
+
+            document.getElementById('fp_title').textContent =
+                `${data.flight_iata} — ${data.dep_iata} → ${data.arr_iata}`;
+
+            // Departure detail parts
+            const depParts = [];
+            if (data.dep_terminal) depParts.push(`terminal ${data.dep_terminal}`);
+            if (data.dep_gate) depParts.push(`gate ${data.dep_gate}`);
+            const depExtra = depParts.length ? ` (${depParts.join(' ')})` : '';
+
+            // Arrival detail parts
+            const arrParts = [];
+            if (data.arr_terminal) arrParts.push(`terminal ${data.arr_terminal}`);
+            if (data.arr_gate) arrParts.push(`gate ${data.arr_gate}`);
+            const arrExtra = arrParts.length ? ` (${arrParts.join(' ')})` : '';
+
+            document.getElementById('fp_details').textContent =
+                `Departure: ${data.dep_time || '?'}${depExtra} — Arrival: ${data.arr_time || '?'}${arrExtra} — Status: ${data.status || '-'}`;
+
+            previewBox.dataset.flight = JSON.stringify(data);
+            previewBox.classList.remove('d-none');
+        } catch (e) {
+            alert('An error occurred while fetching the flight information.');
+        }
+    });
+
+    document.getElementById('flight_confirm_btn').addEventListener('click', () => {
+        const data = JSON.parse(document.getElementById('flight_preview').dataset.flight);
+
+        document.getElementById('id_description').value = data.flight_iata || '';
+
+        document.getElementById('id_start_address').value =
+            `${data.dep_iata || ''} ${data.dep_city || ''} ${data.dep_country || ''}`.trim();
+        document.getElementById('id_end_address').value =
+            `${data.arr_iata || ''} ${data.arr_city || ''} ${data.arr_country || ''}`.trim();
+        if (data.dep_time) document.getElementById('id_start_time').value = data.dep_time.split(' ')[1]?.slice(0,5) || '';
+        if (data.arr_time) document.getElementById('id_end_time').value = data.arr_time.split(' ')[1]?.slice(0,5) || '';
+
+        document.getElementById('flight_preview').classList.add('d-none');
+    });
+   </script>
+{% endblock %}

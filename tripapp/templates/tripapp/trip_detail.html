@@ -166,6 +166,56 @@
         .tl-vibe-note { color: gray; font-size: 12px; font-style: italic; }
         .tl-future { font-size: 13px; color: gray; font-style: italic; }
 
+        .focus-days { display: flex; flex-direction: column; gap: 8px; }
+
+        .focus-day {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            text-decoration: none;
+            color: inherit;
+            transition: opacity 0.2s;
+        }
+
+        .focus-day.yesterday {
+            opacity: 0.45;
+        }
+
+        .focus-day.today {
+            border: 2px solid #C70039;
+            font-weight: 600;
+        }
+
+        .focus-day.future {
+            opacity: 1;
+        }
+
+        .focus-day-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .focus-day-badge {
+            font-size: 11px;
+            padding: 1px 8px;
+            border-radius: 6px;
+            color: gray;
+        }
+
+        .focus-day.today .focus-day-badge {
+            border: 1px solid #C70039;
+            color: #C70039;
+        }
+
+        .focus-day-date {
+            font-size: 13px;
+            color: gray;
+            white-space: nowrap;
+        }
 </style>
 </head>
 <body>
@@ -214,6 +264,7 @@
                     </a>
                     <ul class="dropdown-menu custom-dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                     <li><a class="dropdown-item" href="{% url 'tripapp:update_profile' %}">Account</a></li>
+                    <li><a class="dropdown-item" href="{% url 'tripapp:update_preferences' %}">{% trans "Preferences" %}</a></li>
                     {% if tripper %}<li><a class="dropdown-item" href="{% url 'tripapp:tripper_profile' tripper.id %}">{% trans "Settings" %}</a></li>{% endif %}
                     <li><hr class="dropdown-divider"></li>
                     {% if user.is_staff and enable_admin %}<li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>{% endif %}
@@ -266,7 +317,7 @@
     <h2>{% trans "Itinerary" %}</h2>
 
 
-    {% if view_mode == "grid" %}
+    {% if view_mode == "daynight" %}
         
     <div class="grid">
     {% for day_program in dayprograms %}
@@ -289,7 +340,7 @@
     </div>
 
 
-    {% elif view_mode == "vibe" %}
+    {% elif view_mode == "dayvibe" %}
         <div class="tl-days">
         {% for vd in vibe_days %}
             <div class="tl-day">
@@ -326,7 +377,30 @@
             </div>
         {% endfor %}
         </div>
-
+    {% elif view_mode == "focus" %}
+        {% if trip_ended %}
+            <div class="alert alert-secondary" style="text-align:center; padding: 30px;">
+                <div style="font-size: 28px;">&#127881;</div>
+                {% trans "This trip has ended." %}
+            </div>
+        {% else %}
+            <div class="focus-days">
+            {% for fd in focus_days %}
+                <a href="{% url 'tripapp:dayprogram_detail' fd.dayprogram.id %}"
+                class="focus-day {{ fd.state }}">
+                    <div class="focus-day-label">
+                        {% if fd.state == "yesterday" %}
+                            <span class="focus-day-badge">{% trans "yesterday" %}</span>
+                        {% elif fd.state == "today" %}
+                            <span class="focus-day-badge">{% trans "today" %}</span>
+                        {% endif %}
+                        <span><i>{{ fd.dayprogram.description }}</i></span>
+                    </div>
+                    <span class="focus-day-date">{{ fd.dayprogram.tripdate|date:"d M" }}</span>
+                </a>
+            {% endfor %}
+            </div>
+        {% endif %}
 
     {% else %}
         <ul id="dayprogram-list" class="dayprogram-list">
@@ -353,15 +427,15 @@
 
         {% endif %}  
 
-        {% if view_mode == "grid" %}
-            <a href="?view=vibe" class="fab" title="Vibe">&#127775;</a>
-        {% elif view_mode == "vibe" %}
-            <a href="?view=list" class="fab" title="List">&#9776;</a>
+        {% if view_mode == "day" %}
+            <a href="?view=daynight" class="fab" title="DayNight">&#127769;</a>
+        {% elif view_mode == "daynight" %}
+            <a href="?view=dayvibe" class="fab" title="Vibe">&#127775;</a>
+        {% elif view_mode == "dayvibe" %}
+            <a href="?view=focus" class="fab" title="Focus">&#128204;</a>
         {% else %}
-            <a href="?view=grid" class="fab" title="Grid">&#127769;</a>
-
-        {% endif %}
-                
+            <a href="?view=day" class="fab" title="Day">&#9776;</a>
+        {% endif %}                
         
         
     <br />

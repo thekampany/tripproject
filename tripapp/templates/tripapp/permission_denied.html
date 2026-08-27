@@ -6,7 +6,7 @@
 
 {% block content %}
 <div class="container text-center mt-5">
-    <h1 class="display-4">Permission Denied</h1>
+    <h1 class="display-4">{% trans "Permission Denied" %}</h1>
     <p class="lead">{% trans "No access to this part of the Trip" %}</p>
     <p>{% trans "Go back the route you came or go" %}</p>
     <a href="{% url 'tripapp:trip_list' %}" >

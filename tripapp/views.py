@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import Trip, Tripper, Badge, DayProgram, Checklist, ChecklistItem, Image, Question, Point
 from .models import BingoCard, BingoAnswer, BadgeAssignment
 from .models import Tribe, UserProfile, LogEntry, Link, Route, TripExpense, Location, ImmichPhotos, ScheduledItem
-from .models import TripperDocument, LogEntryLike, InviteCode, TripBudget
+from .models import TripperDocument, LogEntryLike, Comment, InviteCode, TripBudget
 from .models import TripOutline, MapMarkerDraft, OllamaJob, DayVibe, ItineraryNote, TripDocument
 from .models import Poll, PollOption, PollVote, ThingToDo
 from .forms import BadgeForm, TripForm, ChecklistItemForm, ImageForm, BingoAnswerForm
@@ -30,6 +30,7 @@ from .utils import generate_static_map_for_trip
 from .utils import country_code_to_name
 from .utils import reverse_geocode_area
 from .utils import distance_per_day
+from .utils import distance_per_tripper
 from .utils import get_latest_github_version
 from .utils import is_update_available
 from .utils import get_response_language
@@ -284,6 +285,8 @@ def trip_list(request):
         "enable_admin": enable_admin
         })
 
+
+
 @is_in_tribe
 def trip_detail(request, slug):
     trip = get_object_or_404(Trip, slug=slug)
@@ -297,16 +300,33 @@ def trip_detail(request, slug):
         tripper = Tripper.objects.filter(user=request.user).first()
     enable_admin = settings.ENABLE_ADMIN
 
-    view_mode = request.GET.get("view", "list")
     vibe_days = []
-    if view_mode == 'vibe':        
-        for dp in dayprograms:
-            vibes = DayVibe.objects.filter(dayprogram=dp).select_related('tripper')
-            vibe_days.append({
-                'dayprogram': dp,
-                'vibes': vibes,
-                'state': 'today' if dp.tripdate == today else ('past' if dp.tripdate < today else 'future'),
-            })
+    for dp in dayprograms:
+        vibes = DayVibe.objects.filter(dayprogram=dp).select_related('tripper')
+        vibe_days.append({
+            'dayprogram': dp,
+            'vibes': vibes,
+            'state': 'today' if dp.tripdate == today else ('past' if dp.tripdate < today else 'future'),
+        })
+
+    yesterday = today - timedelta(days=1)
+    focus_days = []
+    trip_ended = False
+    for dp in dayprograms:
+        if dp.tripdate < yesterday:
+            continue
+        state = 'today' if dp.tripdate == today else ('yesterday' if dp.tripdate == yesterday else 'future')
+        focus_days.append({'dayprogram': dp, 'state': state})
+
+    if dayprograms and not focus_days:
+        # de laatste dag van de trip ligt al vóór gisteren
+        trip_ended = True
+
+    default_view = 'day'
+    if request.user.is_authenticated:
+        default_view = request.user.userprofile.preferred_itinerary_view
+
+    view_mode = request.GET.get('view', default_view)
 
     return render(request, 'tripapp/trip_detail.html', {
         'trip': trip,
@@ -317,7 +337,9 @@ def trip_detail(request, slug):
         'tripper': tripper,
         'view_mode': view_mode,
         'enable_admin': enable_admin,
-        'vibe_days':vibe_days
+        'vibe_days': vibe_days,
+        'focus_days': focus_days,
+        'trip_ended': trip_ended,
     })
 
 @login_required
@@ -438,7 +460,7 @@ def dayprogram_detail(request, dayprogram_id):
     routes = dayprogram.routes.all()
     log_entries = dayprogram.logentries.all()
     logentry_ids = [le.id for le in log_entries]
-    likes = LogEntryLike.objects.filter(logentry_id__in=logentry_ids).select_related('tripper')
+    likes = LogEntryLike.objects.filter(logentry_id__in=logentry_ids).select_related('user', 'user__tripper')
 
     likes_per_logentry = {}
     for like in likes:
@@ -446,7 +468,7 @@ def dayprogram_detail(request, dayprogram_id):
 
     for le in log_entries:
         le.likes_list = likes_per_logentry.get(le.id, [])
-        le.likes_display = [f"{like.tripper.name} {like.emoji}" for like in le.likes_list]
+        le.likes_display = [f"{like.display_name} {like.emoji}" for like in le.likes_list]
 
         counts = Counter([like.emoji for like in le.likes_list])
         le.emoji_counts = dict(counts)
@@ -672,6 +694,7 @@ def dayprogram_detail(request, dayprogram_id):
           'is_day_in_future' : is_day_in_future,
           'ollama_configured': bool(getattr(settings, 'OLLAMA_URL', None)),
           'ollama_url': getattr(settings, 'OLLAMA_URL', None),
+          'flight_api_configured': bool(getattr(settings, 'AIRLABS_API_KEY', None)),
           'tracked_distance': tracked_distance,
           'distance_unit' : distance_unit,
           'my_vibe':      my_vibe,
@@ -814,6 +837,9 @@ def trip_map_view(request, trip_id):
     simplified_locations = []
     photolocations = []
     all_locations = []
+    preferred_map_view = 'osm'  # default
+    if request.user.is_authenticated:
+        preferred_map_view = request.user.userprofile.preferred_map_view
 
     if trip.date_from and trip.date_to: 
         points = trip.points.prefetch_related('dayprograms')
@@ -894,6 +920,8 @@ def trip_map_view(request, trip_id):
         'locations_truncated': len(all_locations) > len(simplified_locations),
         'max_locations': min(len(all_locations), len(simplified_locations)),
         'country_coords': country_coords,
+        'preferred_map_view': preferred_map_view,
+        'CARTO_API_KEY': getattr(settings, 'CARTO_API_KEY', None),
     })
 
 
@@ -918,6 +946,7 @@ def tribe_map_view(request, tribe_id):
     return render(request, 'tripapp/tribe_map.html', {
         'tribe': tribe,
         'trip_locations': trip_locations,
+        'CARTO_API_KEY' : getattr(settings, 'CARTO_API_KEY', None),
     })
 
 def convert_to_float(value):
@@ -978,6 +1007,9 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
             elif distance_unit is None:
                 tracked_distance = None
 
+    preferred_map_view = 'osm'  # default
+    if request.user.is_authenticated:
+        preferred_map_view = request.user.userprofile.preferred_map_view
 
     context = {
         'trip': trip,
@@ -994,6 +1026,8 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
         'has_openrouteservice' : has_openrouteservice,
         'distance_unit' : distance_unit,
         'tracked_distance' : tracked_distance,
+        'preferred_map_view' : preferred_map_view,
+        'CARTO_API_KEY' : getattr(settings, 'CARTO_API_KEY', None),
     }
 
     return render(request, 'tripapp/trip_dayprogram_points.html', context) 
@@ -1428,7 +1462,6 @@ def permission_denied(request, exception=None):
 @login_required
 def save_event(request):
     if request.method == 'POST':
-        print(json.loads(request.body))
         try:
             data = json.loads(request.body)
         except json.JSONDecodeError:
@@ -1438,6 +1471,7 @@ def save_event(request):
         marker_type = data.get('type')
         latitude = data.get('latitude')
         longitude = data.get('longitude')
+        address = data.get('address', '')   # <-- komma weg
         event_id = data.get('id')
         trip_id = data.get('trip')
         trip = get_object_or_404(Trip, pk=trip_id)
@@ -1452,6 +1486,7 @@ def save_event(request):
             event.marker_type = marker_type
             event.latitude = latitude
             event.longitude = longitude
+            event.address = address
             event.trip = trip
             event.save()
             if dayprogram_id:
@@ -1462,6 +1497,7 @@ def save_event(request):
                 marker_type=marker_type,
                 latitude=latitude,
                 longitude=longitude,
+                address=address,
                 trip=trip
             )
             if dayprogram_id:
@@ -1470,7 +1506,7 @@ def save_event(request):
         return JsonResponse({'message': 'Event saved successfully!'})
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
-
+    
 @is_in_tribe
 def add_logentry(request, dayprogram_id):
     dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
@@ -2170,7 +2206,7 @@ def generate_html_with_images(trip):
                 html_content += f"""
                 <li>
                     <strong>{item.start_time} - {item.end_time}:</strong> {item.category}  
-                    <br>📍 {item.start_address} ➝ {item.end_address if item.end_address else 'N/A'}
+                    <br>📍 {item.start_address}{f' ➝ {item.end_address}' if item.end_address else ''}
                 </li>
                 """
                 if item.category == "Transportation" and item.transportation_type:
@@ -2198,10 +2234,20 @@ def generate_html_with_images(trip):
             for log in day.logentries.all():
                 likes_str = ""
                 if log.likes.exists():
-                    likes_list = [f"{like.tripper.name} {like.emoji}" for like in log.likes.select_related("tripper")]
+                    likes_list = [f"{like.display_name} {like.emoji}" for like in log.likes.select_related("user", "user__tripper")]
                     likes_str = " [" + ", ".join(likes_list) + "]"
                 html_content += f"<p><strong>{log.tripper.name}:</strong> {log.logentry_text}{likes_str}</p>"
 
+                if log.comments.exists():
+                    html_content += "<div style='margin-left:20px; padding-left:10px; border-left:2px solid #ddd;'>"
+                    for comment in log.comments.select_related("user", "user__tripper").all():
+                        html_content += f"""
+                        <p style="font-size:10px; margin:4px 0;">
+                            <strong>{comment.display_name}</strong>
+                            <span style="color:#999;">({comment.created_at.strftime('%d-%m %H:%M')})</span>:
+                            {comment.text}
+                        </p>"""
+                    html_content += "</div>"
 
         vibes = DayVibe.objects.filter(dayprogram=day).select_related('tripper')
         if vibes.exists():
@@ -2259,6 +2305,20 @@ def generate_html_with_images(trip):
                 else:
                     html_content += f'<p>{assignment.badge.name}</p>'
             
+        # Distance tracking
+        tripper_tracked_distance = None
+        tripper_distance_unit = None
+        if tripper.dawarich_url and tripper.dawarich_api_key:
+            tripper_tracked_distance = distance_per_tripper(tripper, trip.date_from, trip.date_to)
+            tripper_distance_unit = settings.DISTANCE_UNIT if settings.DISTANCE_UNIT in ('km', 'mi') else None
+            if tripper_distance_unit == 'mi':
+                tripper_tracked_distance = tripper_tracked_distance / 1.609
+            elif tripper_distance_unit is None:
+                    tripper_tracked_distance = None
+
+            html_content += f'<p>Tracked distance for {tripper.name}: {tripper_tracked_distance} {tripper_distance_unit}</p>'
+
+
 
         html_content += "</div>"
 
@@ -2521,18 +2581,17 @@ class LogEntryViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], url_path='like')
     def like(self, request, pk=None):
         logentry = self.get_object()
-        tripper = Tripper.objects.get(user=request.user)
         emoji = request.data.get('emoji')
 
-        if not tripper or not emoji:
+        if not emoji:
             return Response(
-                {"error": _("Tripper and emoji mandatory.")},
+                {"error": _("Emoji mandatory.")},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         like, created = LogEntryLike.objects.get_or_create(
             logentry=logentry,
-            tripper=tripper,
+            user=request.user,
             emoji=emoji,
         )
         if not created:
@@ -2547,18 +2606,17 @@ class LogEntryViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], url_path='unlike')
     def unlike(self, request, pk=None):
         logentry = self.get_object()
-        tripper_id = request.data.get('tripper')
         emoji = request.data.get('emoji')
 
-        if not tripper_id or not emoji:
+        if not emoji:
             return Response(
-                {"error": _("Tripper and emoji mandatory.")},
+                {"error": _("Emoji mandatory.")},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         like = LogEntryLike.objects.filter(
             logentry=logentry,
-            tripper_id=tripper_id,
+            user=request.user,
             emoji=emoji
         ).first()
 
@@ -2570,7 +2628,6 @@ class LogEntryViewSet(viewsets.ModelViewSet):
 
         like.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
 
 
 @login_required
@@ -2648,6 +2705,7 @@ def create_itineraryidea_daylocations(request):
     tripper = get_object_or_404(Tripper, user=request.user)
     return render(request, 'tripapp/create_trip_brainstorm.html', {
         'tripper': tripper,
+        'CARTO_API_KEY':  getattr(settings, 'CARTO_API_KEY', None)
     })
 
 @csrf_exempt
@@ -4159,6 +4217,7 @@ def edit_map_markers(request, idea_pk):
         'day_locations':       day_locations,
         'overnight_locations': overnight_locations,
         'notes':               notes,
+        'CARTO_API_KEY':       getattr(settings, 'CARTO_API_KEY', None)
     })
 
 
@@ -4851,3 +4910,197 @@ def delete_thing_to_do(request, thing_id):
         return JsonResponse({'ok': True})
 
     return JsonResponse({'error': 'POST only'}, status=405)
+
+
+def add_flight(request, dayprogram_id):
+    if not getattr(settings, 'AIRLABS_API_KEY', None):
+        return redirect('tripapp:dayprogram_detail', dayprogram_id=dayprogram_id)
+
+    dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
+
+    if request.method == 'POST':
+        form = ScheduledItemForm(request.POST)
+        if form.is_valid():
+            scheduled_item = form.save(commit=False)
+            scheduled_item.dayprogram = dayprogram
+            scheduled_item.category = 'Transportation'
+            scheduled_item.transportation_type = 'Airplane'
+            scheduled_item.save()
+            messages.success(request, "Flight added.")
+            return redirect('tripapp:dayprogram_detail', dayprogram.id)
+    else:
+        form = ScheduledItemForm(initial={
+            'category': 'Transportation',
+            'transportation_type': 'Airplane',
+        })
+
+    return render(request, 'tripapp/add_flight.html', {
+        'dayprogram': dayprogram,
+        'form': form,
+    })
+
+from datetime import datetime
+
+def _parse_airlabs_time(value):
+    """'2026-08-21 14:30' -> time(14, 30), of None."""
+    if not value:
+        return None
+    try:
+        return datetime.strptime(value, '%Y-%m-%d %H:%M').time()
+    except ValueError:
+        return None
+
+def _lookup_flight(flight_iata):
+    resp = requests.get(
+        'https://airlabs.co/api/v9/flight',
+        params={'flight_iata': flight_iata, 'api_key': settings.AIRLABS_API_KEY},
+        timeout=8,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+
+    if 'error' in data:
+        return None, JsonResponse({'error': data['error'].get('message', 'Flight not found.')}, status=404)
+
+    flight = data.get('response')
+    if not flight:
+        return None, JsonResponse({'error': 'Flight not found.'}, status=404)
+
+    return flight, None
+
+
+@require_GET
+def flight_lookup(request):
+    flight_iata = request.GET.get('flight_iata', '').strip().upper()
+    if not flight_iata:
+        return JsonResponse({'error': 'No flightnumber entered.'}, status=400)
+
+    try:
+        flight, error_response = _lookup_flight(flight_iata)
+    except requests.RequestException:
+        return JsonResponse({'error': 'Flightnr API not reachable.'}, status=502)
+
+    if error_response:
+        return error_response
+
+    result = {
+        'flight_iata': flight.get('flight_iata'),
+        'dep_iata': flight.get('dep_iata'),
+        'dep_time': flight.get('dep_time'),
+        'dep_terminal': flight.get('dep_terminal'),
+        'dep_gate': flight.get('dep_gate'),
+        'arr_iata': flight.get('arr_iata'),
+        'arr_time': flight.get('arr_time'),
+        'arr_gate': flight.get('arr_gate'),
+        'status': flight.get('status'),
+        "dep_name": flight.get('dep_name'),
+        "dep_city": flight.get('dep_city'),
+        "dep_country": flight.get('dep_country'),
+        "arr_name": flight.get('arr_name'),
+        "arr_city": flight.get('arr_city'),
+        "arr_country": flight.get('arr_country'),
+        "airline_name": flight.get('airline_name'),
+    }
+    return JsonResponse(result)
+
+
+@require_POST
+def refresh_flight_status(request, scheduled_item_id):
+    item = get_object_or_404(ScheduledItem, pk=scheduled_item_id)
+
+    if item.category != 'Transportation' or item.transportation_type != 'Airplane' or not item.description:
+        return JsonResponse({'error': 'Not a flight item.'}, status=400)
+
+    flight_iata = item.description.strip().upper()
+
+    try:
+        flight, error_response = _lookup_flight(flight_iata)  
+    except requests.RequestException:
+        return JsonResponse({'error': 'Flightnr API not reachable.'}, status=502)
+
+    if error_response:
+        return error_response
+
+    flight_status = flight.get('status')
+    flight_estimated_arrival = flight.get('arr_estimated')
+    flight_estimated_departure = flight.get('dep_estimated')
+    flight_arrival_delayed = flight.get('arr_delayed')
+    flight_departure_delayed = flight.get('dep_delayed')
+
+
+    changed_times = False
+
+    new_dep_time = _parse_airlabs_time(flight.get('dep_time'))
+    if new_dep_time and new_dep_time != item.start_time:
+        item.start_time = new_dep_time
+        changed_times = True
+
+    new_arr_time = _parse_airlabs_time(flight.get('arr_time'))
+    if new_arr_time and new_arr_time != item.end_time:
+        item.end_time = new_arr_time
+        changed_times = True
+
+    dep_gate = flight.get('dep_gate')
+    if dep_gate:
+        base_dep = item.start_address.split(' — gate ')[0] if item.start_address else (flight.get('dep_name') or '')
+        new_start_address = f"{base_dep} — gate {dep_gate}" if base_dep else f"gate {dep_gate}"
+        if new_start_address != item.start_address:
+            item.start_address = new_start_address
+            changed_times = True
+
+    arr_gate = flight.get('arr_gate')
+    if arr_gate:
+        base_arr = item.end_address.split(' — gate ')[0] if item.end_address else (flight.get('arr_name') or '')
+        new_end_address = f"{base_arr} — gate {arr_gate}" if base_arr else f"gate {arr_gate}"
+        if new_end_address != item.end_address:
+            item.end_address = new_end_address
+            changed_times = True
+
+    item.save()
+
+    return JsonResponse({
+        'flight_status': flight_status,
+        'flight_arrival_estimated': flight_estimated_arrival,
+        'flight_departure_estimated': flight_estimated_departure,
+        'flight_arrival_delayed': flight_arrival_delayed,
+        'flight_departure_delayed': flight_departure_delayed,
+        'changed': changed_times,
+        'start_time': item.start_time.strftime('%H:%M') if item.start_time else None,
+        'end_time': item.end_time.strftime('%H:%M') if item.end_time else None,
+        'start_address': item.start_address,
+        'end_address': item.end_address,
+    })
+from .forms import UserProfilePreferencesForm
+
+
+@login_required
+def update_preferences(request):
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        form = UserProfilePreferencesForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Preferences updated.")
+            return redirect('tripapp:update_preferences')
+    else:
+        form = UserProfilePreferencesForm(instance=profile)
+
+    return render(request, 'tripapp/update_preferences.html', {'form': form})
+
+@is_in_tribe
+def add_comment(request, logentry_id):
+    logentry = get_object_or_404(LogEntry, pk=logentry_id)
+
+    if request.method == "POST":
+        text = request.POST.get("text", "").strip()
+        if text:
+            Comment.objects.create(
+                logentry=logentry,
+                user=request.user,
+                text=text,
+            )
+        return redirect(request.META.get("HTTP_REFERER", "tripapp:home"))
+
+    return redirect("tripapp:home")
+
