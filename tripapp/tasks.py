@@ -2,7 +2,7 @@
 
 from django.utils import timezone
 from django.db import models
-from django_q.models import Schedule
+from django_q.models import Schedule, Task
 from .models import Trip,Badge, Tripper, BadgeAssignment, Trip, Location, ImmichPhotos, BingoCard, BingoAnswer, LogEntry, DayProgram, OllamaJob
 from .models import User, ItineraryIdea, ItineraryIdeaDay, DayLocation, OvernightLocation, Checklist
 import requests
@@ -18,7 +18,10 @@ from collections import Counter
 from statistics import mean
 import httpx
 import json
+from django.core.cache import cache
+import logging
 
+logger = logging.getLogger(__name__)
 
 def assign_badges():
     logs = []
@@ -433,24 +436,44 @@ if not Schedule.objects.filter(func='tripapp.tasks.fetch_and_store_immich_photos
     )
 
 
+def get_last_successful_run(func_name):
+    last_task = Task.objects.filter(func=func_name, success=True).order_by('-started').first()
+    return last_task.started if last_task else None
+
+
+
 def update_dayprogram_maps():
-    logs = []
-    today = timezone.now().date()
-    horizon = today + timezone.timedelta(days=31)
+    lock_id = "update_dayprogram_maps_lock"
+    if not cache.add(lock_id, "locked", timeout=3600):
+        logger.info("update_dayprogram_maps already running, skipping.")
+        return "Skipped: already running"
 
-    relevant_dayprograms = DayProgram.objects.filter(
-        tripdate__gte=today - timezone.timedelta(days=1),
-        tripdate__lte=horizon,
-    )
-    logs.append(f"Start generating static maps for {relevant_dayprograms.count()} relevant days")
+    try:
+        logs = []
+        today = timezone.now().date()
+        horizon = today + timezone.timedelta(days=31)
 
-    for dayprogram in relevant_dayprograms:
-        logs.append(f"Generating map for DayProgram {dayprogram.id} on {dayprogram.tripdate}")
-        generate_static_map(dayprogram)
+        since = get_last_successful_run('tripapp.tasks.update_dayprogram_maps')
+        if since is None:
+            since = timezone.now() - timezone.timedelta(days=1)
+        logs.append(f"Using since={since} as basis for change detection")
 
-    logs.append("End Generating")
-    return "\n".join(logs)
-        
+        relevant_dayprograms = DayProgram.objects.filter(
+            tripdate__gte=today - timezone.timedelta(days=1),
+            tripdate__lte=horizon,
+        )
+        logs.append(f"Start generating static maps for {relevant_dayprograms.count()} relevant days")
+
+        for dayprogram in relevant_dayprograms:
+            logs.append(f"Generating map for DayProgram {dayprogram.id} on {dayprogram.tripdate}")
+            generate_static_map(dayprogram, since=since)
+
+        logs.append("End Generating")
+        return "\n".join(logs)
+    finally:
+        cache.delete(lock_id)
+
+
 if not Schedule.objects.filter(func='tripapp.tasks.update_dayprogram_maps').exists():
     Schedule.objects.create(
         func='tripapp.tasks.update_dayprogram_maps',
@@ -562,8 +585,6 @@ if not Schedule.objects.filter(func='tripapp.tasks.fetch_and_store_yesterdays_we
 
 def run_ollama(job_id: str, trip_id: str) -> str:
     ollama_api_url = settings.OLLAMA_URL
-    import logging
-    logger = logging.getLogger(__name__)
     logger.error(f"DEBUG OLLAMA_URL: '{ollama_api_url}'")
     logger.error(f"DEBUG OLLAMA_API_KEY aanwezig: {bool(getattr(settings, 'OLLAMA_API_KEY', None))}")
     job = OllamaJob.objects.get(id=job_id)

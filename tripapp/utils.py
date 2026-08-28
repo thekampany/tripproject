@@ -63,7 +63,11 @@ def simplify_locations(locations, epsilon=0.0005):
     coords = [(loc.latitude, loc.longitude) for loc in locations]
     return rdp(coords, epsilon=epsilon)
 
-def dayprogram_has_new_mapdata(dayprogram, since):
+
+def dayprogram_has_new_mapdata(dayprogram, since=None):
+    if since is None:
+        since = timezone.now() - timedelta(days=1)
+
     if dayprogram.points.filter(updated_at__gt=since).exists():
         return True
 
@@ -78,16 +82,17 @@ def dayprogram_has_new_mapdata(dayprogram, since):
 
     return False
 
-def generate_static_map(dayprogram):
-    #staticmaps still depends on GET, cant find the right POST spec
+
+
+def generate_static_map(dayprogram, since=None):
     #cant get strokeDasharray to work
-    #replace yesterday by last successful run of the task
 
-    yesterday = timezone.now() - timedelta(days=1)
-    if not dayprogram_has_new_mapdata(dayprogram, yesterday):
-        logger.info("No new data since last run (%s), skipping map generation.", yesterday)
+    if since is None:
+        since = timezone.now() - timedelta(days=1)
+
+    if not dayprogram_has_new_mapdata(dayprogram, since):
+        logger.info("No new data since last run (%s), skipping map generation.", since)
         return
-
 
     staticmaps_url = settings.STATICMAPS_URL
     staticmaps_api_key = settings.STATICMAPS_API_KEY
@@ -111,7 +116,7 @@ def generate_static_map(dayprogram):
     logger.info("Processing dayprogram for date: %s", tripdate)
 
     locations = list(
-        Location.objects.filter(timestamp__date=tripdate).values_list("latitude", "longitude")
+        Location.objects.filter(timestamp__date=tripdate).values_list("latitude", "longitude").order_by("timestamp")
     )    
     if locations:
         logger.info("Found %d locations for polyline.", len(locations))
@@ -160,11 +165,100 @@ def generate_static_map(dayprogram):
         params.append(("markers", marker_values))
     if staticmaps_api_key:
         params.append(("api_key", staticmaps_api_key))
-    params.append(("basemap","osm"))
+    params.append(("basemap","otm"))
 
     request_url = f"{staticmaps_url}?{urlencode(params)}"
     
-    response = requests.get(request_url)
+    response = requests.get(request_url, timeout=30)
+    if response.status_code == 200:
+        filename = f"map_dayprogram_{dayprogram.id}.png"
+        if dayprogram.map_image:
+            old_path = dayprogram.map_image.path
+            old_name = dayprogram.map_image.name
+            logger.info("Deleting old map image: %s (exists: %s)", old_path, os.path.exists(old_path))
+            dayprogram.map_image.delete(save=False)
+            logger.info("After delete, still exists: %s", os.path.exists(old_path))
+        else:
+            logger.info("map_image is falsy, skipping delete — huidige waarde: %r", dayprogram.map_image)
+        dayprogram.map_image.save(filename, ContentFile(response.content), save=True)
+    else:
+        logger.warning("Static map request failed with status %d", response.status_code)
+
+
+def generate_static_map_post(dayprogram, since=None):
+    # replace yesterday by last successful run of the task
+
+    if since is None:
+        since = timezone.now() - timedelta(days=1)
+
+    if not dayprogram_has_new_mapdata(dayprogram, since):
+        logger.info("No new data since last run (%s), skipping map generation.", since)
+        return
+
+    staticmaps_url = settings.STATICMAPS_URL
+    staticmaps_api_key = settings.STATICMAPS_API_KEY
+
+    if not staticmaps_url:
+        logger.info("No staticmaps url configured.")
+        return
+
+    markers = []
+    marker_values = None
+    polyline_values = []
+
+    if dayprogram.points.exists():
+        logger.info("Processing points for markers.")
+        for point in dayprogram.points.all():
+            markers.append(f"{point.latitude},{point.longitude}")
+
+    if markers:
+        marker_values = f"width:20|height:20|{'|'.join(markers)}"
+
+    tripdate = dayprogram.tripdate
+    logger.info("Processing dayprogram for date: %s", tripdate)
+
+    locations = list(
+        Location.objects.filter(timestamp__date=tripdate).values_list("latitude", "longitude").order_by("timestamp")
+    )
+    if locations:
+        logger.info("Found %d locations for polyline.", len(locations))
+
+        simplified = locations
+
+        polyline_str = "|".join([f"{lat},{lon}" for lat, lon in simplified])
+        polyline_values.append(f"weight:1|color:blue|{polyline_str}")
+
+    for route in dayprogram.routes.all():
+        if route.gpx_file:
+            with route.gpx_file.open("r") as f:
+                gpx = gpxpy.parse(f)
+                gpx_points = []
+                for track in gpx.tracks:
+                    for segment in track.segments:
+                        for point in segment.points:
+                            gpx_points.append([point.latitude, point.longitude])
+
+                if gpx_points:
+                    simplified = gpx_points
+
+                    polyline_str = "|".join(f"{lat},{lon}" for lat, lon in simplified)
+                    polyline_values.append(f"weight:1|color:green|{polyline_str}")
+
+    payload = {
+        "basemap": "otm",
+    }
+    if polyline_values:
+        payload["polyline"] = polyline_values
+    if marker_values:
+        payload["markers"] = [marker_values]
+
+    headers = {"Content-Type": "application/json"}
+    if staticmaps_api_key:
+        headers["api_key"] = staticmaps_api_key
+
+    logger.info("StaticMap payload keys: %s", list(payload.keys()))
+
+    response = requests.post(staticmaps_url, headers=headers, json=payload, timeout=30)
     if response.status_code == 200:
         filename = f"map_dayprogram_{dayprogram.id}.png"
         if dayprogram.map_image:
@@ -210,11 +304,11 @@ def generate_static_map_for_trip(trip):
     logger.info(f"StaticTripMap query_parts: {query_parts}") 
 
     if staticmaps_api_key:
-        request_url = f"{base_url}&api_key={staticmaps_api_key}&basemap=osm"
+        request_url = f"{base_url}&api_key={staticmaps_api_key}&basemap=otm"
     else:
         request_url = base_url
 
-    response = requests.get(request_url)
+    response = requests.get(request_url, timeout=30)
     if response.status_code != 200:
         logger.warning(f"Staticmap request failed with status {response.status_code}")
         return None

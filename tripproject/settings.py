@@ -206,7 +206,7 @@ Q_CLUSTER = {
     'workers': 2,
     'recycle': 50,
     'timeout': 900,
-    'retry': 960,
+    'retry': 1800,
     'max_attempts': 2,
     'scheduler': 'django_q.schedule.Schedule',
     'orm': 'default'

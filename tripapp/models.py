@@ -18,6 +18,13 @@ from django.core.files.base import ContentFile
 class Tribe(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        null=True,
+        blank=True,
+        related_name="created_tribes"
+    )
 
     def __str__(self):
         return self.name

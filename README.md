@@ -97,6 +97,7 @@ OLLAMA_MODEL ='tinyllama'
 
 TRAVEL_RISK_API_KEY=trk_abcde12345 # api key from https://travelriskapi.com
 AIRLABS_API_KEY=1234-1234 # api key from https://airlabs.co/api/v9/flight
+CARTO_API_KEY=cb-1234 # api key from https://carto.com/basemaps/apikey/
 
 ALLOW_REGISTRATION=False
 
