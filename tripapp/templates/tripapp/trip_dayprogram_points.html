@@ -12,11 +12,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js" integrity="sha384-mFKkGiGvT5vo1fEyGCD3hshDdKmW3wzXW/x+fWriYJArD0R3gawT6lMvLboM22c0" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.js" integrity="sha384-rGCFEOuLo3qUtZTJs5enHPutiikUQ6AJroPg2rQqOhmXBPmZdvhwK2aCmkhe9gwo" crossorigin="anonymous"></script>    
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.83.2/dist/L.Control.Locate.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js" integrity="sha384-59TTE1BOzlD9d1Eos6CaVvKNnMh2h2pll99VpZqrJpeHqoXYW/RCuit5u39X9XtQ" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="{% static 'css/trip_menu.css' %}">
     <style>
         html,body { 
         {% if dayprogram.trip.image %}
@@ -219,29 +226,6 @@
             border-radius: 4px;
         }
 
-        #route-toggle {
-            position: fixed;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 1000;
-            background: var(--color-background);
-            border: 1px solid rgba(0,0,0,.15);
-            border-right: none;
-            border-radius: 8px 0 0 8px;
-            padding: 12px 8px;
-            cursor: pointer;
-            font-size: 12px;
-            writing-mode: vertical-rl;
-            text-orientation: mixed;
-            box-shadow: -2px 0 8px rgba(0,0,0,.1);
-            text-align: center;
-            line-height: 1.3;
-            transition: right .3s;
-        }
-        #route-toggle:hover { background: #f5f5f5; }
-        #route-toggle.open  { right: 340px; }
-
         #route-sidebar {
             position: fixed;
             right: -340px;
@@ -274,10 +258,40 @@
             overflow-y: auto;
             padding: 12px;
         }
-        .leaflet-popup-content-wrapper {
-            border-radius: 16px;
+
+        #route-toggle {
+            position: fixed;
+            right: 0;
+            z-index: 1000;
+            background: var(--color-background);
+            border: 1px solid rgba(0,0,0,.15);
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+            cursor: pointer;
+            font-size: 12px;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            box-shadow: -2px 0 8px rgba(0,0,0,.1);
+            text-align: center;
+            line-height: 1.3;
+            transition: right .3s;
+
+            width: 40px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
         }
-        </style>
+
+
+        #route-toggle {
+            top: 30%;
+            transform: translateY(-50%);
+        }
+        #route-toggle.open { right: 340px; }
+
+    </style>
 </head>
 <body>
 <div class="tripappcard">
@@ -310,6 +324,9 @@
         data-dayprogram-id="{{ dayprogram.id }}"
         data-csrf="{{ csrf_token }}">
     </div>
+    <!-- ── Menu toggle ── -->
+    {% include 'tripapp/partials/trip_menu.html' %}
+    <script src="{% static 'js/trip_menu.js' %}"></script>
 
     <!-- ── Route planner toggle ── -->
     <div id="route-toggle" onclick="toggleRoutePlanner()">Route<br>planner</div>
@@ -735,6 +752,11 @@
     function toggleRoutePlanner() {
         document.getElementById('route-sidebar').classList.toggle('open');
         document.getElementById('route-toggle').classList.toggle('open');
+    }
+
+    function toggleTripMenu() {
+        document.getElementById('menu-sidebar').classList.toggle('open');
+        document.getElementById('menu-toggle').classList.toggle('open');
     }
 
     function showItineraries(data) {
@@ -1423,6 +1445,25 @@
 
     {% endif %}
 
+
+    // --- Geolocation: "My location" ---
+    var locateControl = L.control({position: 'topleft'});
+    L.control.locate({
+        position: 'topleft',
+        setView: 'once',        
+        maxZoom: 16,
+        icon: 'my-locate-icon',
+        drawCircle: true,
+        strings: {
+            title: "My Location"
+        },
+        locateOptions: {
+            enableHighAccuracy: true
+        }
+    }).addTo(map);
+
+
+
     {% if points or locations or photolocations or country_coords or dayprogram.routes.all %}
 
         // Function to handle double-clicks on the map
@@ -1508,8 +1549,8 @@
     <p>No points defined for this day / No registered tracked locations</p>
   {% endif %}
   <p>&nbsp;</p>
-  <p><a href="{% url 'tripapp:dayprogram_detail' dayprogram.id %}" style="text-decoration:none" >&crarr; Dayprogram {{ dayprogram.description }}</a></p>
-  <p>&nbsp;</p>
+  <!--<p><a href="{% url 'tripapp:dayprogram_detail' dayprogram.id %}" style="text-decoration:none" >&crarr; Dayprogram {{ dayprogram.description }}</a></p>
+  <p>&nbsp;</p>-->
 </div>
 </div>
 </body>

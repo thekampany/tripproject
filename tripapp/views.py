@@ -832,6 +832,7 @@ from .utils import get_country_coords
 @is_in_tribe
 def trip_map_view(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
+    dayprograms = trip.dayprograms.all().order_by('dayprogramnumber')
     points = trip.points.none()
     projected_itinerary_points = trip.points.none()
     simplified_locations = []
@@ -922,6 +923,7 @@ def trip_map_view(request, trip_id):
         'country_coords': country_coords,
         'preferred_map_view': preferred_map_view,
         'CARTO_API_KEY': getattr(settings, 'CARTO_API_KEY', None),
+        'dayprograms': dayprograms,
     })
 
 
@@ -962,6 +964,8 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
     trippers = trip.trippers.all()
     dayprogram = get_object_or_404(DayProgram, id=dayprogram_id)
     trippers_on_this_trip = dayprogram.trip.trippers.all()
+    trippers_names = [tripper.name for tripper in trippers_on_this_trip]
+    logged_on_tripper = Tripper.objects.filter(name=request.user.username).first()
 
     trip_points = Point.objects.filter(trip=trip)
 
@@ -1011,12 +1015,17 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
     if request.user.is_authenticated:
         preferred_map_view = request.user.userprofile.preferred_map_view
 
+
+    enable_admin = settings.ENABLE_ADMIN
+
     context = {
         'trip': trip,
         'dayprogram': dayprogram,
         'points': points,
         'trip_name_no_spaces':trip_name_no_spaces,
         'tribe_name_no_spaces' : tribe_name_no_spaces,
+        'trippers_names' : trippers_names,
+        'logged_on_tripper' : logged_on_tripper,
         'first_point': first_point,
         'locations': locations,
         'photolocations': photolocations,
@@ -1028,6 +1037,7 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
         'tracked_distance' : tracked_distance,
         'preferred_map_view' : preferred_map_view,
         'CARTO_API_KEY' : getattr(settings, 'CARTO_API_KEY', None),
+        'enable_admin' : enable_admin,
     }
 
     return render(request, 'tripapp/trip_dayprogram_points.html', context) 
@@ -1186,6 +1196,7 @@ def create_tribe(request):
         form = TribeCreationForm(request.POST)
         if form.is_valid():
             tribe = form.save(commit=False)
+            tribe.created_by = request.user
             tribe.save()
             user_profile = request.user.userprofile
             user_profile.tribes.add(tribe)

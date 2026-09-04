@@ -503,10 +503,15 @@ a.navigation-link:hover {
     background: transparent !important;
     box-shadow: none !important;
     border: none !important;
+    border-radius: 16px !important;
 }
 
 .leaflet-popup-tip {
     background: transparent !important;
+}
+.my-locate-icon::before {
+    content: "🧭";
+    font-size: 16px;
 }
 .custom-popup {
     font-family: sans-serif;

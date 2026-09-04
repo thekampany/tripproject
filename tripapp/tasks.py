@@ -12,6 +12,7 @@ from django.utils.timezone import make_aware
 import pytz
 import time
 from .utils import generate_static_map
+from .utils import generate_static_map_post
 from django.conf import settings
 from django.utils.translation import gettext as _
 from collections import Counter
@@ -441,39 +442,6 @@ def get_last_successful_run(func_name):
     return last_task.started if last_task else None
 
 
-
-def update_dayprogram_maps():
-    lock_id = "update_dayprogram_maps_lock"
-    if not cache.add(lock_id, "locked", timeout=3600):
-        logger.info("update_dayprogram_maps already running, skipping.")
-        return "Skipped: already running"
-
-    try:
-        logs = []
-        today = timezone.now().date()
-        horizon = today + timezone.timedelta(days=31)
-
-        since = get_last_successful_run('tripapp.tasks.update_dayprogram_maps')
-        if since is None:
-            since = timezone.now() - timezone.timedelta(days=1)
-        logs.append(f"Using since={since} as basis for change detection")
-
-        relevant_dayprograms = DayProgram.objects.filter(
-            tripdate__gte=today - timezone.timedelta(days=1),
-            tripdate__lte=horizon,
-        )
-        logs.append(f"Start generating static maps for {relevant_dayprograms.count()} relevant days")
-
-        for dayprogram in relevant_dayprograms:
-            logs.append(f"Generating map for DayProgram {dayprogram.id} on {dayprogram.tripdate}")
-            generate_static_map(dayprogram, since=since)
-
-        logs.append("End Generating")
-        return "\n".join(logs)
-    finally:
-        cache.delete(lock_id)
-
-
 if not Schedule.objects.filter(func='tripapp.tasks.update_dayprogram_maps').exists():
     Schedule.objects.create(
         func='tripapp.tasks.update_dayprogram_maps',
@@ -562,8 +530,6 @@ def fetch_and_store_yesterdays_weather():
                 "sunrise": sunrise,
                 "sunset": sunset,
             }
-
-
 
             dp.recorded_weather = data  
             dp.recorded_weather_text = description

@@ -1,0 +1,92 @@
+{% load i18n %}
+<!-- ── Menu toggle ── -->
+<div id="menu-toggle" onclick="toggleTripMenu()">Menu</div>
+
+<div id="menu-sidebar">
+    <div id="menu-sidebar-header">
+        <span>{% trans "Menu" %}</span>
+        <button onclick="toggleTripMenu()" style="background:none;border:none;font-size:18px;cursor:pointer;">×</button>
+    </div>
+    <div id="menu-sidebar-content">
+        <div class="tripmenuitem">
+        <div class="dropdown">
+            <a class="btn" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+            <i class="bi bi-person"></i><span>{{ user.username }}</span>
+            </a>
+            <ul class="dropdown-menu custom-dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                <li><a class="dropdown-item" href="{% url 'tripapp:update_profile' %}">Account</a></li>
+                <li><a class="dropdown-item" href="{% url 'tripapp:update_preferences' %}">{% trans "Preferences" %}</a></li>
+                {% if logged_on_tripper %}<li><a class="dropdown-item" href="{% url 'tripapp:tripper_profile' logged_on_tripper.id %}">{% trans "Settings" %}</a></li>{% endif %}
+                <li><hr class="dropdown-divider"></li>
+                {% if user.is_staff and enable_admin %}<li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>{% endif %}
+                {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'tripapp:task_manager' %}">Background Tasks</a></li>{% endif %}
+                {% if user.is_staff %}
+                    <li><a class="dropdown-item" href="{% url 'tripapp:ollama_job_list' %}">Stupid AI</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                {% endif %}
+                {% if user.is_authenticated %}<li><a class="dropdown-item" href="{% url 'tripapp:logout' %}">Logout</a></li>{% endif %}
+            </ul>
+        </div>
+        </div>
+
+        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_detail' trip.slug %}" class="btn"><i class="bi bi-arrow-90deg-up"></i><span>{% trans "Itinerary" %}</span></a></div>
+        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_map_view' trip.id %}" class="btn"><i class="bi bi-map"></i><span>Trip Map</span></a></div>
+        <div class="tripmenuitem">
+        <div class="dropdown">
+            <a class="btn" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-three-dots"></i><span style="font-size: 12px;">{% trans "More" %} Trip</span>
+            </a>
+            <ul class="dropdown-menu custom-dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                <li><a class="dropdown-item" href="{% url 'tripapp:trip_checklist' trip.slug  %}">CheckPackList</a></li>
+                <li><a class="dropdown-item" href="{% url 'tripapp:create_thing_to_do' trip.id %}">{% trans "Things to do" %}</a></li>
+                {% if tripper %}
+                    {% if trip.use_expenses %}
+                    <li><a class="dropdown-item" href="{% url 'tripapp:trip_expenses_list' trip.id %}">{% trans "Expenses" %}</a></li>
+                    {% endif %}
+                    <li><a class="dropdown-item" href="{% url 'tripapp:trip_documents' trip.id %}">{% trans "Documents" %}</a></li>
+                {% endif %}
+                <li><a class="dropdown-item" href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id  %}">Trip Settings</a></li>
+                <li><a class="dropdown-item" href="{% url 'tripapp:export_trip' trip.id %}">{% trans "Export" %}</a></li>
+            </ul>
+        </div>
+        </div>
+        {% if dayprogram %}
+        <div class="tripmenuitem"><a href="{% url 'tripapp:dayprogram_detail' dayprogram.id %}" class="btn"><i class="bi bi-file-richtext"></i><span>Day Program</span></a></div>
+        <div class="tripmenuitem">
+        <div class="dropdown">
+            <a class="btn" href="#" role="button" id="addDropdown" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+            <i class="bi bi-plus-lg"></i><span>{% trans "Add" %}..</span>
+            </a>
+            <ul class="dropdown-menu custom-dropdown-menu dropdown-menu-end" aria-labelledby="addDropdown">
+                {% if user.username in trippers_names %}
+                    <li><a class="dropdown-item" href="{% url 'tripapp:add_image' dayprogram.id %}">...Image</a></li>
+                    <li><a class="dropdown-item" href="{% url 'tripapp:add_logentry' dayprogram.id %}">...Log</a></li>
+                    {% if dayprogram.trip.use_expenses %}
+                    <li><a class="dropdown-item" href="{% url 'tripapp:add_expense' trip.id logged_on_tripper.id %}?next=dayprogram_detail&dayprogram_id={{ dayprogram.id }}">...{% trans "Expense" %}</a></li>
+                    {% endif %}
+                {% endif %}
+                {% if user.username not in trippers_names %}
+                    <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#suggestionModal">...{% trans "Suggestion" %}</a></li>
+                {% endif %}
+                {% if user.username in trippers_names %}
+                    <li><a class="dropdown-item" href="{% url 'tripapp:create_thing_to_do_for_day' trip.id dayprogram.id %}">...{% trans "Thing to do" %}</a></li>
+                    <li><a class="dropdown-item" href="{% url 'tripapp:edit_dayprogram' dayprogram.id %}">...Info</a></li>
+                    <li><a class="dropdown-item" href="{% url 'tripapp:dayprogram_questions' dayprogram.id %}">...{% trans "Question" %}</a></li>
+                    <li><a class="dropdown-item" href="{% url 'tripapp:add_scheduled_item' dayprogram.id %}">...{% trans "Scheduled Item" %}</a></li>
+                    {% if flight_api_configured %}<li><a class="dropdown-item" href="{% url 'tripapp:add_flight' dayprogram.id %}">...{% trans "Flight" %}</a></li>{% endif %}
+                    <li><a class="dropdown-item" href="{% url 'tripapp:add_link' dayprogram.id %}">...{% trans "Link" %}</a></li>
+                    <li><a class="dropdown-item" href="{% url 'tripapp:add_link' dayprogram.id %}">...{% trans "Document" %}</a></li>
+                {% endif %}
+            </ul>
+        </div>
+        </div>
+        {% endif %}
+        {% if logged_on_tripper %}
+        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_tripper_bingocard' trip.id %}" class="btn"><i class="bi bi-grid-3x3"></i><span>Bingo</span></a></div>
+        {% else %}
+        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_bingocards' trip.id %}" class="btn"><i class="bi bi-grid-3x3"></i><span>Bingo</span></a></div>
+        {% endif %}
+        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_trippers' trip.id %}" class="btn"><i class="bi bi-people"></i><span>Trippers</span></a></div>
+
+    </div>
+</div>

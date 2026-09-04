@@ -326,8 +326,7 @@
             {{ day_program.dayprogramnumber }} ({{ day_program.tripdate|date:"d M" }}) - <i>{{ day_program.description }}</i>
         </a>
         </div>
-
-        
+     
         <div class="cell cell-gradient">
             {% if day_program.overnight_location %}
             {{ day_program.overnight_location }} &#127769;
@@ -357,7 +356,11 @@
                     {% endif %}
                     <div class="tl-dest">
                         <a href="{% url 'tripapp:dayprogram_detail' vd.dayprogram.id %}" class="tripdetail">
-                            {{ vd.dayprogram.description }}
+                            {% if vd.dayprogram.description %}
+                                {{ vd.dayprogram.description }}
+                            {% else %}
+                                {{ vd.dayprogram.dayprogramnumber }}
+                            {% endif %}
                         </a>
                     </div>
                     {% if vd.state == 'future' %}
@@ -394,9 +397,15 @@
                         {% elif fd.state == "today" %}
                             <span class="focus-day-badge">{% trans "today" %}</span>
                         {% endif %}
-                        <span><i>{{ fd.dayprogram.description }}</i></span>
+                        <span>
+                            {% if fd.dayprogram.description %}
+                                <i>{{ fd.dayprogram.description }}</i>
+                            {% else %}
+                                <i>{{ fd.dayprogram.dayprogramnumber }}</i>
+                            {% endif %}
+                        </span>
                     </div>
-                    <span class="focus-day-date">{{ fd.dayprogram.tripdate|date:"d M" }}</span>
+                    <span class="focus-day-date">{{ fd.dayprogram.tripdate|date:"D d M" }}</span>
                 </a>
             {% endfor %}
             </div>

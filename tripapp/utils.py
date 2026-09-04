@@ -186,20 +186,19 @@ def generate_static_map(dayprogram, since=None):
 
 
 def generate_static_map_post(dayprogram, since=None):
-    # replace yesterday by last successful run of the task
 
     if since is None:
-        since = timezone.now() - timedelta(days=1)
+        since = timezone.now() - timedelta(days=2)
 
     if not dayprogram_has_new_mapdata(dayprogram, since):
-        logger.info("No new data since last run (%s), skipping map generation.", since)
+        logger.info("[POST] No new data since last run (%s), skipping map generation.", since)
         return
 
     staticmaps_url = settings.STATICMAPS_URL
     staticmaps_api_key = settings.STATICMAPS_API_KEY
 
     if not staticmaps_url:
-        logger.info("No staticmaps url configured.")
+        logger.info("[POST] No staticmaps url configured.")
         return
 
     markers = []
@@ -207,7 +206,7 @@ def generate_static_map_post(dayprogram, since=None):
     polyline_values = []
 
     if dayprogram.points.exists():
-        logger.info("Processing points for markers.")
+        logger.info("[POST] Processing points for markers.")
         for point in dayprogram.points.all():
             markers.append(f"{point.latitude},{point.longitude}")
 
@@ -215,18 +214,26 @@ def generate_static_map_post(dayprogram, since=None):
         marker_values = f"width:20|height:20|{'|'.join(markers)}"
 
     tripdate = dayprogram.tripdate
-    logger.info("Processing dayprogram for date: %s", tripdate)
+    logger.info("[POST] Processing dayprogram for date: %s", tripdate)
 
     locations = list(
         Location.objects.filter(timestamp__date=tripdate).values_list("latitude", "longitude").order_by("timestamp")
     )
     if locations:
-        logger.info("Found %d locations for polyline.", len(locations))
+        logger.info("[POST] Found %d locations for polyline.", len(locations))
+        if len(locations) > 1000:
+            simplified = rdp(locations, epsilon=0.0005)
+            if len(simplified) > 400:
+                step = len(simplified) // 400
+                simplified = simplified[::step]
+                simplified = rdp(simplified, epsilon=0.1)
 
-        simplified = locations
+            logger.info("Reduced from %d to %d points using RDP.", len(locations), len(simplified))
+        else:
+            simplified = locations
 
         polyline_str = "|".join([f"{lat},{lon}" for lat, lon in simplified])
-        polyline_values.append(f"weight:1|color:blue|{polyline_str}")
+        polyline_values.append(f"weight:4|color:blue|{polyline_str}")
 
     for route in dayprogram.routes.all():
         if route.gpx_file:
@@ -239,10 +246,17 @@ def generate_static_map_post(dayprogram, since=None):
                             gpx_points.append([point.latitude, point.longitude])
 
                 if gpx_points:
-                    simplified = gpx_points
+                    if len(gpx_points) > 1000:
+                        simplified = rdp(gpx_points, epsilon=0.0005)
+                        if len(simplified) > 400:
+                            step = len(simplified) // 400
+                            simplified = simplified[::step]
+                            simplified = rdp(simplified, epsilon=0.1)
+                    else:
+                        simplified = gpx_points        
 
                     polyline_str = "|".join(f"{lat},{lon}" for lat, lon in simplified)
-                    polyline_values.append(f"weight:1|color:green|{polyline_str}")
+                    polyline_values.append(f"weight:4|color:green|{polyline_str}")
 
     payload = {
         "basemap": "otm",
@@ -256,7 +270,7 @@ def generate_static_map_post(dayprogram, since=None):
     if staticmaps_api_key:
         headers["api_key"] = staticmaps_api_key
 
-    logger.info("StaticMap payload keys: %s", list(payload.keys()))
+    logger.info("[POST] StaticMap payload keys: %s", list(payload.keys()))
 
     response = requests.post(staticmaps_url, headers=headers, json=payload, timeout=30)
     if response.status_code == 200:
@@ -264,14 +278,16 @@ def generate_static_map_post(dayprogram, since=None):
         if dayprogram.map_image:
             old_path = dayprogram.map_image.path
             old_name = dayprogram.map_image.name
-            logger.info("Deleting old map image: %s (exists: %s)", old_path, os.path.exists(old_path))
+            logger.info("[POST] Deleting old map image: %s (exists: %s)", old_path, os.path.exists(old_path))
             dayprogram.map_image.delete(save=False)
-            logger.info("After delete, still exists: %s", os.path.exists(old_path))
+            logger.info("[POST] After delete, still exists: %s", os.path.exists(old_path))
         else:
-            logger.info("map_image is falsy, skipping delete — huidige waarde: %r", dayprogram.map_image)
+            logger.info("[POST] map_image is falsy, skipping delete — huidige waarde: %r", dayprogram.map_image)
         dayprogram.map_image.save(filename, ContentFile(response.content), save=True)
+        logger.info("[POST] Static map request succeeded")
     else:
-        logger.warning("Static map request failed with status %d", response.status_code)
+        logger.warning("[POST] Static map request failed with status %d", response.status_code)
+        logger.warning("[POST] Response body: %s", response.text[:2000])
 
 def generate_static_map_for_trip(trip):
     staticmaps_url = settings.STATICMAPS_URL
@@ -414,8 +430,17 @@ def create_trip_from_itinerary(itinerary, tribe, start_date, user,
             date   = note.created_at.strftime('%d %b %Y, %H:%M')
             lines.append(f"{author} ({date}):\n{note.text}")
 
+            # Create a ThingToDo for each note
+            short_desc = note.text.strip().splitlines()[0][:200] if note.text.strip() else f"Note van {author}"
+            ThingToDo.objects.create(
+                trip=trip,
+                short_description=short_desc,
+                more_info=note.text,
+            )
+
         content = "\n\n".join(lines)
 
+        # Create a TripDocument for the combined notes
         TripDocument.objects.create(
             trip=trip,
             title=f"Notes from brainstorm: {itinerary.name}",
