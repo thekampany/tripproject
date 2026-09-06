@@ -28,8 +28,9 @@
             </ul>
         </div>
         </div>
-
-        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_detail' trip.slug %}" class="btn"><i class="bi bi-arrow-90deg-up"></i><span>{% trans "Itinerary" %}</span></a></div>
+        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_list' %}" class="btn"><i class="bi bi-arrow-90deg-up"></i><span>{% trans "My Trips" %}</span></a></div>
+        {% if trip %}
+        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_detail' trip.slug %}" class="btn"><i class="bi bi-file-ruled"></i><span>{% trans "Itinerary" %}</span></a></div>
         <div class="tripmenuitem"><a href="{% url 'tripapp:trip_map_view' trip.id %}" class="btn"><i class="bi bi-map"></i><span>Trip Map</span></a></div>
         <div class="tripmenuitem">
         <div class="dropdown">
@@ -50,8 +51,10 @@
             </ul>
         </div>
         </div>
+        {% endif %}
         {% if dayprogram %}
         <div class="tripmenuitem"><a href="{% url 'tripapp:dayprogram_detail' dayprogram.id %}" class="btn"><i class="bi bi-file-richtext"></i><span>Day Program</span></a></div>
+        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_dayprogram_points' trip.id dayprogram.id %}" class="btn"><i class="bi bi-sign-turn-right"></i><span>Route Planner</span></a></div>
         <div class="tripmenuitem">
         <div class="dropdown">
             <a class="btn" href="#" role="button" id="addDropdown" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
@@ -81,12 +84,13 @@
         </div>
         </div>
         {% endif %}
+        {% if trip %}
         {% if logged_on_tripper %}
         <div class="tripmenuitem"><a href="{% url 'tripapp:trip_tripper_bingocard' trip.id %}" class="btn"><i class="bi bi-grid-3x3"></i><span>Bingo</span></a></div>
         {% else %}
         <div class="tripmenuitem"><a href="{% url 'tripapp:trip_bingocards' trip.id %}" class="btn"><i class="bi bi-grid-3x3"></i><span>Bingo</span></a></div>
         {% endif %}
         <div class="tripmenuitem"><a href="{% url 'tripapp:trip_trippers' trip.id %}" class="btn"><i class="bi bi-people"></i><span>Trippers</span></a></div>
-
+        {% endif %}
     </div>
 </div>

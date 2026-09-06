@@ -14,6 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
     <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
     <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
+    <link rel="stylesheet" href="{% static 'css/trip_menu.css' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <style>
     html,body { 
@@ -300,7 +301,7 @@
 
     <p style="margin-bottom:0;">&nbsp;</p>
 
-    <div class="tripmenucontainer">
+    <!--<div class="tripmenucontainer">
         <div class="tripmenuitem"><a href="{% url 'tripapp:trip_detail' dayprogram.trip.slug  %}" class="btn"><i class="bi bi-arrow-90deg-up"></i><span>{% trans "Itinerary" %}</span></a></div>
         <div class="tripmenuitem"><a href="{% url 'tripapp:trip_dayprogram_points' dayprogram.trip.id dayprogram.id %}" class="btn"><i class="bi bi-map"></i><span>Day Map</span></a></div>
         {% if logged_on_tripper %}
@@ -312,7 +313,6 @@
 
         <div class="tripmenuitem">
         <div class="dropdown">
-            <!--<a class="btn nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">-->
             <a class="btn" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-plus-lg"></i><span style="font-size: 12px;">{% trans "Add" %}..</span>
             </a>
@@ -340,7 +340,10 @@
             </ul>
         </div>
         </div>
-    </div>
+    </div>-->
+
+    {% include 'tripapp/partials/trip_menu.html' %}
+    <script src="{% static 'js/trip_menu.js' %}"></script>
 
     <p style="color:grey;font-style:italic;text-align:right">
         {% if weather_forecast_data %}Forecast: 

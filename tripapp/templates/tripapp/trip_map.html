@@ -76,16 +76,46 @@
         }
         .daycard .daycard-weekday { font-size: 11px; opacity: .75; text-transform: uppercase; }
         .daycard .daycard-date { font-weight: 600; font-size: 15px; }
-     </style>
+
+        #day-action-panel {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: -42px;   /* net onder de daycards-bar */
+            z-index: 2000;
+            display: none;
+            background: rgba(0,123,255,0.9);
+            color: white;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 13px;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(0,0,0,.2);
+        }
+        #day-action-panel.visible {
+            display: block;
+        }
+        #day-action-panel a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        #day-action-panel a:hover {
+            text-decoration: underline;
+        }
+
+    </style>
 </head>
 <body>
     <div class="card">
     <div class="container">
 
     <div class="navigation-bar">
+        <div class="nav-element">&nbsp;</div>
         <div class="nav-element navigation-date">
             <a href="{% url 'tripapp:trip_detail' trip.slug %}"><h2>{{ trip.name }}</h2></a>
         </div>
+        <div class="nav-element">&nbsp;</div>
     </div>
 
     <!-- ── Menu toggle ── -->
@@ -107,11 +137,12 @@
             </div>
             {% endfor %}
         </div>
+
+        <div id="day-action-panel">
+            <a href="#" id="day-action-link">{% trans "Day Map Route Planning" %} →</a>
+        </div>
     </div>
 
-    {% if locations_truncated %}
-    <p>Only {{ max_locations }} locations are shown. See more detail via tripdayprograms.</p>
-    {% endif %}
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha384-RFZC58YeKApoNsIbBxf4z6JJXmh+geBSgkCQXFyh+4tiFSJmJBt+2FbjxW7Ar16M" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.3.1/gpx.min.js" integrity="sha384-zzZDr9lzRJ65IOw/HSWvt9ZE4N/15M1wqhD8OZAk97gYqVy8amTg0y766LYgMXfg" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js" integrity="sha384-mFKkGiGvT5vo1fEyGCD3hshDdKmW3wzXW/x+fWriYJArD0R3gawT6lMvLboM22c0" crossorigin="anonymous"></script>
@@ -148,7 +179,7 @@
         new L.Control.Geocoder().addTo(map);
 
         map.attributionControl.setPosition('bottomleft');
-        
+
         // Point markers - using uniform icon system
         var defaultIcon = uniformIcon(COLORS.default, '📍', 36);
         var bedIcon = uniformIcon(COLORS.accommodation, '🛏️', 36);
@@ -211,7 +242,10 @@
         const editPointUrlTemplate = "{% url 'tripapp:edit_point' trip_id=trip.id point_id=999999 %}";
         const deletePointUrlTemplate = "{% url 'tripapp:delete_point' trip_id=trip.id point_id=999999 %}";
         const currentPageUrl = encodeURIComponent(window.location.pathname);
-
+        const dayProgramUrlTemplate = "{% url 'tripapp:trip_dayprogram_points' trip.id 999999 %}";
+        function dayProgramUrl(id) {
+            return dayProgramUrlTemplate.replace('999999', id);
+        }
         function editPointUrl(id) {
             return editPointUrlTemplate.replace('999999', id) + '?next=' + currentPageUrl;
         }
@@ -508,11 +542,13 @@
         map.doubleClickZoom.disable();
 
         var daycardsBarEl = document.getElementById('daycards-bar');
-        if (daycardsBarEl) {
-            L.DomEvent.disableClickPropagation(daycardsBarEl);
-            L.DomEvent.disableScrollPropagation(daycardsBarEl);
-        }
-
+        var dayActionPanelEl = document.getElementById('day-action-panel');
+        [daycardsBarEl, dayActionPanelEl].forEach(function(el) {
+            if (el) {
+                L.DomEvent.disableClickPropagation(el);
+                L.DomEvent.disableScrollPropagation(el);
+            }
+        });
         // ── Day cards: highlighten ──
         var selectedDayId = null;
 
@@ -520,12 +556,18 @@
             var isReselect = (selectedDayId === dayId);
             document.querySelectorAll('.daycard').forEach(function(c) { c.classList.remove('active'); });
 
+            var actionPanel = document.getElementById('day-action-panel');
+            var actionLink = document.getElementById('day-action-link');
+
             if (isReselect) {
                 selectedDayId = null;
                 cardEl = null;
+                actionPanel.classList.remove('visible');
             } else {
                 selectedDayId = dayId;
                 cardEl.classList.add('active');
+                actionLink.href = dayProgramUrl(dayId);
+                actionPanel.classList.add('visible');
             }
 
             var dayBoundsPoints = [];
@@ -623,7 +665,6 @@
 
     </script>
     <p>&nbsp;</p>
-    <p><a href="{% url 'tripapp:trip_detail' trip.slug %}">&larr;Trip</a></p>
    </div>
    </div>
 

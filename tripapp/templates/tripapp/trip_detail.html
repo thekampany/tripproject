@@ -15,6 +15,7 @@
     <meta name="theme-color" content="#ffffff">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
+    <link rel="stylesheet" href="{% static 'css/trip_menu.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
@@ -252,66 +253,20 @@
     <div class="tripappcard">
     <div class="container">
     
-        <div class="topcontainer">
-            <div class="titlecontainer">
-                <h1>{{ trip.name }}</h1>
-            </div>
-            <div class="menucontainer">
-                <div class="dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="{% static 'icons/usericonreverse.png' %}" alt="{{ user.username }}" class="rounded-circle user-icon" width="20" height="20">
-                    <span class="ms-2">{{ user.username }}</span>
-                    </a>
-                    <ul class="dropdown-menu custom-dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                    <li><a class="dropdown-item" href="{% url 'tripapp:update_profile' %}">Account</a></li>
-                    <li><a class="dropdown-item" href="{% url 'tripapp:update_preferences' %}">{% trans "Preferences" %}</a></li>
-                    {% if tripper %}<li><a class="dropdown-item" href="{% url 'tripapp:tripper_profile' tripper.id %}">{% trans "Settings" %}</a></li>{% endif %}
-                    <li><hr class="dropdown-divider"></li>
-                    {% if user.is_staff and enable_admin %}<li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>{% endif %}
-                    {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'tripapp:task_manager' %}">Background Tasks</a></li>{% endif %}
-                    {% if user.is_staff %}
-                        <li><a class="dropdown-item" href="{% url 'tripapp:ollama_job_list' %}">Stupid AI</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                    {% endif %}
-                    {% if user.is_authenticated %} <li><a class="dropdown-item" href="{% url 'tripapp:logout' %}">Logout</a></li>{% endif %}
-                    </ul>
-                </div>
-            </div>
+    <div class="navigation-bar">
+        <div class="nav-element">&nbsp;</div>
+        <div class="nav-element navigation-date">
+            <a href="{% url 'tripapp:trip_detail' trip.slug %}"><h2>{{ trip.name }}</h2></a>
         </div>
-        <p>&nbsp;</p>
-   
-
-    <div class="tripmenucontainer">
-        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_list' %}" class="btn"><i class="bi bi-arrow-90deg-up"></i><span>{% trans "My Trips" %}</span></a></div>
-        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_map_view' trip.id %}" class="btn tripmap-btn"><i class="bi bi-map"></i><span>Trip Map</span></a></div>
-        {% if tripper %}
-        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_tripper_bingocard' trip.id %}" class="btn"><i class="bi bi-grid-3x3"></i><span>Bingo</span></a></div>
-        {% else %}
-        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_bingocards' trip.id %}" class="btn"><i class="bi bi-grid-3x3"></i><span>Bingo</span></a></div>
-        {% endif %}
-        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_trippers' trip.id %}" class="btn"><i class="bi bi-people"></i><span>Trippers</span></a></div>
-
-        <div class="tripmenuitem">
-        <div class="dropdown">
-            <!--<a class="btn nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">-->
-            <a class="btn" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-three-dots"></i><span style="font-size: 12px;">{% trans "More" %}..</span>
-            </a>
-            <ul class="dropdown-menu custom-dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                <li><a class="dropdown-item" href="{% url 'tripapp:trip_checklist' trip.slug  %}">CheckPackList</a></li>
-                <li><a class="dropdown-item" href="{% url 'tripapp:create_thing_to_do' trip.id %}">{% trans "Things to do" %}</a></li>
-                {% if tripper %}
-                    {% if trip.use_expenses %}
-                    <li><a class="dropdown-item" href="{% url 'tripapp:trip_expenses_list' trip.id %}">{% trans "Expenses" %}</a></li>
-                    {% endif %}
-                    <li><a class="dropdown-item" href="{% url 'tripapp:trip_documents' trip.id %}">{% trans "Documents" %}</a></li>
-                {% endif %}
-                <li><a class="dropdown-item" href="{% url 'tripapp:tribe_trip_organize' trip.tribe.id trip.id  %}">Trip Settings</a></li>
-                <li><a class="dropdown-item" href="{% url 'tripapp:export_trip' trip.id %}">{% trans "Export" %}</a></li>
-            </ul>
-        </div>
-        </div>
+        <div class="nav-element">&nbsp;</div>
     </div>
+
+    <!-- ── Menu toggle ── -->
+    {% include 'tripapp/partials/trip_menu.html' %}
+    <script src="{% static 'js/trip_menu.js' %}"></script>
+
+
+
 
     <br />
     <h2>{% trans "Itinerary" %}</h2>
@@ -383,7 +338,6 @@
     {% elif view_mode == "focus" %}
         {% if trip_ended %}
             <div class="alert alert-secondary" style="text-align:center; padding: 30px;">
-                <div style="font-size: 28px;">&#127881;</div>
                 {% trans "This trip has ended." %}
             </div>
         {% else %}

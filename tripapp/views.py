@@ -673,6 +673,7 @@ def dayprogram_detail(request, dayprogram_id):
 
     return render(request, 'tripapp/dayprogram_detail.html', 
          {'dayprogram': dayprogram, 
+          'trip': dayprogram.trip,
           'images': images, 
           'questions': questions,
           'questions_with_badge_info': questions_with_badge_info,
