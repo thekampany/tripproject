@@ -54,7 +54,7 @@
         {% endif %}
         {% if dayprogram %}
         <div class="tripmenuitem"><a href="{% url 'tripapp:dayprogram_detail' dayprogram.id %}" class="btn"><i class="bi bi-file-richtext"></i><span>Day Program</span></a></div>
-        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_dayprogram_points' trip.id dayprogram.id %}" class="btn"><i class="bi bi-sign-turn-right"></i><span>Route Planner</span></a></div>
+        <div class="tripmenuitem"><a href="{% url 'tripapp:trip_dayprogram_points' trip.id dayprogram.id %}" class="btn"><i class="bi bi-sign-turn-right"></i><span>Day Map</span></a></div>
         <div class="tripmenuitem">
         <div class="dropdown">
             <a class="btn" href="#" role="button" id="addDropdown" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">

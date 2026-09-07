@@ -41,6 +41,7 @@ from .utils import haversine
 
 from django.db.models import Count, Q
 from django.db.models import Prefetch
+from django.db.models import Max
 
 from django.core.mail import send_mail
 from django.core.mail import EmailMultiAlternatives
@@ -103,6 +104,9 @@ import traceback
 import logging
 
 import polyline as polyline_decoder 
+
+from django.core.cache import cache
+from django.utils.hashable import make_hashable
 
 
 logger = logging.getLogger(__name__)
@@ -830,6 +834,12 @@ def mytribes_badges_view(request):
 
 from .utils import get_country_coords
 
+
+def _version_token(queryset):
+    agg = queryset.aggregate(count=Count('id'), max_id=Max('id'))
+    return f"{agg['count']}-{agg['max_id']}"
+
+
 @is_in_tribe
 def trip_map_view(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
@@ -838,77 +848,98 @@ def trip_map_view(request, trip_id):
     projected_itinerary_points = trip.points.none()
     simplified_locations = []
     photolocations = []
-    all_locations = []
+    all_locations_count = 0
+    simplified_locations_count = 0
     preferred_map_view = 'osm'  # default
+
     if request.user.is_authenticated:
         preferred_map_view = request.user.userprofile.preferred_map_view
 
-    if trip.date_from and trip.date_to: 
-        points = trip.points.prefetch_related('dayprograms')
-
-        projected_itinerary_points = (
-            trip.points
-            .prefetch_related('dayprograms')
-            .annotate(
-                first_tripdate=Min('dayprograms__tripdate'),
-                avg_tripdate=RawSQL(
-                    """
-                    SELECT AVG(EXTRACT(EPOCH FROM dp.tripdate))
-                    FROM tripapp_dayprogram dp
-                    INNER JOIN tripapp_point_dayprograms tpd 
-                        ON tpd.dayprogram_id = dp.id
-                    WHERE tpd.point_id = "tripapp_point"."id"
-                    """,
-                    []
-                )
+    if trip.date_from and trip.date_to:
+        points_list = list(trip.points.prefetch_related('dayprograms'))
+        for p in points_list:
+            dates = [dp.tripdate for dp in p.dayprograms.all()]
+            p.avg_tripdate = (
+                sum(d.toordinal() for d in dates) / len(dates) if dates else None
             )
-            .order_by('avg_tripdate')
-        )
 
+        points = sorted(points_list, key=lambda p: p.id)
+        projected_itinerary_points = sorted(
+            points_list, key=lambda p: (p.avg_tripdate is None, p.avg_tripdate)
+        )
 
         start_of_day = timezone.make_aware(datetime.combine(trip.date_from, datetime.min.time()))
         end_of_day = timezone.make_aware(datetime.combine(trip.date_to, datetime.max.time()))
         trippers = trip.trippers.all()
 
-        all_locations = Location.objects.filter(
+        locations_qs = Location.objects.filter(
             tripper__in=trippers,
-            timestamp__range=(start_of_day, end_of_day)
-        ).order_by('timestamp')
-
-        # Simplify
-        coords = [(float(loc.latitude), float(loc.longitude)) for loc in all_locations]
-        simplified_coords = coords
-
-        if len(coords) > 0:
-
-            cleaned = [coords[0]]
-            for c in coords[1:]:
-                if abs(c[0] - cleaned[-1][0]) > 1e-5 or abs(c[1] - cleaned[-1][1]) > 1e-5:
-                    cleaned.append(c)
-            coords = cleaned
-
-
-            if len(coords) > 5000:
-                step = len(coords) // 5000
-                coords = coords[::step]
-
-            if len(coords) > 150:
-                simplified_coords = rdp(coords, epsilon=0.005)  # 500 meter
-            else:
-                simplified_coords = coords
-
-        simplified_locations = []
-        latlon_set = {(float(lat), float(lon)) for lat, lon in simplified_coords}
-        for loc in all_locations:
-            key = (float(loc.latitude), float(loc.longitude))
-            if key in latlon_set:
-                simplified_locations.append(loc)
-                latlon_set.remove(key)  
-
-        photolocations = ImmichPhotos.objects.filter(
-            tripper__in=trippers,
-            timestamp__range=(start_of_day, end_of_day)
+            timestamp__range=(start_of_day, end_of_day),
         )
+        last_location = locations_qs.order_by('-timestamp').first()
+        locations_version = last_location.timestamp.isoformat() if last_location else 'none'
+        locations_cache_key = f"trip_map_locations_{trip.id}_{locations_version}"
+
+        cached_locations = cache.get(locations_cache_key)
+        if cached_locations is not None:
+            simplified_ids, all_locations_count = cached_locations
+            simplified_locations = list(
+                Location.objects.filter(id__in=simplified_ids).order_by('timestamp')
+            )
+            simplified_locations_count = len(simplified_ids)
+        else:
+            all_locations = list(locations_qs.order_by('timestamp'))
+            all_locations_count = len(all_locations)
+
+            coords = [(float(loc.latitude), float(loc.longitude)) for loc in all_locations]
+            simplified_coords = coords
+
+            if coords:
+                cleaned = [coords[0]]
+                for c in coords[1:]:
+                    if abs(c[0] - cleaned[-1][0]) > 1e-5 or abs(c[1] - cleaned[-1][1]) > 1e-5:
+                        cleaned.append(c)
+                coords = cleaned
+
+                if len(coords) > 5000:
+                    step = len(coords) // 5000
+                    coords = coords[::step]
+
+                if len(coords) > 150:
+                    simplified_coords = rdp(coords, epsilon=0.005)  # 500 meter
+                else:
+                    simplified_coords = coords
+
+            simplified_locations = []
+            latlon_set = {(float(lat), float(lon)) for lat, lon in simplified_coords}
+            for loc in all_locations:
+                key = (float(loc.latitude), float(loc.longitude))
+                if key in latlon_set:
+                    simplified_locations.append(loc)
+                    latlon_set.remove(key)
+
+            simplified_locations_count = len(simplified_locations)
+            cache.set(
+                locations_cache_key,
+                ([loc.id for loc in simplified_locations], all_locations_count),
+                timeout=36000,  
+            )
+
+        photolocations_qs = ImmichPhotos.objects.filter(
+            tripper__in=trippers,
+            timestamp__range=(start_of_day, end_of_day),
+        ).select_related('tripper')
+        photolocations_version = _version_token(photolocations_qs)
+        photolocations_cache_key = f"trip_map_photolocations_{trip.id}_{photolocations_version}"
+
+        cached_photo_ids = cache.get(photolocations_cache_key)
+        if cached_photo_ids is not None:
+            photolocations = list(
+                ImmichPhotos.objects.filter(id__in=cached_photo_ids).select_related('tripper')
+            )
+        else:
+            photolocations = list(photolocations_qs)
+            cache.set(photolocations_cache_key, [p.id for p in photolocations], timeout=3600)
 
     first_country_code = trip.get_first_country_code()
     country_coords = get_country_coords(first_country_code) if first_country_code else get_country_coords('nl')
@@ -917,10 +948,10 @@ def trip_map_view(request, trip_id):
         'trip': trip,
         'points': points,
         'projected_itinerary_points': projected_itinerary_points,
-        'locations': simplified_locations,  
+        'locations': simplified_locations,
         'photolocations': photolocations,
-        'locations_truncated': len(all_locations) > len(simplified_locations),
-        'max_locations': min(len(all_locations), len(simplified_locations)),
+        'locations_truncated': all_locations_count > simplified_locations_count,
+        'max_locations': min(all_locations_count, simplified_locations_count),
         'country_coords': country_coords,
         'preferred_map_view': preferred_map_view,
         'CARTO_API_KEY': getattr(settings, 'CARTO_API_KEY', None),
@@ -946,10 +977,17 @@ def tribe_map_view(request, tribe_id):
                 'photo_url': photo_url,
                 'trip_url': reverse('tripapp:trip_detail', kwargs={'slug': trip.slug}),
             })
+
+    preferred_map_view = 'osm'  # default
+    if request.user.is_authenticated:
+        preferred_map_view = request.user.userprofile.preferred_map_view
+
+
     return render(request, 'tripapp/tribe_map.html', {
         'tribe': tribe,
         'trip_locations': trip_locations,
         'CARTO_API_KEY' : getattr(settings, 'CARTO_API_KEY', None),
+        'preferred_map_view': preferred_map_view,
     })
 
 def convert_to_float(value):

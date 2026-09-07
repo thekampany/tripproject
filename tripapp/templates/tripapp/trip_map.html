@@ -81,7 +81,7 @@
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
-            bottom: -42px;   /* net onder de daycards-bar */
+            bottom: -42px;
             z-index: 2000;
             display: none;
             background: rgba(0,123,255,0.9);
@@ -96,9 +96,11 @@
             display: block;
         }
         #day-action-panel a {
+            display: block;
             color: white;
             text-decoration: none;
             font-weight: 500;
+            padding: 2px 0;
         }
         #day-action-panel a:hover {
             text-decoration: underline;
@@ -139,7 +141,8 @@
         </div>
 
         <div id="day-action-panel">
-            <a href="#" id="day-action-link">{% trans "Day Map Route Planning" %} →</a>
+            <a href="#" id="day-action-link"><i class="bi bi-sign-turn-right"></i> {% trans "Day Map and Routes" %}</a><br>
+            <a href="#" id="day-action-program-link"><i class="bi bi-file-richtext"></i> {% trans "Day Program" %}</a>
         </div>
     </div>
 
@@ -243,8 +246,12 @@
         const deletePointUrlTemplate = "{% url 'tripapp:delete_point' trip_id=trip.id point_id=999999 %}";
         const currentPageUrl = encodeURIComponent(window.location.pathname);
         const dayProgramUrlTemplate = "{% url 'tripapp:trip_dayprogram_points' trip.id 999999 %}";
+        const dayProgramOverviewUrlTemplate = "{% url 'tripapp:dayprogram_detail' 999999 %}";
         function dayProgramUrl(id) {
             return dayProgramUrlTemplate.replace('999999', id);
+        }
+        function dayProgramOverviewUrl(id) {
+            return dayProgramOverviewUrlTemplate.replace('999999', id);
         }
         function editPointUrl(id) {
             return editPointUrlTemplate.replace('999999', id) + '?next=' + currentPageUrl;
@@ -549,7 +556,7 @@
                 L.DomEvent.disableScrollPropagation(el);
             }
         });
-        // ── Day cards: highlighten ──
+        // ── Day cards: highlight ──
         var selectedDayId = null;
 
         function highlightDay(dayId, dayDate, cardEl) {
@@ -558,6 +565,7 @@
 
             var actionPanel = document.getElementById('day-action-panel');
             var actionLink = document.getElementById('day-action-link');
+            var actionProgramLink = document.getElementById('day-action-program-link');
 
             if (isReselect) {
                 selectedDayId = null;
@@ -567,6 +575,7 @@
                 selectedDayId = dayId;
                 cardEl.classList.add('active');
                 actionLink.href = dayProgramUrl(dayId);
+                actionProgramLink.href = dayProgramOverviewUrl(dayId);
                 actionPanel.classList.add('visible');
             }
 
