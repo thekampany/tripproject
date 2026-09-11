@@ -30,13 +30,9 @@
             }
         }
 
-
         body {
             {% if trip.image %}
              background: url('{{ trip.image.url }}') no-repeat center center fixed; 
-             -webkit-background-size: cover;
-             -moz-background-size: cover;
-             -o-background-size: cover;
              background-size: cover;
             {% endif %}
         }
@@ -61,7 +57,6 @@
             border-radius: 12px;
             display:flex;
             transition: background-color 0.2s;
-
         }
 
         .dayprogram-item a.tripdetail {
@@ -77,17 +72,6 @@
             border-radius: 12px 0 0 12px;
         }
 
-        .drag-handle {
-            cursor: grab;
-            font-size: 1.5rem;
-            color: #888;
-            user-select: none;
-            padding: 10px 12px;
-            display: flex;
-            align-items: center;
-            border-left: 1px solid var(--border-color);
-            flex-shrink: 0;
-        }
         .dayprogram-item.today {
             border: 2px solid #C70039;
         }
@@ -101,14 +85,18 @@
             opacity: 0.5;
             background-color: #cfe2ff;
         }
+
         .drag-handle {
             cursor: grab;
             font-size: 1.5rem;
             color: #888;
             user-select: none;
-            margin-left:auto;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            border-left: 1px solid var(--border-color);
+            flex-shrink: 0;
         }
-
         .drag-handle:active {
             cursor: grabbing;
         }
@@ -408,7 +396,7 @@
     <form style="display:none;">
         {% csrf_token %}
     </form>    
-</body>
+
 
 <script>
 
@@ -509,14 +497,9 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
-
-
 </script>
 
 <script src="{% static 'js/set_timezone.js' %}"></script>
 
-
-
-
-
+</body>
 </html>

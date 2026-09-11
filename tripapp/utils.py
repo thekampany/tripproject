@@ -7,7 +7,7 @@ from rdp import rdp
 import gpxpy
 
 import datetime
-from datetime import datetime, timedelta
+from datetime import timedelta
 import time
 from django.utils import timezone
 
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 UNSPLASH_ACCESS_KEY = settings.UNSPLASH_ACCESS_KEY
 UNSPLASH_CACHE_KEY = "unsplash_random_roadtrip"
-UNSPLASH_CACHE_TIMEOUT = 3600  
+UNSPLASH_CACHE_TIMEOUT = 3600
 
 
 def get_random_unsplash_image(category):
@@ -98,15 +98,15 @@ def generate_static_map(dayprogram, since=None):
     staticmaps_api_key = settings.STATICMAPS_API_KEY
 
     if not staticmaps_url:
-        logger.info("No staticmaps url configured.")  
-        return  
-    
+        logger.info("No staticmaps url configured.")
+        return
+
     markers = []
     marker_values = []
-    polyline_values = [] 
+    polyline_values = []
 
     if dayprogram.points.exists():
-        logger.info("Processing points for markers.") 
+        logger.info("Processing points for markers.")
         for point in dayprogram.points.all():
             markers.append(f"{point.latitude},{point.longitude}")
 
@@ -117,10 +117,10 @@ def generate_static_map(dayprogram, since=None):
 
     locations = list(
         Location.objects.filter(timestamp__date=tripdate).values_list("latitude", "longitude").order_by("timestamp")
-    )    
+    )
     if locations:
         logger.info("Found %d locations for polyline.", len(locations))
-        
+
         if len(locations) > 150:
             simplified = rdp(locations, epsilon=0.0005)
             if len(simplified) > 400:
@@ -130,9 +130,9 @@ def generate_static_map(dayprogram, since=None):
 
             logger.info("Reduced from %d to %d points using RDP.", len(locations), len(simplified))
         else:
-            simplified = locations        
+            simplified = locations
 
-                   
+
         polyline_str = "|".join([f"{lat},{lon}" for lat, lon in simplified])
         polyline_values.append(f"weight:1|color:blue|{polyline_str}")
 
@@ -145,7 +145,7 @@ def generate_static_map(dayprogram, since=None):
                     for segment in track.segments:
                         for point in segment.points:
                             gpx_points.append([point.latitude, point.longitude])
-                    
+
                 if gpx_points:
 
                     if len(gpx_points) > 150:
@@ -155,7 +155,7 @@ def generate_static_map(dayprogram, since=None):
                             simplified = simplified[::step]
                             simplified = rdp(simplified, epsilon=0.1)
                     else:
-                        simplified = gpx_points        
+                        simplified = gpx_points
 
                     polyline_str = "|".join(f"{lat},{lon}" for lat, lon in simplified)
                     polyline_values.append(f"weight:1|color:green|{polyline_str}")
@@ -168,7 +168,7 @@ def generate_static_map(dayprogram, since=None):
     params.append(("basemap","otm"))
 
     request_url = f"{staticmaps_url}?{urlencode(params)}"
-    
+
     response = requests.get(request_url, timeout=30)
     if response.status_code == 200:
         filename = f"map_dayprogram_{dayprogram.id}.png"
@@ -253,7 +253,7 @@ def generate_static_map_post(dayprogram, since=None):
                             simplified = simplified[::step]
                             simplified = rdp(simplified, epsilon=0.1)
                     else:
-                        simplified = gpx_points        
+                        simplified = gpx_points
 
                     polyline_str = "|".join(f"{lat},{lon}" for lat, lon in simplified)
                     polyline_values.append(f"weight:4|color:green|{polyline_str}")
@@ -317,7 +317,7 @@ def generate_static_map_for_trip(trip):
         query_parts.append(f"markers=width:20|height:20|{'|'.join(markers)}")
 
     base_url = f"{staticmaps_url}?{'&'.join(query_parts)}"
-    logger.info(f"StaticTripMap query_parts: {query_parts}") 
+    logger.info(f"StaticTripMap query_parts: {query_parts}")
 
     if staticmaps_api_key:
         request_url = f"{base_url}&api_key={staticmaps_api_key}&basemap=otm"
@@ -332,7 +332,7 @@ def generate_static_map_for_trip(trip):
     filename = f"{trip.slug}.png"
     filepath = os.path.join(map_dir, filename)
     with open(filepath, "wb") as f:
-        f.write(response.content) 
+        f.write(response.content)
 
     return filepath
 
@@ -371,7 +371,7 @@ def create_trip_from_itinerary(itinerary, tribe, start_date, user,
     country_codes = ",".join(sorted(countries))
 
     max_day = itinerary.itineraryidea_days.all().aggregate(models.Max("day_sequence"))["day_sequence__max"] or 1
-    date_to = start_date + datetime.timedelta(days=max_day - 1)
+    date_to = start_date + timedelta(days=max_day - 1)
 
     trip = Trip.objects.create(
         tribe=tribe,
@@ -389,7 +389,7 @@ def create_trip_from_itinerary(itinerary, tribe, start_date, user,
     tripper.save()
 
     for day in itinerary.itineraryidea_days.all().order_by("day_sequence"):
-        tripdate = start_date + datetime.timedelta(days=day.day_sequence - 1)
+        tripdate = start_date + timedelta(days=day.day_sequence - 1)
         overnight = day.overnightlocations.first()
         overnight_excluded = overnight and overnight.pk in excluded_beds
 
@@ -496,7 +496,7 @@ def reverse_geocode_area(latitude, longitude) -> str:
         location   = geolocator.reverse((latitude, longitude), language="en", timeout=5)
         if not location:
             return f"{latitude:.2f}, {longitude:.2f}"
-        
+
         address = location.raw.get("address", {})
         area = (
             address.get("village") or
@@ -535,7 +535,7 @@ from django.db.models import Q
 from datetime import date
 
 def haversine(lat1, lon1, lat2, lon2):
-    R = 6371  
+    R = 6371
 
     lat1, lon1, lat2, lon2 = map(radians, [float(lat1), float(lon1), float(lat2), float(lon2)])
     dlat = lat2 - lat1
@@ -600,10 +600,10 @@ def get_latest_github_version(repo="thekampany/tripproject"):
         )
         response.raise_for_status()
         tag = response.json().get("tag_name", "").lstrip("v")
-        cache.set(cache_key, tag, timeout=3600)  
+        cache.set(cache_key, tag, timeout=3600)
         return tag
     except Exception:
-        return None 
+        return None
 
 def is_update_available(current_version, latest_version):
     if not latest_version:
@@ -647,7 +647,7 @@ def get_travel_risk_alerts(country_iso, severity="High"):
         #print(response)
         if response.status_code == 200:
             data = response.json()
-            cache.set(cache_key, data, 1800) 
+            cache.set(cache_key, data, 1800)
             return data
     except Exception as e:
         print(f"Error retrieving travel risk alerts: {e}")
