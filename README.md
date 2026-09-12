@@ -168,16 +168,35 @@ After creating the .env and docker-compose.yml file do:
 
 # Screenshots
 
-![Screenshot](/screenshots/trippanion-screenshot-1-mytrips.png )
-![Screenshot](/screenshots/trippanion-screenshot-2-tripdetail.png )
-![Screenshot](/screenshots/trippanion-screenshot-3-tripday.png )
-![Screenshot](/screenshots/trippanion-screenshot-4-tripdaymap.png )
-![Screenshot](/screenshots/trippanion-screenshot-5-trippers.png )
+Desktop  
 
-Could look like this on your mobile   
-![Screenshot](/screenshots/trippanion-screenshot-mobile-itinerary.jpg )   
-![Screenshot](/screenshots/trippanion-screenshot-mobile-tripday.jpg )   
-    
+<table>
+  <tr>
+    <td><img src="screenshots/desktop/01-mytrips.png" width="400"></td>
+    <td><img src="screenshots/desktop/02-itinerary-daynight.png" width="400"></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/desktop/03-dayprogram.png" width="400"></td>
+    <td><img src="screenshots/desktop/04-brainstorm.png" width="400"></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/desktop/05-budget.png" width="400"></td>
+    <td><img src="screenshots/desktop/06-bingo.png" width="400"></td>
+  </tr>
+</table>
+
+Mobile
+
+<table>
+  <tr>
+    <td><img src="screenshots/mobile/01-mytrips.png" width="220"></td>
+    <td><img src="screenshots/mobile/03-tripmap-satelite.png" width="220"></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/mobile/04-checklist-trip-thailand.png" width="220"></td>
+    <td><img src="screenshots/mobile/05-dayprogram-day-florida.png" width="220"></td>
+  </tr>
+</table>    
     
 # Credits
 Flags from https://flagpedia.net  
@@ -185,4 +204,4 @@ Weather from https://api.open-meteo.com
 Leaflet https://leafletjs.com/  
 Leaflet-control-geocoder https://github.com/perliedman/leaflet-control-geocoder  
 Points of Interest from https://overpass-api.de  
-Public Transport information from https://transitous.org  
+Public Transport information from https://transitous.org

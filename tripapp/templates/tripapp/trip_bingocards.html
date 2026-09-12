@@ -29,7 +29,7 @@
 
 
 <h2>{{ trip.name }} Bingo</h2>
-
+<p>&nbsp;</p>
 <div class="bingocard-container">
     {% if bingocards %}
         {% for card in bingocards %}
@@ -40,7 +40,7 @@
                 {% else %}
                 <h4>{{ card.description }}</h4>
                 {% endif %}
-                
+
                 <div class="answers">
                     {% for answer in bingo_answers %}
                         {% if answer.bingocard == card %}
@@ -52,7 +52,7 @@
                                 <img src="{{ answer.tripper.photo.url }}" alt="Profile" height="40px" width="40px" style="vertical-align:middle" >
                                 {% endif %}
                                 <span style="">
-                            
+
                                 {{ answer.tripper.name }}:</p>
                                 </span>
                                 </div>

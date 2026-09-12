@@ -29,7 +29,7 @@
         justify-content: center;
         padding: 0px;
     }
-    
+
     .bingocard {
         display: flex;
         flex-direction: column;
@@ -38,59 +38,59 @@
         overflow: hidden;
         box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
         margin: 0px;
-        width: 100%; 
-        box-sizing: border-box; 
+        width: 100%;
+        box-sizing: border-box;
     }
     .bingocard-content {
         display: flex;
-        flex-direction: column; 
-        height: 100%; 
+        flex-direction: column;
+        height: 100%;
     }
 
-    
+
     .bingo-top {
         padding: 0px;
         text-align: center;
         min-height: 20px;
     }
-    
+
     .bingo-bottom {
         padding: 0px;
         text-align: center;
         min-height: 50px;
         max-width: 100px;
     }
-    
+
     .bingo-image, .answer-image {
         max-width: 100%;
         height: auto;
         border-radius: 5px;
         object-fit: cover;
     }
-    
+
     .upload-section {
         padding: 10px;
     }
-    
+
     .upload-link {
         display: inline-block;
         padding: 5px 10px;
         text-decoration: none;
         border-radius: 5px;
     }
-    
+
 
     </style>
 
 </head>
 <body>
-            
+
 <div class="card">
 <div class="container">
 
 
     <h2>{{ trip.name }} Bingo</h2>
-
+    <p>&nbsp;</p>
     <div class="bingocard-holder">
         {% for card in bingocards %}
         <div class="bingocard">
@@ -103,7 +103,7 @@
                     <h4>{{ card.description }}</h4>
                     {% endif %}
                 </div>
-    
+
                 <!-- Bingo Answer -->
                 <div class="bingo-bottom">
                     {% with user_answered=False %}
@@ -111,7 +111,7 @@
                             {% if answer.bingocard == card and answer.tripper.name == request.user.username %}
                                 <div class="answer relative inline-block">
                                     {% if answer.answerimage %}
-                                        <img src="{{ answer.answerimage.url }}" alt="Answer Image" class="answer-image rounded shadow" />                                        
+                                        <img src="{{ answer.answerimage.url }}" alt="Answer Image" class="answer-image rounded shadow" />
                                         <span style="font-size:x-small;color:silver;"><a href="{% url 'tripapp:upload_answerimage' card.id %}">[replace]</a></span>
                                     {% endif %}
                                     </div>
@@ -131,8 +131,8 @@
         </div>
         {% endfor %}
     </div>
-    
-<!-- how many did other users upload? what is ranking? see everything when trip is over or somebody won -->    
+
+<!-- how many did other users upload? what is ranking? see everything when trip is over or somebody won -->
 <p>&nbsp;</p>
 {% if bingocards %}
     <table>

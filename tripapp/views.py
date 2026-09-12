@@ -103,7 +103,7 @@ from django.core.exceptions import PermissionDenied
 import traceback
 import logging
 
-import polyline as polyline_decoder 
+import polyline as polyline_decoder
 
 from django.core.cache import cache
 from django.utils.hashable import make_hashable
@@ -138,7 +138,7 @@ def tribe_trips(request):
     trips = (
         Trip.objects.filter(
             tribe__in=tribes,
-            date_to__gte=today  
+            date_to__gte=today
         )
         .order_by('-date_from', '-id')
     )
@@ -154,9 +154,9 @@ def tribe_trips(request):
 
     enable_admin = settings.ENABLE_ADMIN
 
-    return render(request, 'tripapp/tribe_trips.html', 
+    return render(request, 'tripapp/tribe_trips.html',
         {'tribes': tribes,
-         'trips': trips, 
+         'trips': trips,
          'background_image_url': background_image_url,
          'admin_trips': admin_trips,
          'tripper' : tripper,
@@ -279,13 +279,13 @@ def trip_list(request):
     enable_admin = settings.ENABLE_ADMIN
 
     return render(request, 'tripapp/trip_list.html', {
-        'tribes': tribes, 
-        'trips': trips, 
+        'tribes': tribes,
+        'trips': trips,
         'upcoming': upcoming,
         'past': past,
-        'background_image_url': background_image_url, 
+        'background_image_url': background_image_url,
         'tripper':tripper,
-        "only_mine": only_mine, 
+        "only_mine": only_mine,
         "enable_admin": enable_admin
         })
 
@@ -405,7 +405,7 @@ def trip_trippers(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     trippers = trip.trippers.annotate(
         badge_count=Count('badge_assignments', filter=Q(badge_assignments__trip=trip)),
-        total_badge_count=Count('badge_assignments') 
+        total_badge_count=Count('badge_assignments')
     ).order_by('-badge_count', '-total_badge_count')
 
     return render(request, 'tripapp/trip_trippers.html', {'trip': trip, 'trippers': trippers})
@@ -419,7 +419,7 @@ def upload_badge(request):
 
     if request.method == 'POST':
         form = BadgeForm(request.POST, request.FILES)
-        form.fields['tribe'].queryset = tribes  
+        form.fields['tribe'].queryset = tribes
         if form.is_valid():
             badge = form.save(commit=False)
             badge.save()
@@ -487,7 +487,7 @@ def dayprogram_detail(request, dayprogram_id):
     ).order_by('-dayprogramnumber').first()
 
     next_dayprogram = DayProgram.objects.filter(
-        trip=dayprogram.trip, 
+        trip=dayprogram.trip,
         dayprogramnumber__gt=dayprogram.dayprogramnumber
     ).order_by('dayprogramnumber').first()
 
@@ -495,7 +495,7 @@ def dayprogram_detail(request, dayprogram_id):
     day_state = None
 
     if dayprogram.tripdate > timezone.now().date():
-        is_day_in_future = True    
+        is_day_in_future = True
         day_state = "future"
 
     if dayprogram.tripdate == timezone.now().date():
@@ -517,7 +517,7 @@ def dayprogram_detail(request, dayprogram_id):
                 tracked_distance = tracked_distance / 1.609
             elif distance_unit is None:
                 tracked_distance = None
-                
+
     questions_with_badge_info = []
     for question in questions:
         question_info = {
@@ -526,7 +526,7 @@ def dayprogram_detail(request, dayprogram_id):
         }
         for tripper in trippers_on_this_trip:
             has_badge = BadgeAssignment.objects.filter(
-                tripper=tripper, 
+                tripper=tripper,
                 badge=question.badge
             ).exists()
             question_info['trippers_badge_info'].append({
@@ -675,10 +675,10 @@ def dayprogram_detail(request, dayprogram_id):
     )
 
 
-    return render(request, 'tripapp/dayprogram_detail.html', 
-         {'dayprogram': dayprogram, 
+    return render(request, 'tripapp/dayprogram_detail.html',
+         {'dayprogram': dayprogram,
           'trip': dayprogram.trip,
-          'images': images, 
+          'images': images,
           'questions': questions,
           'questions_with_badge_info': questions_with_badge_info,
           'form': form,
@@ -801,7 +801,7 @@ def check_answer(request, dayprogram_id, questionid):
                         badge=question.badge,
                         trip=dayprogram.trip
                     )
- 
+
                 url = reverse('tripapp:dayprogram_detail', args=[dayprogram.id])
                 return redirect(f"{url}?badge={question.badge.id}")
             else:
@@ -922,7 +922,7 @@ def trip_map_view(request, trip_id):
             cache.set(
                 locations_cache_key,
                 ([loc.id for loc in simplified_locations], all_locations_count),
-                timeout=36000,  
+                timeout=36000,
             )
 
         photolocations_qs = ImmichPhotos.objects.filter(
@@ -968,7 +968,7 @@ def tribe_map_view(request, tribe_id):
     for trip in trips:
         code = trip.get_first_country_code()
         coords = get_country_coords(code) if code else get_country_coords('nl')
-        if coords:  
+        if coords:
             photo_url = trip.image.url if trip.image else static('favicon/apple-touch-icon.png')
             trip_locations.append({
                 'name': trip.name,
@@ -1009,18 +1009,18 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
     trip_points = Point.objects.filter(trip=trip)
 
     points = trip_points.filter(dayprograms=dayprogram)
- 
+
     filter_date = dayprogram.tripdate
     start_of_day = timezone.make_aware(datetime.combine(filter_date, datetime.min.time()))
     end_of_day = start_of_day + timedelta(days=1)
     locations = Location.objects.filter(tripper__in=trippers,timestamp__range=(start_of_day, end_of_day)).order_by("timestamp")
     photolocations = ImmichPhotos.objects.filter(tripper__in=trippers,timestamp__range=(start_of_day, end_of_day)).order_by("timestamp")
-    
+
     trip_name_no_spaces = trip.name.replace(" ", "")
     tribe_name_no_spaces = trip.tribe.name.replace(" ","")
     first_point = points.first() if points.exists() else None
 
-    first_country_code = trip.get_first_country_code() 
+    first_country_code = trip.get_first_country_code()
     country_coords = get_country_coords(first_country_code) if first_country_code else get_country_coords('nl')
 
     previous_dayprogram = DayProgram.objects.filter(
@@ -1029,7 +1029,7 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
     ).order_by('-dayprogramnumber').first()
 
     next_dayprogram = DayProgram.objects.filter(
-        trip=dayprogram.trip, 
+        trip=dayprogram.trip,
         dayprogramnumber__gt=dayprogram.dayprogramnumber
     ).order_by('dayprogramnumber').first()
 
@@ -1079,7 +1079,7 @@ def trip_dayprogram_points(request, trip_id, dayprogram_id):
         'enable_admin' : enable_admin,
     }
 
-    return render(request, 'tripapp/trip_dayprogram_points.html', context) 
+    return render(request, 'tripapp/trip_dayprogram_points.html', context)
 
 
 @tripper_required
@@ -1102,7 +1102,7 @@ def trip_tripper_bingocard(request, trip_id):
         'bingo_answers': bingo_answers,
         'user_answered_cards_ids': user_answered_cards_ids,
         'trippers_names': trippers_names,
-        'trippers_on_this_trip': trippers_on_this_trip,  
+        'trippers_on_this_trip': trippers_on_this_trip,
         'ollama_configured': bool(getattr(settings, 'OLLAMA_URL', None)),
         'trip_active':trip_active,
          })
@@ -1167,7 +1167,7 @@ def upload_answerimage(request, bingocard_id):
                         BadgeAssignment.objects.create(tripper=tripper, badge=badge, trip=bingocard.trip)
                         tripper.badges.add(badge)
 
-            return redirect('tripapp:trip_tripper_bingocard',trip_id=bingocard.trip.id) 
+            return redirect('tripapp:trip_tripper_bingocard',trip_id=bingocard.trip.id)
     else:
         form = BingoAnswerForm(instance=answer)
         created = False
@@ -1176,7 +1176,7 @@ def upload_answerimage(request, bingocard_id):
 @user_owns_tripper
 def tripper_profile(request, tripper_id):
     tripper = get_object_or_404(Tripper, id=tripper_id)
-    documents = TripperDocument.objects.filter(tripper=tripper)  
+    documents = TripperDocument.objects.filter(tripper=tripper)
 
     if request.method == 'POST':
         form = TripperForm(request.POST, request.FILES, instance=tripper)
@@ -1185,8 +1185,8 @@ def tripper_profile(request, tripper_id):
             return redirect('tripapp:tripper_profile', tripper_id=tripper.id)
     else:
         form = TripperForm(instance=tripper)
-    return render(request, 'tripapp/tripper_profile.html', 
-                {'form': form, 
+    return render(request, 'tripapp/tripper_profile.html',
+                {'form': form,
                 'tripper': tripper,
                 'documents': documents,
                 'document_form': TripperDocumentForm()
@@ -1556,7 +1556,7 @@ def save_event(request):
         return JsonResponse({'message': 'Event saved successfully!'})
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
-    
+
 @is_in_tribe
 def add_logentry(request, dayprogram_id):
     dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
@@ -1621,7 +1621,7 @@ def tribe_trip_organize(request,tribe_id,trip_id):
         tripper = Tripper.objects.filter(user=request.user).first()
     enable_admin = settings.ENABLE_ADMIN
 
-    return render(request, 'tripapp/tribe_trip_organize.html', 
+    return render(request, 'tripapp/tribe_trip_organize.html',
         {'tribe': tribe,
          'trip': trip,
          'admin_trips' : admin_trips,
@@ -1647,7 +1647,7 @@ def add_badge_and_question(request, dayprogram_id):
             question.badge = badge
             question.save()
 
-            return redirect('tripapp:dayprogram_questions', dayprogram_id=dayprogram.pk)  
+            return redirect('tripapp:dayprogram_questions', dayprogram_id=dayprogram.pk)
     else:
         badge_form = BadgeplusQForm()
         question_form = QuestionplusBForm()
@@ -1779,8 +1779,8 @@ def add_suggestion(request, dayprogram_id):
 def add_expense(request, trip_id, tripper_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     tripper = get_object_or_404(Tripper, pk=tripper_id)
-    next_url = request.GET.get('next')  
-    dayprogram_id = request.GET.get('dayprogram_id') 
+    next_url = request.GET.get('next')
+    dayprogram_id = request.GET.get('dayprogram_id')
 
     if request.method == 'POST':
         form = TripExpenseForm(request.POST, request.FILES, trip =trip)
@@ -1790,7 +1790,7 @@ def add_expense(request, trip_id, tripper_id):
             expense.tripper = tripper
             expense.save()
             form.save_m2m()
-            
+
             if next_url == 'balance':
                 return redirect('tripapp:trip_balance', trip_id=trip.id)
             elif next_url == 'dayprogram_detail' and dayprogram_id:
@@ -1859,44 +1859,44 @@ def budget_update(request, trip_id, budget_id):
 @is_in_tribe
 def trip_budget_analysis(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
-    
+
     budgets = TripBudget.objects.filter(trip=trip)
-    
+
     expenses_by_category = TripExpense.objects.filter(
         trip=trip
     ).values('category').annotate(
         total=Sum('converted_amount')
     )
-    
+
     expenses_dict = {}
     for item in expenses_by_category:
         if item['total'] is not None:
             expenses_dict[item['category']] = float(item['total'])
-    
+
     budgets_dict = {budget.category: float(budget.amount) for budget in budgets}
-    
+
     all_categories = set(budgets_dict.keys()) | set(expenses_dict.keys())
-    
+
     categories = []
     budget_amounts = []
     expense_amounts = []
     remaining_amounts = []
     category_details = []
-    
+
     total_budget = 0
     total_expenses = 0
-    
+
     for category_name in sorted(all_categories):
         budget_amount = budgets_dict.get(category_name, 0)
         expense_amount = expenses_dict.get(category_name, 0)
         remaining = budget_amount - expense_amount
         percentage_used = round((expense_amount / budget_amount * 100) if budget_amount > 0 else 0, 1)
-        
+
         categories.append(category_name)
         budget_amounts.append(budget_amount)
         expense_amounts.append(expense_amount)
         remaining_amounts.append(max(0, remaining))
-        
+
         category_details.append({
             'name': category_name,
             'budget': budget_amount,
@@ -1904,10 +1904,10 @@ def trip_budget_analysis(request, trip_id):
             'remaining': max(0, remaining),
             'percentage': percentage_used
         })
-        
+
         total_budget += budget_amount
         total_expenses += expense_amount
-    
+
     total_remaining = total_budget - total_expenses
     app_currency = settings.APP_CURRENCY
 
@@ -1924,7 +1924,7 @@ def trip_budget_analysis(request, trip_id):
         'total_remaining': max(0, total_remaining),
         'budget_percentage': round((total_expenses / total_budget * 100) if total_budget > 0 else 0, 1),
     }
-    
+
     return render(request, 'tripapp/budget_analysis.html', context)
 
 @tripper_required
@@ -1967,20 +1967,20 @@ def trip_update(request, trip_id):
         form = TripUpdateForm(request.POST, request.FILES, instance=trip)
         if form.is_valid():
             form.save()
-            return redirect('tripapp:tribe_trip_organize', tribe_id=trip.tribe.id, trip_id=trip.id)  
+            return redirect('tripapp:tribe_trip_organize', tribe_id=trip.tribe.id, trip_id=trip.id)
     else:
         form = TripUpdateForm(instance=trip)
 
     return render(request, 'tripapp/trip_update.html', {'form': form, 'trip': trip})
 
- 
+
 def set_timezone(request):
     if request.method == "POST":
         data = json.loads(request.body)
         user_timezone = data.get("timezone")
         if user_timezone:
             timezone.activate(user_timezone)
-            request.session['user_timezone'] = user_timezone  
+            request.session['user_timezone'] = user_timezone
             return JsonResponse({"status": "success"})
     return JsonResponse({"status": "error"}, status=400)
 
@@ -1996,12 +1996,12 @@ def update_profile(request):
                 user.password = make_password(new_password)
             user.save()
             messages.success(request, "Your profile has been updated.")
-            return redirect('tripapp:trip_list')  
+            return redirect('tripapp:trip_list')
         else:
             messages.error(request, "There was an error updating your profile.")
     else:
         form = UserUpdateForm(instance=request.user)
-    
+
     return render(request, 'tripapp/update_profile.html', {'form': form})
 
 @is_in_tribe
@@ -2104,7 +2104,7 @@ def trip_documents_view(request, trip_id):
 @is_in_tribe
 def add_or_edit_scheduled_item(request, dayprogram_id, scheduled_item_id=None):
     dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
- 
+
     if scheduled_item_id:
         scheduled_item = get_object_or_404(ScheduledItem, id=scheduled_item_id, dayprogram=dayprogram)
     else:
@@ -2128,8 +2128,8 @@ def dayprogram_scheduled_items(request, dayprogram_id):
     dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
     scheduled_items = dayprogram.scheduled_items.all().order_by('start_time')
 
-    return render(request, 'tripapp/dayprogram_scheduled_items.html', 
-         {'dayprogram': dayprogram, 
+    return render(request, 'tripapp/dayprogram_scheduled_items.html',
+         {'dayprogram': dayprogram,
           'scheduled_items' : scheduled_items,
          })
 
@@ -2142,7 +2142,7 @@ def delete_scheduled_item(request, dayprogram_id, scheduled_item_id):
         scheduled_item.delete()
         return redirect('tripapp:dayprogram_scheduled_items', dayprogram_id=dayprogram.id)
 
-    return render(request, 'tripapp/confirm_delete_scheduled_item.html', 
+    return render(request, 'tripapp/confirm_delete_scheduled_item.html',
         {'scheduled_item': scheduled_item, 'dayprogram': dayprogram})
 
 
@@ -2170,23 +2170,23 @@ def delete_tripper_document(request, document_id):
 
 
 
-def encode_image_to_base64(image_path, max_size=(300, 300)):  
+def encode_image_to_base64(image_path, max_size=(300, 300)):
     full_path = os.path.join(settings.MEDIA_ROOT, image_path)
-    
+
     if not os.path.exists(full_path):
         print(f"⚠️ file not found: {full_path}")
-        #bypass for the globalbadges?  
+        #bypass for the globalbadges?
         full_path = os.path.join(settings.STATIC_ROOT, image_path)
         if not os.path.exists(full_path):
             return None
 
     try:
         with PILImage.open(full_path) as img:
-            img.thumbnail(max_size)  
+            img.thumbnail(max_size)
             buffer = BytesIO()
-            img.save(buffer, format="PNG") 
+            img.save(buffer, format="PNG")
             base64_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
-            return f"data:image/png;base64,{base64_str}"    
+            return f"data:image/png;base64,{base64_str}"
     except Exception as e:
         print(f"⚠️ Error processing image: {e}")
         return None
@@ -2215,7 +2215,7 @@ def generate_html_with_images(trip):
 
     """
     if trip.image:
-        img_base64 = encode_image_to_base64(trip.image.name,(800,600))  
+        img_base64 = encode_image_to_base64(trip.image.name,(800,600))
 
         if img_base64:
             html_content += f'<img src="{img_base64}" >'
@@ -2246,7 +2246,7 @@ def generate_html_with_images(trip):
             <h3>🗓 {day.dayprogramnumber} - {day.tripdate} - {day.description}</h3>
             <p>{day.necessary_info}</p>
             <p>{day.possible_activities}</p>"""
-        
+
         if day.recorded_weather_text:
             html_content += f"""<p>{day.recorded_weather_text}</p>"""
 
@@ -2255,7 +2255,7 @@ def generate_html_with_images(trip):
             for item in day.scheduled_items.all():
                 html_content += f"""
                 <li>
-                    <strong>{item.start_time} - {item.end_time}:</strong> {item.category}  
+                    <strong>{item.start_time} - {item.end_time}:</strong> {item.category}
                     <br>📍 {item.start_address}{f' ➝ {item.end_address}' if item.end_address else ''}
                 </li>
                 """
@@ -2265,7 +2265,7 @@ def generate_html_with_images(trip):
 
 
         for image in day.images.all():
-            img_base64 = encode_image_to_base64(image.image.name)  
+            img_base64 = encode_image_to_base64(image.image.name)
             angle = random.randint(-3, 3)
 
             if img_base64:
@@ -2316,7 +2316,7 @@ def generate_html_with_images(trip):
 
 
         if day.map_image:
-            img_base64 = encode_image_to_base64(day.map_image.name)  
+            img_base64 = encode_image_to_base64(day.map_image.name)
             html_content += f'<p><img src="{img_base64}" ></p>'
 
         if tracked_distance:
@@ -2354,7 +2354,7 @@ def generate_html_with_images(trip):
                     html_content += f'<img src="{img_base64}" width="200px"  height="200px">'
                 else:
                     html_content += f'<p>{assignment.badge.name}</p>'
-            
+
         # Distance tracking
         tripper_tracked_distance = None
         tripper_distance_unit = None
@@ -2373,7 +2373,7 @@ def generate_html_with_images(trip):
         html_content += "</div>"
 
 
-    #bingocards            
+    #bingocards
     html_content += "<h2>TripBingo</h2>"
     trippers_on_this_trip = trip.trippers.annotate(
         answer_count=Count('bingoanswer', filter=Q(bingoanswer__bingocard__trip=trip))
@@ -2404,7 +2404,7 @@ def generate_html_with_images(trip):
         '''
 
         bingo_answers = BingoAnswer.objects.filter(bingocard=bingocard).select_related('tripper')
-        
+
         if bingo_answers.exists():
             for answer in bingo_answers:
                 if answer.answerimage:
@@ -2433,17 +2433,17 @@ def generate_html_with_images(trip):
 
 
 def create_zip_with_html(request, trip_id):
-    trip = get_object_or_404(Trip, pk=trip_id)    
+    trip = get_object_or_404(Trip, pk=trip_id)
     zip_filename = f"{trip.slug}_export.zip"
-    zip_path = os.path.join(settings.MEDIA_ROOT, "exports", zip_filename) 
-    os.makedirs(os.path.dirname(zip_path), exist_ok=True)  
+    zip_path = os.path.join(settings.MEDIA_ROOT, "exports", zip_filename)
+    os.makedirs(os.path.dirname(zip_path), exist_ok=True)
 
     html_content = generate_html_with_images(trip)
     html_filename = f"{trip.slug}_trip_export.html"
 
     with zipfile.ZipFile(zip_path, "w") as zip_file:
         zip_file.writestr(html_filename, html_content)
-    
+
     return FileResponse(open(zip_path, "rb"), as_attachment=True, filename=zip_filename)
 
 
@@ -2483,7 +2483,7 @@ def generate_html_trip_outline(trip,map_path=None):
     html_content += "<h2>Itinerary</h2>"
 
     for day in trip.dayprograms.all().order_by('dayprogramnumber'):
-        
+
         html_content += f"""
         <div class="card">
             <div style="text-align:left;">
@@ -2506,7 +2506,7 @@ from tempfile import NamedTemporaryFile
 
 @is_in_tribe
 def create_trip_outline_html(request, trip_id):
-    trip = get_object_or_404(Trip, pk=trip_id)    
+    trip = get_object_or_404(Trip, pk=trip_id)
 
     map_path = None
     if settings.STATICMAPS_URL:
@@ -2514,7 +2514,7 @@ def create_trip_outline_html(request, trip_id):
 
     html_content = generate_html_trip_outline(trip, map_path=map_path)
     html_filename = f"{trip.slug}_trip_outline.html"
-    
+
     with NamedTemporaryFile(suffix=".html", delete=False) as tmp_file:
         tmp_file.write(html_content.encode("utf-8"))
         tmp_file.flush()
@@ -2565,7 +2565,7 @@ def reorder_dayprograms(request, trip_id):
                 current_date += timedelta(days=1)
 
         return JsonResponse({'status': 'success'})
-    
+
     except Exception as e:
         logger.error("Error Reordering Days: %s", str(e), exc_info=True)
         return JsonResponse({"error": "Error Reordering Days"}, status=400)
@@ -2693,8 +2693,8 @@ def badge_creator(request):
         tripdate__gte=today
     ).order_by('tripdate')
     return render(request, "tripapp/badge_creator.html",
-                   {"tribes": tribes, 
-                    "selected_tribe": selected_tribe, 
+                   {"tribes": tribes,
+                    "selected_tribe": selected_tribe,
                     "achievement_methods":achievement_methods,
                     "dayprograms": dayprograms
                     })
@@ -2739,7 +2739,7 @@ def save_badge(request):
            return redirect('tripapp:dayprogram_questions', dayprogram_id=dayprogram_id)
         else:
            return redirect('tripapp:tribe_trips')
-            
+
     return redirect('tripapp:badge_creator')
 
 
@@ -2790,7 +2790,7 @@ def save_tripoutline(request):
                         itineraryidea=idea,
                         day_sequence=day_counter,
                         day_description=description,
-                        day_possible_date=None,  
+                        day_possible_date=None,
                     )
 
                     OvernightLocation.objects.create(
@@ -3013,7 +3013,7 @@ def itineraryidea_list(request):
 #             day = ItineraryIdeaDay.objects.create(
 #                 itineraryidea=idea,
 #                 day_sequence=day_seq,
-#                 day_description=""  
+#                 day_description=""
 #             )
 
 #             for item in day_items[day_seq]:
@@ -3047,7 +3047,7 @@ def itineraryidea_delete(request, pk):
     idea = get_object_or_404(ItineraryIdea, pk=pk)
 
     if idea.created_by != request.user:
-        raise PermissionDenied 
+        raise PermissionDenied
 
     idea.delete()
     return redirect("tripapp:itineraryidea-list")
@@ -3208,14 +3208,14 @@ def export_trip_outline(trip_id):
             day_data["day_description"] = dp.description
 
 
-        points = dp.points.all().order_by('id')  
+        points = dp.points.all().order_by('id')
         day_locations = []
         for idx, p in enumerate(points, start=1):
             day_locations.append({
                 "sequence": idx,
                 "lat": p.latitude,
                 "long": p.longitude,
-                "radius": 50,  
+                "radius": 50,
                 "description": p.name,
             })
         if day_locations:
@@ -3239,7 +3239,7 @@ def export_trip_outline(trip_id):
 
 def export_trip_outline_json(request, trip_id):
     trip = get_object_or_404(Trip, id=trip_id)
-    
+
     data = export_trip_outline(trip_id)
 
     response = HttpResponse(
@@ -3261,7 +3261,7 @@ def export_trip(request, trip_id):
 
 def decode_polyline(encoded, precision=6):
     coords = polyline_decoder.decode(encoded, precision)
-    return [[lng, lat] for lat, lng in coords]  
+    return [[lng, lat] for lat, lng in coords]
 
 
 def transitous_legs_to_gpx(itinerary):
@@ -3270,34 +3270,34 @@ def transitous_legs_to_gpx(itinerary):
     All legs combined to one route.
     """
     legs = itinerary.get('legs', [])
-    
+
     all_trkpts = []
-    
+
     for leg in legs:
         geometry = leg.get('legGeometry', {})
         encoded = geometry.get('points', '')
         precision = geometry.get('precision', 6)
-        
+
         if not encoded:
             continue
-        
+
         try:
             coords = polyline_decoder.decode(encoded, precision)  # (lat, lng) tuples
         except Exception:
             continue
-        
+
         if all_trkpts and coords:
             coords = coords[1:]
-        
+
         for lat, lng in coords:
             all_trkpts.append(f'      <trkpt lat="{lat}" lon="{lng}"></trkpt>')
-    
+
     # Route name based on start and endpoint
     from_name = legs[0].get('from', {}).get('name', 'Start') if legs else 'Start'
     to_name = legs[-1].get('to', {}).get('name', 'End') if legs else 'End'
     duration_min = round(itinerary.get('duration', 0) / 60)
     transfers = itinerary.get('transfers', 0)
-    
+
     gpx = f"""<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="TransitPlanner"
   xmlns="http://www.topografix.com/GPX/1/1">
@@ -3321,37 +3321,37 @@ def transitous_legs_to_geojson_coordinates(itinerary):
     """
     all_coords = []
     legs = itinerary.get('legs', [])
-    
+
     for leg in legs:
         geometry = leg.get('legGeometry', {})
         encoded = geometry.get('points', '')
         precision = geometry.get('precision', 6)
-        
+
         if not encoded:
             continue
-        
+
         try:
             coords = polyline_decoder.decode(encoded, precision)  # (lat, lng) tuples
             leg_coords = [[lng, lat] for lat, lng in coords]
-            
+
             if all_coords and leg_coords:
                 all_coords.extend(leg_coords[1:])
             else:
                 all_coords.extend(leg_coords)
         except Exception:
             continue
-    
+
     return all_coords
 
 def summarize_itinerary(itinerary):
     """Get relevant fields from an itinerary."""
     legs = itinerary.get('legs', [])
     summary = []
-    
+
     for leg in legs:
         from_stop = leg.get('from', {})
         to_stop = leg.get('to', {})
-        
+
         summary.append({
             'mode': leg.get('mode'),
             'from': {
@@ -3367,21 +3367,21 @@ def summarize_itinerary(itinerary):
                 'track': to_stop.get('track'),
             },
         })
-    
+
     return summary
 
 def short_summary(itinerary):
     legs = itinerary.get('legs', [])
     transit_legs = [leg for leg in legs if leg.get('mode') != 'WALK']
-    
+
     if not transit_legs:
         return None
-    
+
     first_leg = transit_legs[0]
     last_leg = transit_legs[-1]
-    
+
     total_duration = sum(leg.get('duration', 0) for leg in transit_legs)
-    
+
     return {
         'from': {
             'name': first_leg.get('from', {}).get('name'),
@@ -3400,7 +3400,7 @@ def short_summary(itinerary):
 def calculate_route(request):
     """
     Calculate route via OpenRouteService API or Transitous (public transport)
-    
+
     Expected JSON body:
     {
         "start": [lng, lat],
@@ -3408,15 +3408,15 @@ def calculate_route(request):
         "mode": "driving-car" | "cycling-regular" | "foot-walking" | "publictransport"
     }
     """
-    
+
     try:
         print(f"Method: {request.method}")
         print(f"Content-Type: {request.content_type}")
         print(f"Body length: {len(request.body) if request.body else 0}")
-        
+
         if not request.body:
             return JsonResponse({'success': False, 'error': 'Empty request body'})
-        
+
         try:
             body_str = request.body.decode('utf-8')
             data = json.loads(body_str)
@@ -3426,19 +3426,19 @@ def calculate_route(request):
 
         if not isinstance(data, dict):
             return JsonResponse({'success': False, 'error': f'Expected JSON object, got {type(data).__name__}'})
-        
+
         start = data.get('start')  # [lng, lat]
         end = data.get('end')      # [lng, lat]
         mode = data.get('mode', 'driving-car')
-        
+
         print(f"Start: {start}, End: {end}, Mode: {mode}")
-        
+
         if not start or not end:
             return JsonResponse({'success': False, 'error': 'Missing start or end coordinates'})
-        
+
         if not isinstance(start, (list, tuple)) or len(start) != 2:
             return JsonResponse({'success': False, 'error': f'Invalid start coordinates: {start}'})
-        
+
         if not isinstance(end, (list, tuple)) or len(end) != 2:
             return JsonResponse({'success': False, 'error': f'Invalid end coordinates: {end}'})
 
@@ -3450,7 +3450,7 @@ def calculate_route(request):
 
             route_date = data.get('date')  # 'YYYY-MM-DD'
             route_time = data.get('time')  # 'HH:MM'
-            
+
             if route_date and route_time:
                 datetime_str = f"{route_date}T{route_time}:00Z"
             else:
@@ -3464,33 +3464,33 @@ def calculate_route(request):
                 'time': datetime_str,
             }
             headers={"User-Agent": "Trippanion/1.0"}
-            
+
             print(f"Calling Transitous API: {url} params={params}")
             response = requests.get(url, params=params, headers=headers,timeout=30)
             print(f"Transitous response status: {response.status_code}")
-            
+
             if response.status_code != 200:
                 return JsonResponse({
                     'success': False,
                     'error': f'Transitous API error ({response.status_code}): {response.text[:500]}'
                 })
-            
+
             route_data = response.json()
             itineraries = route_data.get('itineraries', [])
-            
+
             if not itineraries:
                 return JsonResponse({'success': False, 'error': 'No public transport routes found'})
-            
+
             best = itineraries[0]
-            
+
             duration = best.get('duration', 0)       # in seconds
             transfers = best.get('transfers', 0)
             legs = best.get('legs', [])
-            
+
             distance = sum(leg.get('distance', 0) for leg in legs)
             coordinates = transitous_legs_to_geojson_coordinates(best)
             gpx_string = transitous_legs_to_gpx(best)
-            
+
             legs_summary = []
             for leg in legs:
                 legs_summary.append({
@@ -3505,7 +3505,7 @@ def calculate_route(request):
                     'routeShortName': leg.get('routeShortName', ''),
                     'agencyName': leg.get('agencyName', ''),
                 })
-            
+
             return JsonResponse({
                 'success': True,
                 'distance': distance,
@@ -3513,9 +3513,9 @@ def calculate_route(request):
                 'coordinates': coordinates,
                 'transfers': transfers,
                 'legs': legs_summary,
-                'gpx': gpx_string,      
-                'raw_itinerary': best,  
-                'itinerary_summary': summarize_itinerary(best), 
+                'gpx': gpx_string,
+                'raw_itinerary': best,
+                'itinerary_summary': summarize_itinerary(best),
                 'itinerary_short': short_summary(best),
                 'itineraries_all': itineraries,
             })
@@ -3528,67 +3528,67 @@ def calculate_route(request):
                     'success': False,
                     'error': 'OpenRouteService API key not configured in settings.py'
                 })
-            
+
             url = f'https://api.openrouteservice.org/v2/directions/{mode}/geojson'
             headers = {
                 'Authorization': api_key,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json, application/geo+json'
             }
-            
+
             if settings.DISTANCE_UNIT != 'km':
                 payload = {"coordinates": [start, end], "units": "mi"}
             else:
                 payload = {"coordinates": [start, end]}
-            
+
             print(f"Calling OpenRouteService: {url}")
             response = requests.post(url, json=payload, headers=headers, timeout=15)
             print(f"ORS response status: {response.status_code}")
-            
+
             if response.status_code != 200:
                 error_text = response.text[:500]
                 return JsonResponse({
                     'success': False,
                     'error': f'OpenRouteService API error ({response.status_code}): {error_text}'
                 })
-            
+
             route_data = response.json()
             features = route_data.get('features', [])
-            
+
             if not features:
                 return JsonResponse({'success': False, 'error': 'No route found in response'})
-            
+
             feature = features[0]
             properties = feature.get('properties', {})
             geometry = feature.get('geometry', {})
             summary = properties.get('summary', {})
-            
+
             return JsonResponse({
                 'success': True,
                 'distance': summary.get('distance', 0),
                 'duration': summary.get('duration', 0),
                 'coordinates': geometry.get('coordinates', []),
             })
-    
+
     except Exception as e:
         logger.error(
             "Error calculating route: %s: %s",
             type(e).__name__,
             str(e),
-            exc_info=True  
+            exc_info=True
         )
-        
+
         return JsonResponse({
             'success': False,
             'error': 'Error when calculating route'
         })
 
 
-@require_POST  
+@require_POST
 def save_route(request):
     """
     Save calculated route as GPX file
-    
+
     Expected JSON body:
     {
         "dayprogram_id": 123,
@@ -3603,7 +3603,7 @@ def save_route(request):
         "end": [lng, lat]
     }
     """
-    
+
     try:
         # Parse request body
         if not request.body:
@@ -3611,40 +3611,40 @@ def save_route(request):
                 'success': False,
                 'error': 'Empty request body'
             })
-        
+
         try:
             body_str = request.body.decode('utf-8')
             data = json.loads(body_str)
         except json.JSONDecodeError as e:
             return JsonResponse({'success': False, 'error': 'Inalid JSON'}, status=400)
-                
+
         if not isinstance(data, dict):
             return JsonResponse({
                 'success': False,
                 'error': f'Expected JSON object, got {type(data).__name__}'
             })
-        
+
         # Extract parameters
         dayprogram_id = data.get('dayprogram_id')
         description = data.get('description')
         route_data = data.get('route_data')
         start = data.get('start')
         end = data.get('end')
-        
+
         print(f"DayProgram ID: {dayprogram_id}")
         print(f"Description: {description}")
         print(f"Route data present: {route_data is not None}")
-        
+
         # Validate
         if not all([dayprogram_id, description, route_data]):
             return JsonResponse({
                 'success': False,
                 'error': 'Missing required fields: dayprogram_id, description, route_data'
             })
-        
+
         # Import models here to avoid circular imports
         from .models import DayProgram, Route
-        
+
         # Get dayprogram
         try:
             dayprogram = DayProgram.objects.get(id=dayprogram_id)
@@ -3654,30 +3654,30 @@ def save_route(request):
                 'success': False,
                 'error': f'DayProgram with id {dayprogram_id} not found'
             })
-        
+
         # Create GPX
         import gpxpy
         import gpxpy.gpx
         from datetime import datetime
-        
+
         gpx = gpxpy.gpx.GPX()
         gpx.name = description
         gpx.description = f"Route created with {route_data.get('mode', 'unknown')} mode"
         gpx.time = datetime.now()
-        
+
         # Create track
         gpx_track = gpxpy.gpx.GPXTrack()
         gpx_track.name = description
         gpx.tracks.append(gpx_track)
-        
+
         # Create segment
         gpx_segment = gpxpy.gpx.GPXTrackSegment()
         gpx_track.segments.append(gpx_segment)
-        
+
         # Add points
         coordinates = route_data.get('coordinates', [])
         print(f"Adding {len(coordinates)} points to GPX")
-        
+
         for coord in coordinates:
             if len(coord) >= 2:
                 gpx_segment.points.append(
@@ -3686,7 +3686,7 @@ def save_route(request):
                         longitude=coord[0]
                     )
                 )
-        
+
         # Add waypoints
         if start and len(start) >= 2:
             gpx.waypoints.append(
@@ -3696,7 +3696,7 @@ def save_route(request):
                     name='Start'
                 )
             )
-        
+
         if end and len(end) >= 2:
             gpx.waypoints.append(
                 gpxpy.gpx.GPXWaypoint(
@@ -3705,29 +3705,29 @@ def save_route(request):
                     name='End'
                 )
             )
-        
+
         # Generate GPX XML
         gpx_xml = gpx.to_xml()
-        
+
         # Save route
         from datetime import datetime
         filename = f"route_{dayprogram_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.gpx"
-        
+
         route = Route(
             dayprogram=dayprogram,
             description=description
         )
         route.gpx_file.save(filename, ContentFile(gpx_xml.encode('utf-8')))
         route.save()
-        
+
         print(f"Route saved successfully: ID={route.id}")
-        
+
         return JsonResponse({
             'success': True,
             'route_id': route.id,
             'message': 'Route successfully saved'
         })
-        
+
     except Exception as e:
         logger.error(
             "Error saving route: %s: %s",
@@ -3735,7 +3735,7 @@ def save_route(request):
             str(e),
             exc_info=True
         )
-        
+
         return JsonResponse({
             'success': False,
             'error': 'Error when saving route.'
@@ -3776,17 +3776,17 @@ def fetch_pois_overpass(request):
             timeout=15,
             headers={"User-Agent": "Trippanion/1.0"},
         )
-        
+
         # Check response status
         if resp.status_code != 200:
             print(f"Overpass API returned status {resp.status_code}")
             return JsonResponse({"features": []})
-        
+
         # Check if response has content
         if not resp.text or not resp.text.strip():
             print("Overpass API returned empty response")
             return JsonResponse({"features": []})
-        
+
         # Try to parse JSON
         try:
             data = resp.json()
@@ -3794,7 +3794,7 @@ def fetch_pois_overpass(request):
             print(f"Overpass API returned invalid JSON: {e}")
             print(f"Response text (first 200 chars): {resp.text[:200]}")
             return JsonResponse({"features": []})
-            
+
     except requests.RequestException as e:
         print(f"Overpass API request failed: {e}")
         return JsonResponse({"features": []})
@@ -3839,7 +3839,7 @@ def ask(request):
 
     job = OllamaJob.objects.create(prompt=prompt, model=model)
 
-    async_task("tripapp.tasks.run_ollama", str(job.id)) 
+    async_task("tripapp.tasks.run_ollama", str(job.id))
 
     return JsonResponse({
         "job_id": str(job.id),
@@ -3863,7 +3863,7 @@ def result(request, job_id):
 
 @tripper_required
 @csrf_exempt
-@require_POST  
+@require_POST
 def generate_bingocards_view(request, trip_id):
     trip = Trip.objects.get(id=trip_id)
     countrylist = country_code_to_name(trip.country_codes)
@@ -4032,7 +4032,7 @@ User request: {user_prompt}
 
         job = OllamaJob.objects.create(
             prompt=prompt,
-            model=settings.OLLAMA_MODEL 
+            model=settings.OLLAMA_MODEL
         )
 
         async_task(
@@ -4052,9 +4052,9 @@ def ollama_job_status(request, job_id):
         job = OllamaJob.objects.get(id=job_id)
         if job.error:
             logger.warning("OllamaJob %s failed: %s", job_id, job.error)
-        
+
         error_msg = "An error occurred. Please try again." if job.error else ""
-        
+
         return JsonResponse({
             "status": job.status,
             "error": error_msg,
@@ -4125,10 +4125,10 @@ def _save_gpx_route(dayprogram_id, description, gpx_string):
     from .models import DayProgram, Route
     from django.core.files.base import ContentFile
     from datetime import datetime
-    
+
     dayprogram = DayProgram.objects.get(id=dayprogram_id)
     filename = f"route_{dayprogram_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.gpx"
-    
+
     route = Route(
         dayprogram=dayprogram,
         description=description
@@ -4207,7 +4207,7 @@ def save_map_markers(request):
 
     if not name:
         messages.error(request, "Please provide a name.")
-        return redirect('tripapp:create_itineraryidea_daylocations')  
+        return redirect('tripapp:create_itineraryidea_daylocations')
 
     try:
         items = json.loads(items_json)
@@ -4374,6 +4374,7 @@ def assign_markers_view(request, idea_pk):
         'can_edit':        can_edit,
         'pin_assignments': json.dumps(pin_assignments),
         'bed_assignments': json.dumps(bed_assignments),
+        'CARTO_API_KEY':       getattr(settings, 'CARTO_API_KEY', None),
     })
 
 @login_required
@@ -4514,7 +4515,7 @@ def address_search(request):
     query = request.GET.get('q', '')
     if len(query) < 3:
         return JsonResponse([], safe=False)
-    
+
     try:
         response = requests.get(
             'https://nominatim.openstreetmap.org/search',
@@ -4523,13 +4524,13 @@ def address_search(request):
             timeout=5
         )
         response.raise_for_status()
-        
+
         #print(f"Nominatim status: {response.status_code}")
         #print(f"Nominatim response: {response.text[:200]}")
-        
+
         data = response.json()
         return JsonResponse(data, safe=False)
-        
+
     except requests.exceptions.JSONDecodeError:
         print(f"Nominatim gaf geen JSON terug: {response.text[:200]}")
         return JsonResponse([], safe=False)
@@ -4599,7 +4600,7 @@ def ollama_job_list(request):
         ollamajobs = OllamaJob.objects.all().order_by('-created_at')[:10]
 
     return render(request, 'tripapp/ollama_job_list.html', {
-        'ollamajobs': ollamajobs, 
+        'ollamajobs': ollamajobs,
         })
 
 @login_required
@@ -4607,7 +4608,7 @@ def ollama_job_detail(request,pk):
     ollamajob   = get_object_or_404(OllamaJob, pk=pk)
 
     return render(request, 'tripapp/ollama_job_detail.html', {
-        'ollamajob': ollamajob, 
+        'ollamajob': ollamajob,
         })
 
 @is_in_tribe
@@ -4637,7 +4638,7 @@ def set_day_vibe(request, dayprogram_id):
 
     return JsonResponse({'error': 'POST only'}, status=405)
 
-    
+
 @login_required
 def add_itinerary_note(request, pk):
     idea = get_object_or_404(ItineraryIdea, pk=pk)
@@ -5064,7 +5065,7 @@ def refresh_flight_status(request, scheduled_item_id):
     flight_iata = item.description.strip().upper()
 
     try:
-        flight, error_response = _lookup_flight(flight_iata)  
+        flight, error_response = _lookup_flight(flight_iata)
     except requests.RequestException:
         return JsonResponse({'error': 'Flightnr API not reachable.'}, status=502)
 
@@ -5153,4 +5154,3 @@ def add_comment(request, logentry_id):
         return redirect(request.META.get("HTTP_REFERER", "tripapp:home"))
 
     return redirect("tripapp:home")
-

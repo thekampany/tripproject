@@ -12,19 +12,19 @@
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    
+
     .doughnut-container {
         max-width: 300px;
         height: 300px;
         margin: 0 auto;
     }
-    
+
     .bar-container {
         max-width: 800px;
         margin: 10 auto;
     }
-       
-    
+
+
     .budget-used { color: #e74c3c; }
     .budget-total { color: #3498db; }
     .budget-remaining { color: #2ecc71; }
@@ -46,24 +46,20 @@
         <tr><td>{% trans "Budget" %}</td><td>{% trans "Expenses" %}</td><td></td><td>{% trans "Remaining" %}</td></tr>
         <tr><td>{{ total_budget|floatformat:2 }} {{ app_currency }}</td><td>{{ total_expenses|floatformat:2 }} {{ app_currency }}</td><td>{{ budget_percentage }}% used</td><td>{{ total_remaining|floatformat:2 }}&nbsp;{{ app_currency }}</td></tr>
     </table>
-    
+
     <div class="chart-container doughnut-container">
         <h2 style="text-align: center; margin-bottom: 1rem;">{% trans "Budget Overview" %}</h2>
         <canvas id="budgetDoughnutChart"></canvas>
     </div>
-    
+
     <div class="chart-container bar-container">
         <h2 style="text-align: center; margin-bottom: 1rem;">{% trans "Budget vs Expenses per Category" %}</h2>
         <canvas id="categoryBarChart"></canvas>
     </div>
 </div>
 
-<script 
-    src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"
-    integrity="sha512-ZdQHGSsox8O8WV7gMzwbr3cVp9gRSmOjkTmKtk8mSflGj7bRqMnMlVN2vZjNbmzVjlqXVPkfJCBnFcn3PJYQ=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer">
-</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha384-bs/nf9FbdNouRbMiFcrcZfLXYPKiPaGVGplVbv7dLGECccEXDW+S3zjqSKR5ZEaD" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
 const categories = {{ categories|safe }};
 const budgetAmounts = {{ budget_amounts|safe }};
