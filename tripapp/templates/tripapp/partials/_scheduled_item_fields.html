@@ -1,0 +1,30 @@
+{% load crispy_forms_tags %}
+{{ form.non_field_errors }}
+
+<div class="row">
+  <div class="col-12">{{ form.description|as_crispy_field }}</div>
+</div>
+
+<div class="row">
+  <div class="col-5 col-md-3">{{ form.start_time|as_crispy_field }}</div>
+  <div class="col-7 col-md-5">{{ form.start_timezone|as_crispy_field }}</div>
+</div>
+
+<div class="row">
+  <div class="col-5 col-md-3">{{ form.end_time|as_crispy_field }}</div>
+  <div class="col-7 col-md-5">{{ form.end_timezone|as_crispy_field }}</div>
+</div>
+
+<div class="row">
+  <div class="col-12">{{ form.start_address|as_crispy_field }}</div>
+</div>
+<div class="row">
+  <div class="col-12">{{ form.end_address|as_crispy_field }}</div>
+</div>
+
+{% if 'category' in form.fields %}
+<div class="row">
+  <div class="col-12 col-md-6">{{ form.category|as_crispy_field }}</div>
+  <div class="col-12 col-md-6">{{ form.transportation_type|as_crispy_field }}</div>
+</div>
+{% endif %}

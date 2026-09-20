@@ -12,7 +12,7 @@ from .forms import TribeCreationForm, AddTrippersForm, DayProgramForm
 from .forms import QuestionForm, PointForm, BingoCardForm
 from .forms import BadgeAssignmentFormSet, LogEntryForm
 from .forms import BadgeplusQForm, QuestionplusBForm
-from .forms import LinkForm, RouteForm, SuggestionForm, TripExpenseForm, TripUpdateForm, UserUpdateForm, ScheduledItemForm
+from .forms import LinkForm, RouteForm, SuggestionForm, TripExpenseForm, TripUpdateForm, UserUpdateForm, ScheduledItemForm, ScheduledItemFlightForm
 from .forms import TripperDocumentForm, TripBudgetForm, ThingToDoForm
 from .serializers import TripOutlineSerializer
 from .serializers import TripSerializer, TripMapDataSerializer, LogEntryLikeSerializer
@@ -38,6 +38,7 @@ from .utils import reverse_geocode_country_code
 from .utils import get_travel_risk_alerts
 from .utils import alpha2_to_alpha3
 from .utils import haversine
+from .utils import flight_timezones
 
 from django.db.models import Count, Q
 from django.db.models import Prefetch
@@ -108,6 +109,9 @@ import polyline as polyline_decoder
 from django.core.cache import cache
 from django.utils.hashable import make_hashable
 
+from .ics import build_calendar
+from .models import CalendarFeedToken
+
 
 logger = logging.getLogger(__name__)
 
@@ -160,6 +164,7 @@ def tribe_trips(request):
          'background_image_url': background_image_url,
          'admin_trips': admin_trips,
          'tripper' : tripper,
+         'logged_on_tripper':tripper,
          'enable_admin': enable_admin,
          'today': date.today(),
          'ollama_configured': bool(getattr(settings, 'OLLAMA_URL', None)),
@@ -285,6 +290,7 @@ def trip_list(request):
         'past': past,
         'background_image_url': background_image_url,
         'tripper':tripper,
+        'logged_on_tripper':tripper,
         "only_mine": only_mine,
         "enable_admin": enable_admin
         })
@@ -302,6 +308,7 @@ def trip_detail(request, slug):
     tripper = None
     if request.user.is_authenticated:
         tripper = Tripper.objects.filter(user=request.user).first()
+
     enable_admin = settings.ENABLE_ADMIN
 
     vibe_days = []
@@ -339,6 +346,7 @@ def trip_detail(request, slug):
         'items': checklist_items,
         'today': today,
         'tripper': tripper,
+        'logged_on_tripper': tripper,
         'view_mode': view_mode,
         'enable_admin': enable_admin,
         'vibe_days': vibe_days,
@@ -855,6 +863,8 @@ def trip_map_view(request, trip_id):
     if request.user.is_authenticated:
         preferred_map_view = request.user.userprofile.preferred_map_view
 
+    logged_on_tripper = Tripper.objects.filter(name=request.user.username).first()
+
     if trip.date_from and trip.date_to:
         points_list = list(trip.points.prefetch_related('dayprograms'))
         for p in points_list:
@@ -956,6 +966,7 @@ def trip_map_view(request, trip_id):
         'preferred_map_view': preferred_map_view,
         'CARTO_API_KEY': getattr(settings, 'CARTO_API_KEY', None),
         'dayprograms': dayprograms,
+        'logged_on_tripper':logged_on_tripper,
     })
 
 
@@ -1185,12 +1196,16 @@ def tripper_profile(request, tripper_id):
             return redirect('tripapp:tripper_profile', tripper_id=tripper.id)
     else:
         form = TripperForm(instance=tripper)
-    return render(request, 'tripapp/tripper_profile.html',
-                {'form': form,
-                'tripper': tripper,
-                'documents': documents,
-                'document_form': TripperDocumentForm()
-                })
+
+    context = {
+        'form': form,
+        'tripper': tripper,
+        'documents': documents,
+        'document_form': TripperDocumentForm(),
+    }
+    context.update(calendar_context(request))
+
+    return render(request, 'tripapp/tripper_profile.html', context)
 
 @login_required
 def assign_badge(request, tripper_id, badge_id, trip_id=None):
@@ -1619,6 +1634,8 @@ def tribe_trip_organize(request,tribe_id,trip_id):
     tripper = None
     if request.user.is_authenticated:
         tripper = Tripper.objects.filter(user=request.user).first()
+    logged_on_tripper = Tripper.objects.filter(name=request.user.username).first()
+
     enable_admin = settings.ENABLE_ADMIN
 
     return render(request, 'tripapp/tribe_trip_organize.html',
@@ -1626,6 +1643,7 @@ def tribe_trip_organize(request,tribe_id,trip_id):
          'trip': trip,
          'admin_trips' : admin_trips,
          'tripper':tripper,
+         'logged_on_tripper':logged_on_tripper,
          'enable_admin':enable_admin,
          'today': date.today(),
         })
@@ -2948,12 +2966,16 @@ def itineraryidea_list(request):
         except UserProfile.DoesNotExist:
             pass
 
+    if request.user.is_authenticated:
+        logged_on_tripper = Tripper.objects.filter(name=request.user.username).first()
+
     return render(request, "tripapp/itineraryidea_list.html", {
         "itineraryideas": itineraryideas,
         "editable_idea_ids": editable_idea_ids,
         "ollama_configured": bool(getattr(settings, 'OLLAMA_URL', None)),
         "background_image_url": background_image_url,
         "enable_admin": enable_admin,
+        "logged_on_tripper": logged_on_tripper,
     })
 
 
@@ -4962,7 +4984,7 @@ def delete_thing_to_do(request, thing_id):
 
     return JsonResponse({'error': 'POST only'}, status=405)
 
-
+@is_in_tribe
 def add_flight(request, dayprogram_id):
     if not getattr(settings, 'AIRLABS_API_KEY', None):
         return redirect('tripapp:dayprogram_detail', dayprogram_id=dayprogram_id)
@@ -4970,7 +4992,7 @@ def add_flight(request, dayprogram_id):
     dayprogram = get_object_or_404(DayProgram, pk=dayprogram_id)
 
     if request.method == 'POST':
-        form = ScheduledItemForm(request.POST)
+        form = ScheduledItemFlightForm(request.POST)
         if form.is_valid():
             scheduled_item = form.save(commit=False)
             scheduled_item.dayprogram = dayprogram
@@ -4980,10 +5002,7 @@ def add_flight(request, dayprogram_id):
             messages.success(request, "Flight added.")
             return redirect('tripapp:dayprogram_detail', dayprogram.id)
     else:
-        form = ScheduledItemForm(initial={
-            'category': 'Transportation',
-            'transportation_type': 'Airplane',
-        })
+        form = ScheduledItemFlightForm()
 
     return render(request, 'tripapp/add_flight.html', {
         'dayprogram': dayprogram,
@@ -5042,18 +5061,19 @@ def flight_lookup(request):
         'dep_gate': flight.get('dep_gate'),
         'arr_iata': flight.get('arr_iata'),
         'arr_time': flight.get('arr_time'),
+        'arr_terminal': flight.get('arr_terminal'),
         'arr_gate': flight.get('arr_gate'),
         'status': flight.get('status'),
-        "dep_name": flight.get('dep_name'),
-        "dep_city": flight.get('dep_city'),
-        "dep_country": flight.get('dep_country'),
-        "arr_name": flight.get('arr_name'),
-        "arr_city": flight.get('arr_city'),
-        "arr_country": flight.get('arr_country'),
-        "airline_name": flight.get('airline_name'),
+        'dep_name': flight.get('dep_name'),
+        'dep_city': flight.get('dep_city'),
+        'dep_country': flight.get('dep_country'),
+        'arr_name': flight.get('arr_name'),
+        'arr_city': flight.get('arr_city'),
+        'arr_country': flight.get('arr_country'),
+        'airline_name': flight.get('airline_name'),
     }
+    result.update(flight_timezones(flight))
     return JsonResponse(result)
-
 
 @require_POST
 def refresh_flight_status(request, scheduled_item_id):
@@ -5154,3 +5174,72 @@ def add_comment(request, logentry_id):
         return redirect(request.META.get("HTTP_REFERER", "tripapp:home"))
 
     return redirect("tripapp:home")
+
+
+def calendar_feed(request, token, slug=None):
+    feed = get_object_or_404(CalendarFeedToken.objects.select_related("user"), token=token)
+    if not feed.user.is_active:
+        return HttpResponse(status=404)
+
+    trips = Trip.objects.filter(trippers__user=feed.user)
+    if slug:
+        trips = trips.filter(slug=slug)
+
+    items = (
+        ScheduledItem.objects.filter(dayprogram__trip__in=trips)
+        .select_related("dayprogram", "dayprogram__trip")
+        .prefetch_related("links")
+        .order_by("dayprogram__tripdate", "start_time")
+    )
+    name = trips.first().name if slug and trips.exists() else "Trippanion"
+    body = build_calendar(items, host=request.get_host(), name=name)
+
+    response = HttpResponse(body, content_type="text/calendar; charset=utf-8")
+    response["Cache-Control"] = "private, max-age=300"
+    return response
+
+def active_and_upcoming_trips(user):
+    today = timezone.localdate()
+    return (
+        Trip.objects.filter(trippers__user=user)
+        .filter(
+            Q(date_to__gte=today)
+            | Q(date_to__isnull=True, date_from__gte=today)
+            | Q(date_to__isnull=True, date_from__isnull=True)
+        )
+        .distinct()
+        .order_by(F("date_from").asc(nulls_last=True), "name")
+    )
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
+
+
+def calendar_context(request):
+    feed = CalendarFeedToken.for_user(request.user)
+
+    def absolute(name, *args):
+        return request.build_absolute_uri(reverse(name, args=args))
+
+    def webcal(url):
+        return url.replace("https://", "webcal://").replace("http://", "webcal://")
+
+    all_url = absolute("tripapp:calendar_feed", feed.token)
+    trips = [
+        {
+            "name": t.name,
+            "https_url": (u := absolute("tripapp:calendar_feed_trip", feed.token, t.slug)),
+            "webcal_url": webcal(u),
+        }
+        for t in active_and_upcoming_trips(request.user)
+    ]
+    return {"https_url": all_url, "webcal_url": webcal(all_url), "calendar_trips": trips}
+
+
+@login_required
+@require_POST
+def calendar_reset(request):
+    CalendarFeedToken.for_user(request.user, reset=True)
+    next_url = request.POST.get("next", "")
+    if not url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+        next_url = "/"
+    return redirect(next_url)

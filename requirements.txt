@@ -22,3 +22,5 @@ django-select2
 pycountry
 httpx
 polyline
+icalendar>=6.0
+airportsdata>=20240101

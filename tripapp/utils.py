@@ -661,3 +661,45 @@ def alpha2_to_alpha3(alpha2_code):
         return country.alpha_3 if country else None
     except (KeyError, AttributeError):
         return None
+
+
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+import airportsdata
+
+_FMT = "%Y-%m-%d %H:%M"
+_AIRPORTS = airportsdata.load("IATA")     # dict: IATA-code -> {..., "tz": "Asia/Kuala_Lumpur"}
+
+
+def _timezone_for(iata, local_str, utc_str):
+    if not (local_str and utc_str):
+        return ""
+
+    local = datetime.datetime.strptime(local_str, _FMT)
+    utc = datetime.datetime.strptime(utc_str, _FMT)
+    offset_min = int((local - utc).total_seconds() // 60)   # bijv. +480 voor UTC+8
+
+    tz_name = (_AIRPORTS.get((iata or "").upper()) or {}).get("tz")
+    if tz_name:
+        try:
+            at_moment = utc.replace(tzinfo=datetime.timezone.utc).astimezone(ZoneInfo(tz_name))
+            if int(at_moment.utcoffset().total_seconds() // 60) == offset_min:
+                return tz_name
+        except ZoneInfoNotFoundError:
+            pass
+
+    if offset_min % 60 == 0:
+        hours = offset_min // 60
+        if hours == 0:
+            return "UTC"
+        if -12 <= hours <= 14:
+            return f"Etc/GMT{-hours:+d}"
+    return ""
+
+def flight_timezones(flight):
+    return {
+        "dep_timezone": _timezone_for(flight.get("dep_iata"),
+                                      flight.get("dep_time"), flight.get("dep_time_utc")),
+        "arr_timezone": _timezone_for(flight.get("arr_iata"),
+                                      flight.get("arr_time"), flight.get("arr_time_utc")),
+    }

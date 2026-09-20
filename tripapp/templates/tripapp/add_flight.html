@@ -24,7 +24,7 @@
 
     <form method="post" id="flight_form">
         {% csrf_token %}
-        {{ form|crispy }}
+        {% include "tripapp/partials/_scheduled_item_fields.html" %}
         <button type="submit" class="btn btn-primary">{% trans "Save" %}</button>
     </form>
 
@@ -87,7 +87,8 @@
             `${data.arr_iata || ''} ${data.arr_city || ''} ${data.arr_country || ''}`.trim();
         if (data.dep_time) document.getElementById('id_start_time').value = data.dep_time.split(' ')[1]?.slice(0,5) || '';
         if (data.arr_time) document.getElementById('id_end_time').value = data.arr_time.split(' ')[1]?.slice(0,5) || '';
-
+        if (data.dep_timezone) document.getElementById('id_start_timezone').value = data.dep_timezone;
+        if (data.arr_timezone) document.getElementById('id_end_timezone').value = data.arr_timezone;
         document.getElementById('flight_preview').classList.add('d-none');
     });
    </script>

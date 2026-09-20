@@ -14,61 +14,15 @@
     <b>{% trans "For Day:" %} {{ dayprogram.tripdate|date:'d-M' }}</b>
     <br><br>
     <div class="mt-4">
-        <form method="post" 
+        <form method="post"
               action="{% if scheduled_item %}
                          {% url 'tripapp:edit_scheduled_item' dayprogram.id scheduled_item.id %}
                       {% else %}
                          {% url 'tripapp:add_scheduled_item' dayprogram.id %}
-                      {% endif %}"> 
+                      {% endif %}">
 
             {% csrf_token %}
-            <div class="row">
-                <div class="col-12 mb-3">
-                    {{ form.description.label_tag }}
-                    {{ form.description }}
-                </div>
-            </div>
-
-            <!-- Start Time + End Time -->
-            <div class="row">
-                <div class="col-6 mb-3">
-                    {{ form.start_time.label_tag }}
-                    {{ form.start_time }}
-                </div>
-                <div class="col-6 mb-3">
-                    {{ form.end_time.label_tag }}
-                    {{ form.end_time }}
-                </div>
-            </div>
-
-            <!-- Start Address -->
-            <div class="row">
-                <div class="col-12 mb-3">
-                    {{ form.start_address.label_tag }}
-                    {{ form.start_address }}
-                </div>
-            </div>
-
-            <!-- End Address -->
-            <div class="row">
-                <div class="col-12 mb-3">
-                    {{ form.end_address.label_tag }}
-                    {{ form.end_address }}
-                </div>
-            </div>
-
-            <!-- Category + Transportation Type -->
-            <div class="row">
-                <div class="col-12 col-md-6 mb-3">
-                    {{ form.category.label_tag }}
-                    {{ form.category }}
-                </div>
-                <div class="col-12 col-md-6 mb-3">
-                    {{ form.transportation_type.label_tag }}
-                    {{ form.transportation_type }}
-                </div>
-            </div>
-
+            {% include "tripapp/partials/_scheduled_item_fields.html" %}
             <button type="submit" class="btn">
                 {% if scheduled_item %}{% trans "Update" %}{% else %}{% trans "Add" %}{% endif %}
             </button>

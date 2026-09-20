@@ -171,4 +171,7 @@ urlpatterns = [
     path('thing-to-do/<int:thing_id>/delete/',         views.delete_thing_to_do,  name='delete_thing_to_do'),
     path('preferences/', views.update_preferences, name='update_preferences'),
     path("logentry/<int:logentry_id>/comment/", views.add_comment, name="add_comment"),
+    path("calendar/reset/", views.calendar_reset, name="calendar_reset"),
+    path("calendar/<str:token>.ics", views.calendar_feed, name="calendar_feed"),
+    path("calendar/<str:token>/<slug:slug>.ics", views.calendar_feed, name="calendar_feed_trip"),
     ]

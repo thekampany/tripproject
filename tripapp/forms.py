@@ -32,9 +32,15 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
-from django_select2.forms import Select2MultipleWidget
+from django_select2.forms import Select2MultipleWidget, Select2Widget
+
 from .utils import country_choices
 import gpxpy
+import zoneinfo
+
+TZ_CHOICES = [("", _("— trip default —"))] + [
+    (z, z) for z in sorted(zoneinfo.available_timezones())
+]
 
 class TripperForm(forms.ModelForm):
     class Meta:
@@ -43,9 +49,9 @@ class TripperForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['dawarich_url'].initial = 'https://your-dawarich-url.com/api/v1/points'
-        self.fields['immich_url'].initial = 'https://your-immich-server.com' 
+        self.fields['immich_url'].initial = 'https://your-immich-server.com'
         if not self.instance.pk or not self.instance.currency:
-            self.fields['currency'].initial = settings.APP_CURRENCY        
+            self.fields['currency'].initial = settings.APP_CURRENCY
 
 class TripperAdminForm(forms.ModelForm):
     class Meta:
@@ -137,7 +143,8 @@ class TripForm(forms.ModelForm):
         if commit:
             trip.save()
         return trip
-   
+
+
 class TripUpdateForm(forms.ModelForm):
     country_codes = forms.MultipleChoiceField(
         choices=country_choices(),
@@ -146,12 +153,25 @@ class TripUpdateForm(forms.ModelForm):
             'class': 'form-control',
             'style': 'width:100%',
             'data-placeholder': 'Select…',
-            'data-allow-clear': 'true', 
+            'data-allow-clear': 'true',
         })
     )
+    timezone_name = forms.ChoiceField(
+        choices=TZ_CHOICES,
+        required=False,
+        label="Timezone of destination",
+        help_text="Used for scheduled items without their own timezone, e.g. Asia/Tokyo.",
+        widget=Select2Widget(attrs={
+            'class': 'form-control',
+            'style': 'width:100%',
+            'data-placeholder': 'Select…',
+            'data-allow-clear': 'true',
+        })
+    )
+
     class Meta:
         model = Trip
-        fields = ['name', 'description', 'image', 'country_codes', 'use_expenses']
+        fields = ['name', 'description', 'image', 'country_codes', 'timezone_name', 'use_expenses']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -189,7 +209,7 @@ class AddTrippersForm(forms.Form):
             initial_trippers = trip.trippers.values_list('name', flat=True)
             initial_users = User.objects.filter(username__in=initial_trippers)
             self.initial['users'] = initial_users
-            
+
 class ChecklistItemForm(forms.ModelForm):
     class Meta:
         model = ChecklistItem
@@ -198,10 +218,10 @@ class ChecklistItemForm(forms.ModelForm):
 class AnswerForm(forms.Form):
     answer = forms.CharField(
         max_length=255,
-        label="",  
+        label="",
         widget=forms.TextInput(
             attrs={
-                'placeholder': _('Your answer here...')  
+                'placeholder': _('Your answer here...')
             }
         )
     )
@@ -281,8 +301,8 @@ class DayProgramForm(forms.ModelForm):
             cleaned_data['overnight_location'] = point.name
         return cleaned_data
 
- 
-    
+
+
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
@@ -418,9 +438,9 @@ class QuestionplusBForm(forms.ModelForm):
 class LinkForm(forms.ModelForm):
     scheduled_item = forms.ModelChoiceField(
         queryset=ScheduledItem.objects.all(),
-        required=False,  
-        empty_label="Choose Scheduled Item for this link/document (optional)",  
-        widget=forms.Select(attrs={'class': 'form-control'})  
+        required=False,
+        empty_label="Choose Scheduled Item for this link/document (optional)",
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
     class Meta:
         model = Link
@@ -432,7 +452,7 @@ class LinkForm(forms.ModelForm):
 
         if dayprogram:
             self.fields['scheduled_item'].queryset = ScheduledItem.objects.filter(dayprogram=dayprogram)
- 
+
     def clean_document(self):
         file = self.cleaned_data.get("document")
 
@@ -514,13 +534,13 @@ class TripExpenseForm(forms.ModelForm):
 
 class UserUpdateForm(forms.ModelForm):
     new_password = forms.CharField(
-        label="New Password", 
-        widget=forms.PasswordInput(attrs={'placeholder': 'Enter new password'}), 
+        label="New Password",
+        widget=forms.PasswordInput(attrs={'placeholder': 'Enter new password'}),
         required=False
     )
     confirm_password = forms.CharField(
-        label="Confirm Password", 
-        widget=forms.PasswordInput(attrs={'placeholder': 'Confirm new password'}), 
+        label="Confirm Password",
+        widget=forms.PasswordInput(attrs={'placeholder': 'Confirm new password'}),
         required=False
     )
 
@@ -542,6 +562,9 @@ class UserUpdateForm(forms.ModelForm):
 
 
 class ScheduledItemForm(forms.ModelForm):
+    start_timezone = forms.ChoiceField(choices=TZ_CHOICES, required=False, label=_("Timezone"))
+    end_timezone = forms.ChoiceField(choices=TZ_CHOICES, required=False, label=_("Timezone"))
+
     class Meta:
         model = ScheduledItem
         fields = [
@@ -549,7 +572,9 @@ class ScheduledItemForm(forms.ModelForm):
             'category',
             'transportation_type',
             'start_time',
+            'start_timezone',
             'end_time',
+            'end_timezone',
             'start_address',
             'end_address',
         ]
@@ -567,6 +592,15 @@ class ScheduledItemForm(forms.ModelForm):
         for field in self.fields.values():
             field.widget.attrs.setdefault('class', 'form-control')
 
+class ScheduledItemFlightForm(ScheduledItemForm):
+    class Meta(ScheduledItemForm.Meta):
+        fields = [f for f in ScheduledItemForm.Meta.fields
+                  if f not in ('category', 'transportation_type')]
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['start_timezone'].required = True
+        self.fields['end_timezone'].required = True
+
 class TripperDocumentForm(forms.ModelForm):
     class Meta:
         model = TripperDocument
@@ -577,7 +611,7 @@ class TripperDocumentForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["document"].widget.attrs["accept"] = ".pdf,.txt,.png,.jpg,.jpeg"
- 
+
     def clean_document(self):
         file = self.cleaned_data.get("document")
 
@@ -611,7 +645,7 @@ class TripOutlineItemForm(forms.ModelForm):
         self.fields["sequence"].required = False
         self.fields["radius"].required = False
         # Default values
-        if self.instance.pk is None:  
+        if self.instance.pk is None:
             self.fields["sequence"].initial = 1
             self.fields["radius"].initial = 100
             self.fields["latitude"].initial = 0

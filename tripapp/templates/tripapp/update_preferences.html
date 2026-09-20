@@ -3,11 +3,13 @@
 
 
 {% block content %}
-<h1>Preferences</h1>
+<h2>Preferences</h2>
+<p>&nbsp;</p>
 <form method="post">
   {% csrf_token %}
   {{ form|crispy}}
   <button type="submit" class="btn">Save</button>
 </form>
+
 <p>&nbsp;</p>
 {% endblock %}

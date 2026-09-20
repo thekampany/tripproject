@@ -5,74 +5,113 @@
 {% load static %}
 
 {% block content %}
-  <h1>{{ tripper.name }}'s Profile</h1>
-  {% if tripper.photo %}
-    <p><img src="{{ tripper.photo.url }}" alt="{{ tripper.name }}'s photo" height="100"></p>
-  {% else %}
-    <p><img src="{% static 'profile.png' %}" height="100"></p>
-  {% endif %}
-  
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    
-  
-    {% for field in form %}
-        {% if field.name == 'home_location_lat' or field.name == 'home_location_lon' %}
-            <input type="hidden" name="{{ field.html_name }}" 
-                   id="{{ field.auto_id }}" value="{{ field.value|default:'' }}">
-        {% elif field.name != 'home_location' %}
-            {{ field|as_crispy_field }}
-        {% endif %}
-    {% endfor %}
-    <div id="address-section" class="address-field" style="margin-bottom: 1rem;">
-        <label for="id_address">Home Location</label>
-        <div id="address-field-container">
-            <input type="text" id="id_address" placeholder="Enter home address..."
-                  value="{{ tripper.home_location|default:'' }}"
-                  style="width: 100%; box-sizing: border-box;">
-            <input type="hidden" id="id_home_location" name="home_location"
-                  value="{{ tripper.home_location|default:'' }}">
-            <div id="address-results" style="border: 1px solid #ccc; max-height: 200px; overflow-y: auto; color: black; background: white; position: absolute; z-index: 1000; width: 100%; display: none;"></div>
-        </div>
-        <small class="form-text text-muted">Enter your home address to set your home location on the map.</small>
-    </div>
-    <p>&nbsp;</p>
-    <button type="submit" class="btn">Save Profile</button>
-</form>
-<hr>
-<p>&nbsp;</p>
-<h1>{{ tripper.name }}'s {% trans "Documents" %}</h1>
-{% trans "Put documents that you can use on multiple trips here, eg scan of passport." %}
-  <table>
-  {% for document in documents %}
-      <tr>
-      <td><a href="{{ document.document.url }}"><img src="{{ document.document.url }}" height="60"></a></td>
-      <td><a href="{{ document.document.url }}">{{ document.description }}</a></td>
-      <td><form method="post" action="{% url 'tripapp:delete_tripper_document' document.id %}" style="display: inline;">
-        {% csrf_token %}
-        <button type="submit"
-                class="btn btn-link p-0 text-danger"
-                title="{% trans 'Delete' %}"
-                onclick="return confirm('{% trans "Are you sure that you want to delete this?" %}')">
-          <i class="bi bi-trash"></i>
-        </button>
-      </form></td>
-      </tr>
-  {% empty %}
-    <tr><td>{% trans "No documents uploaded yet" %}</td></tr>
-  {% endfor %}
-  </table>
+<style>
+  details.section { border: 1px solid rgba(128,128,128,.35); border-radius: .5rem; margin-bottom: 1rem; }
+  details.section > summary { cursor: pointer; padding: .75rem 1rem; font-size: 1.25rem; font-weight: 500; }
+  details.section > summary:hover { background: rgba(128,128,128,.1); }
+  details.section > .section-body { padding: 0 1rem 1rem; }
+</style>
 
+<h2>{{ tripper.name }} {% trans "Settings" %}</h2>
 <p>&nbsp;</p>
-<h3>Upload new document</h3>
-<form method="post" enctype="multipart/form-data" action="{% url 'tripapp:upload_tripper_document' %}">
-    {% csrf_token %}
-    {{ document_form|crispy }}
+<details class="section" {% if form.errors %}open{% endif %}>
+  <summary>{% trans "Profile" %}</summary>
+  <div class="section-body">
+    {% if tripper.photo %}
+      <p><img src="{{ tripper.photo.url }}" alt="{{ tripper.name }}'s photo" height="100"></p>
+    {% else %}
+      <p><img src="{% static 'profile.png' %}" height="100"></p>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      {% for field in form %}
+          {% if field.name == 'home_location_lat' or field.name == 'home_location_lon' %}
+              <input type="hidden" name="{{ field.html_name }}"
+                     id="{{ field.auto_id }}" value="{{ field.value|default:'' }}">
+          {% elif field.name != 'home_location' %}
+              {{ field|as_crispy_field }}
+          {% endif %}
+      {% endfor %}
+      <div id="address-section" class="address-field" style="margin-bottom: 1rem;">
+          <label for="id_address">Home Location</label>
+          <div id="address-field-container">
+              <input type="text" id="id_address" placeholder="Enter home address..."
+                    value="{{ tripper.home_location|default:'' }}"
+                    style="width: 100%; box-sizing: border-box;">
+              <input type="hidden" id="id_home_location" name="home_location"
+                    value="{{ tripper.home_location|default:'' }}">
+              <div id="address-results" style="border: 1px solid #ccc; max-height: 200px; overflow-y: auto; color: black; background: white; position: absolute; z-index: 1000; width: 100%; display: none;"></div>
+          </div>
+          <small class="form-text text-muted">Enter your home address to set your home location on the map.</small>
+      </div>
+      <p>&nbsp;</p>
+      <button type="submit" class="btn">Save Profile</button>
+    </form>
+  </div>
+</details>
+
+<details class="section">
+  <summary>{% trans "Documents" %}</summary>
+  <div class="section-body">
+    <p>{% trans "Put documents that you can use on multiple trips here, eg scan of passport." %}</p>
+    <table>
+    {% for document in documents %}
+        <tr>
+        <td><a href="{{ document.document.url }}"><img src="{{ document.document.url }}" height="60"></a></td>
+        <td><a href="{{ document.document.url }}">{{ document.description }}</a></td>
+        <td><form method="post" action="{% url 'tripapp:delete_tripper_document' document.id %}" style="display: inline;">
+          {% csrf_token %}
+          <button type="submit"
+                  class="btn btn-link p-0 text-danger"
+                  title="{% trans 'Delete' %}"
+                  onclick="return confirm('{% trans "Are you sure that you want to delete this?" %}')">
+            <i class="bi bi-trash"></i>
+          </button>
+        </form></td>
+        </tr>
+    {% empty %}
+      <tr><td>{% trans "No documents uploaded yet" %}</td></tr>
+    {% endfor %}
+    </table>
+
     <p>&nbsp;</p>
-    <button type="submit" class="btn">Upload Document</button>
-    <p>&nbsp;</p>
-</form>
+    <h4>{% trans "Upload new document" %}</h4>
+    <form method="post" enctype="multipart/form-data" action="{% url 'tripapp:upload_tripper_document' %}">
+        {% csrf_token %}
+        {{ document_form|crispy }}
+        <p>&nbsp;</p>
+        <button type="submit" class="btn">Upload Document</button>
+    </form>
+  </div>
+</details>
+
+<details class="section">
+  <summary>{% trans "Calendar Subscription" %}</summary>
+  <div class="section-body">
+    <p><a href="{{ webcal_url }}">📅 {% trans "Subscribe in your calendar app" %}</a></p>
+    <p>{% trans "Or paste this URL:" %} <code>{{ https_url }}</code></p>
+
+    {% if calendar_trips %}
+    <ul>
+      {% for t in calendar_trips %}
+      <li>{{ t.name }}: <a href="{{ t.webcal_url }}">{% trans "subscribe" %}</a> · <code>{{ t.https_url }}</code></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    <form method="post" action="{% url 'tripapp:calendar_reset' %}"
+          onsubmit="return confirm('{% trans "Previous links will stop working. Continue?" %}')">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.path }}">
+      <button type="submit" class="btn">{% trans "Generate new link" %}</button>
+    </form>
+    <p>{% trans "Do not share these links: whoever has them can see your travel planning." %}</p>
+  </div>
+</details>
 {% endblock %}
+
 {% block extra_js %}
 {{ block.super }}
 <script>

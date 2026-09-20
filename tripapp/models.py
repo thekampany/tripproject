@@ -1,17 +1,19 @@
 from django.db import models
 from django.utils.text import slugify
-from django.contrib.auth.models import User 
+from django.contrib.auth.models import User
 from django.conf import settings
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 import uuid
 import requests
 from decimal import Decimal
-from django.conf import settings 
+from django.conf import settings
 from PIL import Image as PilImage, ImageOps
 
 from io import BytesIO
 from django.core.files.base import ContentFile
+
+import secrets
 
 # Create your models here.
 
@@ -19,8 +21,8 @@ class Tribe(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, 
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name="created_tribes"
@@ -103,6 +105,7 @@ class Trip(models.Model):
     country_codes = models.CharField(max_length=200, blank=True, null=True, help_text="A two-letter country code of the country you are visiting. Separate by comma in case of multiple countries")
     use_facilmap = models.BooleanField(default=False)
     use_expenses = models.BooleanField(default=False, help_text="Off means that we choose not to look at who owes who how much")
+    timezone_name = models.CharField(max_length=64, blank=True, help_text="IANA-timezone of destination, example: Asia/Tokyo.")
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -128,9 +131,9 @@ class Trip(models.Model):
         return country_codes[0] if country_codes else None
 
     def calculate_balance(self):
-        trippers = self.trippers.all() 
-        expenses = self.expenses.all() 
-        
+        trippers = self.trippers.all()
+        expenses = self.expenses.all()
+
         balance = {tripper.name: Decimal(0) for tripper in trippers}
 
         for expense in expenses:
@@ -152,7 +155,7 @@ class Trip(models.Model):
         return balance
 
     def has_expenses(self):
-        return self.expenses.exists() 
+        return self.expenses.exists()
 
 class DayProgram(models.Model):
     trip = models.ForeignKey(Trip, related_name='dayprograms', on_delete=models.CASCADE)
@@ -161,7 +164,7 @@ class DayProgram(models.Model):
     dayprogramnumber = models.IntegerField()
     possible_activities = models.TextField(blank=True)
     necessary_info = models.TextField(blank=True)
-    map_image = models.ImageField(upload_to='maps/', blank=True, null=True)  
+    map_image = models.ImageField(upload_to='maps/', blank=True, null=True)
     recorded_weather = models.JSONField(null=True, blank=True)
     recorded_weather_text = models.TextField(null=True, blank=True)
     overnight_location = models.CharField(max_length=255, blank=True, null=True, help_text="Spend the night in (eg. camping, hotelname, city)")
@@ -182,7 +185,7 @@ class Image(models.Model):
     def save(self, *args, **kwargs):
         img = PilImage.open(self.image)
         img = ImageOps.exif_transpose(img)
-        max_size = (600, 600)  
+        max_size = (600, 600)
         img.thumbnail(max_size)
         if img.mode in ("RGBA", "P"):
             img = img.convert("RGB")
@@ -200,15 +203,15 @@ class Tripper(models.Model):
     photo = models.ImageField(upload_to='tripper_photos/', null=True, blank=True)
     is_trip_admin = models.BooleanField(default=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
-    dawarich_url = models.URLField(help_text="Enter dawarich-url including api/v/points if you use Dawarich and want to see locations where you have been displayed on the map", null=True, blank=True)  
-    dawarich_api_key = models.CharField(max_length=100,help_text="dawarich-api-key", null=True, blank=True)  
-    immich_url = models.URLField(help_text="Enter immich-url in order to see locations where you took a picture plotted on the trip map", null=True, blank=True) 
+    dawarich_url = models.URLField(help_text="Enter dawarich-url including api/v/points if you use Dawarich and want to see locations where you have been displayed on the map", null=True, blank=True)
+    dawarich_api_key = models.CharField(max_length=100,help_text="dawarich-api-key", null=True, blank=True)
+    immich_url = models.URLField(help_text="Enter immich-url in order to see locations where you took a picture plotted on the trip map", null=True, blank=True)
     immich_api_key = models.CharField(max_length=100, help_text="immich-api-key", null=True, blank=True)
     currency = models.CharField(max_length=10, null=True, blank=True)
     home_location = models.CharField(max_length=255, null=True, blank=True, help_text="Name/address of home location. Will be used as starting point for brainstorm map")
     home_location_lat = models.FloatField(null=True, blank=True)
     home_location_lon = models.FloatField(null=True, blank=True)
-    
+
     #def count_badges(self):
     #    return self.badges.count()
 
@@ -279,7 +282,7 @@ class BingoAnswer(models.Model):
         if self.answerimage and hasattr(self.answerimage, "file"):
             img = PilImage.open(self.answerimage)
             img = ImageOps.exif_transpose(img)
-            max_size = (600, 600)  
+            max_size = (600, 600)
             img.thumbnail(max_size)
 
             if img.mode in ("RGBA", "P"):
@@ -405,7 +408,7 @@ class Link(models.Model):
         if self.scheduled_item and self.scheduled_item.dayprogram != self.dayprogram:
             raise ValueError("The Link's DayProgram must match the ScheduledItem's DayProgram.")
         super().save(*args, **kwargs)
- 
+
     def __str__(self):
         return self.url or self.document.url
 
@@ -450,7 +453,7 @@ class TripExpense(models.Model):
         return f'{self.amount} {self.currency} on {self.trip.name} by {self.tripper.name}'
 
     def save(self, *args, **kwargs):
-        default_currency = settings.APP_CURRENCY 
+        default_currency = settings.APP_CURRENCY
 
         if self.currency != default_currency:
             self.converted_amount = self.convert_to_default_currency()
@@ -459,7 +462,7 @@ class TripExpense(models.Model):
 
         if self.receipt:
             img = PilImage.open(self.receipt)
-            max_size = (600, 600)  
+            max_size = (600, 600)
             img.thumbnail(max_size)
             buffer = BytesIO()
             img.save(buffer, format='JPEG', quality=75)
@@ -469,7 +472,7 @@ class TripExpense(models.Model):
         super(TripExpense, self).save(*args, **kwargs)
 
     def convert_to_default_currency(self):
-        api_url = "https://v6.exchangerate-api.com/v6/" + settings.EXCHANGERATE_API_KEY + "/latest/" + self.currency 
+        api_url = "https://v6.exchangerate-api.com/v6/" + settings.EXCHANGERATE_API_KEY + "/latest/" + self.currency
         response = requests.get(api_url)
 
         if response.status_code == 200:
@@ -510,12 +513,12 @@ class Location(models.Model):
 
 class ImmichPhotos(models.Model):
     tripper = models.ForeignKey(Tripper, on_delete=models.CASCADE)
-    immich_photo_id  = models.CharField(max_length=100)  
+    immich_photo_id  = models.CharField(max_length=100)
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
-    city = models.CharField(max_length=100, null=True, blank=True)  
+    city = models.CharField(max_length=100, null=True, blank=True)
     timestamp = models.DateTimeField()
-    thumbnail = models.ImageField(upload_to='immich_thumbnails/', null=True, blank=True)  
+    thumbnail = models.ImageField(upload_to='immich_thumbnails/', null=True, blank=True)
 
 
 class ScheduledItem(models.Model):
@@ -547,10 +550,16 @@ class ScheduledItem(models.Model):
     start_address = models.CharField(max_length=255)
     end_address = models.CharField(max_length=255, blank=True, null=True)
     transportation_type = models.CharField(max_length=50, choices=TRANSPORTATION_TYPE_CHOICES,blank=True,null=True)
+    start_timezone = models.CharField(
+        max_length=64, blank=True, null=True,
+        help_text="Timezone of the start time, e.g. Europe/Amsterdam. Empty = trip timezone.")
+    end_timezone = models.CharField(
+        max_length=64, blank=True, null=True,
+        help_text="Timezone of the end time, e.g. Asia/Tokyo. Empty = same as start.")
 
     def __str__(self):
         trip_date = self.dayprogram.tripdate.strftime("%d-%m-%Y") if self.dayprogram.tripdate else "No Date"
-        return f"({self.start_time} - {self.end_time}) {self.get_category_display()} on {trip_date}" 
+        return f"({self.start_time} - {self.end_time}) {self.get_category_display()} on {trip_date}"
 
 
 class TripperDocument(models.Model):
@@ -595,8 +604,8 @@ class TripOutline(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, 
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
         related_name="trip_outlines"
     )
     def __str__(self):
@@ -682,7 +691,7 @@ class OvernightLocation(models.Model):
     day = models.ForeignKey(
         ItineraryIdeaDay,
         on_delete=models.CASCADE,
-        related_name="overnightlocations" 
+        related_name="overnightlocations"
     )
     latitude = models.FloatField()
     longitude = models.FloatField()
@@ -809,7 +818,7 @@ class PollVote(models.Model):
     tripper = models.ForeignKey(Tripper, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = [('option', 'tripper')] 
+        unique_together = [('option', 'tripper')]
 
     def __str__(self):
         return f"{self.tripper.name} → {self.option.text}"
@@ -830,3 +839,19 @@ class ThingToDo(models.Model):
     @property
     def has_coordinates(self):
         return self.latitude is not None and self.longitude is not None
+
+class CalendarFeedToken(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                related_name="calendar_feed")
+    token = models.CharField(max_length=64, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @classmethod
+    def for_user(cls, user, reset=False):
+        obj, created = cls.objects.get_or_create(
+            user=user, defaults={"token": secrets.token_urlsafe(32)}
+        )
+        if reset and not created:
+            obj.token = secrets.token_urlsafe(32)
+            obj.save(update_fields=["token"])
+        return obj
