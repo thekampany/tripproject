@@ -22,6 +22,19 @@ from requests.exceptions import RequestException
 from django.core.cache import cache
 from urllib.parse import urlencode, quote
 
+
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+import airportsdata
+
+_FMT = "%Y-%m-%d %H:%M"
+_AIRPORTS = airportsdata.load("IATA")     # dict: IATA-code -> {..., "tz": "Asia/Kuala_Lumpur"}
+
+
+from timezonefinder import TimezoneFinder
+
+_TZFINDER = TimezoneFinder()
+
 geolocator = Nominatim(user_agent="Trippanion")
 
 logger = logging.getLogger(__name__)
@@ -373,6 +386,11 @@ def create_trip_from_itinerary(itinerary, tribe, start_date, user,
     max_day = itinerary.itineraryidea_days.all().aggregate(models.Max("day_sequence"))["day_sequence__max"] or 1
     date_to = start_date + timedelta(days=max_day - 1)
 
+    timezone_name = ""
+    if all_locations:
+        timezone_name = timezone_for_coords(*all_locations[0]) or ""
+
+
     trip = Trip.objects.create(
         tribe=tribe,
         name=itinerary.name,
@@ -381,7 +399,8 @@ def create_trip_from_itinerary(itinerary, tribe, start_date, user,
         date_from=start_date,
         date_to=date_to,
         country_codes=country_codes,
-    )
+        timezone_name=timezone_name,
+      )
 
     tripper, created = Tripper.objects.get_or_create(user=user, defaults={'name': user.username})
     tripper.trips.add(trip)
@@ -663,14 +682,6 @@ def alpha2_to_alpha3(alpha2_code):
         return None
 
 
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-
-import airportsdata
-
-_FMT = "%Y-%m-%d %H:%M"
-_AIRPORTS = airportsdata.load("IATA")     # dict: IATA-code -> {..., "tz": "Asia/Kuala_Lumpur"}
-
-
 def _timezone_for(iata, local_str, utc_str):
     if not (local_str and utc_str):
         return ""
@@ -703,3 +714,10 @@ def flight_timezones(flight):
         "arr_timezone": _timezone_for(flight.get("arr_iata"),
                                       flight.get("arr_time"), flight.get("arr_time_utc")),
     }
+
+def timezone_for_coords(latitude, longitude):
+    try:
+        return _TZFINDER.timezone_at(lat=float(latitude), lng=float(longitude))
+    except Exception:
+        logger.warning("Could not determine timezone for %s, %s", latitude, longitude)
+        return None

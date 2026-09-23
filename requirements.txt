@@ -24,3 +24,4 @@ httpx
 polyline
 icalendar>=6.0
 airportsdata>=20240101
+timezonefinder>=6.5
