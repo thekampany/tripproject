@@ -10,6 +10,17 @@
   details.section > summary { cursor: pointer; padding: .75rem 1rem; font-size: 1.25rem; font-weight: 500; }
   details.section > summary:hover { background: rgba(128,128,128,.1); }
   details.section > .section-body { padding: 0 1rem 1rem; }
+
+    .calendar-trip-list { list-style: none; margin: 0; padding: 0; }
+    .calendar-trip-row {
+        display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+        padding: .5rem 0; border-bottom: 1px solid rgba(128,128,128,.2);
+    }
+    .calendar-trip-row:last-child { border-bottom: none; }
+    .calendar-trip-name { flex: 0 0 auto; min-width: 8rem; font-weight: 500; }
+    .calendar-trip-url { display: flex; align-items: center; gap: .25rem; flex: 1 1 16rem; min-width: 12rem; }
+    .calendar-trip-url input { flex: 1 1 auto; }
+
 </style>
 
 <h2>{% trans "Settings" %}</h2>
@@ -88,25 +99,35 @@
 </details>
 
 <details class="section">
-  <summary>{% trans "Calendar Subscription" %}</summary>
-  <div class="section-body">
-    <p><a href="{{ webcal_url }}">📅 {% trans "Subscribe in your calendar app" %}</a></p>
-    <p>{% trans "Or paste this URL:" %} <code>{{ https_url }}</code></p>
-
-    {% if calendar_trips %}
-    <ul>
-      {% for t in calendar_trips %}
-      <li>{{ t.name }}: <a href="{{ t.webcal_url }}">{% trans "subscribe" %}</a> · <code>{{ t.https_url }}</code></li>
-      {% endfor %}
-    </ul>
-    {% endif %}
-
+    <summary>{% trans "Calendar Subscription" %}</summary>
+    <div class="section-body">
+      {% if calendar_trips %}
+      <p class="text-muted">{% trans "Subscribe to a trip to see scheduled items in your own calendar app. Or copy/paste the url." %}</p>
+      <ul class="calendar-trip-list">
+        {% for t in calendar_trips %}
+        <li class="calendar-trip-row">
+          <a href="{{ t.webcal_url }}" class="btn">📅 {% trans "Subscribe to " %}<span class="calendar-trip-name">{{ t.name }}</span></a>
+          <span class="calendar-trip-url">
+            <input type="text" class="form-control form-control-sm" value="{{ t.https_url }}" readonly
+                   onclick="this.select();" aria-label="{% trans 'Calendar link' %}">
+            <button type="button" class="btn btn-outline-secondary btn-sm copy-url-btn" title="{% trans 'Copy link' %}">
+              📋
+            </button>
+          </span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p>{% trans "No active or upcoming trips to subscribe to." %}</p>
+      {% endif %}
+    <p>&nbsp;</p>
     <form method="post" action="{% url 'tripapp:calendar_reset' %}"
           onsubmit="return confirm('{% trans "Previous links will stop working. Continue?" %}')">
       {% csrf_token %}
       <input type="hidden" name="next" value="{{ request.path }}">
       <button type="submit" class="btn">{% trans "Generate new link" %}</button>
     </form>
+    <p>&nbsp;</p>
     <p>{% trans "Do not share these links: whoever has them can see your travel planning." %}</p>
   </div>
 </details>
@@ -168,6 +189,21 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             searchAddress();
         }
+    });
+});
+
+
+document.querySelectorAll('.copy-url-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        const input = btn.previousElementSibling;
+        input.select();
+        navigator.clipboard.writeText(input.value).then(function () {
+            const original = btn.textContent;
+            btn.textContent = '✅';
+            setTimeout(function () { btn.textContent = original; }, 1500);
+        }).catch(function () {
+            document.execCommand('copy');
+        });
     });
 });
 </script>

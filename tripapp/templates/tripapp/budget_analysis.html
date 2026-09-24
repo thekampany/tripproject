@@ -5,6 +5,13 @@
 
 {% block content %}
 <style>
+    body, html {
+    {% if trip.image %}
+    background: url('{{ trip.image.url }}') no-repeat center center fixed;
+    background-size: cover;
+    {% endif %}
+    }
+
     .chart-container {
         position: relative;
         margin: 2rem auto;

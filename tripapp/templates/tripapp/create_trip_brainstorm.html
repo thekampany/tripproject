@@ -255,7 +255,7 @@
   var scaleControl = L.control.scale();
   scaleControl.setPosition('bottomleft');
   map.addControl(scaleControl);
- 
+
   L.Control.geocoder({ defaultMarkGeocode: false })
     .on('markgeocode', function(e) {
       map.setView(e.geocode.center, 12);
@@ -343,7 +343,7 @@
     pendingLatLng = null;
     document.getElementById('add-popup').classList.remove('active');
     updateCount();
-    showToast(ICONS[selectedIcon].emoji + ' {% trans "Locatie opgeslagen" %}');
+    showToast(ICONS[selectedIcon].emoji + ' {% trans "Location saved" %}');
   }
 
   // ── Edit popup ───────────────────────────────────────────────
@@ -361,7 +361,7 @@
     m.description  = document.getElementById('edit-desc').value.trim();
     document.getElementById('edit-popup').classList.remove('active');
     editingId = null;
-    showToast('✅ {% trans "Opgeslagen" %}');
+    showToast('✅ {% trans "Saved" %}');
   }
 
   function deleteMarker() {
@@ -372,7 +372,7 @@
     document.getElementById('edit-popup').classList.remove('active');
     editingId = null;
     updateCount();
-    showToast('🗑️ {% trans "Verwijderd" %}');
+    showToast('🗑️ {% trans "Removed" %}');
   }
 
   // Overlay klik sluit popup
